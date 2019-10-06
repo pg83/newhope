@@ -1,0 +1,13 @@
+include /runtime/Makefile.common
+
+readline_pkg_dev = dev-aarch64-musl-readline-7.0-rc2.tar.gz
+
+PATH = /cross_tools/aarch64-linux-musl-cross/bin:/bin:/usr/bin:/usr/sbin/:/sbin 
+
+$(readline_pkg_dev):
+	mkdir result
+	wget -O - $(readline_url) | tar --strip-components 1 -xzf -
+	./configure --host=aarch64-linux-musl --prefix=/cross/result --disable-shared --enable-static
+	make
+	make install
+	cd /cross/result && tar -cf /cross/$(readline_pkg_dev) .

@@ -1,0 +1,4 @@
+readline_url = http://ftp.gnu.org/gnu/bash/readline-7.0-rc2.tar.gz
+
+CFLAGS = -O2
+LDFLAGS = --static
