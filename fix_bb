@@ -1,0 +1,14 @@
+#!/bin/ash
+
+ls -la /bin
+
+cd /bin
+
+for i in `busybox --list-full`
+do 
+   q=`busybox basename $i` 
+   busybox unlink $q || 1
+   busybox ln -s busybox $q
+done
+
+ls -la /bin

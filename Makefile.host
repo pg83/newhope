@@ -1,6 +1,6 @@
 include /runtime/Makefile.common
 
-PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin
+PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/runtime
 
 /lib/libreadline.a:
 	wget -O - $(readline_url) | tar --strip-components 1 -xzf -
@@ -45,7 +45,7 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin
 	make install
 
 /lib/libgettext.a:
-	wget --no-check-certificate -O - https://ftp.gnu.org/pub/gnu/gettext/gettext-0.20.1.tar.gz | tar --strip-component 1 -xzf -
+	fetch_file https://mirror.yandex.ru/mirrors/gnu/gettext/gettext-0.20.1.tar.gz
 	./configure --prefix=/ --disable-shared --enable-static
 	make
 	make install

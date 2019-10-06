@@ -8,7 +8,7 @@ get_file() {
   exit 1
 }
 
-#get_file $1
+get_file $1
 p=`basename $1`
 tar --strip-components 1 -xf $p 
 rm $p

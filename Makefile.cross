@@ -7,7 +7,7 @@ version_pkg = aarch64-musl-version.tar.gz
 busybox_url := https://www.busybox.net/downloads/busybox-1.31.0.tar.bz2
 busybox_pkg := aarch64-musl-$(shell basename $(busybox_url))
 
-PATH = /cross_tools/aarch64-linux-musl-cross/bin:/bin:/usr/bin:/usr/sbin/:/sbin 
+PATH = /cross_tools/aarch64-linux-musl-cross/bin:/bin:/usr/bin:/usr/sbin/:/sbin:/runtime
 
 $(readline_pkg_dev):
 	mkdir result
