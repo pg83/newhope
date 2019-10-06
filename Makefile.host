@@ -1,11 +1,29 @@
 include /runtime/Makefile.common
 
-PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/usr/bin:/usr/sbin/:/sbin 
+PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin
 
 /lib/libreadline.a:
 	wget -O - $(readline_url) | tar --strip-components 1 -xzf -
-	./configure --host=x86_64-linux-musl --prefix=/ --disable-shared --enable-static
+	./configure --prefix=/ --disable-shared --enable-static
 	make
 	make install
 
-all: /lib/libreadline.a
+/bin/dash:
+	wget -O - http://http.debian.net/debian/pool/main/d/dash/dash_0.5.7.orig.tar.gz | tar --strip-components 1 -xzf -
+	./configure --prefix=/
+	make
+	unlink /bin/sh
+	cp /host/src/dash /bin/sh
+
+/bin/bash:
+	wget -O - $(bash_url) | tar --strip-components 1 -xzf -
+	./configure --prefix=/ --disable-extended-glob-default
+	make
+	make install
+
+/bin/strace:
+	tar --strip-components 1 -xf /runtime/strace.tar.gz
+	./configure --prefix=/
+	make
+
+all: /lib/libreadline.a /bin/bash /bin/strace

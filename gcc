@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec /cross_tools/x86_64-linux-musl-native/bin/x86_64-linux-musl-gcc -static "$@"

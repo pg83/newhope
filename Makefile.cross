@@ -1,6 +1,7 @@
 include /runtime/Makefile.common
 
 readline_pkg_dev = dev-aarch64-musl-readline-7.0-rc2.tar.gz
+version_pkg = aarch64-musl-version.tar.gz
 
 PATH = /cross_tools/aarch64-linux-musl-cross/bin:/bin:/usr/bin:/usr/sbin/:/sbin 
 
@@ -11,3 +12,7 @@ $(readline_pkg_dev):
 	make
 	make install
 	cd /cross/result && tar -cf /cross/$(readline_pkg_dev) .
+
+$(version_pkg):
+	date > version
+	tar -cf /cross/$(version_pkg) version
