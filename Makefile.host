@@ -32,5 +32,22 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin
 	make
 	make install
 
+/bin/python:
+	wget -O - https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz | tar --strip-component 1 -xzf -
+	./configure --prefix=/ --disable-shared
+	make
+	make install
 
-all: /lib/libreadline.a /bin/bash /bin/curl
+/lib/ncurses.a:
+	wget -O - ftp://ftp.invisible-island.net/ncurses/ncurses-6.1.tar.gz | tar --strip-component 1 -xzf -
+	./configure --prefix=/ --disable-shared --enable-static
+	make
+	make install
+
+/lib/libgettext.a:
+	wget --no-check-certificate -O - https://ftp.gnu.org/pub/gnu/gettext/gettext-0.20.1.tar.gz | tar --strip-component 1 -xzf -
+	./configure --prefix=/ --disable-shared --enable-static
+	make
+	make install
+
+all: /lib/libreadline.a /bin/bash /bin/curl /lib/libncurses.a /lib/libgettext.a
