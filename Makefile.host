@@ -26,4 +26,11 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin
 	./configure --prefix=/
 	make
 
-all: /lib/libreadline.a /bin/bash /bin/strace
+/bin/curl:
+	wget -O - https://curl.haxx.se/download/curl-7.66.0.tar.bz2 | tar --strip-components 1 -xjf -
+	./configure --prefix=/ --disable-libcurl-option --disable-shared --enable-static
+	make
+	make install
+
+
+all: /lib/libreadline.a /bin/bash /bin/curl
