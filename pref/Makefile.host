@@ -41,9 +41,9 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	mv /bin/curl /bin/curl.old
 	make install
 
-/bin/python:
-	wget -O - https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz | tar --strip-component 1 -xzf -
-	./configure --prefix=/ --disable-shared
+/cross_tools/python/bin/python:
+	fetch_file https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz
+	./configure --prefix=/cross_tools/python --disable-shared
 	make
 	make install
 
@@ -65,7 +65,7 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	make
 	make install
 
-/bin/pkg-config.new:
+/bin/pkg-config.new: /lib/libglib-2.0.a
 	fetch_file https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
 	./configure --enable-static --disable-shared --prefix=/
 	make
@@ -80,7 +80,7 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	make
 	make install
 
-/lib/libglib.a: /bin/curl.old /bin/pkg-config
+/lib/libglib-2.0.a: /bin/curl.old /bin/pkg-config
 	fetch_file https://caesar.ftp.acc.umu.se/pub/GNOME/sources/glib/2.21/glib-2.21.6.tar.gz
 	PKG_CONFIG=/bin/pkg-config ./configure --disable-shared --enable-static --prefix=/
 	make
@@ -98,7 +98,7 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	make install
 	
 /lib/libmbedtls.a: /bin/pkg-config
-	ln -s /cross_tools/x86_64-linux-musl-native/bin/gcc /cross_tools/x86_64-linux-musl-native/bin/cc
+	ln -s /cross_tools/x86_64-linux-musl-native/bin/gcc /cross_tools/x86_64-linux-musl-native/bin/cc || true
 	fetch_file https://tls.mbed.org/download/mbedtls-2.16.3-apache.tgz
 	make programs lib 
 	make DESTDIR=/ install
@@ -124,4 +124,4 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	
 all: /lib/libreadline.a /bin/bash.rb5 /bin/curl /lib/libncurses.a /lib/gettext \
      /bin/pkg-config /lib/libmbedtls.a /bin/curl.old /bin/m4 /lib/libgmp.a \
-     /lib/libnettle.a /lib/libglib.a /bin/pkg-config.new
+     /lib/libnettle.a /lib/libglib-2.0.a /bin/pkg-config.new /cross_tools/python/bin/python
