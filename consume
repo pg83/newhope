@@ -3,15 +3,31 @@
 import os
 import sys
 import random
+import fcntl
 
-def install_pkg(fr, to):
-    os.system('tar -xf ' + fr + ' -C ' + to)
 
-path = '/workdir/' + str(int(random.random() * 10000000))
+def install(to, func):
+    if not os.path.exists(to):
+	with open('/runtime/Makefile', 'r') as f:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            
+            try:
+        	if os.path.exists(to):
+            	    return to
+            
+		tmp = to + '_' + str(int(random.random() * 10000000))
+		func(tmp)
+		os.rename(tmp, to)
+	    finally:
+		fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+		
+    return to
 
-os.makedirs(path)
 
 for pkg in sys.argv[1:]:
-    install_pkg('/repo/' + pkg, path)
+    def do(to):
+	os.makedirs(to)
+        os.system('tar -xf /repo/' + pkg + ' -C ' + to)
 
-os.chdir(path)
+    path = install('/managed/' + pkg[:pkg.find('.tar.')], do)
+    os.symlink(path, os.path.abspath(os.getcwd()) + '/' + os.path.basename(path))

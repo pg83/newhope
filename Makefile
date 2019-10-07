@@ -1,26 +1,37 @@
 SHELL=/bin/bash
 
-xxm = x86_64-x86_64-musl-
-xam = x86_64-aarch64-musl-
-aam = aarch64-aarch64-musl-
+ver = v1
+
+xxm = $(ver)_x86_64-x86_64-musl-
+xam = $(ver)_x86_64-aarch64-musl-
+aam = $(ver)_aarch64-aarch64-musl-
+
 txz = .tar.xz
 
-#rconsume = d = $(shell date | md5sum | base64) && cd /workdir && mkdir $(shell d) && cd $d && consume
+fetch = cd `helper`; consume
+
+LDFLAGS="--static"
 
 $(xxm)init$(txz):
-	cd `helper`; consume; pwd; mkdir $(xxm)init; cd $(xxm)init; \
-	    fetch_file https://www.busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64; \
+	$(fetch); mkdir $(xxm)init; cd $(xxm)init; \
+	    wget https://www.busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64; \
 	    mv busybox-x86_64 busybox; \
 	    chmod +x busybox; \
-	    echo > rules; \
 	    produce $(xxm)init$(txz)
-	ls -la /repo/
 
 $(xxm)gcc$(txz): $(xxm)init$(txz)
-	cd `helper`; consume $(xxm)init$(txz); pwd; mkdir $(xxm)gcc; cd $(xxm)gcc; \
+	$(fetch) $(xxm)init$(txz); mkdir $(xxm)gcc; cd $(xxm)gcc; \
 	    fetch_file https://musl.cc/x86_64-linux-musl-native.tgz; \
-	    echo 'export PATH=bin/:$$PATH' > rules; \
 	    produce $(xxm)gcc$(txz)
-	ls -la /repo
-	
-all: $(xxm)gcc$(txz) $(xxm)init$(txz)
+
+$(xam)gcc$(txz): $(xxm)init$(txz)
+	$(fetch) $(xxm)init$(txz); mkdir $(xam)gcc; cd $(xam)gcc; \
+	    fetch_file https://musl.cc/aarch64-linux-musl-cross.tgz; \
+	    produce $(xam)gcc$(txz)
+
+$(aam)busybox$(txz): $(xxm)gcc$(txz) $(xam)gcc$(txz) $(xxm)init$(txz)
+	$(fetch) $(xxm)gcc$(txz) $(xam)gcc$(txz) $(xxm)init$(txz); mkdir $(aam)busybox; cd $(aam)busybox; \
+	    fetch_file https://busybox.net/downloads/busybox-1.31.0.tar.bz2; \
+	    produce $(aam)busybox$(txz)
+	    	
+all: $(xxm)gcc$(txz) $(xam)gcc$(txz) $(xxm)init$(txz) $(aam)busybox$(txz)

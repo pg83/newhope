@@ -3,4 +3,8 @@
 import os
 import sys
 
-os.system('tar -cf /repo/' + sys.argv[1] + ' .')
+real = '/repo/' + sys.argv[1]
+tmp = real + '_tmp'
+
+os.system('tar -cf ' + tmp + ' . /runtime/Makefile')
+os.rename(tmp, real)
