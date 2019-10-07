@@ -15,11 +15,13 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	unlink /bin/sh
 	cp /host/src/dash /bin/sh
 
-/bin/bash:
+/bin/bash /bin/bash.rb5:
+	ln -s /lib/libncurses.a /lib/libcurses.a
 	wget -O - $(bash_url) | tar --strip-components 1 -xzf -
-	./configure --prefix=/ --disable-extended-glob-default
+	LDFLAGS='--static -L/lib -lncurses' ./configure --prefix=/ --disable-extended-glob-default --with-installed-readline --enable-readline --enable-static-link --with-curses --disable-nls --without-gnu-malloc --disable-malloc-wrappers
 	make
 	make install
+	ln -s /bin/bash /bin/bash.rb5
 
 /bin/strace:
 	tar --strip-components 1 -xf /runtime/strace.tar.gz
@@ -44,10 +46,10 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	make
 	make install
 
-/lib/libgettext.a:
+/lib/gettext:
 	fetch_file https://mirror.yandex.ru/mirrors/gnu/gettext/gettext-0.20.1.tar.gz
 	./configure --prefix=/ --disable-shared --enable-static
 	make
 	make install
 
-all: /lib/libreadline.a /bin/bash /bin/curl /lib/libncurses.a /lib/libgettext.a
+all: /lib/libreadline.a /bin/bash.rb5 /bin/curl /lib/libncurses.a /lib/gettext
