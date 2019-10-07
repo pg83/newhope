@@ -6,7 +6,7 @@ xxm = $(ver)_x86_64-x86_64-musl-
 xam = $(ver)_x86_64-aarch64-musl-
 aam = $(ver)_aarch64-aarch64-musl-
 
-txz = .tar.xz
+txz = .tar.gz
 
 fetch = cd `helper`; consume
 
@@ -32,6 +32,7 @@ $(xam)gcc$(txz): $(xxm)init$(txz)
 $(aam)busybox$(txz): $(xxm)gcc$(txz) $(xam)gcc$(txz) $(xxm)init$(txz)
 	$(fetch) $(xxm)gcc$(txz) $(xam)gcc$(txz) $(xxm)init$(txz); mkdir $(aam)busybox; cd $(aam)busybox; \
 	    fetch_file https://busybox.net/downloads/busybox-1.31.0.tar.bz2; \
+	    sleep 10000; \
 	    produce $(aam)busybox$(txz)
 	    	
 all: $(xxm)gcc$(txz) $(xam)gcc$(txz) $(xxm)init$(txz) $(aam)busybox$(txz)
