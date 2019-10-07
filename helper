@@ -1,9 +1,0 @@
-#!/usr/bin/env python2
-
-import os
-import random
-
-res = '/workdir/' + str(int(random.random() * 1000000000))
-
-os.makedirs(res)
-print res

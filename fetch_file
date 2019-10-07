@@ -1,5 +1,0 @@
-#!/bin/sh
-
-wget -q "$1"
-fname=`basename "$1"`
-tar --strip-components 1 -xf "$fname" && rm "$fname"
