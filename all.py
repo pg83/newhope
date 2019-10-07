@@ -4,6 +4,7 @@ import hashlib
 from bb import res as bb_res
 from cc import res as cc_res
 from libc import res as lc_res
+from gen_id import gen_id
 
 RES = bb_res + cc_res + lc_res
 
@@ -26,7 +27,7 @@ def find_compiler(host='x86_64', target='aarch64', libc='musl'):
                         x['constraint']['libc'] = lc['name']
 
                         yield {
-                            'id': hashlib.md5(json.dumps([x, lc], sort_keys=True, indent=4)).hexdigest(),
+                            'id': gen_id([x, lc]),
                             'constraint': x['constraint'],
                             'compound': {
                                 'compiler': x,
@@ -36,6 +37,7 @@ def find_compiler(host='x86_64', target='aarch64', libc='musl'):
 
 
     for x in iter_compilers():
+        print x
         cc = x['constraint']
 
         if cc['host'] == host:

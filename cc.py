@@ -1,5 +1,6 @@
-import hashlib
 import json
+
+from gen_id import gen_id
 
 
 V = {
@@ -9,13 +10,14 @@ V = {
             'wget -O - $(URL) | tar --strip-components 2 -xzf - ',
         ],
         "prepare": [
-            "export PATH=`cwd`/bin:$PATH",
+            "export PATH=`pwd`/bin:$PATH",
             'export LDFLAGS=--static',
             'export CFLAGS=-I`cwd`/include',
         ],
     },
     "barebone": [
         {
+            'prefix': ['tool_native_prefix', 'x86_64-linux-musl-'],
             "url": "https://musl.cc/x86_64-linux-musl-native.tgz",
             "constraints": [
                 {
@@ -28,6 +30,7 @@ V = {
             ],
         },
         {
+            'prefix': ['tool_native_prefix', 'aarch64-linux-musl-'],
             "url": "https://musl.cc/aarch64-linux-musl-native.tgz",
             "constraints": [
                 {
@@ -40,7 +43,8 @@ V = {
             ],
         },
         {
-            "url": "https://musl.cc/aarch64-linux-musl-native.tgz",
+            'prefix': ['tool_cross_prefix', 'aarch64-linux-musl-'],
+            "url": "https://musl.cc/aarch64-linux-musl-cross.tgz",
             "constraints": [
                 {
                     "libc": 'musl',
@@ -76,10 +80,11 @@ def iter_comp():
                 vc['target'] = arch
                 vc['host'] = arch
 
-            v.update(V['common'])
+            v.update(json.loads(json.dumps(V['common'])))
+            v['prepare'].append('export ' + v['prefix'][0].upper() + '=' + v['prefix'][1])
 
             if 'libc' in v['constraint']:
-                v['id'] = hashlib.md5(json.dumps(v, indent=4, sort_keys=True)).hexdigest()
+                v['id'] = gen_id(v)
 
             yield json.loads(json.dumps(v))
 

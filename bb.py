@@ -1,6 +1,7 @@
-import hashlib
 import json
 import os
+
+from gen_id import gen_id
 
 
 V = {
@@ -55,9 +56,17 @@ def iter_constraints():
 
         v1['prepare'] = app + ['chmod +x busybox-' + arch] + [x.replace('$(ARCH)', arch) for x in v1['prepare']]
         v1['version'] = os.path.basename(os.path.dirname(v1['url'])).split('-')[0]
-        v1['id'] = hashlib.md5(json.dumps(v1, sort_keys=True)).hexdigest()
+        v1['id'] = gen_id(v1)
 
         yield v1
 
 
 res = list(iter_constraints())
+
+
+def find_busybox(host):
+    for c in res:
+        if res['constraint']['host'] == host:
+            return c
+
+    raise Exception('no busybox for %s' % host)

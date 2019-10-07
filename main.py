@@ -2,12 +2,10 @@ import os
 
 from all import RES
 from build import build_package
+from user import gen_bb
 
 
 if __name__ == '__main__':
-    for pkg in RES:
-        if 'id' in pkg:
-            where = build_package(pkg)
-            to = '/repo/' + pkg['id']
+    bb = gen_bb('https://www.busybox.net/downloads/busybox-1.30.1.tar.bz2')
 
-            os.rename(where, to)
+    print build_package(bb)
