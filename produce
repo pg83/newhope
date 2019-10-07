@@ -6,5 +6,5 @@ import sys
 real = '/repo/' + sys.argv[1]
 tmp = real + '_tmp'
 
-os.system('tar -cf ' + tmp + ' . /runtime/Makefile')
+os.system('tar -czf ' + tmp + ' . /runtime/Makefile')
 os.rename(tmp, real)
