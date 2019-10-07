@@ -1,6 +1,6 @@
 #!/bin/ash
 
-ls -la /bin | grep -v 'busybox'
+#ls -la /bin | grep -v 'busybox'
 
 cd /bin
 
@@ -11,4 +11,4 @@ do
    busybox ln -s busybox $q
 done
 
-ls -la /bin | grep -v 'busybox'
+#ls -la /bin | grep -v 'busybox'

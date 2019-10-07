@@ -34,6 +34,13 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	make
 	make install
 
+/bin/curl.old:
+	wget -O - https://curl.haxx.se/download/curl-7.66.0.tar.bz2 | tar --strip-components 1 -xjf -
+	./configure --prefix=/ --disable-libcurl-option --disable-shared --enable-static --with-mbedtls=/
+	make
+	mv /bin/curl /bin/curl.old
+	make install
+
 /bin/python:
 	wget -O - https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz | tar --strip-component 1 -xzf -
 	./configure --prefix=/ --disable-shared
@@ -58,6 +65,14 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	make
 	make install
 
+/bin/pkg-config.new:
+	fetch_file https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+	./configure --enable-static --disable-shared --prefix=/
+	make
+	mv /bin/pkg-config /bin/pkg-config.old
+	make install
+	cp /bin/pkg-config /bin/pkg-config.new
+
 /bin/xz:
 	wget https://tukaani.org/xz/xz-5.2.4.tar.gz
 	tar --strip-component 1 -xf xz-5.2.4.tar.gz
@@ -65,10 +80,9 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	make
 	make install
 
-/lib/glib.a:
-	wget https://ftp.gnome.org/pub/GNOME/sources/glib/2.21/glib-2.21.0.tar.xz
-	tar --strip-components 1 -xf glib-2.21.0.tar.xz
-	PKG_CONFIG=/bin/pkg-config ./configure --disable-shared --enable-static 
+/lib/libglib.a: /bin/curl.old /bin/pkg-config
+	fetch_file https://caesar.ftp.acc.umu.se/pub/GNOME/sources/glib/2.21/glib-2.21.6.tar.gz
+	PKG_CONFIG=/bin/pkg-config ./configure --disable-shared --enable-static --prefix=/
 	make
 	make install
 
@@ -76,5 +90,38 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	fetch_file https://ftp.gnu.org/gnu/wget/wget-latest.tar.gz
 	./configure --disable-shared --enable-static
 	
+/lib/libgnutls.a: /lib/libnettle.a /bin/pkg-config
+	ln -s /lib/libnettle.a /lib/libhogwid.a
+	fetch_file https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.10.tar.xz
+	./configure --disable-shared --enable-static --prefix=/
+	make
+	make install
 	
-all: /lib/libreadline.a /bin/bash.rb5 /bin/curl /lib/libncurses.a /lib/gettext /bin/pkg-config /bin/wget
+/lib/libmbedtls.a: /bin/pkg-config
+	ln -s /cross_tools/x86_64-linux-musl-native/bin/gcc /cross_tools/x86_64-linux-musl-native/bin/cc
+	fetch_file https://tls.mbed.org/download/mbedtls-2.16.3-apache.tgz
+	make programs lib 
+	make DESTDIR=/ install
+	rm -rf /usr
+
+/lib/libnettle.a: /lib/libgmp.a /bin/pkg-config
+	fetch_file https://ftp.gnu.org/gnu/nettle/nettle-3.5.tar.gz
+	./configure --disable-shared --enable-static --prefix=/
+	make
+	make install
+
+/lib/libgmp.a: /bin/m4 /bin/pkg-config
+	fetch_file https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2
+	./configure --disable-shared --enable-static --prefix=/
+	make 
+	make install
+
+/bin/m4: /bin/pkg-config
+	fetch_file https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz
+	./configure --disable-shared --enable-static --prefix=/
+	make
+	make install
+	
+all: /lib/libreadline.a /bin/bash.rb5 /bin/curl /lib/libncurses.a /lib/gettext \
+     /bin/pkg-config /lib/libmbedtls.a /bin/curl.old /bin/m4 /lib/libgmp.a \
+     /lib/libnettle.a /lib/libglib.a /bin/pkg-config.new
