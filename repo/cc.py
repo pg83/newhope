@@ -5,6 +5,14 @@ import json
 V = {
     'common': {
         'kind': 'c/c++ compiler',
+        'build': [
+            'wget -O - $(URL) | tar --strip-components 2 -xzf - ',
+        ],
+        "prepare": [
+            "export PATH=`cwd`/bin:$PATH",
+            'export LDFLAGS=--static',
+            'export CFLAGS=-I`cwd`/include',
+        ],
     },
     "barebone": [
         {
@@ -18,9 +26,6 @@ V = {
                     'arch': 'x86_64',
                 },
             ],
-            "use": [
-                "PATH=xxx/:$PATH",
-            ],
         },
         {
             "url": "https://musl.cc/aarch64-linux-musl-native.tgz",
@@ -32,9 +37,6 @@ V = {
                 {
                     'arch': 'aarch64',
                 },
-            ],
-            "use": [
-                "PATH=xxx/:$PATH",
             ],
         },
         {
@@ -49,9 +51,6 @@ V = {
                     'target': 'aarch64',
                     'host': 'x86_64',
                 },
-            ],
-            "use": [
-                "PATH=xxx/:$PATH",
             ],
         },
     ],

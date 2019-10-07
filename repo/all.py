@@ -5,18 +5,17 @@ from bb import res as bb_res
 from cc import res as cc_res
 from libc import res as lc_res
 
-res = bb_res + cc_res + lc_res
+RES = bb_res + cc_res + lc_res
 
-print json.dumps(res, indent=4, sort_keys=True)
 
 def find_compiler(host='x86_64', target='aarch64', libc='musl'):
     def iter_libc():
-        for x in res:
-            if x['kind'] == 'libc':
+        for x in RES:
+            if x['kind'] == 'libc-source':
                 yield x
 
     def iter_compilers():
-        for x in res:
+        for x in RES:
             if x['kind'] == 'c/c++ compiler':
                 if 'id' in x:
                     yield x
@@ -43,7 +42,3 @@ def find_compiler(host='x86_64', target='aarch64', libc='musl'):
             if cc['target'] == target:
                 if cc['libc'] == libc:
                     yield x
-
-
-for x in find_compiler(host='x86_64', target='aarch64', libc='uclibc'):
-    print x

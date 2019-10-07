@@ -7,10 +7,15 @@ V = {
     "deepmerge": {
         'kind': 'sysutils',
         "name": "busybox",
-        "use": [
-            "mkdir xbin_$(ARCH)",
-            "busybox-$(ARCH) --install xbin_$(ARCH)/",
-            "PATH=xbin_$(ARCH)/:$PATH",
+        "prepare": [
+            "mkdir xbin",
+            "busybox --install xbin",
+            "export PATH=`cwd`/xbin/:$PATH",
+        ],
+        "build": [
+            "wget $(URL)",
+            'mv busybox-* busybox',
+            'chmod +x busybox',
         ],
     },
     "barebone": [
@@ -48,7 +53,7 @@ def iter_constraints():
 
         v1.update(v2)
 
-        v1['use'] = app + ['chmod +x busybox-' + arch] + [x.replace('$(ARCH)', arch) for x in v1['use']]
+        v1['prepare'] = app + ['chmod +x busybox-' + arch] + [x.replace('$(ARCH)', arch) for x in v1['prepare']]
         v1['version'] = os.path.basename(os.path.dirname(v1['url'])).split('-')[0]
         v1['id'] = hashlib.md5(json.dumps(v1, sort_keys=True)).hexdigest()
 
