@@ -1,0 +1,17 @@
+#!/usr/bin/env python2
+
+import os
+import sys
+import random
+
+def install_pkg(fr, to):
+    os.system('tar -xf ' + fr + ' -C ' + to)
+
+path = '/workdir/' + str(int(random.random() * 10000000))
+
+os.makedirs(path)
+
+for pkg in sys.argv[1:]:
+    install_pkg('/repo/' + pkg, path)
+
+os.chdir(path)
