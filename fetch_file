@@ -11,4 +11,4 @@ get_file() {
 get_file $1
 p=`basename $1`
 tar --strip-components 1 -xf $p 
-rm $p
+#rm $p

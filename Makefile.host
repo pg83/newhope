@@ -51,5 +51,30 @@ PATH = /cross_tools/x86_64-linux-musl-native/bin:/bin:/sbin:/usr/bin:/usr/sbin:/
 	./configure --prefix=/ --disable-shared --enable-static
 	make
 	make install
+	
+/bin/pkg-config:
+	fetch_file https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+	./configure --enable-static --disable-shared --prefix=/ --with-internal-glib
+	make
+	make install
 
-all: /lib/libreadline.a /bin/bash.rb5 /bin/curl /lib/libncurses.a /lib/gettext
+/bin/xz:
+	wget https://tukaani.org/xz/xz-5.2.4.tar.gz
+	tar --strip-component 1 -xf xz-5.2.4.tar.gz
+	./configure --enable-shared --disable-static --prefix=/
+	make
+	make install
+
+/lib/glib.a:
+	wget https://ftp.gnome.org/pub/GNOME/sources/glib/2.21/glib-2.21.0.tar.xz
+	tar --strip-components 1 -xf glib-2.21.0.tar.xz
+	PKG_CONFIG=/bin/pkg-config ./configure --disable-shared --enable-static 
+	make
+	make install
+
+/bin/wget:
+	fetch_file https://ftp.gnu.org/gnu/wget/wget-latest.tar.gz
+	./configure --disable-shared --enable-static
+	
+	
+all: /lib/libreadline.a /bin/bash.rb5 /bin/curl /lib/libncurses.a /lib/gettext /bin/pkg-config /bin/wget
