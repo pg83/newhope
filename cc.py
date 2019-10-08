@@ -7,7 +7,8 @@ V = {
     'common': {
         'kind': 'c/c++ compiler',
         'build': [
-            'wget -O - $(URL) | tar --strip-components 2 -xzf - ',
+            'cd $(INSTALL_DIR)',
+            'time wget -O - $(URL) | tar --strip-components 2 -xzf - ',
         ],
         "prepare": [
             "export PATH=`pwd`/bin:$PATH",
@@ -81,7 +82,11 @@ def iter_comp():
                 vc['host'] = arch
 
             v.update(json.loads(json.dumps(V['common'])))
-            v['prepare'].append('export ' + v['prefix'][0].upper() + '=' + v['prefix'][1])
+
+            p1 = v['prefix'][0]
+            p2 = v['prefix'][1]
+
+            v['prepare'].append('export ' + p1.upper() + '=' + p2)
 
             if 'libc' in v['constraint']:
                 v['id'] = gen_id(v)

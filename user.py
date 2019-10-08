@@ -102,11 +102,9 @@ def helper(func):
                 yield find_compiler_id(target=host, host=host, libc=libc)
                 yield find_compiler_id(target=target, host=host, libc=libc)
 
-        ver = os.path.basename(src)
-
         res = {
             'deps': list(iter_compilers()),
-            'build': [x.strip() for x in func().replace('$(VERSION)', ver).replace('$(URL)', src).split('\n')],
+            'build': ['cd $(BUILD_DIR)'] + [x.strip() for x in func().split('\n')],
             "url": src,
             "constraint": {
                 "libc": libc,
@@ -125,12 +123,29 @@ def helper(func):
 @helper
 def m4():
     return """
-    mkdir build
-    cd build
+    echo $PATH
+    which gcc
+    which cc
+    ln -s /managed/400130f0-x86-64-musl-x86-64-x86-64-linux-musl-native-tgz/bin/gcc /bin/gcc
+    ln -s /managed/400130f0-x86-64-musl-x86-64-x86-64-linux-musl-native-tgz/bin/gcc /bin/cc
+    wget -O - $(URL) | tar --strip-components 1 -xzf -
+    ./configure --prefix=$(INSTALL_DIR) && make && make install
+"""
+
+
+@helper
+def musl_new():
+    return """
     wget $(URL)
-    ./configure --prefix=/private/$(VERSION) --disable-shared --enable-static
-    make
-    make install
+    ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static && make && make install
+"""
+
+
+@helper
+def xz():
+    return """
+    wget -O - $(URL) | tar --strip-components 1 -xzf -
+    ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static && make && make install
 """
 
 
@@ -138,5 +153,8 @@ USER_PACKAGES = [
     bb('https://www.busybox.net/downloads/busybox-1.30.1.tar.bz2'),
     tb('http://landley.net/toybox/downloads/toybox-0.8.1.tar.gz'),
     musl('https://www.musl-libc.org/releases/musl-1.1.23.tar.gz'),
+    musl_new('https://www.musl-libc.org/releases/musl-1.1.23.tar.gz', target='x86_64'),
     m4('https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz'),
+    xz('https://tukaani.org/xz/xz-5.2.4.tar.gz', target='x86_64'),
+    xz('https://tukaani.org/xz/xz-5.2.4.tar.gz', target='aarch64'),
 ]
