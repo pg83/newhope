@@ -37,3 +37,68 @@ def gen_bb(src, target='aarch64', libc='musl'):
     res['id'] = gen_id(res)
 
     return res
+
+
+def gen_musl(src, target='aarch64'):
+    res = {
+        'deps': [
+            find_compiler_id(target='x86_64', host='x86_64', libc='musl'),
+            find_compiler_id(target=target, host='x86_64', libc='musl'),
+        ],
+        'build': [
+            'export MY_CWD=`pwd`'
+            'mkdir build',
+            'cd build',
+            'wget -O - $(URL) | tar --strip-components 1 -xjf -',
+            'export CFLAGS=-O2',
+            'export CROSS_COMPILE=$TOOL_CROSS_PREFIX',
+            './configure --prefix=/ --enable-static --disable-shared',
+            'make',
+            'make DESTDIR=$MY_CWD install',
+        ],
+        "url": src,
+        "constraint": {
+            "libc": 'musl',
+            "host": 'x86_64',
+            'target': target,
+        },
+    }
+
+    res['id'] = gen_id(res)
+
+    return res
+
+
+def gen_tb(src, target='aarch64'):
+    res = {
+        'deps': [
+            find_compiler_id(target='x86_64', host='x86_64', libc='musl'),
+            find_compiler_id(target=target, host='x86_64', libc='musl'),
+        ],
+        'build': [
+            'mkdir build',
+            'cd build',
+            'wget -O - $(URL) | tar --strip-components 1 -xzf -',
+            'LDFLAGS=--static CFLAGS=-O2 CC=gcc CROSS_COMPILE=$TOOL_CROSS_PREFIX make defconfig toybox',
+            'mv toybox ..',
+            'cd ..',
+        ],
+        "url": src,
+        "constraint": {
+            "libc": 'musl',
+            "host": 'x86_64',
+            'target': target,
+        },
+    }
+
+    res['id'] = gen_id(res)
+
+    return res
+
+
+USER_PACKAGES = [
+    gen_bb('https://www.busybox.net/downloads/busybox-1.30.1.tar.bz2'),
+    gen_tb('http://landley.net/toybox/downloads/toybox-0.8.1.tar.gz'),
+    #gen_musl('https://www.musl-libc.org/releases/musl-1.1.23.tar.gz', target='aarch64'),
+    #gen_musl('https://www.musl-libc.org/releases/musl-1.1.23.tar.gz', target='x86_64'),
+]
