@@ -10,5 +10,5 @@ if __name__ == '__main__':
     if 'prune' in sys.argv:
         prune_repo()
     else:
-        for bb in [USER_PACKAGES[x] for x in [0, 1]]:
+        for bb in [USER_PACKAGES[x] for x in [9, 10]]:
             print build_package(bb)
