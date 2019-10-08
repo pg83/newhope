@@ -1,3 +1,6 @@
+import json
+
+
 V = {
     "build": [
         'mkdir .build',
@@ -22,7 +25,8 @@ V = {
 
 def iter_libc():
     for l in V['barebone']:
-        l['build'] = V['build']
+        l = json.loads(json.dumps(l))
+        l['build'] = json.loads(json.dumps(V['build']))
 
         yield l
 

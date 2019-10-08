@@ -37,7 +37,6 @@ def find_compiler(host='x86_64', target='aarch64', libc='musl'):
 
 
     for x in iter_compilers():
-        print x
         cc = x['constraint']
 
         if cc['host'] == host:

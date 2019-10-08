@@ -12,7 +12,7 @@ V = {
         "prepare": [
             "export PATH=`pwd`/bin:$PATH",
             'export LDFLAGS=--static',
-            'export CFLAGS=-I`cwd`/include',
+            'export CFLAGS=-I`pwd`/include',
         ],
     },
     "barebone": [

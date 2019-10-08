@@ -5,10 +5,10 @@ import subprocess
 import fcntl
 import sys
 
-from all import RES
-
 
 def resolve_deps(ids):
+    from all import RES
+
     by_id = {}
 
     for a in RES:
@@ -46,8 +46,6 @@ def prepare_pkg(fr, to):
 
 
 def build_package(pkg):
-    print >>sys.stderr, '++++++++++++++++++++++', pkg
-
     deps = resolve_deps(pkg.get('deps', []))
     my_id = str(int(random.random() * 1000000000))
     where = '/workdir/' + my_id
