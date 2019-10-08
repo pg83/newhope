@@ -1,10 +1,16 @@
 import os
 import sys
 
+def fp(f, v, *args, **kwargs):
+    def wrap(*args, **kwargs):
+        return f(v, *args, **kwargs)
+
+    return wrap
+
 from all import find_compiler, RES
 from gen_id import gen_id
 from bb import find_busybox
-from build import to_visible_name
+from build import to_visible_name, get_pkg_link
 
 
 def find_compiler_id(*args, **kwargs):
@@ -23,16 +29,18 @@ def helper(func):
                 yield find_compiler_id(target=host, host=host, libc=libc)
                 yield find_compiler_id(target=target, host=host, libc=libc)
 
-        fetch_url = 'wget -O - $(URL) | tar --strip-components 1 -x#f -'
+        fetch_url = 'wget -O - $(URL) | tar --strip-components 1 -x#f - ;'
 
         if '.bz2' in src:
             fetch_url = fetch_url.replace('#', 'j')
         else:
             fetch_url = fetch_url.replace('#', 'z')
 
+        data = func()
+
         res = {
             'deps': list(iter_compilers()),
-            'build': ['cd $(BUILD_DIR)'] + [x.strip() for x in func().replace('$(FETCH_URL)', fetch_url).split('\n')],
+            'build': ['cd $(BUILD_DIR)'] + [x.strip() for x in data.replace('$(FETCH_URL)', fetch_url).split('\n')],
             "url": src,
             "constraint": {
                 "libc": libc,
@@ -48,7 +56,7 @@ def helper(func):
     return wrapper
 
 
-@helpers
+@helper
 def tb():
     return """
         $(FETCH_URL)
@@ -100,22 +108,25 @@ def pkg_config():
     """
 
 
-USER_PACKAGES = [
-    tb('http://landley.net/toybox/downloads/toybox-0.8.1.tar.gz'),
-    pkg_config('https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz', target='x86_64'),
-    pkg_config('https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz', target='aarch64'),
-    ncurses('https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz', target='x86_64'),
-    ncurses('https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz', target='aarch64'),
-    bb('https://www.busybox.net/downloads/busybox-1.30.1.tar.bz2', target='x86_64'),
-    bb('https://www.busybox.net/downloads/busybox-1.30.1.tar.bz2', target='aarch64'),
-    musl('https://www.musl-libc.org/releases/musl-1.1.23.tar.gz', target='aarch64'),
-    musl('https://www.musl-libc.org/releases/musl-1.1.23.tar.gz', target='x86_64'),
-    m4('https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz', target='x86_64'),
-    m4('https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz', target='aarch64'),
-    xz('https://tukaani.org/xz/xz-5.2.4.tar.gz', target='x86_64'),
-    xz('https://tukaani.org/xz/xz-5.2.4.tar.gz', target='aarch64'),
+@helper
+def tar():
+    return """
+        $(FETCH_URL) FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=$(INSTALL_DIR) && make && make install
+    """
+
+
+USER_PACKAGES_1 = [
+    #fp(tb, 'http://landley.net/toybox/downloads/toybox-0.8.1.tar.gz'),
+    fp(bb, 'https://www.busybox.net/downloads/busybox-1.30.1.tar.bz2'),
+    fp(musl, 'https://www.musl-libc.org/releases/musl-1.1.23.tar.gz'),
+    fp(m4, 'https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz'),
+    fp(xz, 'https://tukaani.org/xz/xz-5.2.4.tar.gz'),
+    fp(tar, 'https://ftp.gnu.org/gnu/tar/tar-1.32.tar.gz'),
+    fp(pkg_config, 'https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz'),
+    #fp(ncurses, 'https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz'),
 ]
 
+USER_PACKAGES = [x(target='x86_64') for x in USER_PACKAGES_1] + [x(target='aarch64') for x in USER_PACKAGES_1]
 
 ALL_PACKAGES = RES + USER_PACKAGES
 
@@ -136,3 +147,17 @@ def prune_repo():
             print >>sys.stderr, 'prune', l
 
             os.unlink(l)
+
+
+def install_xz():
+    p1 = USER_PACKAGES[3]
+    p2 = USER_PACKAGES[4]
+
+
+
+    l1 = get_pkg_link(to_visible_name(p1))
+    l2 = get_pkg_link(to_visible_name(p2))
+
+    os.environ['PATH'] = l1 + '/bin:' + l2 + '/bin:' + os.environ['PATH']
+
+    print >>sys.stderr, os.environ['PATH']
