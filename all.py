@@ -4,12 +4,18 @@ import hashlib
 from bb import res as bb_res
 from cc import res as cc_res
 from libc import res as lc_res
-from gen_id import gen_id
+
 
 RES = bb_res + cc_res + lc_res
 
 
-def find_compiler(host='x86_64', target='aarch64', libc='musl'):
+def complete(x):
+    cc = x['constraint']
+
+    return ('host' in cc) and ('target' in cc) and ('libc' in cc)
+
+
+def find_compiler(host='x86_64', target='aarch64', libc='musl', **kwargs):
     def iter_libc():
         for x in RES:
             if x['kind'] == 'libc-source':
@@ -18,7 +24,7 @@ def find_compiler(host='x86_64', target='aarch64', libc='musl'):
     def iter_compilers():
         for x in RES:
             if x['kind'] == 'c/c++ compiler':
-                if 'id' in x:
+                if complete(x):
                     yield x
                 else:
                     for lc in iter_libc():
@@ -26,8 +32,9 @@ def find_compiler(host='x86_64', target='aarch64', libc='musl'):
 
                         x['constraint']['libc'] = lc['name']
 
+                        assert complete(x)
+
                         yield {
-                            'id': gen_id([x, lc]),
                             'constraint': x['constraint'],
                             'compound': {
                                 'compiler': x,

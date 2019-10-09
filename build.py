@@ -4,27 +4,11 @@ import random
 import subprocess
 import fcntl
 import sys
+import shutil
 
 
-def resolve_deps(ids):
-    from all import RES
-
-    by_id = {}
-
-    for a in RES:
-        if 'id' in a:
-            by_id[a['id']] = a
-
-    return [by_id[x] for x in ids]
-
-
-def cons_to_name(c):
-    return '-'.join([c['host'], c['libc'], c['target']])
-
-
-def get_pkg_link(id):
-    p = '/repo/' + id
-    m = '/managed/' + id
+def get_pkg_link(p):
+    m = '/managed/' + p[6:]
 
     if not os.path.isdir(m):
         with open(p, 'r') as f:
@@ -33,7 +17,7 @@ def get_pkg_link(id):
             try:
                 if not os.path.isdir(m):
                     os.makedirs(m)
-                    subprocess.check_output(['tar', '-zxf', p, '.'], cwd=m, shell=False)
+                    subprocess.check_output(['tar', '-Jxf', p, '.'], cwd=m, shell=False)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
@@ -41,39 +25,41 @@ def get_pkg_link(id):
 
 
 def prepare_pkg(fr, to):
+    print >>sys.stderr, 'will package', fr, 'to package', to
+
     tmp = to + '_' + str(int(random.random() * 100000000))
 
-    subprocess.check_output(['tar', '-czf', tmp, '.'], cwd=fr, shell=False)
+    subprocess.check_output(['tar', '-cJf', tmp, '.'], cwd=fr, shell=False)
     os.rename(tmp, to)
+    shutil.rmtree(fr)
+
+    print >>sys.stderr, 'done packaging'
 
     return to
 
 
-def to_visible_name(pkg):
-    return ((pkg['id'][:8] + '-' + cons_to_name(pkg['constraint']) + '-' + os.path.basename(pkg['url'])).replace('_', '-').replace('.', '-')).replace('--', '-')
-
-
-def build_package(pkg):
-    deps = resolve_deps(pkg.get('deps', []))
-    my_id = str(int(random.random() * 1000000000))
-    uniq_id = to_visible_name(pkg)
+def build_package(pkg, id_func):
+    my_id = str(int(random.random() * 10000))
+    uniq_id = id_func(pkg)
     where_install = '/private/' + uniq_id
-    where_build = '/workdir/' + my_id
+    where_build = '/workdir/' + my_id + '-' + uniq_id
     result = '/repo/' + uniq_id
+
+    print >>sys.stderr, 'will build', result, 'from', pkg['from']
+
+    if os.path.isfile(result):
+        print >>sys.stderr, result, 'already done'
+
+        return result
 
     os.makedirs(where_install)
     os.makedirs(where_build)
 
     def iter_lines():
-        for d in deps:
-            uniq_id = to_visible_name(d)
+        yield 'env'
 
-            try:
-                get_pkg_link(uniq_id)
-            except Exception as e:
-                build_package(d)
-
-            yield 'cd ' + get_pkg_link(uniq_id)
+        for d in pkg.get('deps', []):
+            yield 'cd ' + get_pkg_link(build_package(d, id_func))
 
             for l in d.get('prepare', []):
                 yield l
@@ -88,7 +74,7 @@ def build_package(pkg):
     for i in range(1, 3):
         data = data.replace('$(URL)', pkg.get('url', '')).replace('$(INSTALL_DIR)', where_install).replace('$(BUILD_DIR)', where_build)
 
-    print >>sys.stderr, '-----------------', data, '---------------------'
+    print >>sys.stderr, '----------------- willl run\n', data, '\ndone ---------------------'
 
     p = subprocess.Popen(['/bin/bash', '-s'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=False, cwd=where_install)
     out, err = p.communicate(data)
@@ -105,4 +91,7 @@ def build_package(pkg):
     with open(where_install + '/text.json', 'w') as f:
         f.write(json.dumps({'out': out, 'err': err}))
 
-    return prepare_pkg(where_install, result)
+    try:
+        return prepare_pkg(where_install, result)
+    finally:
+        print >>sys.stderr, result, 'done'

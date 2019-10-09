@@ -1,13 +1,12 @@
 import json
 
-from gen_id import gen_id
-
 
 V = {
     'common': {
         'kind': 'c/c++ compiler',
         'build': [
             'cd $(INSTALL_DIR)',
+            'export PATH=$(TAR_BIN_DIR):$(XZ_BIN_DIR):$PATH',
             'time wget -O - $(URL) | tar --strip-components 2 -xzf - ',
         ],
         "prepare": [
@@ -15,6 +14,7 @@ V = {
             'export LDFLAGS=--static',
             'export CFLAGS=-I`pwd`/include',
         ],
+        "from": __file__,
     },
     "barebone": [
         {
@@ -87,9 +87,6 @@ def iter_comp():
             p2 = v['prefix'][1]
 
             v['prepare'].append('export ' + p1.upper() + '=' + p2)
-
-            if 'libc' in v['constraint']:
-                v['id'] = gen_id(v)
 
             yield json.loads(json.dumps(v))
 

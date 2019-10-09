@@ -3,10 +3,7 @@ import json
 
 V = {
     "build": [
-        'mkdir .build',
-        'cd .build',
-        'wget $(URL)',
-        'tar -xf *',
+        '$(FETCH_URL)',
     ],
     "barebone": [
         {
@@ -27,6 +24,7 @@ def iter_libc():
     for l in V['barebone']:
         l = json.loads(json.dumps(l))
         l['build'] = json.loads(json.dumps(V['build']))
+        l['from'] = __file__
 
         yield l
 

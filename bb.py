@@ -1,8 +1,6 @@
 import json
 import os
 
-from gen_id import gen_id
-
 
 V = {
     "deepmerge": {
@@ -10,14 +8,15 @@ V = {
         "name": "busybox",
         "prepare": [
             "mkdir xbin",
-            "busybox --install xbin",
-            "export PATH=`cwd`/xbin/:$PATH",
+            "ln -s ./$(BB) ./xbin/",
+            "./xbin/$(BB) --install ./xbin",
+            "export PATH=`pwd`/xbin/:$PATH",
         ],
         "build": [
-            "wget $(URL)",
-            'mv busybox-* busybox',
-            'chmod +x busybox',
+            "wget -O $(BB) $(URL)",
+            'chmod +x ./$(BB)',
         ],
+        "from": __file__,
     },
     "barebone": [
         {
@@ -44,19 +43,18 @@ def iter_constraints():
         v2 = json.loads(json.dumps(V['deepmerge']))
         arch = v1['constraint'].pop('arch')
 
-        if arch not in v1['url']:
-            app = ['mv ' + os.path.basename(v1['url']) + ' ' + 'busybox-' + arch]
-        else:
-            app = []
-
         v1['constraint']['host'] = arch
         v1['constraint']['target'] = arch
 
         v1.update(v2)
 
-        v1['prepare'] = app + ['chmod +x busybox-' + arch] + [x.replace('$(ARCH)', arch) for x in v1['prepare']]
+        def repl_list(l):
+            return [x.replace('$(BB)', 'busybox-$(ARCH)').replace('$(ARCH)', arch) for x in l]
+
+        v1['prepare'] = repl_list(v1['prepare'])
+        v1['build'] = repl_list(v1['build'])
+
         v1['version'] = os.path.basename(os.path.dirname(v1['url'])).split('-')[0]
-        v1['id'] = gen_id(v1)
 
         yield v1
 
@@ -64,9 +62,14 @@ def iter_constraints():
 res = list(iter_constraints())
 
 
-def find_busybox(host):
+def find_busybox(host, target):
     for c in res:
-        if res['constraint']['host'] == host:
+        c = json.loads(json.dumps(c))
+
+        if c['constraint']['target'] == target:
+            if host != target:
+                c['deps'] = c.get('deps', []) + [find_busybox(host, host)]
+
             return c
 
     raise Exception('no busybox for %s' % host)
