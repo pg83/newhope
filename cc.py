@@ -1,18 +1,20 @@
 import json
+import gen_id
 
 
 V = {
     'common': {
         'kind': 'c/c++ compiler',
         'build': [
+            '#pragma manual deps',
+            'export PATH=$(BUSYBOX1_BIN_DIR):$PATH',
             'cd $(INSTALL_DIR)',
-            'export PATH=$(TAR_BIN_DIR):$(XZ_BIN_DIR):$PATH',
-            'time wget -O - $(URL) | tar --strip-components 2 -xzf - ',
+            'time wget -q -O - $(URL) | tar --strip-components 2 -xzf - ',
         ],
         "prepare": [
-            "export PATH=`pwd`/bin:$PATH",
+            "export PATH=$(GCC_BIN_DIR):$PATH",
             'export LDFLAGS=--static',
-            'export CFLAGS=-I`pwd`/include',
+            'export CFLAGS=-I$(GCC_INCLUDE_DIR)',
         ],
         "from": __file__,
     },
@@ -70,6 +72,8 @@ def iter_comp():
             v = json.loads(json.dumps(c))
 
             v['constraint'] = json.loads(json.dumps(ccc))
+            v['constraint']['build_system_version'] = gen_id.cur_build_system_version()
+
             v['name'] = 'gcc'
             v['version'] = '9.2'
 
@@ -88,7 +92,20 @@ def iter_comp():
 
             v['prepare'].append('export ' + p1.upper() + '=' + p2)
 
-            yield json.loads(json.dumps(v))
+            yield {
+                'node': json.loads(json.dumps(v)),
+                'deps': [],
+            }
 
 
-res = list(iter_comp())
+def find_compiler(info):
+    for node in iter_comp():
+        c = node['node']['constraint']
+        ok = 0
+
+        for k, v in info.items():
+            if c.get(k, '') == v:
+                ok += 1
+    
+        if ok == len(info):
+            yield gen_id.deep_copy(node)

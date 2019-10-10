@@ -1,4 +1,5 @@
 import json
+import gen_id
 
 
 V = {
@@ -23,10 +24,12 @@ V = {
 def iter_libc():
     for l in V['barebone']:
         l = json.loads(json.dumps(l))
+
         l['build'] = json.loads(json.dumps(V['build']))
         l['from'] = __file__
 
-        yield l
+        yield {
+            'node': l,
+            'deps': [],
+        }
 
-
-res = list(iter_libc())

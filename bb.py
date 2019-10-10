@@ -1,20 +1,22 @@
 import json
 import os
+import gen_id
 
 
 V = {
     "deepmerge": {
         'kind': 'sysutils',
-        "name": "busybox",
+        'name': 'busybox1',
         "prepare": [
-            "mkdir xbin",
-            "ln -s ./$(BB) ./xbin/",
-            "./xbin/$(BB) --install ./xbin",
-            "export PATH=`pwd`/xbin/:$PATH",
+            "mkdir $(BUSYBOX1_BIN_DIR)",
+            "cd $(BUSYBOX1_BIN_DIR)",
+            "../original/$(BB) --install -s $(BUSYBOX1_BIN_DIR)",
         ],
         "build": [
-            "wget -O $(BB) $(URL)",
-            'chmod +x ./$(BB)',
+            '#pragma manual deps',
+            'mkdir $(INSTALL_DIR)/original',
+            'wget -O $(INSTALL_DIR)/original/$(BB) $(URL)',
+            'chmod +x $(INSTALL_DIR)/original/$(BB)',
         ],
         "from": __file__,
     },
@@ -42,9 +44,10 @@ def iter_constraints():
         v1 = json.loads(json.dumps(x))
         v2 = json.loads(json.dumps(V['deepmerge']))
         arch = v1['constraint'].pop('arch')
-
+        
         v1['constraint']['host'] = arch
         v1['constraint']['target'] = arch
+        v1['constraint']['build_system_version'] = gen_id.cur_build_system_version()
 
         v1.update(v2)
 
@@ -53,23 +56,17 @@ def iter_constraints():
 
         v1['prepare'] = repl_list(v1['prepare'])
         v1['build'] = repl_list(v1['build'])
-
         v1['version'] = os.path.basename(os.path.dirname(v1['url'])).split('-')[0]
 
-        yield v1
-
-
-res = list(iter_constraints())
+        yield {
+            'node': v1,
+            'deps': [],
+        }
 
 
 def find_busybox(host, target):
-    for c in res:
-        c = json.loads(json.dumps(c))
-
-        if c['constraint']['target'] == target:
-            if host != target:
-                c['deps'] = c.get('deps', []) + [find_busybox(host, host)]
-
-            return c
+    for c in iter_constraints():
+        if c['node']['constraint']['target'] == target:
+            return gen_id.deep_copy(c)
 
     raise Exception('no busybox for %s' % host)

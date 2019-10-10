@@ -5,10 +5,75 @@ import subprocess
 import fcntl
 import sys
 import shutil
+import gen_id
+import hashlib
+
+from user import add_tool_deps
 
 
+def fix_fetch_url(src):
+    fetch_url = 'wget -O - $(URL) | tar --strip-components 1 -x#f - ;'
+
+    if '.bz2' in src:
+        return fetch_url.replace('#', 'j')
+    
+    if '.xz' in src:
+        return fetch_url.replace('#', 'J')
+    
+    return fetch_url.replace('#', 'z')
+
+
+def install_dir(pkg):
+    return '/managed/' + gen_id.to_visible_name(pkg)
+
+
+def bin_dir(pkg):
+    return install_dir(pkg) + '/bin'
+
+
+def lib_dir(pkg):
+    return install_dir(pkg) + '/lib'
+
+
+def inc_dir(pkg):
+    return install_dir(pkg) + '/include'
+
+
+def subst_values(data, pkg, deps):
+    src = pkg['url']
+
+    subst = {
+        '$(FETCH_URL)': fix_fetch_url(src),
+        '$(URL)': src,
+    }
+
+    for x in deps:
+        node = x['node']
+        name = node['name']
+            
+        subst['$(' + name.upper() + '_BIN_DIR)'] = bin_dir(node)
+        subst['$(' + name.upper() + '_LIB_DIR)'] = lib_dir(node)
+        subst['$(' + name.upper() + '_INC_DIR)'] = inc_dir(node)
+        
+    for k, v in subst.items():
+        data = data.replace(k, v)
+
+    return data
+
+
+def calc_mode(name):
+    if '-gz-' in name[:15]:
+        return 'z'
+
+    if '-xz-' in name[:15]:
+        return 'J'
+
+    raise Exception('shit happen')
+
+        
 def get_pkg_link(p):
-    m = '/managed/' + p[6:]
+    n = p[6:]
+    m = '/managed/' + n
 
     if not os.path.isdir(m):
         with open(p, 'r') as f:
@@ -17,19 +82,30 @@ def get_pkg_link(p):
             try:
                 if not os.path.isdir(m):
                     os.makedirs(m)
-                    subprocess.check_output(['tar', '-Jxf', p, '.'], cwd=m, shell=False)
+                    subprocess.check_output(['tar', '-x' + calc_mode(n) + 'f', p, '.'], cwd=m, shell=False)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
     return m
 
 
+def prepare_pkg_shell(fr, to):
+    tmp = to + '_' + str(int(random.random() * 1000000))
+
+    return """
+        # will package %s to package %s
+        cd %s && tar -czf %s .
+        move %s %s
+        rm rf %s
+        # done
+    """ % (fr, to, fr, tmp, tmp, to, fr)
+
+
 def prepare_pkg(fr, to):
     print >>sys.stderr, 'will package', fr, 'to package', to
 
-    tmp = to + '_' + str(int(random.random() * 100000000))
-
-    subprocess.check_output(['tar', '-cJf', tmp, '.'], cwd=fr, shell=False)
+    tmp = to + '_' + str(int(random.random() * 1000000))
+    subprocess.check_output(['tar', '-c' + calc_mode(to[6:]) + 'f', tmp, '.'], cwd=fr, shell=False)
     os.rename(tmp, to)
     shutil.rmtree(fr)
 
@@ -38,60 +114,62 @@ def prepare_pkg(fr, to):
     return to
 
 
-def build_package(pkg, id_func):
-    my_id = str(int(random.random() * 10000))
-    uniq_id = id_func(pkg)
-    where_install = '/private/' + uniq_id
-    where_build = '/workdir/' + my_id + '-' + uniq_id
-    result = '/repo/' + uniq_id
+def struct_dump(p):
+    return hashlib.md5(json.dumps(p, sort_keys=True, indent=4)).hexdigest()
 
-    print >>sys.stderr, 'will build', result, 'from', pkg['from']
+V = set()
 
-    if os.path.isfile(result):
-        print >>sys.stderr, result, 'already done'
+def build_makefile_impl(node):
+    if struct_dump(node) in V:
+        return 
 
-        return result
+    V.add(struct_dump(node))
+    # print >>sys.stderr, json.dumps(node, indent=4, sort_keys=True)
 
-    os.makedirs(where_install)
-    os.makedirs(where_build)
+    for dep in node['deps']:
+        for y in build_makefile_impl(dep):
+            yield y
 
-    def iter_lines():
-        yield 'env'
+    def gen_one(tools):
+        for t in tools:
+            for y in build_makefile_impl(t):
+                yield y
 
-        for d in pkg.get('deps', []):
-            yield 'cd ' + get_pkg_link(build_package(d, id_func))
+        work_dir = '/workdir/' + str(int(10000000000 * random.random()))
+        vis_name = '/repo/' + gen_id.to_visible_name(node['node'])
 
-            for l in d.get('prepare', []):
+        def iter_portion():
+            yield 'if not %s' % vis_name
+            
+            for l in node['node']['build']:
                 yield l
 
-        yield 'cd ' + where_build
+            for l in prepare_pkg_shell('$(BUILD_DIR)', '$(INSTALL_DIR)').split('\n'):
+                yield l.strip()
 
-        for l in pkg['build']:
-            yield l
+            yield 'endif\n'
 
-    data = '\n'.join(iter_lines()) + '\n'
+            for l in node['node'].get('prepare', []):
+                yield l.strip()
 
-    for i in range(1, 3):
-        data = data.replace('$(URL)', pkg.get('url', '')).replace('$(INSTALL_DIR)', where_install).replace('$(BUILD_DIR)', where_build)
+        for l in subst_values('\n'.join(iter_portion()) + '\n', node['node'], node['deps'] + tools).replace('$(INSTALL_DIR)', vis_name).replace('$(BUILD_DIR)', work_dir).split('\n'):
+            yield l.strip()
 
-    print >>sys.stderr, '----------------- willl run\n', data, '\ndone ---------------------'
+    prev = ''
+    tools = []
 
-    p = subprocess.Popen(['/bin/bash', '-s'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=False, cwd=where_install)
-    out, err = p.communicate(data)
+    while True:
+        data = '\n'.join(gen_one(tools))
+        next_tools = add_tool_deps(node['node'], data)
 
-    if p.returncode:
-        try:
-            with open('config.log', 'r') as f:
-                print >>sys.stderr, f.read()
-        except Exception:
-            pass
+        if len(next_tools) == len(tools):
+            break
 
-        raise Exception('shit happen: %s, %s' % (out, err))
+        prev = data
+        tools = next_tools
 
-    with open(where_install + '/text.json', 'w') as f:
-        f.write(json.dumps({'out': out, 'err': err}))
-
-    try:
-        return prepare_pkg(where_install, result)
-    finally:
-        print >>sys.stderr, result, 'done'
+    for l in data.split('\n'):
+        yield l.strip()
+        
+def build_makefile(node):
+    return '\n'.join(build_makefile_impl(node))

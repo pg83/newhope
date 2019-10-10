@@ -1,7 +1,9 @@
 import os
 import sys
+import json
 
-from user import build_package, gen_packs, prune_repo
+from user import gen_packs, USER_PACKAGES
+from build import build_makefile
 
 
 if __name__ == '__main__':
@@ -9,5 +11,6 @@ if __name__ == '__main__':
         if 0:
             prune_repo()
     else:
-        for bb in gen_packs():
-            print build_package(bb)
+        for bb in [USER_PACKAGES['m4']({'target': 'aarch64', 'host': 'x86_64'})]: #gen_packs():
+            print >>sys.stderr, build_makefile(bb)
+
