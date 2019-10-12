@@ -110,7 +110,7 @@ def helper(func):
         try:
             full_data = func()
         except TypeError:
-            full_data = func({'compilers': compilers})
+            full_data = func({'compilers': compilers, 'info': info})
 
         data = full_data['code']
         src = full_data['src']
@@ -122,10 +122,15 @@ def helper(func):
             return compilers
 
         deps = list(iter_compilers())
-        cross_cc = deps[-1]
+
+        if deps:
+            cross_cc = deps[-1]
+        else:
+            cross_cc = None
 
         def iter_extra_lines():
-            yield 'ln -sf `which ' + cross_cc['node']['prefix'][1] + 'gcc` /bin/cc'
+            if cross_cc:
+                yield 'ln -sf `which ' + cross_cc['node']['prefix'][1] + 'gcc` /bin/cc'
 
             if '$(FETCH_URL' not in data:
                 yield '$(FETCH_URL)'

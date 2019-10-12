@@ -1,12 +1,14 @@
 @helper
-def toybox():
+def toybox_binary(info):
+    name = 'toybox-' + info['info']['host']
+
     return {
         'code': """
-            #pragma cc
-
-            $(FETCH_URL)
-            LDFLAGS=--static CFLAGS=-O2 CC=gcc CROSS_COMPILE=$TOOL_CROSS_PREFIX make defconfig toybox
-            mv toybox $(INSTALL_DIR)
-        """,
-        'src': 'http://landley.net/toybox/downloads/toybox-0.8.1.tar.gz',
+            mkdir $(INSTALL_DIR)/bin
+            cd $(INSTALL_DIR)/bin
+            $(FETCH_URL_FILE)
+            cp %s toybox
+            chmod +x toybox
+        """ % name,
+        'src': 'http://www.landley.net/toybox/downloads/binaries/latest/' + name,
     }

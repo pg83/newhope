@@ -18,6 +18,12 @@ def fix_fetch_url(src, depth):
     return 'tar --strip-components ' + str(depth) + ' -xf ' + '$(BUILD_DIR)/fetched_urls/' + os.path.basename(src) + ';'
 
 
+def mv_file(src):
+    name = os.path.basename(src)
+
+    return 'cp $(BUILD_DIR)/fetched_urls/' + name + ' ' + name + ';'
+
+
 def install_dir(pkg):
     return '$(PREFIX)/managed/' + gen_id.to_visible_name(pkg)
 
@@ -50,6 +56,7 @@ def subst_values(data, pkg, deps):
         src1 = [
             ('$(FETCH_URL)', fix_fetch_url(src, 1)),
             ('$(FETCH_URL_2)', fix_fetch_url(src, 2)),
+            ('$(FETCH_URL_FILE)', mv_file(src)),
             ('$(URL)', src),
             ('$(URL_BASE)', os.path.basename(src)),
         ]
@@ -221,6 +228,7 @@ def print_one_node_once(v, mined_tools):
 
         def iter_body():
             yield 'mkdir -p $(INSTALL_DIR) $(BUILD_DIR)'
+            yield 'echo 42 > $(INSTALL_DIR)/.42'
 
             for x in deps:
                 yield '## prepare ' + x['node']['name']

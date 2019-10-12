@@ -4,7 +4,7 @@ def xz():
         'code': """
             export PATH=$(BUSYBOX1_BIN_DIR):$PATH
 
-            $(FETCH_URL) ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static && make && make install
+            ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static && make && make install
 
             #pragma cc
             #pragma manual deps
