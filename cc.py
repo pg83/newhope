@@ -7,14 +7,9 @@ V = {
         'kind': 'c/c++ compiler',
         'build': [
             '#pragma manual deps',
-            'export PATH=$(BUSYBOX1_BIN_DIR):$PATH',
-            'cd $(INSTALL_DIR)',
-            'time wget -q -O - $(URL) | tar --strip-components 2 -xzf - ',
-        ],
-        "prepare": [
-            "export PATH=$(GCC_BIN_DIR):$PATH",
-            'export LDFLAGS=--static',
-            'export CFLAGS=-I$(GCC_INCLUDE_DIR)',
+            '$(FETCH_URL_2)',
+            'rm -rf $(BUILD_DIR)/fetched_urls',
+            'mv $(BUILD_DIR)/* $(INSTALL_DIR)/'
         ],
         "from": __file__,
     },
@@ -74,9 +69,6 @@ def iter_comp():
             v['constraint'] = json.loads(json.dumps(ccc))
             v['constraint']['build_system_version'] = gen_id.cur_build_system_version()
 
-            v['name'] = 'gcc'
-            v['version'] = '9.2'
-
             vc = v['constraint']
 
             if 'arch' in vc:
@@ -85,12 +77,22 @@ def iter_comp():
                 vc['target'] = arch
                 vc['host'] = arch
 
+            v['name'] = 'gcc' + vc['host'][0] + vc['target'][0]
+            v['version'] = '9.2'
+
             v.update(json.loads(json.dumps(V['common'])))
 
             p1 = v['prefix'][0]
             p2 = v['prefix'][1]
 
-            v['prepare'].append('export ' + p1.upper() + '=' + p2)
+            name = v['name'].upper() + '_BIN_DIR'
+
+            v['prepare'] = [
+                'export PATH=$(' + name + '):$PATH',
+                'export LDFLAGS=--static',
+                'export CFLAGS=-I$(' + name + ')',
+                'export ' + p1.upper() + '=' + p2,
+            ]
 
             yield {
                 'node': json.loads(json.dumps(v)),
@@ -106,6 +108,6 @@ def find_compiler(info):
         for k, v in info.items():
             if c.get(k, '') == v:
                 ok += 1
-    
+
         if ok == len(info):
             yield gen_id.deep_copy(node)

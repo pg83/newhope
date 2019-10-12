@@ -12,7 +12,7 @@ def fp(f, v, *args, **kwargs):
 
 
 from cc import find_compiler
-from gen_id import to_visible_name, cur_build_system_version
+from gen_id import to_visible_name, cur_build_system_version, deep_copy
 from bb import find_busybox
 
 
@@ -28,6 +28,20 @@ def singleton(f):
     return wrapper
 
 
+def cached(f):
+    v = {}
+
+    def wrapper(*args, **kwargs):
+        k = gen_id.struct_dump([args, kwargs])
+
+        if f not in v:
+            v[k] = f(*args, **kwargs)
+
+        return deep_copy(v[k])
+
+    return wrapper
+
+
 @singleton
 def current_host_platform():
     data = subprocess.check_output(['/bin/uname', '-a'], shell=False).strip();
@@ -39,6 +53,7 @@ def current_host_platform():
     return data.split()[-1]
 
 
+@cached
 def find_compiler_id(info):
     info = gen_id.deep_copy(info)
 
@@ -65,13 +80,14 @@ def subst_info(info):
 
     if 'libc' not in info:
         info['libc'] = 'musl'
-        
+
     if 'build_system_version' not in info:
         info['build_system_version'] = cur_build_system_version()
 
     return info
 
 
+@cached
 def tools(info):
     return [x(info) for x in TOOLS.values()]
 
@@ -80,9 +96,9 @@ def helper(func):
     def wrapper(src, info):
         name = func.__name__
         wrapper.__name__ = name
-        
+
         info = subst_info(info)
-        data = 'cd $(BUILD_DIR)\n' + func()
+        data = func()
 
         def iter_compilers():
             if '#pragma cc' not in data:
@@ -96,17 +112,20 @@ def helper(func):
 
             yield find_compiler_id(info)
 
+        deps = list(iter_compilers())
+        cross_cc = deps[-1]
+
         return {
             'node': {
                 'name': func.__name__,
                 "url": src,
                 "constraint": info,
                 "from": __file__,
-                'build': [x.strip() for x in data.split('\n')],
+                'build': ['ln -sf `which ' + cross_cc['node']['prefix'][1] + 'gcc` /bin/cc'] + [x.strip() for x in data.split('\n')],
             },
-            'deps': list(iter_compilers()),
+            'deps': deps,
         }
-        
+
     return wrapper
 
 
@@ -126,7 +145,17 @@ def m4():
     return """
         #pragma cc
 
+        export PATH=$(CURL1_BIN_DIR):$PATH
         $(FETCH_URL) ./configure --prefix=$(INSTALL_DIR) && make && make install
+    """
+
+
+@helper
+def curl1():
+    return """
+        #pragma cc
+
+        $(FETCH_URL) ./configure --prefix=$(INSTALL_DIR) --with-mbedtls=$(MBEDTLS1_LIB_DIR) --enable-static --disable-shared && make && make install
     """
 
 
@@ -134,9 +163,9 @@ def m4():
 def xz():
     return """
         export PATH=$(BUSYBOX1_BIN_DIR):$PATH
-        
-        $(FETCH_URL) ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static && make && make install 
-        
+
+        $(FETCH_URL) ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static && make && make install
+
         #pragma cc
         #pragma manual deps
     """
@@ -197,11 +226,23 @@ def tar():
     """
 
 
+@helper
+def mbedtls1():
+    return """
+        rm -rf /usr/local
+        $(FETCH_URL) make programs lib && make install
+        cd /usr/local && mv * $(INSTALL_DIR)/
+
+        #pragma cc
+    """
+
+
 USER_PACKAGES = {
     'busybox': fp(bb, 'https://www.busybox.net/downloads/busybox-1.30.1.tar.bz2'),
     'musl': fp(musl, 'https://www.musl-libc.org/releases/musl-1.1.23.tar.gz'),
     'm4': fp(m4, 'https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz'),
     'pkg-config': fp(pkg_config, 'https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz'),
+    'mbedtls': fp(mbedtls1, 'https://tls.mbed.org/download/mbedtls-2.16.3-apache.tgz'),
     #fp(ncurses, 'https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz'),
     #fp(tb, 'http://landley.net/toybox/downloads/toybox-0.8.1.tar.gz'),
 }
@@ -211,22 +252,39 @@ def find_busybox_ex(info):
     return find_busybox(info['host'], info['target'])
 
 
-TOOLS = {
-    'xz': fp(xz, 'https://tukaani.org/xz/xz-5.2.4.tar.gz'),
-    'tar': fp(tar, 'https://ftp.gnu.org/gnu/tar/tar-1.32.tar.gz'),
-    'xz1': fp(xz, 'https://tukaani.org/xz/xz-5.2.4.tar.gz'),
-    'tar1': fp(tar, 'https://ftp.gnu.org/gnu/tar/tar-1.32.tar.gz'),
-    'busybox1': find_busybox_ex,
-}
+def iter_tools():
+    tools = [
+        ('xz', fp(xz, 'https://downloads.sourceforge.net/project/lzmautils/xz-5.2.4.tar.gz')),
+        ('tar', fp(tar, 'https://ftp.gnu.org/gnu/tar/tar-1.32.tar.gz')),
+        ('xz1', fp(xz, 'https://downloads.sourceforge.net/project/lzmautils/xz-5.2.4.tar.gz')),
+        ('tar1', fp(tar, 'https://ftp.gnu.org/gnu/tar/tar-1.32.tar.gz')),
+        ('mbedtls1', fp(mbedtls1, 'https://tls.mbed.org/download/mbedtls-2.16.3-apache.tgz')),
+        ('curl1', fp(curl1, 'https://curl.haxx.se/snapshots/curl-7.67.0-20191011.tar.bz2')),
+        ('busybox1', find_busybox_ex),
+    ]
+
+    res = {}
+
+    for k, func in tools:
+        func.__name__ = k
+        res[k] = func
+
+    return res
+
+
+TOOLS = iter_tools()
 
 
 def add_tool_deps(pkg, data):
     def iter_tools():
         for k, v in TOOLS.items():
             kk = '$(' + k.upper() + '_'
-            
+
             if kk in data:
-                yield v(pkg['constraint'])
+                cc = json.loads(json.dumps(pkg['constraint']))
+                cc['host'] = cc['target']
+
+                yield v(cc)
 
     return list(iter_tools())
 
@@ -237,5 +295,5 @@ def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64']):
             yield x({'target': target, 'host': host})
 
     for x in TOOLS.values():
-            for target in targets:
-                yield x({'target': target, 'host': host})
+        for target in targets:
+            yield x({'target': target, 'host': host})

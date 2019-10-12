@@ -1,3 +1,5 @@
 FROM antonsamokhvalov/newhope:latest
-COPY *.py /runtime/
-RUN export PATH=/usr/bin:/usr/sbin:/bin:/sbin; cd /runtime && /usr/bin/python2 ./main.py prune && cd / && (mkdir /workdir || true) && (mkdir /repo || true) && cd /runtime && /usr/bin/python2 ./main.py && rm -rf /workdir /runtime /managed /private
+ARG prefix=/distro
+ARG target=all
+COPY *.py ${prefix}/runtime/
+RUN export PATH=/usr/bin:/usr/sbin:/bin:/sbin; (rm -rf /repo || true); apk add make bash curl && cd ${prefix}/runtime && /usr/bin/python2 ./main.py prune && /usr/bin/python2 ./main.py prefix=${prefix} > Makefile && make -j 1 Makefile ${target} && (cd ${prefix} && rm -rf managed private runtime workdir)

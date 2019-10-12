@@ -8,14 +8,14 @@ V = {
         'kind': 'sysutils',
         'name': 'busybox1',
         "prepare": [
-            "mkdir $(BUSYBOX1_BIN_DIR)",
+            "mkdir -p $(BUSYBOX1_BIN_DIR)",
             "cd $(BUSYBOX1_BIN_DIR)",
             "../original/$(BB) --install -s $(BUSYBOX1_BIN_DIR)",
         ],
         "build": [
             '#pragma manual deps',
-            'mkdir $(INSTALL_DIR)/original',
-            'wget -O $(INSTALL_DIR)/original/$(BB) $(URL)',
+            'mkdir -p $(INSTALL_DIR)/original',
+            'wget -q -O $(INSTALL_DIR)/original/$(BB) $(URL)',
             'chmod +x $(INSTALL_DIR)/original/$(BB)',
         ],
         "from": __file__,
@@ -44,7 +44,7 @@ def iter_constraints():
         v1 = json.loads(json.dumps(x))
         v2 = json.loads(json.dumps(V['deepmerge']))
         arch = v1['constraint'].pop('arch')
-        
+
         v1['constraint']['host'] = arch
         v1['constraint']['target'] = arch
         v1['constraint']['build_system_version'] = gen_id.cur_build_system_version()
