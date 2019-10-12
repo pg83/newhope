@@ -33,4 +33,9 @@ if __name__ == '__main__':
 
         data = build_makefile(node, prefix=prefix)
 
+        if 0:
+            for l in data.split('\n'):
+                if '$(' in l:
+                    raise Exception('shit happen ' + l)
+
         print data

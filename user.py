@@ -124,13 +124,19 @@ def helper(func):
         deps = list(iter_compilers())
         cross_cc = deps[-1]
 
+        def iter_extra_lines():
+            yield 'ln -sf `which ' + cross_cc['node']['prefix'][1] + 'gcc` /bin/cc'
+
+            if '$(FETCH_URL' not in data:
+                yield '$(FETCH_URL)'
+
         return {
             'node': {
                 'name': func.__name__,
                 "url": src,
                 "constraint": info,
                 "from": 'plugins/' + func.__name__ + '.py',
-                'build': ['ln -sf `which ' + cross_cc['node']['prefix'][1] + 'gcc` /bin/cc'] + [x.strip() for x in data.split('\n')],
+                'build': list(iter_extra_lines()) + [x.strip() for x in data.split('\n')],
             },
             'deps': deps,
         }

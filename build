@@ -1,4 +1,9 @@
 #!/bin/sh
 
-docker run -ti --mount type=bind,src=/Users/pg/repo,dst=/repo --env TARGET=$1 ebe8cc78c74a
+docker run -ti \
+       --mount type=bind,src=/Users/pg/repo/packages,dst=/distro/repo \
+       --mount type=bind,src=/Users/pg/NewHope/newhope/plugins,dst=/distro/plugins \
+       --env TARGET=$1 \
+       $2
+
 #antonsamokhvalov/newhope:latest
