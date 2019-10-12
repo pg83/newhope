@@ -1,0 +1,4 @@
+#!/bin/sh
+
+docker run -ti --mount type=bind,src=/Users/pg/repo,dst=/repo --env TARGET=$1 ebe8cc78c74a
+#antonsamokhvalov/newhope:latest

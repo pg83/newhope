@@ -2,7 +2,7 @@ import os
 import sys
 import json
 
-from user import gen_packs, USER_PACKAGES, TOOLS
+from user import gen_packs, load_plugins
 from build import build_makefile
 
 
@@ -11,12 +11,16 @@ if __name__ == '__main__':
         if 0:
             prune_repo()
     else:
-        val, param = sys.argv[1].split('=')
+        prefix = ''
 
-        if val == 'prefix':
-            prefix = param
-        else:
-            prefix = ''
+        for arg in sys.argv[1:]:
+            val, param = arg.split('=')
+
+            if val == 'prefix':
+                prefix = param
+
+            if val == 'plugins':
+                load_plugins(param)
 
         node = {
             'node': {
@@ -29,5 +33,4 @@ if __name__ == '__main__':
 
         data = build_makefile(node, prefix=prefix)
 
-        print >>sys.stderr, data
         print data

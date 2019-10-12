@@ -8,7 +8,7 @@ import shutil
 import gen_id
 import hashlib
 
-from user import add_tool_deps, TOOLS, tools
+from user import add_tool_deps
 from gen_id import struct_dump
 
 import gen_id
@@ -139,7 +139,7 @@ def gen_fetch_node(url):
     }
 
 
-def build_makefile_impl(node, extra_nodes=[]):
+def build_makefile_impl(node):
     def fix_node(n):
         n = json.loads(json.dumps(n))
         data = '\n'.join(n['node']['build'] + n['node'].get('prepare', []))
@@ -151,12 +151,6 @@ def build_makefile_impl(node, extra_nodes=[]):
             n['deps'] = deps
 
         return n
-
-    def iter_all():
-        yield fix_node(node)
-
-        for x in extra_nodes:
-            yield fix_node(x)
 
     s = dict()
 
@@ -173,7 +167,7 @@ def build_makefile_impl(node, extra_nodes=[]):
                     yield k
 
     def iter_all_nodes():
-        for v in iter_all():
+        for v in [fix_node(node)]:
             for n in visit(v):
                 yield n
 
@@ -199,6 +193,8 @@ def build_makefile_impl(node, extra_nodes=[]):
         for name in sorted(by_name.keys()):
             yield name + ': ' + ' '.join(sorted(by_name[name]))
 
+        yield 'bash:\n\t/bin/bash -li'
+
     return '\n\n'.join(iter_nodes()) + '\n' + 'all: ' + ' '.join([gen_pkg_path(v) for v in s.values()]) + '\n' + '\n'.join(iter_by_name())
 
 
@@ -221,7 +217,7 @@ def print_one_node_once(v, mined_tools):
     def iter_part():
         target = gen_pkg_path(v)
         yield '## ' + struct_dump(v)
-        yield  os.path.basename(target) + ' ' + target + ': all_struct ' + ' '.join(gen_pkg_path(x) for x in deps)
+        yield  os.path.basename(target) + ' ' + target + ': ' + ' '.join(gen_pkg_path(x) for x in deps)
 
         def iter_body():
             yield 'mkdir -p $(INSTALL_DIR) $(BUILD_DIR)'
@@ -279,34 +275,5 @@ def print_one_node_once(v, mined_tools):
     return data
 
 
-def add_boilerplate():
-    all_struct = """
-        all_struct: $(PREFIX)/private $(PREFIX)/repo $(PREFIX)/managed $(PREFIX)/workdir
-
-        $(PREFIX)/private:
-                mkdir -p $(PREFIX)/private
-
-        $(PREFIX)/repo:
-                mkdir -p $(PREFIX)/repo
-
-        $(PREFIX)/managed:
-                mkdir -p $(PREFIX)/managed
-
-        $(PREFIX)/workdir:
-                mkdir -p $(PREFIX)/workdir
-    """
-
-    def iter_lines():
-        for l in all_struct.split('\n'):
-            if 'mkdir' in l:
-                yield '\t' + l.strip()
-            else:
-                yield l.strip()
-
-    return '\n'.join(iter_lines())
-
-
 def build_makefile(n, prefix=''):
-    all_tools = tools({'host': 'x86_64', 'target': 'x86_64'})
-
-    return '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + add_boilerplate().replace('$(PREFIX)', prefix) + '\n' + build_makefile_impl(n, extra_nodes=all_tools).replace('$(PREFIX)', prefix).replace('$', '$$')
+    return '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n).replace('$(PREFIX)', prefix).replace('$', '$$')
