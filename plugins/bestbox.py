@@ -7,10 +7,11 @@ def bestbox1(info):
 
     return {
         'code': """
-            mkdir -p $(INSTALL_DIR)/original
+            mkdir -p $(INSTALL_DIR)/bin/
 
-            mv $(TOYBOX1_DIR)/original/toybox $(INSTALL_DIR)/original/
-            mv $(BUSYBOX1_DIR)/original/busybox $(INSTALL_DIR)/original/
+            ln $(TOYBOX1_DIR)/bin/toybox $(INSTALL_DIR)/bin
+            ln $(BUSYBOX1_DIR)/bin/busybox $(INSTALL_DIR)/bin
         """,
         'deps': [toybox1, busybox1],
+        'version': busybox1['node']['version'] + '-' + toybox1['node']['version'],
     }

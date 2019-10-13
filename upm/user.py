@@ -133,26 +133,30 @@ def helper(func):
         if '#pragma cc' not in data:
             compilers = []
 
-        def iter_extra_lines():
-            if compilers:
-                yield 'ln -sf `which ' + compilers[-1]['node']['prefix'][1] + 'gcc` /bin/cc'
-
-            if '$(FETCH_URL' not in data:
-                yield '$(FETCH_URL)'
-
         node = {
             'name': func.__name__,
             "constraint": info,
             "from": 'plugins/' + func.__name__ + '.py',
-            'build': list(iter_extra_lines()) + to_lines(data),
         }
 
         if 'prepare' in full_data:
             node['prepare'] = to_lines(full_data['prepare'])
 
+        if 'version' in full_data:
+            node['version'] = full_data['version']
+
         for k in ('src', 'url'):
             if k in full_data:
                 node['url'] = full_data[k]
+
+        def iter_extra_lines():
+            if compilers:
+                yield 'ln -sf `which ' + compilers[-1]['node']['prefix'][1] + 'gcc` /bin/cc'
+
+            if '$(FETCH_URL' not in data and 'url' in node:
+                yield '$(FETCH_URL)'
+
+        node['build'] = list(iter_extra_lines()) + to_lines(data)
 
         return {
             'node': node,

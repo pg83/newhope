@@ -14,6 +14,9 @@ from .gen_id import struct_dump
 import gen_id
 
 
+REPLACES = {}
+
+
 def fix_fetch_url(src, depth):
     return 'tar --strip-components ' + str(depth) + ' -xf ' + '$(BUILD_DIR)/fetched_urls/' + os.path.basename(src)
 
@@ -86,7 +89,7 @@ def calc_mode(name):
     if '-xz-' in name[:15]:
         return 'J'
 
-    if '-tar-' in name[:15]:
+    if '-tr-' in name[:15]:
         return ''
 
     raise Exception('shit happen')
@@ -110,14 +113,10 @@ def get_pkg_link(p):
 
 
 def prepare_pkg(fr, to):
-    print >>sys.stderr, 'will package', fr, 'to package', to
-
     tmp = to + '_' + str(int(random.random() * 1000000))
 
-    subprocess.check_output(['tar', '-c' + calc_mode(to[to.index('-') - 1:]) + 'f', tmp, '.'], cwd=fr, shell=False)
+    subprocess.check_output(['tar', '-v', '-c' + calc_mode(to[to.index('-') - 1:]) + 'f', tmp, '.'], cwd=fr, shell=False)
     os.rename(tmp, to)
-
-    print >>sys.stderr, 'done packaging'
 
     return to
 
@@ -142,9 +141,24 @@ def gen_fetch_node(url):
                 'mkdir -p $(BUILD_DIR)/fetched_urls/',
                 'ln -s `pwd`/$(URL_BASE) $(BUILD_DIR)/fetched_urls/',
             ],
+            'codec': 'tr',
         },
         'deps': [],
     }
+
+
+def short_const(cc):
+    def do():
+        for k in ('host', 'target', 'libc'):
+            if k in cc:
+                yield cc[k][:1]
+
+    res = ''.join(do())
+
+    if not res:
+        res = 'noarch'
+
+    return res
 
 
 def build_makefile_impl(node):
@@ -186,12 +200,13 @@ def build_makefile_impl(node):
         k = struct_dump(n)
         n['id'] = k
         s[k] = n
-        name = n['node']['name']
+        nnn = n['node']['name']
 
-        if name in by_name:
-            by_name[name].append(gen_pkg_path(n))
-        else:
-            by_name[name] = [gen_pkg_path(n)]
+        for name in (nnn, nnn + '-' + short_const(n['node'].get('constraint', {}))):
+            if name in by_name:
+                by_name[name].append(gen_pkg_path(n))
+            else:
+                by_name[name] = [gen_pkg_path(n)]
 
     def iter_nodes():
         for v in full:
@@ -200,8 +215,6 @@ def build_makefile_impl(node):
     def iter_by_name():
         for name in sorted(by_name.keys()):
             yield name + ': ' + ' '.join(sorted(by_name[name]))
-
-        yield 'bash:\n\t/bin/bash -li'
 
     return '\n\n'.join(iter_nodes()) + '\n' + 'all: ' + ' '.join([gen_pkg_path(v) for v in s.values()]) + '\n' + '\n'.join(iter_by_name())
 
@@ -214,6 +227,11 @@ def print_one_node(v):
         new_data = print_one_node_once(v, tools)
 
         if new_data == data:
+            pkg_id = os.path.basename(gen_pkg_path(v))
+            real_id = hashlib.md5(data).hexdigest()[:4] + '-' +  pkg_id[4:]
+
+            REPLACES[pkg_id] = real_id
+
             return data
 
         data = new_data
@@ -229,13 +247,12 @@ def print_one_node_once(v, mined_tools):
 
         def iter_body():
             yield 'mkdir -p $(INSTALL_DIR) $(BUILD_DIR)'
-            yield 'echo 42 > $(INSTALL_DIR)/.42'
 
             for x in deps:
                 yield '## prepare ' + x['node']['name']
                 pkg_path = gen_pkg_path(x)
 
-                yield '$(PYTHON) $(PREFIX)/runtime/entry.py -- get_pkg_link ' + pkg_path
+                yield '$(PYTHON) $(PREFIX)/runtime/cli subcommand -- get_pkg_link ' + pkg_path
 
                 prepare = x['node'].get('prepare', [])
 
@@ -245,14 +262,13 @@ def print_one_node_once(v, mined_tools):
                 for p in prepare:
                     yield p
 
-
             yield '## prepare main dep'
             yield 'cd $(BUILD_DIR)'
 
             for x in v['node']['build']:
                 yield x
 
-            yield '$(PYTHON) $(PREFIX)/runtime/entry.py -- prepare_pkg $(INSTALL_DIR) $(PKG_FILE)'
+            yield '$(PYTHON) $(PREFIX)/runtime/cli subcommand -- prepare_pkg $(INSTALL_DIR) $(PKG_FILE)'
 
         for l in iter_body():
             yield '\t' + l
@@ -283,4 +299,9 @@ def print_one_node_once(v, mined_tools):
 
 
 def build_makefile(n, prefix=''):
-    return '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n).replace('$(PREFIX)', prefix).replace('$', '$$').replace('        ', '\t')
+    data = '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n).replace('$(PREFIX)', prefix).replace('$', '$$').replace('        ', '\t')
+
+    for k, v in REPLACES.items():
+        data = data.replace(k, v)
+
+    return data

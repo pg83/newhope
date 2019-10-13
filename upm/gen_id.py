@@ -19,35 +19,69 @@ def cons_to_name(c):
     if not c:
         return 'noarch'
 
-    return '-'.join([c['host'], c['libc'], c['target']])
+    def iter_parts():
+        if c['host'] != c['target']:
+            yield c['host']
+
+        yield c['libc']
+        yield c['target']
+
+    return '-'.join(iter_parts())
+
+
+def remove_compressor_name(x):
+    for i in ('.tgz', '.tbz', '.txz', '.gz', '.bz2', '.xz', '.tar'):
+        if x.endswith(i):
+            x = x[0:len(x) - len(i)]
+
+    return x
 
 
 def to_visible_name_0(pkg):
-    return (gen_id(pkg)[:8] + '-' + cons_to_name(pkg.get('constraint')) + '-' + (pkg['name'] + '-' + os.path.basename(pkg.get('url', ''))).replace('_', '-').replace('.', '-')).replace('--', '-')
+    def iter_parts():
+        name = pkg['name']
+
+        yield gen_id(pkg)[:8]
+        yield cons_to_name(pkg.get('constraint'))
+        yield name
+
+        if 'url' in pkg:
+            p = remove_compressor_name(os.path.basename(pkg['url']))
+
+            for n in (name, name[:-1]):
+                if p.startswith(n):
+                    p = p[len(n):]
+
+                    break
+
+            yield p
+        else:
+            if 'version' in pkg:
+                yield pkg['version']
+
+    return '-'.join(iter_parts()).replace('_', '-').replace('.', '-').replace('--', '-')
 
 
 def to_visible_name_1(pkg):
-    def remove_compressor_name(x):
-        for i in ('-tgz', '-tbz', '-txz', '-gz', '-bz2', '-xz', '-tar'):
-            if x.endswith(i):
-                x = x[0:len(x) - len(i)]
-
-        return x
-
-    return remove_compressor_name(to_visible_name_0(pkg))
+    return to_visible_name_0(pkg)
 
 
 def to_visible_name_2(pkg):
     res = to_visible_name_1(pkg)
 
     if '-noarch-' in res:
-        codec = 'tar'
+        codec = 'tr'
     elif '-busybox-' in res or '-xz-' in res or '-linux-musl-' in res or '-mbedtls-' in res:
         codec = 'gz'
     else:
         codec = 'xz'
 
-    return res[:8] + '-' + codec + res[8:]
+    res = res[:8] + '-' + codec + res[8:]
+
+    if res.endswith('//'):
+        res = res[:-1]
+
+    return res
 
 
 FUNCS = [

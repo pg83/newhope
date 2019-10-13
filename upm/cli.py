@@ -4,6 +4,18 @@ import argparse
 import subprocess
 
 from .main import main as main_makefile
+from .build import prepare_pkg, get_pkg_link
+from .run_make import run_makefile
+
+
+def build_docker():
+   data = subprocess.check_output(['docker build .'], shell=True, env=os.environ)
+   lines = data.split('\n')
+   line = lines[len(lines) - 2]
+
+   print data.strip()
+
+   return line.split(' ')[2]
 
 
 def cli_build(arg):
@@ -11,23 +23,42 @@ def cli_build(arg):
 
    parser.add_argument('-t', '--target', default=[], action='append', help='add target')
    parser.add_argument('-i', '--image', default='antonsamokhvalov/newhope:latest', action='store', help='choose docker image')
+   parser.add_argument('-P', '--plugins', default='plugins', action='store', help='where to find build rules')
+   parser.add_argument('-p', '--prefix', default='', action='store', help='main root for build files')
 
    args = parser.parse_args(arg)
+
+   image = args.image
+
+   if image == "now":
+      image = build_docker()
+   elif image == 'system':
+      prefix = args.prefix
+
+      if not prefix:
+         raise Exception('prefix is mandatory in local mode')
+
+      data = main_makefile(prefix, args.plugins, False)
+      data = data.replace(prefix + '/runtime/cli', os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/cli')
+
+      run_makefile(data, *args.target)
+
+      return
 
    def iter_args():
       yield 'docker'
       yield 'run'
       yield '-ti'
       yield '--mount'
-      yield 'type=bind,src=/Users/pg/repo/packages,dst=/distro/repo'
+      yield 'type=bind,src=' + os.environ['HOME'] + '/repo/packages,dst=/distro/repo'
       yield '--mount'
-      yield 'type=bind,src=/Users/pg/NewHope/newhope/plugins,dst=/distro/plugins'
+      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=/distro/plugins,readonly'
 
       for n, v in enumerate(args.target):
          yield '--env'
          yield 'TARGET' + str(n + 1) + '=' + v
 
-      yield args.image
+      yield image
 
    subprocess.Popen(list(iter_args()), shell=False).wait()
 
@@ -56,7 +87,7 @@ def cli_makefile(arg):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
-   parser.add_argument('-P', '--plugins', default='', action='store', help='where to find build rules')
+   parser.add_argument('-P', '--plugins', default='plugins', action='store', help='where to find build rules')
    parser.add_argument('-p', '--prefix', default='', action='store', help='main root for build files')
    parser.add_argument('-k', '--continue-on-fail', default=False, action='store_const', const=True, help='continue on fail')
    parser.add_argument('-b', '--build-only', default=False, action='store_const', const=True, help='just build Makefile')
@@ -74,6 +105,17 @@ def cli_makefile(arg):
       print data
 
       return
+
+
+def cli_subcommand(args):
+   cmds = {}
+
+   for cmd in [prepare_pkg, get_pkg_link]:
+      cmds[cmd.__name__] = cmd
+
+   args = args[args.index('--') + 1:]
+
+   cmds[args[0]](*args[1:])
 
 
 def main():
