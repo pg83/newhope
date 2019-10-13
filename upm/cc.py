@@ -1,5 +1,6 @@
 import json
-import gen_id
+
+from upm import gen_id
 
 
 V = {

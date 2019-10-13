@@ -1,41 +1,28 @@
 import os
-import sys
 import json
 
-from user import gen_packs, load_plugins
-from build import build_makefile
+from .user import gen_packs, load_plugins
+from .build import build_makefile
 
 
-if __name__ == '__main__':
-    if 'prune' in sys.argv:
-        if 0:
-            prune_repo()
-    else:
-        prefix = ''
+def main(prefix, plugins, kof):
+    if plugins:
+        load_plugins(plugins, kof)
 
-        for arg in sys.argv[1:]:
-            val, param = arg.split('=')
+    node = {
+        'node': {
+            'name': 'all',
+            'from': __file__,
+	    'build': [],
+        },
+        'deps': list(gen_packs())
+    }
 
-            if val == 'prefix':
-                prefix = param
+    data = build_makefile(node, prefix=prefix)
 
-            if val == 'plugins':
-                load_plugins(param)
+    if 0:
+        for l in data.split('\n'):
+            if '$(' in l:
+                raise Exception('shit happen ' + l)
 
-        node = {
-            'node': {
-                'name': 'all',
-                'from': __file__,
-		'build': [],
-            },
-            'deps': list(gen_packs())
-        }
-
-        data = build_makefile(node, prefix=prefix)
-
-        if 0:
-            for l in data.split('\n'):
-                if '$(' in l:
-                    raise Exception('shit happen ' + l)
-
-        print data
+    return data

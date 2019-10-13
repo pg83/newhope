@@ -1,5 +1,6 @@
 import json
-import gen_id
+
+from upm import gen_id
 
 
 V = {
@@ -32,4 +33,3 @@ def iter_libc():
             'node': l,
             'deps': [],
         }
-

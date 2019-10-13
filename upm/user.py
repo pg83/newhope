@@ -1,8 +1,8 @@
 import os
 import sys
-import subprocess
+import platform
 import json
-import gen_id
+import functools
 
 
 def fp(f, v, *args, **kwargs):
@@ -12,8 +12,8 @@ def fp(f, v, *args, **kwargs):
     return wrap
 
 
-from cc import find_compiler
-from gen_id import to_visible_name, cur_build_system_version, deep_copy
+from .cc import find_compiler
+from .gen_id import to_visible_name, cur_build_system_version, deep_copy, struct_dump
 
 
 def singleton(f):
@@ -32,7 +32,7 @@ def cached(f):
     v = {}
 
     def wrapper(*args, **kwargs):
-        k = gen_id.struct_dump([args, kwargs])
+        k = struct_dump([args, kwargs])
 
         if f not in v:
             v[k] = f(*args, **kwargs)
@@ -44,18 +44,12 @@ def cached(f):
 
 @singleton
 def current_host_platform():
-    data = subprocess.check_output(['/bin/uname', '-a'], shell=False).strip();
-
-    for x in ('aarch64', 'x86_64'):
-        if x in data:
-            return x
-
-    return data.split()[-1]
+    return platform.machine()
 
 
 @cached
 def find_compiler_id(info):
-    info = gen_id.deep_copy(info)
+    info = deep_copy(info)
 
     info.pop('build_system_version')
 
@@ -63,6 +57,20 @@ def find_compiler_id(info):
         return x
 
     raise Exception('shit happen')
+
+
+@cached
+def find_compilers(info):
+    def iter_compilers():
+        if is_cross(info):
+            cinfo = deep_copy(info)
+            cinfo['target'] = cinfo['host']
+
+            yield find_compiler_id(cinfo)
+
+        yield find_compiler_id(info)
+
+    return list(iter_compilers())
 
 
 def is_cross(info):
@@ -98,22 +106,22 @@ def gen_by_name(n):
     raise Exception('shit happen')
 
 
+def to_lines(text):
+    def iter_l():
+        for l in text.split('\n'):
+            l = l.strip()
+
+            if l:
+                yield l
+
+    return list(iter_l())
+
+
 def helper(func):
+    @functools.wraps(func)
     def wrapper(info):
-        name = func.__name__
-        wrapper.__name__ = name
         info = subst_info(info)
-
-        def iter_compilers():
-            if is_cross(info):
-                cinfo = json.loads(json.dumps(info))
-                cinfo['target'] = cinfo['host']
-
-                yield find_compiler_id(cinfo)
-
-            yield find_compiler_id(info)
-
-        compilers = list(iter_compilers())
+        compilers = find_compilers(info)
 
         try:
             full_data = func()
@@ -121,37 +129,34 @@ def helper(func):
             full_data = func({'compilers': compilers, 'info': info, 'generator_func': gen_by_name})
 
         data = full_data['code']
-        src = full_data['src']
 
-        def iter_compilers():
-            if '#pragma cc' not in data:
-                return []
-
-            return compilers
-
-        deps = list(iter_compilers())
-
-        if deps:
-            cross_cc = deps[-1]
-        else:
-            cross_cc = None
+        if '#pragma cc' not in data:
+            compilers = []
 
         def iter_extra_lines():
-            if cross_cc:
-                yield 'ln -sf `which ' + cross_cc['node']['prefix'][1] + 'gcc` /bin/cc'
+            if compilers:
+                yield 'ln -sf `which ' + compilers[-1]['node']['prefix'][1] + 'gcc` /bin/cc'
 
             if '$(FETCH_URL' not in data:
                 yield '$(FETCH_URL)'
 
+        node = {
+            'name': func.__name__,
+            "constraint": info,
+            "from": 'plugins/' + func.__name__ + '.py',
+            'build': list(iter_extra_lines()) + to_lines(data),
+        }
+
+        if 'prepare' in full_data:
+            node['prepare'] = to_lines(full_data['prepare'])
+
+        for k in ('src', 'url'):
+            if k in full_data:
+                node['url'] = full_data[k]
+
         return {
-            'node': {
-                'name': func.__name__,
-                "url": src,
-                "constraint": info,
-                "from": 'plugins/' + func.__name__ + '.py',
-                'build': list(iter_extra_lines()) + [x.strip() for x in data.split('\n')],
-            },
-            'deps': deps,
+            'node': node,
+            'deps': compilers + full_data.get('deps', []),
         }
 
     USER_FUNCS.append((wrapper.__name__, wrapper))
@@ -179,8 +184,23 @@ def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64']):
             yield func({'target': target, 'host': host})
 
 
-def load_plugins(where):
-    for x in os.listdir(where):
-        if '~' not in x and '#' not in x:
-            with open(where + '/' + x, 'r') as f:
+def load_plugins(where, kof):
+    def iter_plugins():
+        for x in sorted(os.listdir(where)):
+            if '~' not in x and '#' not in x:
+                yield where + '/' + x
+
+    def load_one_plugin(xx):
+        with open(xx, 'r') as f:
+            try:
                 exec(f, globals(), locals())
+            except Exception as e:
+                s = 'can not load %s, cause %s' %(xx, e)
+
+                if kof:
+                    print >>sys.stderr, s
+                else:
+                    raise Exception(s)
+
+    for x in iter_plugins():
+        load_one_plugin(x)

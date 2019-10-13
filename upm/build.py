@@ -8,8 +8,8 @@ import shutil
 import gen_id
 import hashlib
 
-from user import add_tool_deps
-from gen_id import struct_dump
+from .user import add_tool_deps
+from .gen_id import struct_dump
 
 import gen_id
 
@@ -68,6 +68,7 @@ def subst_values(data, pkg, deps):
             node = x['node']
             name = node['name']
 
+            yield '$(' + name.upper() + '_DIR)', install_dir(node)
             yield '$(' + name.upper() + '_BIN_DIR)', bin_dir(node)
             yield '$(' + name.upper() + '_LIB_DIR)', lib_dir(node)
             yield '$(' + name.upper() + '_INC_DIR)', inc_dir(node)
@@ -134,7 +135,7 @@ def gen_fetch_node(url):
             'url': url,
             'build': [
                 '#pragma manual deps',
-                'cd $(INSTALL_DIR) && ((wget -q $(URL) >& wget.log) || (curl -q -k -O $(URL) >& curl.log)) && ls -la',
+                'cd $(INSTALL_DIR) && ((wget $(URL) >& wget.log) || (curl -k -O $(URL) >& curl.log)) && ls -la',
             ],
             'prepare': [
                 '#pragma manual deps',
@@ -152,7 +153,7 @@ def build_makefile_impl(node):
         data = '\n'.join(n['node']['build'] + n['node'].get('prepare', []))
         deps = [fix_node(x) for x in n['deps']]
 
-        if '$(FETCH_URL' in data:
+        if '$(FETCH_URL' in data and 'url' in n['node']:
             n['deps'] = deps + [gen_fetch_node(n['node']['url'])]
         else:
             n['deps'] = deps
@@ -282,4 +283,4 @@ def print_one_node_once(v, mined_tools):
 
 
 def build_makefile(n, prefix=''):
-    return '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n).replace('$(PREFIX)', prefix).replace('$', '$$')
+    return '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n).replace('$(PREFIX)', prefix).replace('$', '$$').replace('        ', '\t')

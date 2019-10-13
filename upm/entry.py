@@ -1,7 +1,7 @@
 import sys
 import os
 
-from build import prepare_pkg, get_pkg_link
+from .build import prepare_pkg, get_pkg_link
 
 
 if __name__ == '__main__':
