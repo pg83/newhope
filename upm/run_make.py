@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 
@@ -59,6 +60,11 @@ def run_makefile(data, *targets):
         if c in done:
             return
 
+        if os.path.exists(c):
+            print 'already done ' + c
+            done.add(c)
+            return
+
         n = by_dep[c]
 
         for d in n['deps1']:
@@ -67,9 +73,14 @@ def run_makefile(data, *targets):
         for d in n['deps2']:
             run_cmd(d)
 
-        print 'run ' + c
-        print subprocess.check_output(['/bin/bash', '-xce', '\n'.join(n['cmd']) + '\n'], shell=False)
-        print 'done ' + c
+        if n['cmd']:
+            cmd = '\n'.join(n['cmd']) + '\n'
+
+            print 'run ' + c
+            print subprocess.check_output(['/bin/bash', '-xce', cmd], shell=False)
+            print 'done ' + c
+        else:
+            print 'done fake ' + c
 
     for t in targets:
         run_cmd(t)

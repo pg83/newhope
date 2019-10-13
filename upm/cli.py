@@ -18,6 +18,41 @@ def build_docker():
    return line.split(' ')[2]
 
 
+def fix_makefile(data):
+   path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/cli'
+   prefix = '/runtime/cli'
+
+   def iter_lines():
+      for l in data.split('\n'):
+         p = l.find(prefix)
+
+         if p > 0:
+            l = '\t' + path + l[p + len(prefix):]
+
+         yield l
+
+   return '\n'.join(iter_lines()) + '\n'
+
+
+def cli_make(arg):
+   parser = argparse.ArgumentParser()
+
+   parser.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
+   parser.add_argument('-f', '--path', default='Makefile', action='store', help='path to Makefile')
+   parser.add_argument('--fix-path', default=False, action='store_true')
+   parser.add_argument('targets', nargs=argparse.REMAINDER)
+
+   args = parser.parse_args(arg)
+
+   with open(args.path, 'r') as f:
+      data = f.read()
+
+   if args.fix_path:
+      data = fix_makefile(data)
+
+   run_makefile(data, *args.targets)
+
+
 def cli_build(arg):
    parser = argparse.ArgumentParser()
 
@@ -39,7 +74,7 @@ def cli_build(arg):
          raise Exception('prefix is mandatory in local mode')
 
       data = main_makefile(prefix, args.plugins, False)
-      data = data.replace(prefix + '/runtime/cli', os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/cli')
+      data = fix_makefile(data, prefix)
 
       run_makefile(data, *args.target)
 
