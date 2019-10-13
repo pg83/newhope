@@ -15,13 +15,13 @@ import gen_id
 
 
 def fix_fetch_url(src, depth):
-    return 'tar --strip-components ' + str(depth) + ' -xf ' + '$(BUILD_DIR)/fetched_urls/' + os.path.basename(src) + ';'
+    return 'tar --strip-components ' + str(depth) + ' -xf ' + '$(BUILD_DIR)/fetched_urls/' + os.path.basename(src)
 
 
 def mv_file(src):
     name = os.path.basename(src)
 
-    return 'cp $(BUILD_DIR)/fetched_urls/' + name + ' ' + name + ';'
+    return 'cp $(BUILD_DIR)/fetched_urls/' + name + ' ' + name
 
 
 def install_dir(pkg):
@@ -251,9 +251,7 @@ def print_one_node_once(v, mined_tools):
             for x in v['node']['build']:
                 yield x
 
-            # yield 'ls -la $(INSTALL_DIR); ls -la $(BUILD_DIR); env;'
             yield '$(PYTHON) $(PREFIX)/runtime/entry.py -- prepare_pkg $(INSTALL_DIR) $(PKG_FILE)'
-            #yield 'rm -rf $(BUILD_DIR) $(INSTALL_DIR)'
 
         for l in iter_body():
             yield '\t' + l

@@ -2,10 +2,9 @@
 def pkg_config():
     return {
         'code': """
-        #pragma cc
+            #pragma cc
 
-        $(FETCH_URL)
-        LDFLAGS=--static ./configure --prefix=$(INSTALL_DIR) --with-internal-glib --enable-static --disable-shared && make && make install
+            LDFLAGS=--static ./configure --prefix=$(INSTALL_DIR) --with-internal-glib --enable-static --disable-shared && make && make install
         """,
         'src': 'https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz',
     }

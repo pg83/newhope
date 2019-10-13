@@ -4,6 +4,7 @@ import subprocess
 import json
 import gen_id
 
+
 def fp(f, v, *args, **kwargs):
     def wrap(*args, **kwargs):
         return f(v, *args, **kwargs)
@@ -13,7 +14,6 @@ def fp(f, v, *args, **kwargs):
 
 from cc import find_compiler
 from gen_id import to_visible_name, cur_build_system_version, deep_copy
-from bb import find_busybox
 
 
 def singleton(f):
@@ -90,6 +90,14 @@ def subst_info(info):
 USER_FUNCS = []
 
 
+def gen_by_name(n):
+    for k, v in USER_FUNCS:
+        if k == n:
+            return v
+
+    raise Exception('shit happen')
+
+
 def helper(func):
     def wrapper(info):
         name = func.__name__
@@ -110,7 +118,7 @@ def helper(func):
         try:
             full_data = func()
         except TypeError:
-            full_data = func({'compilers': compilers, 'info': info})
+            full_data = func({'compilers': compilers, 'info': info, 'generator_func': gen_by_name})
 
         data = full_data['code']
         src = full_data['src']
@@ -149,10 +157,6 @@ def helper(func):
     USER_FUNCS.append((wrapper.__name__, wrapper))
 
     return wrapper
-
-
-def find_busybox_ex(info):
-    return find_busybox(info['host'], info['target'])
 
 
 def add_tool_deps(pkg, data):

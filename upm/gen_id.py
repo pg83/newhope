@@ -23,7 +23,7 @@ def cons_to_name(c):
 
 
 def to_visible_name_0(pkg):
-    return (gen_id(pkg)[:8] + '-' + cons_to_name(pkg.get('constraint')) + '-' + os.path.basename(pkg.get('url', '')).replace('_', '-').replace('.', '-')).replace('--', '-')
+    return (gen_id(pkg)[:8] + '-' + cons_to_name(pkg.get('constraint')) + '-' + (pkg['name'] + '-' + os.path.basename(pkg.get('url', ''))).replace('_', '-').replace('.', '-')).replace('--', '-')
 
 
 def to_visible_name_1(pkg):
