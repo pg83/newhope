@@ -1,17 +1,16 @@
 def m4_0(info, deps, codec):
-    c = [restore_node(x) for x in info['compilers']]
+    if run_xpath_simple(info, 'compilers/cross') is True:
+        def val(n):
+            return run_xpath_simple(info, 'compilers/deps/%s/node/prefix/1/[:-1]' % n)
 
-    if len(c) == 1:
-        cross = ''
+        cross = '--host=' + val(1) + ' --target=' + val(0)
     else:
-        cross = '--host=' + c[1]['node']()['prefix'][1][:-1] + ' --target=' + c[0]['node']()['prefix'][1][:-1]
+        cross = ''
 
     return {
         'code': """
-            #pragma cc
-
-            ./configure %s --prefix=$(INSTALL_DIR) && make && make install
-        """ % cross,
+            ./configure $(CROSS) --prefix=$(INSTALL_DIR) && make && make install
+        """.replace('$(CROSS)', cross),
         'src': 'https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz',
         'deps': deps,
         'codec': codec,

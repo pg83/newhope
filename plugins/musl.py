@@ -1,8 +1,6 @@
 def musl0(codec, deps):
     return {
         'code': """
-            #pragma cc
-
             export LDFLAGS=--static
             export CFLAGS=-O2
             export CROSS_COMPILE=$TOOL_CROSS_PREFIX

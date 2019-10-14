@@ -6,16 +6,86 @@ import json
 import functools
 
 
-from .ft import singleton, cached, fp
+from .ft import singleton, cached, fp, deep_copy, struct_dump
 from .cc import find_compiler
-from .gen_id import to_visible_name, cur_build_system_version, deep_copy, struct_dump
+from .gen_id import to_visible_name, cur_build_system_version
 
 
 iii = {}
 
 
+def run_xpath(val, path, log=[]):
+    funcs = [lambda x: x, str, int, float]
+
+    def f1(cur, p):
+        try:
+            return cur()
+        except Exception as e:
+            log.append((cur, p, e, '()'))
+
+        return f2(cur, p)
+
+    def f2(cur, p):
+        for f in funcs:
+            try:
+                return cur(f(p))
+            except Exception as e:
+                log.append((cur, p, e, '(...)', f))
+
+        return f3(cur, p)
+
+    def f3(cur, p):
+        for f in funcs:
+            try:
+                return cur[f(p)]
+            except Exception as e:
+                log.append((cur, p, e, '[...]', f))
+
+        return f4(cur, p)
+
+    def f4(cur, p):
+        try:
+            return eval('cur' + p)
+        except Exception as e:
+            log.append((cur, p, e, cur + p))
+
+            raise e
+
+    x = val
+
+    for p in path.split('/'):
+        x = f2(x, p)
+
+        try:
+            x = x()
+        except:
+            log.append((run_xpath, x, p, 'x = x()', 'warn'))
+
+        try:
+            x = restore_node(x)
+        except:
+            log.append((run_xpath, x, p, 'x = restore_path(x)', 'warn'))
+
+    return x
+
+
+def run_xpath_simple(val, path):
+    log = []
+
+    try:
+        return run_xpath(val, path, log=log)
+    except Exception as e:
+        log.append(('at end', str(e)))
+
+        def iter_recs():
+            for l in log:
+                yield '[' + ', '.join([str(x) for x in l]) + ']'
+
+        raise Exception('shit happen %s' % '\n'.join(iter_recs()))
+
+
 def intern_struct(n):
-    k = unicode(struct_dump(n))
+    k = bytes(struct_dump(n)[:16])
     iii[k] = n
 
     return pointer(k)
@@ -25,7 +95,7 @@ def visit_node(root):
     s = set()
 
     def do(k):
-        kk = k[u'p']
+        kk = struct_dump(k)
 
         if kk not in s:
             s.add(kk)
@@ -41,13 +111,19 @@ def visit_node(root):
 
 
 def pointer(p):
-    return {
-        u'p': p,
-    }
+    return mangle_pointer(p)
+
+
+def mangle_pointer(p):
+    return (p,)
+
+
+def demangle_pointer(p):
+    return p[0]
 
 
 def deref_pointer(v):
-    return iii[v[u'p']]
+    return iii[demangle_pointer(v)]
 
 
 def restore_node(ptr):
@@ -63,7 +139,7 @@ def restore_node(ptr):
     return {
         'node': get_node,
         'deps': iter_deps,
-        'noid': ptr['p'],
+        'noid': demangle_pointer(ptr),
     }
 
 
@@ -206,12 +282,21 @@ def real_wrapper(func_name, info):
     try:
         full_data = func()
     except TypeError:
-        full_data = func({'compilers': compilers, 'info': info})
+        param = {
+            'compilers': {
+                'deps': compilers,
+                'cross': len(compilers) > 1,
+            },
+            'info': info,
+        }
+
+        full_data = func(param)
 
     data = full_data['code']
 
     if '#pragma cc' not in data:
-        compilers = []
+        if './configure' not in data:
+            compilers = []
 
     node = {
         'name': func.__name__,
@@ -295,4 +380,6 @@ def load_plugins(where, kof):
 
     for x in iter_plugins():
         with open(x, 'r') as f:
-            exec f.read() in globals()
+            data = '__file__ = "' + x + '"; __name__ = "' + os.path.basename(x) + '"\n' + f.read()
+
+            exec data in globals()

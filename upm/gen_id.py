@@ -1,24 +1,20 @@
 import os
-import sys
-import json
-import hashlib
 
 
-from .ft import struct_dump, deep_copy, cached
+def short_const(c):
+    return cons_to_name(c, func=lambda x: x[0], delim='')
 
 
-def cons_to_name(c):
+def cons_to_name(c, func=lambda x: a, delim='-'):
     if not c:
         return 'noarch'
 
     def iter_parts():
-        if c['host'] != c['target']:
-            yield c['host']
+        yield func(c['host'])
+        yield func(c['libc'])
+        yield func(c['target'])
 
-        yield c['libc']
-        yield c['target']
-
-    return '-'.join(iter_parts())
+    return delim.join(iter_parts())
 
 
 def remove_compressor_name(x):
@@ -34,7 +30,8 @@ def to_visible_name_0(pkg):
         name = pkg['name']
 
         yield pkg['good_id'][:8]
-        yield cons_to_name(pkg.get('constraint'))
+        #yield cons_to_name(pkg.get('constraint'))
+        yield short_const(pkg.get('constraint'))
         yield name
 
         if 'version' in pkg:
@@ -71,7 +68,6 @@ def to_visible_name_1(pkg):
     return res
 
 
-@cached
 def to_visible_name_2(pkg):
     return to_visible_name_1(pkg)
 
@@ -90,7 +86,18 @@ def to_visible_name_3(pkg, good_id=None):
 
 
 def to_visible_name_4(root):
-    return to_visible_name_3(root['node'](), good_id=root['noid'])
+    try:
+        to_visible_name_4.__cache
+    except AttributeError:
+        to_visible_name_4.__cache = {}
+
+    c = to_visible_name_4.__cache
+    good_id = root['noid']
+
+    if good_id not in c:
+        c[good_id] = to_visible_name_3(root['node'](), good_id=good_id).lower()
+
+    return c[good_id]
 
 
 FUNCS = [

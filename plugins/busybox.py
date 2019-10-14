@@ -4,8 +4,6 @@ def busybox(info):
 
     return {
         'code': """
-            #pragma cc
-
             make CROSS_COMPILE=$TOOL_CROSS_PREFIX defconfig
             make CROSS_COMPILE=$TOOL_CROSS_PREFIX
             (./busybox >& $(INSTALL_DIR)/check_cross) || true

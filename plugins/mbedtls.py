@@ -1,8 +1,6 @@
 def mbedtls0(deps, codec):
     return {
         'code': """
-            #pragma cc
-
             rm -rf /usr/local
             make programs lib && make install
             cd /usr/local && mv * $(INSTALL_DIR)/

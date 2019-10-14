@@ -1,6 +1,5 @@
-import json
-
-from .gen_id import cur_build_system_version, deep_copy
+from .gen_id import cur_build_system_version
+from .ft import deep_copy
 
 
 V = {

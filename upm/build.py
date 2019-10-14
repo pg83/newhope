@@ -8,7 +8,8 @@ import shutil
 import hashlib
 
 from .user import add_tool_deps, visit_node, restore_node
-from .gen_id import struct_dump, to_visible_name, deep_copy
+from .gen_id import to_visible_name, short_const
+from .ft import deep_copy, struct_dump
 
 
 REPLACES = {}
@@ -139,22 +140,7 @@ def gen_pkg_path(v):
     return '$(PREFIX)/r/' + to_visible_name(v)
 
 
-
-def short_const(cc):
-    def do():
-        for k in ('host', 'target', 'libc'):
-            if k in cc:
-                yield cc[k][:1]
-
-    res = ''.join(do())
-
-    if not res:
-        res = 'noarch'
-
-    return res
-
-
-def build_makefile_impl(node, install_dir):
+def build_makefile_impl(node, install_dir, replaces):
     full = list(visit_node(node))
     by_name = {}
 
@@ -171,7 +157,7 @@ def build_makefile_impl(node, install_dir):
 
     def iter_nodes():
         for ptr in full:
-            yield print_one_node(restore_node(ptr), install_dir)
+            yield print_one_node(restore_node(ptr), install_dir, replaces)
 
     def iter_by_name():
         for name in sorted(by_name.keys()):
@@ -180,7 +166,6 @@ def build_makefile_impl(node, install_dir):
     def iter_parts():
         for n in iter_nodes():
             yield n
-            yield '\n'
 
         for n in iter_by_name():
             yield n
@@ -188,7 +173,7 @@ def build_makefile_impl(node, install_dir):
     return '\n'.join(iter_parts()) + '\n'
 
 
-def print_one_node(root, install_dir):
+def print_one_node(root, install_dir, replaces):
     mined_deps = []
     root_deps = root['deps']
 
@@ -208,8 +193,7 @@ def print_one_node(root, install_dir):
         if new_data == data:
             pkg_id = os.path.basename(gen_pkg_path(root))
             real_id = hashlib.md5(data).hexdigest()[:4] + '-' +  pkg_id[4:]
-
-            REPLACES[pkg_id] = real_id
+            replaces[pkg_id] = real_id
 
             return data
 
@@ -287,7 +271,8 @@ def print_one_node_once(root, install_dir):
 
 
 def build_makefile(n, prefix='', rm_tmp='#', install_dir='$(PREFIX)/private'):
-    data = '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n, install_dir + '/$(VISIBLE)')
+    replaces = {}
+    data = '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n, install_dir + '/$(VISIBLE)', replaces)
 
     repl = [
         ('$(PREFIX)', prefix),
@@ -300,7 +285,7 @@ def build_makefile(n, prefix='', rm_tmp='#', install_dir='$(PREFIX)/private'):
         for i in repl:
             yield i
 
-        for i in REPLACES.items():
+        for i in replaces.items():
             yield i
 
     for k, v in iter_repl():

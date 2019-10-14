@@ -18,9 +18,9 @@ def toybox2(info):
 
 @helper
 def toybox1(info):
-    return toybox0(info, [toybox2(info), tar2(info), xz2(info)], 'xz')
+    return toybox0(info, [bestbox2(info), tar2(info), xz2(info)], 'xz')
 
 
 @helper
 def toybox(info):
-    return toybox0(info, [toybox1(info), tar1(info), xz1(info), curl1(info)], 'xz')
+    return toybox0(info, [bestbox1(info), tar1(info), xz1(info), curl1(info)], 'xz')

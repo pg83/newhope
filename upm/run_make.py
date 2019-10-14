@@ -12,7 +12,6 @@ def new_cmd():
 
 def run_makefile(data, tool, *targets):
     data = data.replace('$$(UPM)', tool)
-
     lst = []
     prev = None
 

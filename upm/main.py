@@ -1,13 +1,8 @@
-import os
-import json
-
 from .user import gen_packs, load_plugins, store_node
 from .build import build_makefile
 
 
 def main(prefix, plugins, kof, rm_tmp, install_dir):
-    assert plugins
-
     load_plugins(plugins.replace('$(PREFIX)', prefix), kof)
 
     node = {

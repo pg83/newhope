@@ -1,3 +1,6 @@
+import base64
+
+
 python_setup_local = """
 array arraymodule.c    # array objects
 cmath cmathmodule.c _math.c # -lm # complex math library functions
@@ -49,13 +52,9 @@ parser parsermodule.c
 def python0(info, deps, codec):
     return {
         'code': """
-            #pragma cc
-
-            cd $(BUILD_DIR)
-            $(FETCH_URL)
-            echo '%s' > Modules/Setup.local
+            echo '%s' | base64 -D -i - -o - > Modules/Setup.local
             ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared && make && make install
-        """ % python_setup_local,
+        """ % base64.b64encode(python_setup_local),
         'src': 'https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz',
         'deps': deps,
         'codec': codec,
@@ -64,9 +63,9 @@ def python0(info, deps, codec):
 
 @helper
 def python1(info):
-    return python0(info, [bestbox2(info), make2(info), tar2(info), xz2(info), musl2(info)], 'xz')
+    return python0(info, [bestbox2(info), make2(info), tar2(info), xz2(info), curl2(info), musl2(info)], 'xz')
 
 
 @helper
 def python(info):
-    return python0(info, [bestbox1(info), make1(info), tar1(info), xz1(info), musl1(info)], 'xz')
+    return python0(info, [bestbox1(info), make1(info), tar1(info), xz1(info), curl1(info), musl1(info)], 'xz')

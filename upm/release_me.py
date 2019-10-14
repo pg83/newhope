@@ -9,6 +9,7 @@ class StringImporter(object):
    def find_module(self, fullname, path):
       if fullname in self._modules.keys():
          return self
+
       return None
 
    def load_module(self, fullname):

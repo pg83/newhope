@@ -1,10 +1,6 @@
 def tar0(info, deps, codec):
     return {
-        'code': """
-            #pragma cc
-
-            FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=$(INSTALL_DIR) && make && make install
-        """,
+        'code': 'FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=$(INSTALL_DIR) && make && make install',
         'src': 'https://ftp.gnu.org/gnu/tar/tar-1.32.tar.gz',
         'deps': deps,
         'codec': codec,
@@ -13,7 +9,7 @@ def tar0(info, deps, codec):
 
 @helper
 def tar2(info):
-    return tar0(info, [system()], 'gz')
+    return tar0(info, [bestbox2(info), make2(info)], 'gz')
 
 
 @helper
