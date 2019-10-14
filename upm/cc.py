@@ -1,6 +1,6 @@
 import json
 
-from upm import gen_id
+from .gen_id import cur_build_system_version, deep_copy
 
 
 V = {
@@ -68,7 +68,7 @@ def iter_comp():
             v = json.loads(json.dumps(c))
 
             v['constraint'] = json.loads(json.dumps(ccc))
-            v['constraint']['build_system_version'] = gen_id.cur_build_system_version()
+            v['constraint']['build_system_version'] = cur_build_system_version()
 
             vc = v['constraint']
 
@@ -111,4 +111,4 @@ def find_compiler(info):
                 ok += 1
 
         if ok == len(info):
-            yield gen_id.deep_copy(node)
+            yield deep_copy(node)

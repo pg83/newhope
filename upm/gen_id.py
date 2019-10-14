@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import hashlib
 
@@ -59,7 +60,11 @@ def to_visible_name_0(pkg):
             if 'version' in pkg:
                 yield pkg['version']
 
-    return '-'.join(iter_parts()).replace('_', '-').replace('.', '-').replace('--', '-')
+    try:
+        return '-'.join(iter_parts()).replace('_', '-').replace('.', '-').replace('--', '-')
+    except:
+        print >>sys.stderr, pkg
+        raise
 
 
 def to_visible_name_1(pkg):
@@ -69,7 +74,9 @@ def to_visible_name_1(pkg):
 def to_visible_name_2(pkg):
     res = to_visible_name_1(pkg)
 
-    if '-noarch-' in res:
+    if 'codec' in pkg:
+        codec = pkg['codec']
+    elif '-noarch-' in res:
         codec = 'tr'
     elif '-busybox-' in res or '-xz-' in res or '-linux-musl-' in res or '-mbedtls-' in res:
         codec = 'gz'

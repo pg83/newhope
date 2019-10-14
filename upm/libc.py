@@ -1,7 +1,5 @@
 import json
 
-from upm import gen_id
-
 
 V = {
     "build": [

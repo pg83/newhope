@@ -5,7 +5,7 @@ from .user import gen_packs, load_plugins
 from .build import build_makefile
 
 
-def main(prefix, plugins, kof):
+def main(prefix, tool, plugins, kof, rm_tmp):
     if plugins:
         load_plugins(plugins, kof)
 
@@ -18,7 +18,7 @@ def main(prefix, plugins, kof):
         'deps': list(gen_packs())
     }
 
-    data = build_makefile(node, prefix=prefix)
+    data = build_makefile(node, prefix=prefix, tool=tool, rm_tmp=rm_tmp)
 
     if 0:
         for l in data.split('\n'):

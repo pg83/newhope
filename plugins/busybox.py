@@ -1,5 +1,8 @@
 @helper
-def busybox():
+def busybox(info):
+    cc = info['info']
+    gen_func = info['generator_func']
+
     ver = '1.30.1'
 
     return {
@@ -13,6 +16,7 @@ def busybox():
         """,
         'src': 'https://www.busybox.net/downloads/busybox-' + ver + '.tar.bz2',
         'version': ver,
+        'deps': [gen_func('bestbox1')(cc), gen_func('make2')(cc)],
     }
 
 

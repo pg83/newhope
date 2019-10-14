@@ -98,7 +98,23 @@ def subst_info(info):
 USER_FUNCS = []
 
 
+def simple_funcs():
+    for k, v in USER_FUNCS:
+        if k.startswith('orig_'):
+            pass
+        else:
+            yield k, v
+
+
 def gen_by_name(n):
+    for k, v in simple_funcs():
+        if k == n:
+            return v
+
+    raise Exception('shit happen')
+
+
+def gen_by_name_priv(n):
     for k, v in USER_FUNCS:
         if k == n:
             return v
@@ -126,7 +142,7 @@ def helper(func):
         try:
             full_data = func()
         except TypeError:
-            full_data = func({'compilers': compilers, 'info': info, 'generator_func': gen_by_name})
+            full_data = func({'compilers': compilers, 'info': info, 'generator_func': gen_by_name_priv})
 
         data = full_data['code']
 
@@ -144,6 +160,9 @@ def helper(func):
 
         if 'version' in full_data:
             node['version'] = full_data['version']
+
+        if 'codec' in full_data:
+            node['codec'] = full_data['codec']
 
         for k in ('src', 'url'):
             if k in full_data:
@@ -164,13 +183,14 @@ def helper(func):
         }
 
     USER_FUNCS.append((wrapper.__name__, wrapper))
+    USER_FUNCS.append(('orig_' + wrapper.__name__, func))
 
     return wrapper
 
 
 def add_tool_deps(pkg, data):
     def iter_tools():
-        for k, v in USER_FUNCS:
+        for k, v in simple_funcs():
             kk = '$(' + k.upper() + '_'
 
             if kk in data:
@@ -183,7 +203,7 @@ def add_tool_deps(pkg, data):
 
 
 def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64']):
-    for name, func in USER_FUNCS:
+    for name, func in simple_funcs():
         for target in targets:
             yield func({'target': target, 'host': host})
 

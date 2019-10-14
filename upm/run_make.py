@@ -18,7 +18,7 @@ def run_makefile(data, *targets):
         if not ls:
             continue
 
-        if ls[0] == '.':
+        if l[0] == '.':
             continue
 
         if ls.startswith('SHELL'):
@@ -75,8 +75,9 @@ def run_makefile(data, *targets):
 
         if n['cmd']:
             cmd = '\n'.join(n['cmd']) + '\n'
+            cmd = cmd.replace('$$', '$')
 
-            print 'run ' + c
+            print 'run ' + c, cmd
             print subprocess.check_output(['/bin/bash', '-xce', cmd], shell=False)
             print 'done ' + c
         else:

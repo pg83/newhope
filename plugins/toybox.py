@@ -8,3 +8,8 @@ def toybox1(info):
         'src': 'http://www.landley.net/toybox/downloads/binaries/' + ver + '/' + name,
         'version': ver,
     }
+
+
+@helper
+def toybox(info):
+    return info['generator_func']('orig_toybox1')(info)

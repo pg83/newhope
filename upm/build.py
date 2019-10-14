@@ -5,13 +5,10 @@ import subprocess
 import fcntl
 import sys
 import shutil
-import gen_id
 import hashlib
 
 from .user import add_tool_deps
-from .gen_id import struct_dump
-
-import gen_id
+from .gen_id import struct_dump, to_visible_name
 
 
 REPLACES = {}
@@ -28,7 +25,7 @@ def mv_file(src):
 
 
 def install_dir(pkg):
-    return '$(PREFIX)/managed/' + gen_id.to_visible_name(pkg)
+    return '$(PREFIX)/managed/' + to_visible_name(pkg)
 
 
 def bin_dir(pkg):
@@ -46,8 +43,8 @@ def inc_dir(pkg):
 def subst_values(data, pkg, deps):
     subst = [
         ('$(INSTALL_DIR)', '$(PREFIX)/private/$(VISIBLE)'),
-        ('$(VISIBLE)', gen_id.to_visible_name(pkg)),
-        ('$(BUILD_DIR)', '$(PREFIX)/workdir/' + gen_id.struct_dump(pkg)),
+        ('$(VISIBLE)', to_visible_name(pkg)),
+        ('$(BUILD_DIR)', '$(PREFIX)/workdir/' + struct_dump(pkg)),
         ('$(PYTHON)', '/usr/bin/python'),
         ('$(PKG_FILE)', gen_pkg_path({'node': pkg})),
         ('\n\n', '\n'),
@@ -122,7 +119,7 @@ def prepare_pkg(fr, to):
 
 
 def gen_pkg_path(v):
-    return '$(PREFIX)/repo/' + gen_id.to_visible_name(v['node'])
+    return '$(PREFIX)/repo/' + to_visible_name(v['node'])
 
 
 def gen_fetch_node(url):
@@ -139,7 +136,7 @@ def gen_fetch_node(url):
             'prepare': [
                 '#pragma manual deps',
                 'mkdir -p $(BUILD_DIR)/fetched_urls/',
-                'ln -s `pwd`/$(URL_BASE) $(BUILD_DIR)/fetched_urls/',
+                'ln -s $(CUR_DIR)/$(URL_BASE) $(BUILD_DIR)/fetched_urls/',
             ],
             'codec': 'tr',
         },
@@ -216,7 +213,7 @@ def build_makefile_impl(node):
         for name in sorted(by_name.keys()):
             yield name + ': ' + ' '.join(sorted(by_name[name]))
 
-    return '\n\n'.join(iter_nodes()) + '\n' + 'all: ' + ' '.join([gen_pkg_path(v) for v in s.values()]) + '\n' + '\n'.join(iter_by_name())
+    return '\n\n'.join(iter_nodes()) + '\n' + 'all: ' + ' '.join([gen_pkg_path(v) for v in s.values()]) + '\n' + '\n'.join(iter_by_name()) + '\n'
 
 
 def print_one_node(v):
@@ -246,21 +243,24 @@ def print_one_node_once(v, mined_tools):
         yield  os.path.basename(target) + ' ' + target + ': ' + ' '.join(gen_pkg_path(x) for x in deps)
 
         def iter_body():
+            yield '$(RM_TMP) $(INSTALL_DIR) $(BUILD_DIR)'
             yield 'mkdir -p $(INSTALL_DIR) $(BUILD_DIR)'
 
             for x in deps:
                 yield '## prepare ' + x['node']['name']
                 pkg_path = gen_pkg_path(x)
 
-                yield '$(PYTHON) $(PREFIX)/runtime/cli subcommand -- get_pkg_link ' + pkg_path
+                yield '$(UPM) subcommand -- get_pkg_link ' + pkg_path
 
                 prepare = x['node'].get('prepare', [])
 
                 if prepare:
-                    yield 'cd ' + pkg_path.replace('/repo/', '/managed/')
+                    pdir = pkg_path.replace('/repo/', '/managed/')
 
-                for p in prepare:
-                    yield p
+                    yield 'cd ' + pdir
+
+                    for p in prepare:
+                        yield p.replace('$(CUR_DIR)', pdir)
 
             yield '## prepare main dep'
             yield 'cd $(BUILD_DIR)'
@@ -268,7 +268,8 @@ def print_one_node_once(v, mined_tools):
             for x in v['node']['build']:
                 yield x
 
-            yield '$(PYTHON) $(PREFIX)/runtime/cli subcommand -- prepare_pkg $(INSTALL_DIR) $(PKG_FILE)'
+            yield '$(UPM) subcommand -- prepare_pkg $(INSTALL_DIR) $(PKG_FILE)'
+            yield '$(RM_TMP) $(INSTALL_DIR) $(BUILD_DIR)'
 
         for l in iter_body():
             yield '\t' + l
@@ -298,10 +299,25 @@ def print_one_node_once(v, mined_tools):
     return data
 
 
-def build_makefile(n, prefix=''):
-    data = '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n).replace('$(PREFIX)', prefix).replace('$', '$$').replace('        ', '\t')
+def build_makefile(n, prefix='', tool='upm', rm_tmp='#'):
+    data = '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n)
 
-    for k, v in REPLACES.items():
+    repl = [
+        ('$(UPM)', tool),
+        ('$(PREFIX)', prefix),
+        ('        ', '\t'),
+        ('$(RM_TMP)', rm_tmp),
+        ('$', '$$'),
+    ]
+
+    def iter_repl():
+        for i in repl:
+            yield i
+
+        for i in REPLACES.items():
+            yield i
+
+    for k, v in iter_repl():
         data = data.replace(k, v)
 
     return data
