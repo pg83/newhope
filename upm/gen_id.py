@@ -4,16 +4,7 @@ import json
 import hashlib
 
 
-def gen_id(s):
-    return hashlib.md5(json.dumps([s, 2], sort_keys=True, indent=4)).hexdigest()
-
-
-def deep_copy(x):
-    return json.loads(json.dumps(x))
-
-
-def struct_dump(p):
-    return hashlib.md5(json.dumps(p, sort_keys=True, indent=4)).hexdigest()
+from .ft import struct_dump, deep_copy, cached
 
 
 def cons_to_name(c):
@@ -42,11 +33,13 @@ def to_visible_name_0(pkg):
     def iter_parts():
         name = pkg['name']
 
-        yield gen_id(pkg)[:8]
+        yield pkg['good_id'][:8]
         yield cons_to_name(pkg.get('constraint'))
         yield name
 
-        if 'url' in pkg:
+        if 'version' in pkg:
+            yield pkg['version']
+        elif 'url' in pkg:
             p = remove_compressor_name(os.path.basename(pkg['url']))
 
             for n in (name, name[:-1]):
@@ -56,30 +49,17 @@ def to_visible_name_0(pkg):
                     break
 
             yield p
-        else:
-            if 'version' in pkg:
-                yield pkg['version']
 
-    try:
-        return '-'.join(iter_parts()).replace('_', '-').replace('.', '-').replace('--', '-')
-    except:
-        print >>sys.stderr, pkg
-        raise
+    return '-'.join(iter_parts()).replace('_', '-').replace('.', '-').replace('--', '-')
 
 
 def to_visible_name_1(pkg):
-    return to_visible_name_0(pkg)
-
-
-def to_visible_name_2(pkg):
-    res = to_visible_name_1(pkg)
+    res = to_visible_name_0(pkg)
 
     if 'codec' in pkg:
         codec = pkg['codec']
     elif '-noarch-' in res:
         codec = 'tr'
-    elif '-busybox-' in res or '-xz-' in res or '-linux-musl-' in res or '-mbedtls-' in res:
-        codec = 'gz'
     else:
         codec = 'xz'
 
@@ -91,10 +71,34 @@ def to_visible_name_2(pkg):
     return res
 
 
+@cached
+def to_visible_name_2(pkg):
+    return to_visible_name_1(pkg)
+
+
+def to_visible_name_3(pkg, good_id=None):
+    res = {}
+
+    for k in ('codec', 'version', 'url', 'constraint', 'name'):
+        if k in pkg:
+            res[k] = pkg[k]
+
+    if good_id:
+        res['good_id'] = good_id
+
+    return to_visible_name_2(res)
+
+
+def to_visible_name_4(root):
+    return to_visible_name_3(root['node'](), good_id=root['noid'])
+
+
 FUNCS = [
     to_visible_name_0,
     to_visible_name_1,
     to_visible_name_2,
+    to_visible_name_3,
+    to_visible_name_4,
 ]
 
 
@@ -102,8 +106,7 @@ def cur_build_system_version():
     return len(FUNCS) - 1
 
 
-def to_visible_name(pkg):
-    cc = pkg.get('constraint', {})
-    num = cc.get('build_system_version', cur_build_system_version())
+def to_visible_name(root):
+    node = root['node']()
 
-    return FUNCS[num](pkg)
+    return FUNCS[node.get('constraint', {}).get('build_system_version', cur_build_system_version())](root)

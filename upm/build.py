@@ -7,8 +7,8 @@ import sys
 import shutil
 import hashlib
 
-from .user import add_tool_deps
-from .gen_id import struct_dump, to_visible_name
+from .user import add_tool_deps, visit_node, restore_node
+from .gen_id import struct_dump, to_visible_name, deep_copy
 
 
 REPLACES = {}
@@ -25,7 +25,12 @@ def mv_file(src):
 
 
 def install_dir(pkg):
-    return '$(PREFIX)/managed/' + to_visible_name(pkg)
+    try:
+        pkg['idir']
+    except KeyError:
+        pkg['idir'] = '$(PREFIX)/m/' + to_visible_name(pkg)
+
+    return pkg['idir']
 
 
 def bin_dir(pkg):
@@ -40,40 +45,47 @@ def inc_dir(pkg):
     return install_dir(pkg) + '/include'
 
 
-def subst_values(data, pkg, deps):
-    subst = [
-        ('$(INSTALL_DIR)', '$(PREFIX)/private/$(VISIBLE)'),
-        ('$(VISIBLE)', to_visible_name(pkg)),
-        ('$(BUILD_DIR)', '$(PREFIX)/workdir/' + struct_dump(pkg)),
-        ('$(PYTHON)', '/usr/bin/python'),
-        ('$(PKG_FILE)', gen_pkg_path({'node': pkg})),
-        ('\n\n', '\n'),
-    ]
+def subst_values(data, root, install_dir_x):
+    def iter_dirs():
+        pkg_root = gen_pkg_path(root)
 
-    if 'url' in pkg:
-        src = pkg['url']
-
-        src1 = [
-            ('$(FETCH_URL)', fix_fetch_url(src, 1)),
-            ('$(FETCH_URL_2)', fix_fetch_url(src, 2)),
-            ('$(FETCH_URL_FILE)', mv_file(src)),
-            ('$(URL)', src),
-            ('$(URL_BASE)', os.path.basename(src)),
+        subst = [
+            ('$(INSTALL_DIR)', install_dir_x),
+            ('$(VISIBLE)', os.path.basename(pkg_root)),
+            ('$(BUILD_DIR)', '$(PREFIX)/w/' + root['noid']),
+            ('$(PYTHON)', '/usr/bin/python'),
+            ('$(PKG_FILE)', pkg_root),
+            ('\n\n', '\n'),
         ]
 
-        subst = subst + src1
+        for x in subst:
+            yield x
 
-    def iter_dirs():
-        for x in deps:
-            node = x['node']
-            name = node['name']
+        root_node = root['node']()
 
-            yield '$(' + name.upper() + '_DIR)', install_dir(node)
-            yield '$(' + name.upper() + '_BIN_DIR)', bin_dir(node)
-            yield '$(' + name.upper() + '_LIB_DIR)', lib_dir(node)
-            yield '$(' + name.upper() + '_INC_DIR)', inc_dir(node)
+        if 'url' in root_node:
+            src = root_node['url']
 
-    for k, v in subst + list(iter_dirs()):
+            src1 = [
+                ('$(FETCH_URL)', fix_fetch_url(src, 1)),
+                ('$(FETCH_URL_2)', fix_fetch_url(src, 2)),
+                ('$(FETCH_URL_FILE)', mv_file(src)),
+                ('$(URL)', src),
+                ('$(URL_BASE)', os.path.basename(src)),
+            ]
+
+            for x in src1:
+                yield x
+
+        for x in root['deps']():
+            name = x['node']()['name'].upper()
+
+            yield '$(' + name + '_DIR)', install_dir(x)
+            yield '$(' + name + '_BIN_DIR)', bin_dir(x)
+            yield '$(' + name + '_LIB_DIR)', lib_dir(x)
+            yield '$(' + name + '_INC_DIR)', inc_dir(x)
+
+    for k, v in iter_dirs():
         data = data.replace(k, v)
 
     return data
@@ -93,7 +105,7 @@ def calc_mode(name):
 
 
 def get_pkg_link(p):
-    m = p.replace('/repo/', '/managed/')
+    m = p.replace('/r/', '/m/')
 
     if not os.path.isdir(m):
         with open(p, 'r') as f:
@@ -102,7 +114,7 @@ def get_pkg_link(p):
             try:
                 if not os.path.isdir(m):
                     os.makedirs(m)
-                    subprocess.check_output(['tar', '-x' + calc_mode(p[p.find('/repo/') + 6:]) + 'f', p], cwd=m, shell=False)
+                    subprocess.check_output(['tar', '-x' + calc_mode(p[p.find('/r/') + 6:]) + 'f', p], cwd=m, shell=False)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
@@ -112,6 +124,11 @@ def get_pkg_link(p):
 def prepare_pkg(fr, to):
     tmp = to + '_' + str(int(random.random() * 1000000))
 
+    try:
+        os.makedirs(os.path.dirname(tmp))
+    except OSError:
+        pass
+
     subprocess.check_output(['tar', '-v', '-c' + calc_mode(to[to.index('-') - 1:]) + 'f', tmp, '.'], cwd=fr, shell=False)
     os.rename(tmp, to)
 
@@ -119,29 +136,8 @@ def prepare_pkg(fr, to):
 
 
 def gen_pkg_path(v):
-    return '$(PREFIX)/repo/' + to_visible_name(v['node'])
+    return '$(PREFIX)/r/' + to_visible_name(v)
 
-
-def gen_fetch_node(url):
-    return {
-        'node': {
-            'kind': 'fetch',
-            'name': 'fetch_url_node',
-            'file': __file__,
-            'url': url,
-            'build': [
-                '#pragma manual deps',
-                'cd $(INSTALL_DIR) && ((wget $(URL) >& wget.log) || (curl -k -O $(URL) >& curl.log)) && ls -la',
-            ],
-            'prepare': [
-                '#pragma manual deps',
-                'mkdir -p $(BUILD_DIR)/fetched_urls/',
-                'ln -s $(CUR_DIR)/$(URL_BASE) $(BUILD_DIR)/fetched_urls/',
-            ],
-            'codec': 'tr',
-        },
-        'deps': [],
-    }
 
 
 def short_const(cc):
@@ -158,73 +154,59 @@ def short_const(cc):
     return res
 
 
-def build_makefile_impl(node):
-    def fix_node(n):
-        n = json.loads(json.dumps(n))
-        data = '\n'.join(n['node']['build'] + n['node'].get('prepare', []))
-        deps = [fix_node(x) for x in n['deps']]
-
-        if '$(FETCH_URL' in data and 'url' in n['node']:
-            n['deps'] = deps + [gen_fetch_node(n['node']['url'])]
-        else:
-            n['deps'] = deps
-
-        return n
-
-    s = dict()
-
-    def visit(node):
-        k = struct_dump(node)
-
-        if k not in s:
-            s[k] = node
-
-            yield node
-
-            for x in node['deps']:
-                for k in visit(x):
-                    yield k
-
-    def iter_all_nodes():
-        for v in [fix_node(node)]:
-            for n in visit(v):
-                yield n
-
-    full = list(iter_all_nodes())
+def build_makefile_impl(node, install_dir):
+    full = list(visit_node(node))
     by_name = {}
 
-    for n in full:
-        k = struct_dump(n)
-        n['id'] = k
-        s[k] = n
-        nnn = n['node']['name']
+    for ptr in full:
+        root = restore_node(ptr)
+        node = root['node']()
+        nnn = node['name']
 
-        for name in (nnn, nnn + '-' + short_const(n['node'].get('constraint', {}))):
+        for name in ('all', nnn, nnn + '-' + short_const(node.get('constraint', {}))):
             if name in by_name:
-                by_name[name].append(gen_pkg_path(n))
+                by_name[name].append(gen_pkg_path(root))
             else:
-                by_name[name] = [gen_pkg_path(n)]
+                by_name[name] = [gen_pkg_path(root)]
 
     def iter_nodes():
-        for v in full:
-            yield print_one_node(v)
+        for ptr in full:
+            yield print_one_node(restore_node(ptr), install_dir)
 
     def iter_by_name():
         for name in sorted(by_name.keys()):
             yield name + ': ' + ' '.join(sorted(by_name[name]))
 
-    return '\n\n'.join(iter_nodes()) + '\n' + 'all: ' + ' '.join([gen_pkg_path(v) for v in s.values()]) + '\n' + '\n'.join(iter_by_name()) + '\n'
+    def iter_parts():
+        for n in iter_nodes():
+            yield n
+            yield '\n'
+
+        for n in iter_by_name():
+            yield n
+
+    return '\n'.join(iter_parts()) + '\n'
 
 
-def print_one_node(v):
-    data = print_one_node_once(v, [])
-    tools = add_tool_deps(v['node'], data)
+def print_one_node(root, install_dir):
+    mined_deps = []
+    root_deps = root['deps']
+
+    def iter_root_deps():
+        for x in root_deps():
+            yield x
+
+        for x in mined_deps:
+            yield x
+
+    root['deps'] = iter_root_deps
+    data = print_one_node_once(root, install_dir)
 
     while True:
-        new_data = print_one_node_once(v, tools)
+        new_data = print_one_node_once(root, install_dir)
 
         if new_data == data:
-            pkg_id = os.path.basename(gen_pkg_path(v))
+            pkg_id = os.path.basename(gen_pkg_path(root))
             real_id = hashlib.md5(data).hexdigest()[:4] + '-' +  pkg_id[4:]
 
             REPLACES[pkg_id] = real_id
@@ -234,39 +216,44 @@ def print_one_node(v):
         data = new_data
 
 
-def print_one_node_once(v, mined_tools):
-    deps = v['deps'] + mined_tools
+def print_one_node_once(root, install_dir):
+    iter_deps = root['deps']
 
     def iter_part():
-        target = gen_pkg_path(v)
-        yield '## ' + struct_dump(v)
-        yield  os.path.basename(target) + ' ' + target + ': ' + ' '.join(gen_pkg_path(x) for x in deps)
+        target = gen_pkg_path(root)
+
+        yield '## ' + root['noid']
+        yield os.path.basename(target) + ' ' + target + ': ' + ' '.join(gen_pkg_path(x) for x in iter_deps())
 
         def iter_body():
             yield '$(RM_TMP) $(INSTALL_DIR) $(BUILD_DIR)'
             yield 'mkdir -p $(INSTALL_DIR) $(BUILD_DIR)'
 
-            for x in deps:
-                yield '## prepare ' + x['node']['name']
+            for x in iter_deps():
+                xnode = x['node']()
                 pkg_path = gen_pkg_path(x)
 
+                yield '## prepare ' + xnode['name']
                 yield '$(UPM) subcommand -- get_pkg_link ' + pkg_path
 
-                prepare = x['node'].get('prepare', [])
+                prepare = xnode.get('prepare', [])
 
                 if prepare:
-                    pdir = pkg_path.replace('/repo/', '/managed/')
+                    pdir = pkg_path.replace('/r/', '/m/')
 
                     yield 'cd ' + pdir
 
                     for p in prepare:
                         yield p.replace('$(CUR_DIR)', pdir)
 
-            yield '## prepare main dep'
-            yield 'cd $(BUILD_DIR)'
+            bld = root['node']()['build']
 
-            for x in v['node']['build']:
-                yield x
+            if bld:
+                yield '## prepare main dep'
+                yield 'cd $(BUILD_DIR)'
+
+                for x in bld:
+                    yield x
 
             yield '$(UPM) subcommand -- prepare_pkg $(INSTALL_DIR) $(PKG_FILE)'
             yield '$(RM_TMP) $(INSTALL_DIR) $(BUILD_DIR)'
@@ -294,16 +281,15 @@ def print_one_node_once(v, mined_tools):
     data = '\n'.join(flt_part()) + '\n'
 
     for i in (1, 2):
-        data = subst_values(data, v['node'], deps)
+        data = subst_values(data, root, install_dir)
 
     return data
 
 
-def build_makefile(n, prefix='', tool='upm', rm_tmp='#'):
-    data = '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n)
+def build_makefile(n, prefix='', rm_tmp='#', install_dir='$(PREFIX)/private'):
+    data = '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n, install_dir + '/$(VISIBLE)')
 
     repl = [
-        ('$(UPM)', tool),
         ('$(PREFIX)', prefix),
         ('        ', '\t'),
         ('$(RM_TMP)', rm_tmp),

@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+from .colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
+
 
 def new_cmd():
     return {
@@ -8,7 +10,9 @@ def new_cmd():
     }
 
 
-def run_makefile(data, *targets):
+def run_makefile(data, tool, *targets):
+    data = data.replace('$$(UPM)', tool)
+
     lst = []
     prev = None
 
@@ -45,7 +49,7 @@ def run_makefile(data, *targets):
             prev['deps1'] = list(iter_deps(a))
             prev['deps2'] = list(iter_deps(b))
         else:
-            prev['cmd'].append(ls)
+            prev['cmd'].append(l[1:].rstrip())
 
     lst.append(prev)
     by_dep = {}
@@ -61,7 +65,7 @@ def run_makefile(data, *targets):
             return
 
         if os.path.exists(c):
-            print 'already done ' + c
+            print BLUE + 'already done ' + c + RESET
             done.add(c)
             return
 
@@ -73,15 +77,56 @@ def run_makefile(data, *targets):
         for d in n['deps2']:
             run_cmd(d)
 
-        if n['cmd']:
-            cmd = '\n'.join(n['cmd']) + '\n'
-            cmd = cmd.replace('$$', '$')
+        errors = []
+        white_line = WHITE + '--------------------------------------------------------------------------------------------' + RESET
 
-            print 'run ' + c, cmd
-            print subprocess.check_output(['/bin/bash', '-xce', cmd], shell=False)
-            print 'done ' + c
-        else:
-            print 'done fake ' + c
+        def iter_lines(errors):
+            yield white_line
+
+            if n['cmd']:
+                cmd = '\n'.join(n['cmd']) + '\n'
+                cmd = cmd.replace('$$', '$')
+
+                yield RED + 'run ' + c + ':' + RESET
+                yield YELLOW + ' command:' + RESET
+
+                for l in cmd.strip().split('\n'):
+                    l = l.rstrip()
+
+                    if l:
+                        yield '  ' + YELLOW + l + RESET
+
+                yield ''
+
+                try:
+                    (res, errr) = (subprocess.check_output(['/bin/bash', '-xce', cmd], stderr=subprocess.STDOUT, shell=False), None)
+                except subprocess.CalledProcessError as err:
+                    (res, errr) = (err.output, err)
+
+                    errors.append('can not build ' + c)
+
+                yield GREEN + ' log:' + RESET
+
+                for l in res.strip().split('\n'):
+                    l = l.rstrip()
+
+                    if l:
+                        l = l.decode('utf-8')
+
+                        if RED in l:
+                            errors.append(l)
+                        else:
+                            yield '  ' + GREEN + l + RESET
+
+                if errors:
+                    yield white_line
+            else:
+                yield BLUE + 'done fake ' + c + RESET
+
+        print '\n'.join(iter_lines(errors))
+
+        if errors:
+            raise Exception(', '.join(errors))
 
     for t in targets:
         run_cmd(t)

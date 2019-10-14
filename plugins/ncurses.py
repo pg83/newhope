@@ -1,5 +1,5 @@
 @helper
-def ncurses():
+def ncurses(info):
     return {
         'code': """
             #pragma cc
@@ -9,4 +9,5 @@ def ncurses():
             make && make install
         """,
         'src': 'https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz',
+        'deps': devtools(info),
     }

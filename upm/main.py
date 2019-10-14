@@ -1,13 +1,14 @@
 import os
 import json
 
-from .user import gen_packs, load_plugins
+from .user import gen_packs, load_plugins, store_node
 from .build import build_makefile
 
 
-def main(prefix, tool, plugins, kof, rm_tmp):
-    if plugins:
-        load_plugins(plugins, kof)
+def main(prefix, plugins, kof, rm_tmp, install_dir):
+    assert plugins
+
+    load_plugins(plugins.replace('$(PREFIX)', prefix), kof)
 
     node = {
         'node': {
@@ -18,11 +19,4 @@ def main(prefix, tool, plugins, kof, rm_tmp):
         'deps': list(gen_packs())
     }
 
-    data = build_makefile(node, prefix=prefix, tool=tool, rm_tmp=rm_tmp)
-
-    if 0:
-        for l in data.split('\n'):
-            if '$(' in l:
-                raise Exception('shit happen ' + l)
-
-    return data
+    return build_makefile(store_node(node), prefix=prefix, rm_tmp=rm_tmp, install_dir=install_dir)

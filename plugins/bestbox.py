@@ -1,8 +1,7 @@
-@helper
-def bestbox0(info):
+def bestbox0(deps):
     return {
         'code': """
-            mkdir -p $(INSTALL_DIR)/bin/
+            mkdir -p $(INSTALL_DIR)/bin
 
             ln $(TOYBOX1_DIR)/bin/toybox $(INSTALL_DIR)/bin
             ln $(BUSYBOX1_DIR)/bin/busybox $(INSTALL_DIR)/bin
@@ -19,28 +18,21 @@ def bestbox0(info):
 
             export PATH=$(BUILD_DIR)/bin:$PATH
         """,
+        'deps': deps,
+        'version': join_versions(deps),
     }
 
 
 @helper
-def bestbox1(info):
-    cc = info['info']
-    gen_func = info['generator_func']
-    res = gen_func('orig_bestbox0')(info)
-    deps = [gen_func('toybox1')(cc), gen_func('busybox1')(cc)]
-    res['deps'] = deps
-    res['version'] = deps[1]['node']['version'] + '-' + deps[0]['node']['version']
+def bestbox2(info):
+    return bestbox0([toybox2(info), busybox2(info)])
 
-    return res
+
+@helper
+def bestbox1(info):
+    return bestbox0([toybox1(info), busybox1(info)])
 
 
 @helper
 def bestbox(info):
-    cc = info['info']
-    gen_func = info['generator_func']
-    res = gen_func('orig_bestbox0')(info)
-    deps = [gen_func('toybox')(cc), gen_func('busybox')(cc)]
-    res['deps'] = deps
-    res['version'] = deps[1]['node']['version'] + '-' + deps[0]['node']['version']
-
-    return res
+    return bestbox0([toybox(info), busybox(info)])

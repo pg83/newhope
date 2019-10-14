@@ -61,13 +61,13 @@ V = {
 
 
 def iter_comp():
-    for c in json.loads(json.dumps(V['barebone'])):
+    for c in deep_copy(V['barebone']):
         cc = c.pop('constraints')
 
         for ccc in cc:
-            v = json.loads(json.dumps(c))
+            v = deep_copy(c)
 
-            v['constraint'] = json.loads(json.dumps(ccc))
+            v['constraint'] = deep_copy(ccc)
             v['constraint']['build_system_version'] = cur_build_system_version()
 
             vc = v['constraint']
@@ -81,7 +81,7 @@ def iter_comp():
             v['name'] = 'gcc' + vc['host'][0] + vc['target'][0]
             v['version'] = '9.2'
 
-            v.update(json.loads(json.dumps(V['common'])))
+            v.update(deep_copy(V['common']))
 
             p1 = v['prefix'][0]
             p2 = v['prefix'][1]
@@ -96,7 +96,7 @@ def iter_comp():
             ]
 
             yield {
-                'node': json.loads(json.dumps(v)),
+                'node': deep_copy(v),
                 'deps': [],
             }
 

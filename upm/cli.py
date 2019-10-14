@@ -7,6 +7,7 @@ from .main import main as main_makefile
 from .build import prepare_pkg, get_pkg_link
 from .run_make import run_makefile
 from .user import singleton
+from .colors import RED, RESET
 
 
 try:
@@ -16,16 +17,27 @@ except ImportError:
       with open(os.path.abspath(__file__), 'r') as f:
          return f.read()
 
+
 @singleton
 def docker_binary():
    return subprocess.check_output(['/bin/sh -c "which docker"'], shell=True).strip()
 
 
-def build_docker():
-   with open('upm/upm', 'w') as f:
-      f.write(prepare_data())
+@singleton
+def tool_binary():
+   res = os.path.abspath(__file__)
 
+   if 'cli.py' in res:
+      res = os.path.dirname(os.path.dirname(res)) + '/cli'
+
+   return res
+
+
+def build_docker():
    try:
+      with open('upm/upm', 'w') as f:
+         f.write(prepare_data())
+
       os.system('chmod +x upm/upm')
 
       data = subprocess.check_output(['docker build .'], shell=True, env=os.environ)
@@ -39,31 +51,11 @@ def build_docker():
       os.unlink('upm/upm')
 
 
-def fix_makefile(data, rprefix=''):
-   path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/cli'
-   prefix = '/runtime/cli'
-
-   if rprefix:
-      return data.replace(rprefix + prefix, path)
-
-   def iter_lines():
-      for l in data.split('\n'):
-         p = l.find(prefix)
-
-         if p > 0:
-            l = '\t' + path + l[p + len(prefix):]
-
-         yield l
-
-   return '\n'.join(iter_lines()) + '\n'
-
-
-def cli_make(tool, arg):
+def cli_make(arg):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
    parser.add_argument('-f', '--path', default='Makefile', action='store', help='path to Makefile')
-   parser.add_argument('--fix-path', default=False, action='store_true')
    parser.add_argument('targets', nargs=argparse.REMAINDER)
 
    args = parser.parse_args(arg)
@@ -71,13 +63,10 @@ def cli_make(tool, arg):
    with open(args.path, 'r') as f:
       data = f.read()
 
-   if args.fix_path:
-      data = fix_makefile(data)
-
-   run_makefile(data, *args.targets)
+   run_makefile(data, tool_binary(), *args.targets)
 
 
-def cli_build(tool, arg):
+def cli_build(arg):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-t', '--target', default=[], action='append', help='add target')
@@ -86,7 +75,6 @@ def cli_build(tool, arg):
    parser.add_argument('-p', '--prefix', default='', action='store', help='main root for build files')
 
    args = parser.parse_args(arg)
-
    image = args.image
 
    if image == "now":
@@ -97,21 +85,18 @@ def cli_build(tool, arg):
       if not prefix:
          raise Exception('prefix is mandatory in local mode')
 
-      data = main_makefile(prefix, tool, args.plugins, False, rm_tmp='rm -rf')
-      data = fix_makefile(data, prefix)
+      data = main_makefile(prefix, args.plugins, False, rm_tmp='rm -rf', install_dir='$(PREFIX)/i')
 
-      run_makefile(data, *args.target)
-
-      return
+      return run_makefile(data, tool_binary(), *args.target)
 
    def iter_args():
       yield 'docker'
       yield 'run'
       yield '-ti'
       yield '--mount'
-      yield 'type=bind,src=' + os.environ['HOME'] + '/repo/packages,dst=/distro/repo'
+      yield 'type=bind,src=' + os.environ['HOME'] + '/repo,dst=/d/r'
       yield '--mount'
-      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=/distro/plugins,readonly'
+      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=/d/p,readonly'
 
       for n, v in enumerate(args.target):
          yield '--env'
@@ -122,14 +107,14 @@ def cli_build(tool, arg):
    subprocess.Popen(list(iter_args()), shell=False).wait()
 
 
-def cli_run(tool, args):
+def cli_run(args):
    def iter_args():
       yield 'docker'
       yield 'run'
       yield '--mount'
-      yield 'type=bind,src=' + os.environ['HOME'] + '/repo/packages,dst=/distro/repo'
+      yield 'type=bind,src=' + os.environ['HOME'] + '/repo,dst=/d/r'
       yield '--mount'
-      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=/distro/plugins,readonly'
+      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=/d/p,readonly'
 
       for x in args:
          yield x
@@ -137,7 +122,7 @@ def cli_run(tool, args):
    os.execl(docker_binary(), *list(iter_args()))
 
 
-def cli_tag(tool, args):
+def cli_tag(args):
    code = """
        docker tag $1 antonsamokhvalov/newhope:$2
        docker tag antonsamokhvalov/newhope:$2 antonsamokhvalov/newhope:latest
@@ -148,7 +133,7 @@ def cli_tag(tool, args):
    os.execl('/bin/bash', '/bin/bash', '-c', code)
 
 
-def cli_help(tool, args):
+def cli_help(args):
    def iter_funcs():
       for k in sorted(globals().keys()):
          if k.startswith('cli_'):
@@ -157,14 +142,15 @@ def cli_help(tool, args):
    print >>sys.stderr, 'usage: ' + sys.argv[0] + ' [' + ', '.join(iter_funcs()) + '] ....'
 
 
-def cli_makefile(tool, arg):
+def cli_makefile(arg):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
-   parser.add_argument('-P', '--plugins', default='plugins', action='store', help='where to find build rules')
+   parser.add_argument('-P', '--plugins', default='$(PREFIX)/p', action='store', help='where to find build rules')
    parser.add_argument('-p', '--prefix', default='', action='store', help='main root for build files')
    parser.add_argument('-k', '--continue-on-fail', default=False, action='store_const', const=True, help='continue on fail')
    parser.add_argument('-l', '--local', default=False, action='store_const', const=True, help='makefile for local execution')
+   parser.add_argument('-i', '--install-dir', default='$(PREFIX)/i', action='store', help='where to install packages')
 
    args = parser.parse_args(arg)
 
@@ -176,17 +162,17 @@ def cli_makefile(tool, arg):
    if args.local:
       rm_tmp = 'rm -rf'
    else:
-      rm_tmp = '#'
+      rm_tmp = '# '
 
    if args.output:
       f = open(args.output, 'w')
    else:
       f = sys.stdout
 
-   f.write(main_makefile(prefix, tool, args.plugins, args.continue_on_fail, rm_tmp))
+   f.write(main_makefile(prefix, args.plugins, args.continue_on_fail, rm_tmp, args.install_dir))
 
 
-def cli_subcommand(tool, args):
+def cli_subcommand(args):
    cmds = {}
 
    for cmd in [prepare_pkg, get_pkg_link]:
@@ -197,16 +183,33 @@ def cli_subcommand(tool, args):
    cmds[args[0]](*args[1:])
 
 
-def cli_release(tool, args):
+def cli_release(args):
    print prepare_data()
 
 
-def run_main(tool='upm'):
+def run_main():
    if len(sys.argv) < 2:
       args = sys.argv + ['help']
    else:
       args = sys.argv
 
+   new_args = list(filter(lambda x: x not in ('-v', '--verbose'), args))
+   verbose = len(args) != len(new_args)
+   args = new_args
+
    mode = args[1]
 
-   globals().get('cli_' + mode, cli_help)(tool, sys.argv[2:])
+   def func():
+      globals().get('cli_' + mode, cli_help)(args[2:])
+
+   if verbose:
+      func()
+   else:
+      try:
+         func()
+      except Exception as e:
+         print RED + str(e) + RESET
+
+      return 1
+
+   return 0

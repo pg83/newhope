@@ -1,4 +1,4 @@
-import json
+from .gen_id import deep_copy
 
 
 V = {
@@ -22,9 +22,9 @@ V = {
 
 def iter_libc():
     for l in V['barebone']:
-        l = json.loads(json.dumps(l))
+        l = deep_copy(l)
 
-        l['build'] = json.loads(json.dumps(V['build']))
+        l['build'] = deep_copy(V['build'])
         l['from'] = __file__
 
         yield {
