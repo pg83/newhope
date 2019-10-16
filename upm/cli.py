@@ -1,5 +1,7 @@
 import os
+import imp
 import sys
+import traceback
 import argparse
 import subprocess
 
@@ -8,6 +10,7 @@ from .build import prepare_pkg, get_pkg_link
 from .run_make import run_makefile
 from .user import singleton
 from .colors import RED, RESET
+from .subst import subst_kv_base
 
 
 try:
@@ -56,14 +59,64 @@ def cli_make(arg):
 
    parser.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
    parser.add_argument('-f', '--path', default='Makefile', action='store', help='path to Makefile')
+   parser.add_argument('-k', '--continue-on-fail', default=False, action='store_const', const=True, help='continue on fail')
+   parser.add_argument('-P', '--plugins', default=None, action='store', help='where to find build rules')
+   parser.add_argument('-p', '--prefix', default=None, action='store', help='main root for build files')
+   parser.add_argument('-i', '--install-dir', default=None, action='store', help='where to install packages')
+   parser.add_argument('--local', default=False, action='store_const', const=True, help='local execution')
+   parser.add_argument('--production', default=False, action='store_const', const=True, help='production execution')
    parser.add_argument('targets', nargs=argparse.REMAINDER)
 
    args = parser.parse_args(arg)
 
-   with open(args.path, 'r') as f:
-      data = f.read()
+   if args.local:
+      path0 = [
+         ('$(WDM)', '$(PREFIX)/managed'),
+         ('$(WDR)', '$(PREFIX)/repo'),
+         ('$(WDW)', '$(PREFIX)/workdir'),
+         ('$(WDP)', '$(PREFIX)/private'),
+         ('$(WDL)', '$(PREFIX)/plugins'),
+         ('$(PREFIX)', os.environ['HOME'] + '/upm'),
+         ('$(UPM)', tool_binary()),
+         ('$(RM_TMP)', '(rm -rf'),
+      ]
+   elif args.production:
+      path0 = [
+         ('$(WDM)', '$(PREFIX)/m'),
+         ('$(WDR)', '$(PREFIX)/r'),
+         ('$(WDW)', '$(PREFIX)/w'),
+         ('$(WDP)', '/private'),
+         ('$(WDL)', '$(PREFIX)/p'),
+         ('$(PREFIX)', '/d'),
+         ('$(UPM)', 'upm'),
+         ('$(RM_TMP)', '# '),
+      ]
+   else:
+      path0 = []
 
-   run_makefile(data, tool_binary(), *args.targets)
+   path1 = []
+   path2 = []
+
+   if path0:
+      if args.plugins:
+         path1.append(('$(WDL)', args.plugins))
+
+      if args.prefix:
+         path2.append(('$(PREFIX)', args.prefix))
+
+      if args.install_dir:
+         path1.append(('$(WDP)', args.install_dir))
+
+   if args.path:
+      with open(args.path, 'r') as f:
+         data = f.read()
+   else:
+      data = sys.stdin.read()
+
+   data = subst_kv_base(data, path1, path0, path2)
+   data = data.replace('$$', '$')
+
+   run_makefile(data, *args.targets)
 
 
 def cli_build(arg):
@@ -85,7 +138,7 @@ def cli_build(arg):
       if not prefix:
          raise Exception('prefix is mandatory in local mode')
 
-      data = main_makefile(prefix, args.plugins, False, rm_tmp='rm -rf', install_dir='$(PREFIX)/i')
+      data = main_makefile(prefix, args.plugins, False, rm_tmp='rm -rf')
 
       return run_makefile(data, tool_binary(), *args.target)
 
@@ -96,7 +149,7 @@ def cli_build(arg):
       yield '--mount'
       yield 'type=bind,src=' + os.environ['HOME'] + '/repo,dst=/d/r'
       yield '--mount'
-      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=/d/p,readonly'
+      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=$(WDL),readonly'
 
       for n, v in enumerate(args.target):
          yield '--env'
@@ -112,9 +165,9 @@ def cli_run(args):
       yield 'docker'
       yield 'run'
       yield '--mount'
-      yield 'type=bind,src=' + os.environ['HOME'] + '/repo,dst=/d/r'
+      yield 'type=bind,src=' + os.environ['HOME'] + '/repo,dst=$(WDR)'
       yield '--mount'
-      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=/d/p,readonly'
+      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=$(WDL),readonly'
 
       for x in args:
          yield x
@@ -146,30 +199,22 @@ def cli_makefile(arg):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
-   parser.add_argument('-P', '--plugins', default='$(PREFIX)/p', action='store', help='where to find build rules')
-   parser.add_argument('-p', '--prefix', default='', action='store', help='main root for build files')
-   parser.add_argument('-k', '--continue-on-fail', default=False, action='store_const', const=True, help='continue on fail')
-   parser.add_argument('-l', '--local', default=False, action='store_const', const=True, help='makefile for local execution')
-   parser.add_argument('-i', '--install-dir', default='$(PREFIX)/i', action='store', help='where to install packages')
+   parser.add_argument('-P', '--plugins', default='plugins', action='store', help='where to find build rules')
 
    args = parser.parse_args(arg)
 
-   prefix = args.prefix
-
-   if prefix.endswith('//'):
-      prefix = prefix[:-1]
-
-   if args.local:
-      rm_tmp = 'rm -rf'
-   else:
-      rm_tmp = '# '
-
    if args.output:
       f = open(args.output, 'w')
+      close = f.close
    else:
       f = sys.stdout
+      close = lambda: 0
 
-   f.write(main_makefile(prefix, args.plugins, args.continue_on_fail, rm_tmp, args.install_dir))
+   try:
+      f.write(main_makefile(os.path.abspath(args.plugins)))
+      f.flush()
+   finally:
+      close()
 
 
 def cli_subcommand(args):
@@ -208,7 +253,7 @@ def run_main():
       try:
          func()
       except Exception as e:
-         print RED + str(e) + RESET
+         print RED + traceback.format_exc() + RESET
 
       return 1
 

@@ -1,8 +1,8 @@
 def curl0(info, deps, codec):
     return {
         'code': """
-            ./configure --prefix=$(INSTALL_DIR) --with-mbedtls=$(MBEDTLS1_LIB_DIR) --enable-static --disable-shared && make && make install
-        """,
+            ./configure --prefix=$(INSTALL_DIR) --with-mbedtls=$($(SS)_LIB_DIR) --enable-static --disable-shared && make && make install
+        """.replace('$(SS)', xp('/deps/1/node/name').upper()),
         'src': 'https://curl.haxx.se/snapshots/curl-7.67.0-20191011.tar.bz2',
         'deps': deps,
         'codec': codec,

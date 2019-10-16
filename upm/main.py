@@ -1,9 +1,10 @@
-from .user import gen_packs, load_plugins, store_node
+from .user import gen_packs, load_plugins
 from .build import build_makefile
+from .db import store_node
 
 
-def main(prefix, plugins, kof, rm_tmp, install_dir):
-    load_plugins(plugins.replace('$(PREFIX)', prefix), kof)
+def main(plugins):
+    load_plugins(plugins)
 
     node = {
         'node': {
@@ -14,4 +15,4 @@ def main(prefix, plugins, kof, rm_tmp, install_dir):
         'deps': list(gen_packs())
     }
 
-    return build_makefile(store_node(node), prefix=prefix, rm_tmp=rm_tmp, install_dir=install_dir)
+    return build_makefile(store_node(node))

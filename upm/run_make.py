@@ -2,6 +2,7 @@ import os
 import subprocess
 
 from .colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
+from .subst import subst_kv_base
 
 
 def new_cmd():
@@ -10,10 +11,10 @@ def new_cmd():
     }
 
 
-def run_makefile(data, tool, *targets):
-    data = data.replace('$$(UPM)', tool)
+def run_makefile(data, *targets):
     lst = []
     prev = None
+    shell = '/bin/bash'
 
     for l in data.split('\n'):
         ls = l.strip()
@@ -25,6 +26,8 @@ def run_makefile(data, tool, *targets):
             continue
 
         if ls.startswith('SHELL'):
+            shell = ls[6:]
+
             continue
 
         if ls.startswith('#'):
@@ -50,7 +53,9 @@ def run_makefile(data, tool, *targets):
         else:
             prev['cmd'].append(l[1:].rstrip())
 
-    lst.append(prev)
+    if prev:
+        lst.append(prev)
+
     by_dep = {}
 
     for x in lst:
@@ -61,11 +66,12 @@ def run_makefile(data, tool, *targets):
 
     def run_cmd(c):
         if c in done:
+            print BLUE + 'already done ' + c + RESET
             return
 
         if os.path.exists(c):
-            print BLUE + 'already done ' + c + RESET
             done.add(c)
+            print BLUE + 'already done ' + c + RESET
             return
 
         n = by_dep[c]
@@ -84,7 +90,6 @@ def run_makefile(data, tool, *targets):
 
             if n['cmd']:
                 cmd = '\n'.join(n['cmd']) + '\n'
-                cmd = cmd.replace('$$', '$')
 
                 yield RED + 'run ' + c + ':' + RESET
                 yield YELLOW + ' command:' + RESET
@@ -98,7 +103,7 @@ def run_makefile(data, tool, *targets):
                 yield ''
 
                 try:
-                    (res, errr) = (subprocess.check_output(['/bin/bash', '-xce', cmd], stderr=subprocess.STDOUT, shell=False), None)
+                    (res, errr) = (subprocess.check_output([shell, '-xce', cmd], stderr=subprocess.STDOUT, shell=False), None)
                 except subprocess.CalledProcessError as err:
                     (res, errr) = (err.output, err)
 

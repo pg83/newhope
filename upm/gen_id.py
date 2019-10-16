@@ -30,7 +30,6 @@ def to_visible_name_0(pkg):
         name = pkg['name']
 
         yield pkg['good_id'][:8]
-        #yield cons_to_name(pkg.get('constraint'))
         yield short_const(pkg.get('constraint'))
         yield name
 

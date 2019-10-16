@@ -9,170 +9,14 @@ import functools
 from .ft import singleton, cached, fp, deep_copy, struct_dump
 from .cc import find_compiler
 from .gen_id import to_visible_name, cur_build_system_version
-
-
-iii = {}
-
-
-def run_xpath(val, path, log=[]):
-    funcs = [lambda x: x, str, int, float]
-
-    def f1(cur, p):
-        try:
-            return cur()
-        except Exception as e:
-            log.append((cur, p, e, '()'))
-
-        return f2(cur, p)
-
-    def f2(cur, p):
-        for f in funcs:
-            try:
-                return cur(f(p))
-            except Exception as e:
-                log.append((cur, p, e, '(...)', f))
-
-        return f3(cur, p)
-
-    def f3(cur, p):
-        for f in funcs:
-            try:
-                return cur[f(p)]
-            except Exception as e:
-                log.append((cur, p, e, '[...]', f))
-
-        return f4(cur, p)
-
-    def f4(cur, p):
-        try:
-            return eval('cur' + p)
-        except Exception as e:
-            log.append((cur, p, e, cur + p))
-
-            raise e
-
-    x = val
-
-    for p in path.split('/'):
-        x = f2(x, p)
-
-        try:
-            x = x()
-        except:
-            log.append((run_xpath, x, p, 'x = x()', 'warn'))
-
-        try:
-            x = restore_node(x)
-        except:
-            log.append((run_xpath, x, p, 'x = restore_path(x)', 'warn'))
-
-    return x
-
-
-def run_xpath_simple(val, path):
-    log = []
-
-    try:
-        return run_xpath(val, path, log=log)
-    except Exception as e:
-        log.append(('at end', str(e)))
-
-        def iter_recs():
-            for l in log:
-                yield '[' + ', '.join([str(x) for x in l]) + ']'
-
-        raise Exception('shit happen %s' % '\n'.join(iter_recs()))
-
-
-def intern_struct(n):
-    k = bytes(struct_dump(n)[:16])
-    iii[k] = n
-
-    return pointer(k)
-
-
-def visit_node(root):
-    s = set()
-
-    def do(k):
-        kk = struct_dump(k)
-
-        if kk not in s:
-            s.add(kk)
-
-            yield k
-
-            for x in deref_pointer(deref_pointer(k)['d']):
-                for v in do(x):
-                    yield v
-
-    for x in do(root):
-        yield x
-
-
-def pointer(p):
-    return mangle_pointer(p)
-
-
-def mangle_pointer(p):
-    return (p,)
-
-
-def demangle_pointer(p):
-    return p[0]
-
-
-def deref_pointer(v):
-    return iii[demangle_pointer(v)]
-
-
-def restore_node(ptr):
-    res = deref_pointer(ptr)
-
-    def iter_deps():
-        for p in deref_pointer(res['d']):
-            yield restore_node(p)
-
-    def get_node():
-        return deref_pointer(res['n'])
-
-    return {
-        'node': get_node,
-        'deps': iter_deps,
-        'noid': demangle_pointer(ptr),
-    }
-
-
-def store_node_impl(node, extra_deps):
-    def iter_deps():
-        for x in node['deps']:
-            yield x
-
-        for x in extra_deps:
-            yield x
-
-    return intern_struct({
-        'n': intern_struct(node['node']),
-        'd': intern_struct(list(iter_deps())),
-    })
-
-
-def store_node_plain(node):
-    return store_node_impl(node, [])
-
-
-def store_node(node):
-    def extra():
-        if 'url' in node['node']:
-            yield store_node_plain(gen_fetch_node(node['node']['url']))
-
-    return store_node_impl(node, list(extra()))
+from .xpath import xp
+from .db import restore_node, store_node
 
 
 def join_versions(deps):
     def iter_v():
         for d in deps:
-            yield restore_node(d)['node']()['version']
+            yield xp('/d/node/version')
 
     return '-'.join(iter_v())
 
@@ -206,26 +50,6 @@ def find_compilers(info):
         yield find_compiler_id(info)
 
     return list(iter_compilers())
-
-
-def gen_fetch_node(url):
-    return {
-        'node': {
-            'kind': 'fetch',
-            'name': 'fetch_url_node',
-            'file': __file__,
-            'url': url,
-            'build': [
-                'cd $(INSTALL_DIR) && ((wget $(URL) >& wget.log) || (curl -k -O $(URL) >& curl.log)) && ls -la',
-            ],
-            'prepare': [
-                'mkdir -p $(BUILD_DIR)/fetched_urls/',
-                'ln -s $(CUR_DIR)/$(URL_BASE) $(BUILD_DIR)/fetched_urls/',
-            ],
-            'codec': 'tr',
-        },
-        'deps': [],
-    }
 
 
 def is_cross(info):
@@ -372,7 +196,7 @@ def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64']):
             yield func({'target': target, 'host': host})
 
 
-def load_plugins(where, kof):
+def load_plugins(where):
     def iter_plugins():
         for x in sorted(os.listdir(where)):
             if '~' not in x and '#' not in x:
@@ -380,6 +204,6 @@ def load_plugins(where, kof):
 
     for x in iter_plugins():
         with open(x, 'r') as f:
-            data = '__file__ = "' + x + '"; __name__ = "' + os.path.basename(x) + '"\n' + f.read()
+            data = '__file__ = "' + x + '"; __name__ = "' + os.path.basename(x) + '"\n\n' + f.read()
 
             exec data in globals()

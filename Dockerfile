@@ -1,4 +1,4 @@
-FROM antonsamokhvalov/newhope:latest
+FROM busybox
 COPY upm/upm /bin/
 ENV TARGET1=
 ENV TARGET2=

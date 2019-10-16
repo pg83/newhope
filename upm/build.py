@@ -7,12 +7,11 @@ import sys
 import shutil
 import hashlib
 
-from .user import add_tool_deps, visit_node, restore_node
+from .user import add_tool_deps
+from .db import visit_node, restore_node
 from .gen_id import to_visible_name, short_const
 from .ft import deep_copy, struct_dump
-
-
-REPLACES = {}
+from .subst import subst_kv_base
 
 
 def fix_fetch_url(src, depth):
@@ -29,7 +28,7 @@ def install_dir(pkg):
     try:
         pkg['idir']
     except KeyError:
-        pkg['idir'] = '$(PREFIX)/m/' + to_visible_name(pkg)
+        pkg['idir'] = '$(WDP)/' + to_visible_name(pkg)
 
     return pkg['idir']
 
@@ -46,50 +45,39 @@ def inc_dir(pkg):
     return install_dir(pkg) + '/include'
 
 
-def subst_values(data, root, install_dir_x):
-    def iter_dirs():
+def subst_values(data, root):
+    def iter1():
         pkg_root = gen_pkg_path(root)
 
-        subst = [
-            ('$(INSTALL_DIR)', install_dir_x),
-            ('$(VISIBLE)', os.path.basename(pkg_root)),
-            ('$(BUILD_DIR)', '$(PREFIX)/w/' + root['noid']),
-            ('$(PYTHON)', '/usr/bin/python'),
-            ('$(PKG_FILE)', pkg_root),
-            ('\n\n', '\n'),
-        ]
+        yield ('$(INSTALL_DIR)', '$(WDP)/$(VISIBLE)')
+        yield ('$(VISIBLE)', os.path.basename(pkg_root))
+        yield ('$(BUILD_DIR)', '$(WDW)/' + root['noid'])
+        yield ('$(PYTHON)', '/usr/bin/python')
+        yield ('$(PKG_FILE)', pkg_root)
+        yield ('\n\n', '\n')
 
-        for x in subst:
-            yield x
-
+    def iter2():
         root_node = root['node']()
 
         if 'url' in root_node:
             src = root_node['url']
 
-            src1 = [
-                ('$(FETCH_URL)', fix_fetch_url(src, 1)),
-                ('$(FETCH_URL_2)', fix_fetch_url(src, 2)),
-                ('$(FETCH_URL_FILE)', mv_file(src)),
-                ('$(URL)', src),
-                ('$(URL_BASE)', os.path.basename(src)),
-            ]
+            yield ('$(FETCH_URL)', fix_fetch_url(src, 1))
+            yield ('$(FETCH_URL_2)', fix_fetch_url(src, 2))
+            yield ('$(FETCH_URL_FILE)', mv_file(src))
+            yield ('$(URL)', src)
+            yield ('$(URL_BASE)', os.path.basename(src))
 
-            for x in src1:
-                yield x
-
+    def iter3():
         for x in root['deps']():
             name = x['node']()['name'].upper()
 
-            yield '$(' + name + '_DIR)', install_dir(x)
-            yield '$(' + name + '_BIN_DIR)', bin_dir(x)
-            yield '$(' + name + '_LIB_DIR)', lib_dir(x)
-            yield '$(' + name + '_INC_DIR)', inc_dir(x)
+            yield ('$(' + name + '_DIR)', install_dir(x))
+            yield ('$(' + name + '_BIN_DIR)', bin_dir(x))
+            yield ('$(' + name + '_LIB_DIR)', lib_dir(x))
+            yield ('$(' + name + '_INC_DIR)', inc_dir(x))
 
-    for k, v in iter_dirs():
-        data = data.replace(k, v)
-
-    return data
+    return subst_kv_base(data, iter1(), iter2(), iter3())
 
 
 def calc_mode(name):
@@ -106,7 +94,7 @@ def calc_mode(name):
 
 
 def get_pkg_link(p):
-    m = p.replace('/r/', '/m/')
+    m = p.replace('$(WDR)', '$(WDM)')
 
     if not os.path.isdir(m):
         with open(p, 'r') as f:
@@ -115,7 +103,7 @@ def get_pkg_link(p):
             try:
                 if not os.path.isdir(m):
                     os.makedirs(m)
-                    subprocess.check_output(['tar', '-x' + calc_mode(p[p.find('/r/') + 6:]) + 'f', p], cwd=m, shell=False)
+                    subprocess.check_output(['tar', '-x' + calc_mode(p[p.find('$(WDR)') + 6:]) + 'f', p], cwd=m, shell=False)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
@@ -137,10 +125,10 @@ def prepare_pkg(fr, to):
 
 
 def gen_pkg_path(v):
-    return '$(PREFIX)/r/' + to_visible_name(v)
+    return '$(WDR)/' + to_visible_name(v)
 
 
-def build_makefile_impl(node, install_dir, replaces):
+def build_makefile_impl(node, replaces):
     full = list(visit_node(node))
     by_name = {}
 
@@ -157,7 +145,7 @@ def build_makefile_impl(node, install_dir, replaces):
 
     def iter_nodes():
         for ptr in full:
-            yield print_one_node(restore_node(ptr), install_dir, replaces)
+            yield print_one_node(restore_node(ptr), replaces)
 
     def iter_by_name():
         for name in sorted(by_name.keys()):
@@ -173,7 +161,7 @@ def build_makefile_impl(node, install_dir, replaces):
     return '\n'.join(iter_parts()) + '\n'
 
 
-def print_one_node(root, install_dir, replaces):
+def print_one_node(root, replaces):
     mined_deps = []
     root_deps = root['deps']
 
@@ -185,10 +173,10 @@ def print_one_node(root, install_dir, replaces):
             yield x
 
     root['deps'] = iter_root_deps
-    data = print_one_node_once(root, install_dir)
+    data = print_one_node_once(root)
 
     while True:
-        new_data = print_one_node_once(root, install_dir)
+        new_data = print_one_node_once(root)
 
         if new_data == data:
             pkg_id = os.path.basename(gen_pkg_path(root))
@@ -200,7 +188,7 @@ def print_one_node(root, install_dir, replaces):
         data = new_data
 
 
-def print_one_node_once(root, install_dir):
+def print_one_node_once(root):
     iter_deps = root['deps']
 
     def iter_part():
@@ -210,7 +198,7 @@ def print_one_node_once(root, install_dir):
         yield os.path.basename(target) + ' ' + target + ': ' + ' '.join(gen_pkg_path(x) for x in iter_deps())
 
         def iter_body():
-            yield '$(RM_TMP) $(INSTALL_DIR) $(BUILD_DIR)'
+            yield '$(RM_TMP) $(INSTALL_DIR) $(BUILD_DIR)) || true'
             yield 'mkdir -p $(INSTALL_DIR) $(BUILD_DIR)'
 
             for x in iter_deps():
@@ -223,7 +211,7 @@ def print_one_node_once(root, install_dir):
                 prepare = xnode.get('prepare', [])
 
                 if prepare:
-                    pdir = pkg_path.replace('/r/', '/m/')
+                    pdir = pkg_path.replace('$(WDR)', '$(WDM)')
 
                     yield 'cd ' + pdir
 
@@ -255,7 +243,7 @@ def print_one_node_once(root, install_dir):
                 continue
 
             if ls.startswith('##'):
-                yield l
+                yield ls
 
             if ls.startswith('#'):
                 continue
@@ -265,30 +253,16 @@ def print_one_node_once(root, install_dir):
     data = '\n'.join(flt_part()) + '\n'
 
     for i in (1, 2):
-        data = subst_values(data, root, install_dir)
+        data = subst_values(data, root)
 
     return data
 
 
-def build_makefile(n, prefix='', rm_tmp='#', install_dir='$(PREFIX)/private'):
+def build_makefile(n):
     replaces = {}
-    data = '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n, install_dir + '/$(VISIBLE)', replaces)
+    data = '.ONESHELL:\nSHELL=/bin/bash\n.SHELLFLAGS=-exc\n\n' + build_makefile_impl(n, replaces)
 
-    repl = [
-        ('$(PREFIX)', prefix),
-        ('        ', '\t'),
-        ('$(RM_TMP)', rm_tmp),
-        ('$', '$$'),
-    ]
-
-    def iter_repl():
-        for i in repl:
-            yield i
-
-        for i in replaces.items():
-            yield i
-
-    for k, v in iter_repl():
+    for k, v in replaces.items():
         data = data.replace(k, v)
 
     return data
