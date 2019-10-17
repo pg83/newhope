@@ -1,20 +1,45 @@
 import os
+import sys
 
 
-def short_const(c):
-    return cons_to_name(c, func=lambda x: x[0], delim='')
+def calc_pkg_full_name(url):
+    if url.endswith('download'):
+        url = os.path.dirname(url)
+
+    return os.path.basename(url)
 
 
-def cons_to_name(c, func=lambda x: a, delim='-'):
+def cons_to_name_1(c, func=lambda x: a, delim='-'):
     if not c:
         return 'noarch'
 
     def iter_parts():
-        yield func(c['host'])
-        yield func(c['libc'])
-        yield func(c['target'])
+        for k in ('os', 'libc', 'arch'):
+            if k in c:
+                yield func(c[k])
 
     return delim.join(iter_parts())
+
+
+def short_const_1(c):
+    return cons_to_name_1(c, func=lambda x: x[0], delim='')
+
+
+def cons_to_name_2(c, func=lambda x: a, delim='-'):
+    if not c:
+        return 'noarch'
+
+    r1 = cons_to_name_1(c['host'], func, delim)
+    r2 = cons_to_name_1(c['target'], func, delim)
+
+    if r1 == r2:
+        return r1
+
+    return r1 + '-' + r2
+
+
+def short_const_2(c):
+    return cons_to_name_2(c, func=lambda x: x[0], delim='')
 
 
 def remove_compressor_name(x):
@@ -30,13 +55,13 @@ def to_visible_name_0(pkg):
         name = pkg['name']
 
         yield pkg['good_id'][:8]
-        yield short_const(pkg.get('constraint'))
+        yield short_const_2(pkg.get('constraint'))
         yield name
 
         if 'version' in pkg:
             yield pkg['version']
         elif 'url' in pkg:
-            p = remove_compressor_name(os.path.basename(pkg['url']))
+            p = remove_compressor_name(calc_pkg_full_name(pkg['url']))
 
             for n in (name, name[:-1]):
                 if p.startswith(n):
@@ -51,14 +76,7 @@ def to_visible_name_0(pkg):
 
 def to_visible_name_1(pkg):
     res = to_visible_name_0(pkg)
-
-    if 'codec' in pkg:
-        codec = pkg['codec']
-    elif '-noarch-' in res:
-        codec = 'tr'
-    else:
-        codec = 'xz'
-
+    codec = pkg['codec']
     res = res[:8] + '-' + codec + res[8:]
 
     if res.endswith('//'):
@@ -113,6 +131,4 @@ def cur_build_system_version():
 
 
 def to_visible_name(root):
-    node = root['node']()
-
-    return FUNCS[node.get('constraint', {}).get('build_system_version', cur_build_system_version())](root)
+    return FUNCS[cur_build_system_version()](root)

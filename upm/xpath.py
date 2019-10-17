@@ -3,60 +3,71 @@ import inspect
 from .db import restore_node
 
 
-def outer_locals(depth=0):
-    return inspect.getouterframes(inspect.currentframe())[depth + 1][0].f_locals
+def apply_base(funcs, log):
+    for f in funcs:
+        try:
+            yield f()
+        except Exception as e:
+            log.append((f, e))
+
+
+def apply_any_0(funcs, log):
+    for r in apply_base(funcs, log):
+        return r
+
+    raise Exception('shit happen')
+
+
+def fv(f, v):
+    return lambda: f(v)
+
+
+def iter_lst(v, lst):
+    for f in lst:
+        yield fv(f, v)
+
+
+def apply_any(v, lst, log):
+    return apply_any_0(iter_lst(v, lst), log)
+
+
+def apply_all(v, lst, log):
+    return list(apply_base(iter_lst(v, lst), log))
 
 
 def run_xpath(val, path, log=[]):
-    funcs = [lambda x: x, int, float]
+    def try_call(x):
+        return apply_any(x, (restore_node, lambda x: x(), lambda x: x), log)
 
-    def f1(cur, p):
-        try:
-            return cur()
-        except Exception as e:
-            log.append((cur, p, e, '()'))
+    def param_lst(p):
+        return apply_all(p, (str, int, float), log)
 
-        return f2(cur, p)
+    def f1(a):
+        x, p = a
 
-    def f2(cur, p):
-        for f in funcs:
-            try:
-                return cur(f(p))
-            except Exception as e:
-                log.append((cur, p, e, '(...)', f))
+        return x[p]
 
-        return f3(cur, p)
+    def f2(a):
+        x, p = a
 
-    def f3(cur, p):
-        for f in funcs:
-            try:
-                return cur[f(p)]
-            except Exception as e:
-                log.append((cur, p, e, '[...]', f))
+        return x(p)
 
-        return f4(cur, p)
+    def iter_funcs(pp, x):
+        for f in (f1, f2):
+            for p in pp:
+                yield fv(f, (x, p))
 
-    def f4(cur, p):
-        try:
-            return eval('cur' + p)
-        except Exception as e:
-            log.append((cur, p, e, cur + p))
+        def gen_eval(x, pp):
+            return 'x' + pp[0]
 
-            raise e
+        yield lambda: eval('x' + pp[0], {'x': x, 'pp': pp})
 
     x = val
 
     for p in path.split('/'):
-        def f(x):
-            for t in ('x()', 'restore_node(x)'):
-                try:
-                    return eval(t)
-                except:
-                    log.append((run_xpath, x, p, t, 'warn'))
-
-            return x
-
-        x = f(f2(f(x), p))
+        log.append(('before', x, p))
+        x = try_call(apply_any_0(iter_funcs(param_lst(p), try_call(x)), log))
+        log.append(('after', x, p))
 
     return x
 
@@ -82,11 +93,14 @@ def xp(path):
 
     if path.startswith('/'):
         name, path = path[1:].split('/', 1)
+        frame = inspect.currentframe()
 
-        for i in range(1, 5):
-            ol = outer_locals(i)
+        while True:
+            ol = frame.f_locals
 
             if name in ol:
                 return run_xpath_simple(ol[name], path)
+
+            frame = frame.f_back
 
     raise Exception('shit happen')

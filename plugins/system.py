@@ -1,14 +1,11 @@
-@cached
-def system():
-    return store_node({
-        'node': {
-            'from': 'system.py',
-            'name': 'system',
-            'version': '1.0.0',
-            'build': [],
-        },
+@helper
+def system0(info):
+    return {
+        'code': '',
+        'name': 'system',
+        'version': '1.0.0',
         'deps': [],
-    })
+    }
 
 
 @cached

@@ -1,7 +1,8 @@
 def make0(do_make, deps, codec='gz'):
     return {
         'code': """
-            LDFLAGS=--static ./configure --prefix=$(INSTALL_DIR) && $(M)
+            ./configure --prefix=$(INSTALL_DIR) || exit 1
+            $(M)
             mkdir $(INSTALL_DIR)/bin && cp make $(INSTALL_DIR)/bin/ && chmod +x $(INSTALL_DIR)/bin/make
         """.replace('$(M)', do_make),
         'src': 'http://mirror.lihnidos.org/GNU/ftp/gnu/make/make-4.2.tar.gz',

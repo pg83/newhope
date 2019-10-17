@@ -11,14 +11,14 @@ from .run_make import run_makefile
 from .user import singleton
 from .colors import RED, RESET
 from .subst import subst_kv_base
+from .ft import profile
 
 
 try:
    from .release_me import prepare_data
 except ImportError:
    def prepare_data():
-      with open(os.path.abspath(__file__), 'r') as f:
-         return f.read()
+      raise Exception('unimplemented')
 
 
 @singleton
@@ -28,6 +28,9 @@ def docker_binary():
 
 @singleton
 def tool_binary():
+   if sys.argv[0].endswith('upm'):
+      return os.path.abspath(sys.argv[0])
+
    res = os.path.abspath(__file__)
 
    if 'cli.py' in res:
@@ -37,31 +40,51 @@ def tool_binary():
 
 
 def build_docker():
+   data = subprocess.check_output(['docker build .'], shell=True, env=os.environ)
+   lines = data.split('\n')
+   line = lines[len(lines) - 2]
+
+   print data.strip()
+
+   return line.split(' ')[2]
+
+
+@singleton
+def user_home():
+   return os.path.expanduser('~')
+
+
+def prepare_root(r):
    try:
-      with open('upm/upm', 'w') as f:
-         f.write(prepare_data())
+      data = prepare_data()
+   except Exception as e:
+      if 'unimplemented' not in str(e):
+         raise e
 
-      os.system('chmod +x upm/upm')
+      return
 
-      data = subprocess.check_output(['docker build .'], shell=True, env=os.environ)
-      lines = data.split('\n')
-      line = lines[len(lines) - 2]
+   for f in 'bin', 'tmp':
+      try:
+         os.makedirs(os.path.join(r, f))
+      except OSError:
+         pass
 
-      print data.strip()
+   p = os.path.join(r, 'bin', 'upm')
 
-      return line.split(' ')[2]
-   finally:
-      os.unlink('upm/upm')
+   with open(p, 'w') as f:
+      f.write(data)
+      os.system('chmod +x ' + p)
+
+   os.execl(p, *([p] + sys.argv[1:]))
 
 
-def cli_make(arg):
+def cli_make(arg, verbose):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
    parser.add_argument('-f', '--path', default='Makefile', action='store', help='path to Makefile')
    parser.add_argument('-k', '--continue-on-fail', default=False, action='store_const', const=True, help='continue on fail')
-   parser.add_argument('-P', '--plugins', default=None, action='store', help='where to find build rules')
-   parser.add_argument('-p', '--prefix', default=None, action='store', help='main root for build files')
+   parser.add_argument('-r', '--root', default=None, action='store', help='main root for build files')
    parser.add_argument('-i', '--install-dir', default=None, action='store', help='where to install packages')
    parser.add_argument('--local', default=False, action='store_const', const=True, help='local execution')
    parser.add_argument('--production', default=False, action='store_const', const=True, help='production execution')
@@ -69,43 +92,45 @@ def cli_make(arg):
 
    args = parser.parse_args(arg)
 
-   if args.local:
-      path0 = [
-         ('$(WDM)', '$(PREFIX)/managed'),
-         ('$(WDR)', '$(PREFIX)/repo'),
-         ('$(WDW)', '$(PREFIX)/workdir'),
-         ('$(WDP)', '$(PREFIX)/private'),
-         ('$(WDL)', '$(PREFIX)/plugins'),
-         ('$(PREFIX)', os.environ['HOME'] + '/upm'),
-         ('$(UPM)', tool_binary()),
-         ('$(RM_TMP)', '(rm -rf'),
-      ]
-   elif args.production:
-      path0 = [
-         ('$(WDM)', '$(PREFIX)/m'),
-         ('$(WDR)', '$(PREFIX)/r'),
-         ('$(WDW)', '$(PREFIX)/w'),
-         ('$(WDP)', '/private'),
-         ('$(WDL)', '$(PREFIX)/p'),
-         ('$(PREFIX)', '/d'),
-         ('$(UPM)', 'upm'),
-         ('$(RM_TMP)', '# '),
-      ]
-   else:
-      path0 = []
+   if args.local and args.install_dir:
+      raise Exception('do not do this, kids, at home')
 
-   path1 = []
-   path2 = []
+   def calc_root():
+      if args.root:
+         return args.root
 
-   if path0:
-      if args.plugins:
-         path1.append(('$(WDL)', args.plugins))
+      if args.local:
+         return upm_root()
 
-      if args.prefix:
-         path2.append(('$(PREFIX)', args.prefix))
+      if args.production:
+         return '/d'
 
+      raise Exception('can not determine root')
+
+   root = calc_root()
+
+   prepare_root(root)
+
+   def iter_replaces():
       if args.install_dir:
-         path1.append(('$(WDP)', args.install_dir))
+         yield ('$(WDP)', args.install_dir)
+
+      yield ('$(WDM)', '$(PREFIX)/m')
+      yield ('$(WDR)', '$(PREFIX)/r')
+      yield ('$(WDW)', '$(PREFIX)/w')
+
+      if args.local:
+         yield ('$(WDP)', '$(PREFIX)/p')
+         yield ('$(UPM)', tool_binary())
+         yield ('$(RM_TMP)', 'rm -rf')
+
+      if args.production:
+         yield ('$(WDP)', '/private')
+         yield ('$(UPM)', 'upm')
+         yield ('$(RM_TMP)', '# ')
+
+      yield ('$(PREFIX)', root)
+      yield ('$$', '$')
 
    if args.path:
       with open(args.path, 'r') as f:
@@ -113,43 +138,40 @@ def cli_make(arg):
    else:
       data = sys.stdin.read()
 
-   data = subst_kv_base(data, path1, path0, path2)
-   data = data.replace('$$', '$')
-
-   run_makefile(data, *args.targets)
+   run_makefile(subst_kv_base(data, iter_replaces()), *args.targets)
 
 
-def cli_build(arg):
+def upm_root():
+   return user_home() + '/upm_root'
+
+
+def cli_build(arg, verbose):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-t', '--target', default=[], action='append', help='add target')
-   parser.add_argument('-i', '--image', default='antonsamokhvalov/newhope:latest', action='store', help='choose docker image')
-   parser.add_argument('-P', '--plugins', default='plugins', action='store', help='where to find build rules')
-   parser.add_argument('-p', '--prefix', default='', action='store', help='main root for build files')
+   parser.add_argument('-i', '--image', default='busybox', action='store', help='choose docker image')
+   parser.add_argument('-r', '--root', default=None, action='store', help='root for all our data')
 
    args = parser.parse_args(arg)
+
+   root = args.root
+
+   if not root:
+      root = upm_root()
+
+   prepare_root(root)
+
    image = args.image
 
    if image == "now":
       image = build_docker()
-   elif image == 'system':
-      prefix = args.prefix
-
-      if not prefix:
-         raise Exception('prefix is mandatory in local mode')
-
-      data = main_makefile(prefix, args.plugins, False, rm_tmp='rm -rf')
-
-      return run_makefile(data, tool_binary(), *args.target)
 
    def iter_args():
       yield 'docker'
       yield 'run'
       yield '-ti'
       yield '--mount'
-      yield 'type=bind,src=' + os.environ['HOME'] + '/repo,dst=/d/r'
-      yield '--mount'
-      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=$(WDL),readonly'
+      yield 'type=bind,src=' + root + ',dst=/d'
 
       for n, v in enumerate(args.target):
          yield '--env'
@@ -160,14 +182,21 @@ def cli_build(arg):
    subprocess.Popen(list(iter_args()), shell=False).wait()
 
 
-def cli_run(args):
+def cli_run(args, verbose):
+   try:
+      ids = args.index('--root')
+      root = args[ids + 1]
+      args = args[:ids] + args[2:]
+   except Exception as e:
+      root = upm_root()
+
+   prepare_root(root)
+
    def iter_args():
       yield 'docker'
       yield 'run'
       yield '--mount'
-      yield 'type=bind,src=' + os.environ['HOME'] + '/repo,dst=$(WDR)'
-      yield '--mount'
-      yield 'type=bind,src=' + os.getcwd() + '/plugins' + ',dst=$(WDL),readonly'
+      yield 'type=bind,src=' + root + ',dst=/d'
 
       for x in args:
          yield x
@@ -175,7 +204,7 @@ def cli_run(args):
    os.execl(docker_binary(), *list(iter_args()))
 
 
-def cli_tag(args):
+def cli_tag(args, verbose):
    code = """
        docker tag $1 antonsamokhvalov/newhope:$2
        docker tag antonsamokhvalov/newhope:$2 antonsamokhvalov/newhope:latest
@@ -186,20 +215,20 @@ def cli_tag(args):
    os.execl('/bin/bash', '/bin/bash', '-c', code)
 
 
-def cli_help(args):
+def cli_help(args, verbose):
    def iter_funcs():
       for k in sorted(globals().keys()):
          if k.startswith('cli_'):
             yield k[4:]
 
-   print >>sys.stderr, 'usage: ' + sys.argv[0] + ' [' + ', '.join(iter_funcs()) + '] ....'
+   print >>sys.stderr, 'usage: ' + sys.argv[0] + '(-v, --verbose, --profile)* ' + '[' + ', '.join(iter_funcs()) + '] ....'
 
 
-def cli_makefile(arg):
+def cli_makefile(arg, verbose):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
-   parser.add_argument('-P', '--plugins', default='plugins', action='store', help='where to find build rules')
+   parser.add_argument('-P', '--plugins', default=[], action='append', help='where to find build rules')
 
    args = parser.parse_args(arg)
 
@@ -211,13 +240,13 @@ def cli_makefile(arg):
       close = lambda: 0
 
    try:
-      f.write(main_makefile(os.path.abspath(args.plugins)))
+      f.write(main_makefile([os.path.abspath(x) for x in args.plugins], verbose))
       f.flush()
    finally:
       close()
 
 
-def cli_subcommand(args):
+def cli_subcommand(args, verbose):
    cmds = {}
 
    for cmd in [prepare_pkg, get_pkg_link]:
@@ -228,32 +257,41 @@ def cli_subcommand(args):
    cmds[args[0]](*args[1:])
 
 
-def cli_release(args):
+def cli_release(args, verbose):
    print prepare_data()
 
 
-def run_main():
-   if len(sys.argv) < 2:
-      args = sys.argv + ['help']
-   else:
-      args = sys.argv
+def check_arg(args, params):
+   new_args = list(filter(lambda x: x not in params, args))
 
-   new_args = list(filter(lambda x: x not in ('-v', '--verbose'), args))
-   verbose = len(args) != len(new_args)
-   args = new_args
+   return new_args, len(args) != len(new_args)
+
+
+def run_main():
+   args = sys.argv
+
+   args, do_verbose = check_arg(args, ('-v', '--verbose'))
+   args, do_profile = check_arg(args, ('--profile',))
+
+   if len(args) < 2:
+      args = args + ['help']
 
    mode = args[1]
 
    def func():
-      globals().get('cli_' + mode, cli_help)(args[2:])
+      ff = globals().get('cli_' + mode, cli_help)
 
-   if verbose:
+      ff(args[2:], do_verbose)
+
+   func = profile(func, really=do_profile)
+
+   try:
       func()
-   else:
-      try:
-         func()
-      except Exception as e:
+   except Exception as e:
+      if do_verbose:
          print RED + traceback.format_exc() + RESET
+      else:
+         print RED + str(e) + RESET
 
       return 1
 

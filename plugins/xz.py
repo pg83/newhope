@@ -1,7 +1,7 @@
 def xz0(info, deps, codec):
     return {
         'code': './configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static && make && make install',
-        'src': 'https://downloads.sourceforge.net/project/lzmautils/xz-5.2.4.tar.gz',
+        'src': 'https://sourceforge.net/projects/lzmautils/files/xz-5.2.4.tar.gz/download',
         'deps': deps,
         'codec': codec,
     }

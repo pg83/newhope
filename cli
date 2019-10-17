@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# replace me
+## install_me
 
 import os
 import sys

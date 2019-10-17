@@ -6,11 +6,12 @@ import json
 import functools
 
 
-from .ft import singleton, cached, fp, deep_copy, struct_dump
-from .cc import find_compiler
-from .gen_id import to_visible_name, cur_build_system_version
+from .ft import singleton, cached, fp, deep_copy
+from .cc import find_compiler, is_cross
+from .gen_id import to_visible_name, calc_pkg_full_name
 from .xpath import xp
 from .db import restore_node, store_node
+from .subst import subst_kv_base
 
 
 def join_versions(deps):
@@ -23,17 +24,16 @@ def join_versions(deps):
 
 @singleton
 def current_host_platform():
-    return platform.machine()
+    return {
+        'arch': platform.machine(),
+        'os': platform.system().lower()
+    }
 
 
 @cached
 def find_compiler_id(info):
-    info = deep_copy(info)
-
-    info.pop('build_system_version')
-
     for x in find_compiler(info):
-        return store_node(x)
+        return x
 
     raise Exception('shit happen')
 
@@ -52,10 +52,6 @@ def find_compilers(info):
     return list(iter_compilers())
 
 
-def is_cross(info):
-    return info['target'] != info['host']
-
-
 def subst_info(info):
     info = deep_copy(info)
 
@@ -63,13 +59,7 @@ def subst_info(info):
         info['host'] = current_host_platform()
 
     if 'target' not in info:
-        info['target'] = 'aarch64'
-
-    if 'libc' not in info:
-        info['libc'] = 'musl'
-
-    if 'build_system_version' not in info:
-        info['build_system_version'] = cur_build_system_version()
+        info['target'] = deep_copy(info['host'])
 
     return info
 
@@ -116,7 +106,10 @@ def real_wrapper(func_name, info):
 
         full_data = func(param)
 
-    data = full_data['code']
+    try:
+        data = full_data['code']
+    except TypeError:
+        return full_data
 
     if '#pragma cc' not in data:
         if './configure' not in data:
@@ -131,24 +124,26 @@ def real_wrapper(func_name, info):
     if 'prepare' in full_data:
         node['prepare'] = to_lines(full_data['prepare'])
 
-    if 'version' in full_data:
-        node['version'] = full_data['version']
+    node['codec'] = 'xz'
 
-    if 'codec' in full_data:
-        node['codec'] = full_data['codec']
+    for x in ('version', 'codec'):
+        if x in full_data:
+            node[x] = full_data[x]
 
     for k in ('src', 'url'):
         if k in full_data:
             node['url'] = full_data[k]
+            node['pkg_full_name'] = calc_pkg_full_name(node['url'])
 
     def iter_extra_lines():
         if compilers:
-            cnode = restore_node(compilers[-1])
-
-            yield 'ln -sf `which ' + cnode['node']()['prefix'][1] + 'gcc` /bin/cc'
+            yield 'ln -sf `which ' + os.path.join(xp('/compilers/-1/node/prefix/1'), 'gcc') + '` /bin/cc || true'
 
         if '$(FETCH_URL' not in data and 'url' in node:
             yield '$(FETCH_URL)'
+
+    if 'subst' in full_data:
+        data = subst_kv_base(data, full_data['subst'])
 
     node['build'] = list(iter_extra_lines()) + to_lines(data)
 
@@ -156,7 +151,7 @@ def real_wrapper(func_name, info):
         for x in compilers:
             yield x
 
-        for x in full_data.get('deps', []):
+        for x in full_data['deps']:
             yield x
 
     return store_node({'node': node, 'deps': list(iter_deps())})
@@ -175,35 +170,54 @@ def helper(func):
     return wrapper
 
 
-def add_tool_deps(pkg, data):
-    def iter_tools():
-        for k, v in simple_funcs():
-            kk = '$(' + k.upper() + '_'
+def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
+    if not os:
+        os = [host['os']]
 
-            if kk in data:
-                cc = deep_copy(pkg['constraint'])
-                cc['host'] = cc['target']
-
-                yield v(cc)
-
-    return []
-    return list(iter_tools())
-
-
-def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64']):
     for name, func in simple_funcs():
         for target in targets:
-            yield func({'target': target, 'host': host})
+            for oss in os:
+                params = {
+                    'target': {
+                        'arch': target,
+                        'os': oss,
+                    },
+                    'host': host,
+                }
+
+                if oss == 'linux':
+                    for l in ('musl', 'uclibc'):
+                        p = deep_copy(params)
+                        p['target']['libc'] = l
+
+                        yield func(p)
+                else:
+                    yield func(params)
+
+
+def load_plugins_code(where):
+    def iter_plugins():
+        for x in os.listdir(where):
+            if '~' not in x and '#' not in x:
+                path = where + '/' + x
+
+                with open(path, 'r') as f:
+                    yield path, f.read()
+
+    return dict(iter_plugins())
+
+
+def load_plugins_base(plugins):
+    for x in sorted(plugins.keys()):
+        data = '__file__ = "' + x + '"; __name__ = "' + os.path.basename(x) + '"\n\n' + plugins[x]
+
+        exec data in globals()
 
 
 def load_plugins(where):
-    def iter_plugins():
-        for x in sorted(os.listdir(where)):
-            if '~' not in x and '#' not in x:
-                yield where + '/' + x
+    builtin_plugins = {}
+    ## builtin_plugins
+    load_plugins_base(builtin_plugins)
 
-    for x in iter_plugins():
-        with open(x, 'r') as f:
-            data = '__file__ = "' + x + '"; __name__ = "' + os.path.basename(x) + '"\n\n' + f.read()
-
-            exec data in globals()
+    for x in where:
+        load_plugins_base(load_plugins_code(os.path.abspath(x)))

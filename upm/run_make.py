@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 
 from .colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
@@ -11,10 +12,15 @@ def new_cmd():
     }
 
 
+def xprint(*args):
+    print >>sys.stderr, ' '.join(args)
+
+
 def run_makefile(data, *targets):
     lst = []
     prev = None
     shell = '/bin/bash'
+    flags = ['-c']
 
     for l in data.split('\n'):
         ls = l.strip()
@@ -23,6 +29,10 @@ def run_makefile(data, *targets):
             continue
 
         if l[0] == '.':
+            if l.startswith('.SHELLFLAGS'):
+                a, b = l.split('=')
+                flags = [x.strip() for x in b.strip().split(' ')]
+
             continue
 
         if ls.startswith('SHELL'):
@@ -65,16 +75,26 @@ def run_makefile(data, *targets):
     done = set()
 
     def run_cmd(c):
+        errors = []
+
         if c in done:
-            print BLUE + 'already done ' + c + RESET
-            return
+            return xprint(BLUE + 'already done ' + c + RESET)
 
         if os.path.exists(c):
             done.add(c)
-            print BLUE + 'already done ' + c + RESET
-            return
+            return xprint(BLUE + 'already done ' + c + RESET)
 
         n = by_dep[c]
+
+        def cleanup():
+            for d in n['deps1']:
+                if d[0] == '/':
+                    errors.append('will remove trash ' + d)
+
+                    try:
+                        os.unlink(d)
+                    except Exception as e:
+                        errors.append(str(e))
 
         for d in n['deps1']:
             done.add(d)
@@ -82,14 +102,13 @@ def run_makefile(data, *targets):
         for d in n['deps2']:
             run_cmd(d)
 
-        errors = []
         white_line = WHITE + '--------------------------------------------------------------------------------------------' + RESET
 
         def iter_lines(errors):
             yield white_line
 
             if n['cmd']:
-                cmd = '\n'.join(n['cmd']) + '\n'
+                cmd = 'set -e; set -x; ' + '\n'.join(n['cmd']) + '\n'
 
                 yield RED + 'run ' + c + ':' + RESET
                 yield YELLOW + ' command:' + RESET
@@ -102,16 +121,23 @@ def run_makefile(data, *targets):
 
                 yield ''
 
-                try:
-                    (res, errr) = (subprocess.check_output([shell, '-xce', cmd], stderr=subprocess.STDOUT, shell=False), None)
-                except subprocess.CalledProcessError as err:
-                    (res, errr) = (err.output, err)
+                all_res = []
 
+                try:
+                    res = subprocess.check_output([shell] + flags + [cmd], stderr=subprocess.STDOUT, shell=False)
+                    all_res.append(res)
+
+                    if 'C compiler cannot create executables' in res:
+                        raise Exception('C compiler cannot create executables')
+                except subprocess.CalledProcessError as err:
+                    all_res.append(err.output)
                     errors.append('can not build ' + c)
+                except Exception as err:
+                    errors.append(str(err))
 
                 yield GREEN + ' log:' + RESET
 
-                for l in res.strip().split('\n'):
+                for l in ('\n'.join(all_res)).strip().split('\n'):
                     l = l.rstrip()
 
                     if l:
@@ -127,10 +153,12 @@ def run_makefile(data, *targets):
             else:
                 yield BLUE + 'done fake ' + c + RESET
 
-        print '\n'.join(iter_lines(errors))
+        xprint('\n'.join(iter_lines(errors)))
 
         if errors:
-            raise Exception(', '.join(errors))
+            cleanup()
+
+            raise Exception('%s' % (', '.join(errors)))
 
     for t in targets:
         run_cmd(t)
