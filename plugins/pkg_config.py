@@ -6,4 +6,5 @@ def pkg_config(info):
         """,
         'src': 'https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz',
         'deps': devtools(info),
+        'prepare': '$(ADD_PATH)',
     }

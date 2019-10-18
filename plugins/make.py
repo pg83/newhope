@@ -6,7 +6,7 @@ def make0(do_make, deps, codec='gz'):
             mkdir $(INSTALL_DIR)/bin && cp make $(INSTALL_DIR)/bin/ && chmod +x $(INSTALL_DIR)/bin/make
         """.replace('$(M)', do_make),
         'src': 'http://mirror.lihnidos.org/GNU/ftp/gnu/make/make-4.2.tar.gz',
-        'prepare': 'export PATH=$(CUR_DIR)/bin:$PATH',
+        'prepare': '$(ADD_PATH)',
         'codec': codec,
         'deps': deps,
     }

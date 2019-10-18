@@ -35,7 +35,7 @@ def cons_to_name_2(c, func=lambda x: a, delim='-'):
     if r1 == r2:
         return r1
 
-    return r1 + '-' + r2
+    return r1 + r2
 
 
 def short_const_2(c):
@@ -56,20 +56,16 @@ def to_visible_name_0(pkg):
 
         yield pkg['good_id'][:8]
         yield short_const_2(pkg.get('constraint'))
-        yield name
 
-        if 'version' in pkg:
-            yield pkg['version']
-        elif 'url' in pkg:
-            p = remove_compressor_name(calc_pkg_full_name(pkg['url']))
+        def pkg_name():
+            if 'version' in pkg:
+                return name + pkg['version']
+            elif 'url' in pkg:
+                return remove_compressor_name(calc_pkg_full_name(pkg['url']))
+            else:
+                return name
 
-            for n in (name, name[:-1]):
-                if p.startswith(n):
-                    p = p[len(n):]
-
-                    break
-
-            yield p
+        yield pkg_name().replace('-', '').replace('_','').replace('.', '')
 
     return '-'.join(iter_parts()).replace('_', '-').replace('.', '-').replace('--', '-')
 

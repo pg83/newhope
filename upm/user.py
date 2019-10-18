@@ -3,14 +3,15 @@ import imp
 import sys
 import platform
 import json
+import base64
 import functools
-
+import itertools
 
 from .ft import singleton, cached, fp, deep_copy
-from .cc import find_compiler, is_cross
+from .cc import find_compiler, is_cross, iter_targets
 from .gen_id import to_visible_name, calc_pkg_full_name
 from .xpath import xp
-from .db import restore_node, store_node
+from .db import restore_node, store_node, pointer, intern_struct
 from .subst import subst_kv_base
 
 
@@ -30,15 +31,15 @@ def current_host_platform():
     }
 
 
-@cached
+@cached(key=lambda x: x)
 def find_compiler_id(info):
     for x in find_compiler(info):
         return x
 
-    raise Exception('shit happen')
+    raise Exception('shit happen %s' % info)
 
 
-@cached
+@cached(key=lambda x: x)
 def find_compilers(info):
     def iter_compilers():
         if is_cross(info):
@@ -67,13 +68,9 @@ def subst_info(info):
 USER_FUNCS_BY_NAME = {}
 
 
-@singleton
 def simple_funcs():
-    def do_iter():
-        for k in sorted(USER_FUNCS_BY_NAME.keys()):
-            yield k, USER_FUNCS_BY_NAME[k][0]
-
-    return list(do_iter())
+    for k in sorted(USER_FUNCS_BY_NAME.keys()):
+        yield k, USER_FUNCS_BY_NAME[k][0]
 
 
 def to_lines(text):
@@ -87,7 +84,7 @@ def to_lines(text):
     return list(iter_l())
 
 
-@cached
+@cached(key=lambda x: x)
 def real_wrapper(func_name, info):
     func = USER_FUNCS_BY_NAME[func_name][1]
     info = subst_info(info)
@@ -121,9 +118,11 @@ def real_wrapper(func_name, info):
         "from": func.__name__ + '.py',
     }
 
-    if 'prepare' in full_data:
-        node['prepare'] = to_lines(full_data['prepare'])
+    def iter_prepare():
+        for l in to_lines(full_data.get('prepare', '')):
+            yield l
 
+    node['prepare'] = list(iter_prepare())
     node['codec'] = 'xz'
 
     for x in ('version', 'codec'):
@@ -136,9 +135,6 @@ def real_wrapper(func_name, info):
             node['pkg_full_name'] = calc_pkg_full_name(node['url'])
 
     def iter_extra_lines():
-        if compilers:
-            yield 'ln -sf `which ' + os.path.join(xp('/compilers/-1/node/prefix/1'), 'gcc') + '` /bin/cc || true'
-
         if '$(FETCH_URL' not in data and 'url' in node:
             yield '$(FETCH_URL)'
 
@@ -170,29 +166,52 @@ def helper(func):
     return wrapper
 
 
+def move_many(fr, dirs):
+    return '\n'.join([('cp -R %s $(INSTALL_DIR)/' % (fr + x)) for x in dirs]) + '\n'
+
+
+def splitter(folders=[]):
+    def genwrapper(func):
+        return real_splitter(helper(func), folders)
+
+    return genwrapper
+
+
+def x_key(v):
+    a, b, c = v
+
+    return (a, b.__name__, c)
+
+
+@cached(key=x_key)
+def real_splitter(func, folders):
+    @helper
+    def splitter_func(info):
+        fi = func(info)
+        name = restore_node(fi)['node']()['name']
+
+        def iter_cut():
+            yield 'cut'
+            yield func.__name__
+            yield name
+
+        return {
+            'code': '\n'.join([('cp -R $(MNGR_%s_DIR)/%s $(INSTALL_DIR)/') % (name.upper(), x[1:]) for x in folders]),
+            'name': '-'.join(iter_cut()),
+            'kind': 'splitter',
+            'deps': [fi, tar1(info), xz1(info), bestbox1(info)],
+        }
+
+    return splitter_func
+
+
 def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
     if not os:
         os = [host['os']]
 
     for name, func in simple_funcs():
-        for target in targets:
-            for oss in os:
-                params = {
-                    'target': {
-                        'arch': target,
-                        'os': oss,
-                    },
-                    'host': host,
-                }
-
-                if oss == 'linux':
-                    for l in ('musl', 'uclibc'):
-                        p = deep_copy(params)
-                        p['target']['libc'] = l
-
-                        yield func(p)
-                else:
-                    yield func(params)
+        for target in iter_targets(host):
+            yield func({'host': host, 'target': target})
 
 
 def load_plugins_code(where):
@@ -219,5 +238,5 @@ def load_plugins(where):
     ## builtin_plugins
     load_plugins_base(builtin_plugins)
 
-    for x in where:
+    for x in itertools.chain(where):
         load_plugins_base(load_plugins_code(os.path.abspath(x)))

@@ -1,12 +1,14 @@
+import sys
 import json
 import time
 import binascii
 
-from .ft import struct_dump_bytes, dumps as dumps_db, cached
+from .ft import struct_dump_bytes, dumps as dumps_db, cached, singleton
 from .gen_id import calc_pkg_full_name
 
 
 III = {}
+VVV = []
 
 
 def struct_ptr(s):
@@ -14,21 +16,27 @@ def struct_ptr(s):
 
 
 def intern_struct(n):
-    k = struct_ptr(n)
-    III[k] = n
+    k = struct_ptr(n)[:8]
 
-    return pointer(k)
+    if k in III:
+        p = III[k]
+    else:
+        VVV.append((n, k))
+        p = len(VVV) - 1
+        III[k] = p
+
+    return pointer(p)
 
 
 def check_db():
     t1 = time.time()
 
     for k, v in III.iteritems():
-        assert k == struct_ptr(v)
+        assert k == VVV[v][1]
 
     t2 = time.time()
 
-    return 'db ok, ncount = ' + str(len(III)) + ', size = ' + str(len(dumps_db(III))) + ', check time = ' + str(t2 - t1) + 's'
+    return 'db ok, ncount = ' + str(len(III)) + ', size = ' + str(len(dumps_db([III, VVV]))) + ', check time = ' + str(t2 - t1) + 's'
 
 
 def visit_node(root):
@@ -40,11 +48,11 @@ def visit_node(root):
         if kk not in s:
             s.add(kk)
 
-            yield k
-
             for x in deref_pointer(deref_pointer(k)[1]):
                 for v in do(x):
                     yield v
+
+            yield k
 
     for x in do(root):
         yield x
@@ -56,16 +64,17 @@ def pointer(p):
 
 def mangle_pointer(p):
     return (p, 'p')
+    return p
 
 
 def demangle_pointer(p):
     assert p[1] == 'p'
-
     return p[0]
+    return p
 
 
 def deref_pointer(v):
-    return III[demangle_pointer(v)]
+    return VVV[demangle_pointer(v)][0]
 
 
 def restore_node(ptr):
@@ -81,7 +90,7 @@ def restore_node(ptr):
     return {
         'node': get_node,
         'deps': iter_deps,
-        'noid': binascii.hexlify(demangle_pointer(ptr)),
+        'noid': binascii.hexlify(VVV[demangle_pointer(ptr)][1]),
     }
 
 
@@ -108,7 +117,7 @@ def store_node(node):
     return store_node_impl(node, list(extra()))
 
 
-@cached
+@cached(key=lambda x: x)
 def gen_fetch_node(url):
     return store_node_plain({
         'node': {

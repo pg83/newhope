@@ -1,11 +1,9 @@
-from .user import gen_packs, load_plugins
+from .user import gen_packs
 from .build import build_makefile
 from .db import store_node
 
 
-def main(plugins, verbose):
-    load_plugins(plugins)
-
+def main(verbose):
     node = {
         'node': {
             'name': 'all',

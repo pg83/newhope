@@ -38,19 +38,32 @@ def singleton(f):
     return wrapper
 
 
-def cached(f):
+def cached(key=lambda x: x):
     vvv = {}
 
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        k = struct_dump_bytes([args, kwargs])
+    def real_cached(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            def iter_key():
+                yield f.__name__
 
-        if k not in vvv:
-            vvv[k] = f(*args, **kwargs)
+                for a  in args:
+                    yield a
 
-        return vvv[k]
+                for k, v in kwargs.items():
+                    yield k
+                    yield v
 
-    return wrapper
+            k = struct_dump_bytes(key(list(iter_key())))
+
+            if k not in vvv:
+                vvv[k] = f(*args, **kwargs)
+
+            return vvv[k]
+
+        return wrapper
+
+    return real_cached
 
 
 def fp(f, v, *args, **kwargs):

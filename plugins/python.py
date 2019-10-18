@@ -58,6 +58,9 @@ def python0(info, deps, codec):
         'src': 'https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz',
         'deps': deps,
         'codec': codec,
+        'extra': [
+            {'kind': 'file', 'path': 'Modules/Setup.local', 'data': python_setup_local},
+        ],
     }
 
 

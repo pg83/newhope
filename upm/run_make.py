@@ -19,7 +19,7 @@ def xprint(*args):
 def run_makefile(data, *targets):
     lst = []
     prev = None
-    shell = '/bin/bash'
+    shell = '/bin/sh'
     flags = ['-c']
 
     for l in data.split('\n'):

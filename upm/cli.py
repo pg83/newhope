@@ -4,11 +4,12 @@ import sys
 import traceback
 import argparse
 import subprocess
+import shutil
 
 from .main import main as main_makefile
-from .build import prepare_pkg, get_pkg_link
+from .build import prepare_pkg, get_pkg_link, build_sh_script
 from .run_make import run_makefile
-from .user import singleton
+from .user import singleton, load_plugins
 from .colors import RED, RESET
 from .subst import subst_kv_base
 from .ft import profile
@@ -63,7 +64,22 @@ def prepare_root(r):
 
       return
 
-   for f in 'bin', 'tmp':
+   def iter_trash():
+      for f in ('m', 'w', 'd', 'bin', 'tmp'):
+         yield os.path.join(r, f)
+
+      ## yield '/private'
+
+   for f in iter_trash():
+      try:
+         shutil.rmtree(f)
+      except Exception as e:
+         if 'No such file or directory' in str(e):
+            pass
+         else:
+            print >>sys.stderr, f, e
+
+   for f in ('bin', 'tmp'):
       try:
          os.makedirs(os.path.join(r, f))
       except OSError:
@@ -86,20 +102,20 @@ def cli_make(arg, verbose):
    parser.add_argument('-k', '--continue-on-fail', default=False, action='store_const', const=True, help='continue on fail')
    parser.add_argument('-r', '--root', default=None, action='store', help='main root for build files')
    parser.add_argument('-i', '--install-dir', default=None, action='store', help='where to install packages')
-   parser.add_argument('--local', default=False, action='store_const', const=True, help='local execution')
    parser.add_argument('--production', default=False, action='store_const', const=True, help='production execution')
    parser.add_argument('targets', nargs=argparse.REMAINDER)
 
    args = parser.parse_args(arg)
+   local = not args.production
 
-   if args.local and args.install_dir:
+   if local and args.install_dir:
       raise Exception('do not do this, kids, at home')
 
    def calc_root():
       if args.root:
          return args.root
 
-      if args.local:
+      if local:
          return upm_root()
 
       if args.production:
@@ -119,7 +135,7 @@ def cli_make(arg, verbose):
       yield ('$(WDR)', '$(PREFIX)/r')
       yield ('$(WDW)', '$(PREFIX)/w')
 
-      if args.local:
+      if local:
          yield ('$(WDP)', '$(PREFIX)/p')
          yield ('$(UPM)', tool_binary())
          yield ('$(RM_TMP)', 'rm -rf')
@@ -132,7 +148,9 @@ def cli_make(arg, verbose):
       yield ('$(PREFIX)', root)
       yield ('$$', '$')
 
-   if args.path:
+   if args.path == '-':
+      data = sys.stdin.read()
+   elif args.path:
       with open(args.path, 'r') as f:
          data = f.read()
    else:
@@ -212,7 +230,7 @@ def cli_tag(args, verbose):
        docker push antonsamokhvalov/newhope:latest
    """.replace('$1', args[0]).replace('$2', args[1])
 
-   os.execl('/bin/bash', '/bin/bash', '-c', code)
+   os.execl('/bin/sh', '/bin/sh', '-c', code)
 
 
 def cli_help(args, verbose):
@@ -228,6 +246,7 @@ def cli_makefile(arg, verbose):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
+   parser.add_argument('-S', '--shell', default=[], action='append', help='out build.sh script')
    parser.add_argument('-P', '--plugins', default=[], action='append', help='where to find build rules')
 
    args = parser.parse_args(arg)
@@ -239,8 +258,24 @@ def cli_makefile(arg, verbose):
       f = sys.stdout
       close = lambda: 0
 
+   load_plugins([os.path.abspath(x) for x in args.plugins] + [os.path.abspath(__file__) + '/../../plugins'])
+
    try:
-      f.write(main_makefile([os.path.abspath(x) for x in args.plugins], verbose))
+      if args.shell:
+         def iter_subst():
+            yield ('$(WDM)', '$(PREFIX)/m')
+            yield ('$(WDR)', '$(PREFIX)/r')
+            yield ('$(WDW)', '$(PREFIX)/w')
+            yield ('$(WDP)', '$(PREFIX)/p')
+            yield ('$(UPM)', tool_binary())
+            yield ('$(RM_TMP)', '## ')
+            yield ('$(PREFIX)', '$PREFIX')
+            yield ('$$', '$')
+
+         f.write(subst_kv_base(build_sh_script(args.shell), iter_subst()))
+      else:
+         f.write(main_makefile(verbose))
+
       f.flush()
    finally:
       close()

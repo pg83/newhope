@@ -1,8 +1,9 @@
 def mbedtls0(deps, codec):
     return {
         'code': """
-            make programs lib && make install
-            cd /usr/local && mv * $(INSTALL_DIR)/
+            #pragma cc
+            cat Makefile | grep -v 'DESTDIR=' > M && mv M Makefile
+            CC=gcc make programs lib && make DESTDIR=$(INSTALL_DIR) install
         """,
         'src': 'https://tls.mbed.org/download/mbedtls-2.16.3-apache.tgz',
         'deps': deps,
@@ -18,3 +19,8 @@ def mbedtls2(info):
 @helper
 def mbedtls1(info):
     return mbedtls0([make1(info), bestbox1(info), tar1(info), xz1(info)], 'xz')
+
+
+@splitter(folders=['/lib', '/include'])
+def mbedtls1_dev(info):
+    return mbedtls1(info)

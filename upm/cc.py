@@ -22,8 +22,8 @@ V = {
         'codec': 'gz',
         'prepare': [
             'export PATH=$(GCC_BIN_DIR):$PATH',
-            'export LDFLAGS=--static',
-            'export CFLAGS=-I$(GCC_INC_DIR)',
+            'export LDFLAGS="--static $LDFLAGS"',
+            'export CFLAGS="-O2 -I$(GCC_INC_DIR) $CFLAGS"',
         ]
     },
     "barebone": [
@@ -113,7 +113,7 @@ def is_compat(info, comp_node):
     return is_compat_x(info.get('constraint', info), comp_node.get('constraint', comp_node))
 
 
-@cached
+@cached(key=lambda x: x)
 def find_tool(name):
     return subprocess.check_output(['echo `which ' + name + '`'], shell=True).strip()
 
@@ -155,7 +155,6 @@ def iter_targets(*extra):
             }
 
 
-
 def iter_system_impl():
     for c in iter_system_compilers():
         if c['kind'] == 'clang':
@@ -194,9 +193,10 @@ def iter_system_impl():
 
                             if cc['is_cross']:
                                 c['prefix'] = ['tool_cross_prefix', '']
-                                c['prepare'] = ['export CFLAGS="--target=%s-%s"' % (t['os'], t['arch'])]
+                                c['prepare'] = ['export CFLAGS="-O2 -target=%s-%s -fno-short-wchar"' % (t['os'], t['arch'])]
                             else:
                                 c['prefix'] = ['tool_native_prefix', '']
+                                c['prepare'] = ['export CFLAGS="-O2"']
 
                             yield {
                                 'node': c,
