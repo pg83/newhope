@@ -1,6 +1,6 @@
 def bestbox0(info, deps, codec):
-    if xp('/info/info/host/os') == 'darwin':
-        return system00(info)
+    #if xp('/info/info/host/os') == 'darwin':
+    return system00(info)
 
     return {
         'code': """

@@ -37,8 +37,6 @@ def apply_all(v, lst, log):
 
 
 def run_xpath(val, path, log=[]):
-    val = deep_copy(val)
-
     def try_call(x):
         return apply_any(x, (restore_node, lambda x: x(), lambda x: x), log)
 
@@ -99,11 +97,10 @@ def xp(path):
         frame = inspect.currentframe()
 
         while True:
+            frame = frame.f_back
             ol = frame.f_locals
 
             if name in ol:
-                return run_xpath_simple(deep_copy(ol[name]), path)
-
-            frame = frame.f_back
+                return run_xpath_simple(ol[name], path)
 
     raise Exception('shit happen')

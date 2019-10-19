@@ -80,4 +80,3 @@ def xprint(*args, **kwargs):
         text = colorize(text, color)
 
     where.write(text + '\n')
-

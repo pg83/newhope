@@ -1,4 +1,7 @@
 from .ft import deep_copy
+from .db import deref_pointer
+
+MY_FUNCS = []
 
 
 def split_name(b, c):
@@ -14,6 +17,8 @@ def x_key(v):
 def real_calc(folders, func, info):
     fi = func(info)
 
+    print 'real_calc', fi
+
     def iter_parts():
         yield func.__name__
 
@@ -21,6 +26,8 @@ def real_calc(folders, func, info):
             yield x[1:]
 
     bad_name = '_'.join(iter_parts())
+
+    print bad_name
 
     return store_node({
         'node': {
@@ -30,21 +37,26 @@ def real_calc(folders, func, info):
             'name': bad_name,
             'kind': 'splitter',
             'codec': 'xz',
+            'func_name': func.__name__,
         },
-        'deps': [fi, tar1(info), xz1(info), bestbox1(info)],
+        'deps': [],
     })
 
 
 def splitter(folders=['/bin']):
-    return modifier(folders=folders)
+    return helper
+    return modifier(folders=folders, decorator='splitter')
 
 
 def options(folders=['/bin']):
-    return modifier(folders=folders)
+    return modifier(folders=folders, decorator='options')
 
 
 def modifier(**kwargs):
+    return lambda x: x
     res = deep_copy(kwargs)
+
+    MY_FUNCS.append(res)
 
     def wrap_func(func):
         res['func'] = func
@@ -52,8 +64,26 @@ def modifier(**kwargs):
         def wrap_info(info):
             res['info'] = info
 
-            return real_calc(**res)
+            return real_calc(res['folders'], res['func'], res['info'])()
 
         return wrap_info
 
     return wrap_func
+
+
+def gen_func(args):
+    if 'folders' in args:
+        def func(info):
+            return real_calc(args['folders'], args['func'], info)
+
+        func.__name__ = args['func'].__name__
+
+        return func
+
+
+def gen_all_funcs():
+    for args in MY_FUNCS:
+        res = gen_func(args)
+
+        if res:
+            yield res

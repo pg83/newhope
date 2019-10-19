@@ -1,4 +1,6 @@
 import os
+import imp
+import sys
 import itertools
 
 from .user import helper
@@ -20,20 +22,7 @@ def load_plugins_code(where):
 
 
 def load_plugins_base(plugins):
-    vvv = dict()
-
-    def iter_modules():
-        for i, x in enumerate(sorted(plugins.keys())):
-            vvv[os.path.basename(x)] = i
-
-    iter_modules()
-
-    vvv['splitter.py'] = -1
-
-    for x in sorted(plugins.keys(), key=lambda x: vvv[os.path.basename(x)]):
-        data = plugins[x]
-
-        exec data in globals()
+    exec '\n'.join(sorted((v for v in plugins.values()), key=lambda x: -len(x))) in globals()
 
 
 def load_plugins(where):

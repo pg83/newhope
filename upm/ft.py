@@ -8,13 +8,11 @@ import cProfile
 
 
 def dumps(s, **kwargs):
-    return marshal.dumps(s, 4)
-    #return json.dumps(s, **kwargs)
+    return json.dumps(s, sort_keys=True)
 
 
 def loads(s):
-    return marshal.loads(s)
-    #return json.loads(s)
+    return json.loads(s)
 
 
 def deep_copy(x):
@@ -22,7 +20,7 @@ def deep_copy(x):
 
 
 def struct_dump_bytes(p):
-    return hashlib.md5(dumps(p, sort_keys=True)).digest()
+    return hashlib.md5(dumps(p, sort_keys=True)).hexdigest()[:16]
 
 
 def singleton(f):
@@ -44,17 +42,7 @@ def cached(key=lambda x: x):
     def real_cached(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
-            def iter_key():
-                yield f.__name__
-
-                for a  in args:
-                    yield a
-
-                for k, v in kwargs.items():
-                    yield k
-                    yield v
-
-            k = struct_dump_bytes(key(list(iter_key())))
+            k = struct_dump_bytes(key({'a': args, 'b': kwargs, 'c': f.__name__}))
 
             if k not in vvv:
                 vvv[k] = f(*args, **kwargs)

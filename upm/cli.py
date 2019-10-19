@@ -250,7 +250,8 @@ def cli_makefile(arg, verbose):
       if args.shell:
          f.write(build_sh_script(args.shell))
       else:
-         f.write(main_makefile(verbose))
+         funcs = []
+         f.write(main_makefile(verbose, funcs))
 
       f.flush()
    finally:

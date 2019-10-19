@@ -18,6 +18,7 @@ def struct_ptr(s):
 
 
 def intern_list(l):
+    assert None not in l
     return intern_struct(l)
 
 
@@ -51,8 +52,6 @@ def visit_nodes(nodes):
     def do(k):
         kk = hash_key(k)
 
-        #print kk, deref_pointer(deref_pointer(kk)[0]), deref_pointer(deref_pointer(kk)[1])
-
         if kk not in s:
             s.add(kk)
 
@@ -85,16 +84,11 @@ def hash_key(p):
 
 
 def mangle_pointer(p):
-    y = random.randint(0, 10000)
-    x = p - y
-
-    return json.dumps([x, [y]], sort_keys=True)
+    return p
 
 
 def demangle_pointer(p):
-    p = json.loads(p)
-
-    return p[0] + p[1][0]
+    return p
 
 
 def deref_pointer(v):
@@ -124,12 +118,12 @@ def store_node_impl(node, extra_deps):
 
     def iter_deps():
         for x in node['deps']:
-            yield x
+            if x:
+                yield x
 
         for x in extra_deps:
-            yield x
-
-    #print node
+            if x:
+                yield x
 
     return intern_struct([
         intern_struct(node['node']),
@@ -145,12 +139,6 @@ def store_node(node):
     if node is None:
         raise Exception('shit')
 
-    try:
-        assert node['node']['kind'] != 'fetch'
-    except Exception:
-        #print node
-        pass
-
     def extra():
         if 'url' in node['node']:
             yield gen_fetch_node(node['node']['url'])
@@ -158,10 +146,8 @@ def store_node(node):
     return store_node_impl(node, list(extra()))
 
 
-@cached(key=lambda x: x)
+@cached()
 def gen_fetch_node(url):
-    #print url
-
     res = {
         'node': {
             'kind': 'fetch',

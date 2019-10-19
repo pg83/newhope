@@ -11,7 +11,7 @@ from .ft import singleton, cached, fp, deep_copy
 from .cc import find_compiler, is_cross, iter_targets, find_compilers
 from .gen_id import to_visible_name, calc_pkg_full_name
 from .xpath import xp
-from .db import restore_node, store_node, pointer
+from .db import restore_node, store_node, pointer, deref_pointer, intern_struct
 from .subst import subst_kv_base
 from .ndk import iter_android_ndk_20
 from .helpers import current_host_platform, subst_info, to_lines
@@ -103,7 +103,11 @@ def real_wrapper(func_name, info):
             if x:
                 yield x
 
-    return store_node({'node': node, 'deps': list(iter_deps())})
+    lst = list(iter_deps())
+
+    assert None not in lst
+
+    return store_node({'node': node, 'deps': lst})
 
 
 def helper(func):
@@ -123,7 +127,11 @@ def move_many(fr, dirs):
     return '\n'.join([('cp -R %s $(INSTALL_DIR)/' % (fr + x)) for x in dirs]) + '\n'
 
 
-def gen_packs_1(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
+def gen_packs_1(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin'], funcs=[]):
+    for func in funcs:
+        for target in targets + [host]:
+            yield func({'host': host, 'target': target})
+
     for name, func in simple_funcs():
         for target in iter_targets(host):
             yield func({'host': host, 'target': target})
@@ -132,8 +140,7 @@ def gen_packs_1(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=
         yield x
 
 
-def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
-    for x in gen_packs_1(host, targets, os):
-        assert x
-
-        yield x
+def gen_packs(extra_funcs=[], host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
+    for x in gen_packs_1(host, targets, os, funcs=extra_funcs):
+        if x:
+            yield x

@@ -234,7 +234,7 @@ def find_compiler(info):
 def join_versions(deps):
     def iter_v():
         for d in deps:
-            yield xp('/d/node/version')
+            yield d['node']()['version']
 
     return '-'.join(iter_v())
 

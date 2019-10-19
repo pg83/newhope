@@ -25,5 +25,5 @@ def tool_binary():
    return res
 
 
-def main(verbose):
-    return build_makefile(list(gen_packs()), verbose)
+def main(verbose, funcs):
+    return build_makefile(list(gen_packs(extra_funcs=funcs)), verbose)

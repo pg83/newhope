@@ -70,12 +70,14 @@ def subst_values(data, root, iter_deps):
             return '$(WDM)' + x[6:]
 
         for x in iter_deps():
-            name = x['node']()['name'].upper().replace('-', '_')
+            for n in (x['node']()['name'], x['node']().get('func_name', '')):
+                if n:
+                    n = n.upper().replace('-', '_')
 
-            yield ('$(MNGR_' + name + '_DIR)', mn(install_dir(x)))
-            yield ('$(MNGR_' + name + '_BIN_DIR)', mn(bin_dir(x)))
-            yield ('$(MNGR_' + name + '_LIB_DIR)', mn(lib_dir(x)))
-            yield ('$(MNGR_' + name + '_INC_DIR)', mn(inc_dir(x)))
+                    yield ('$(MNGR_' + n + '_DIR)', mn(install_dir(x)))
+                    yield ('$(MNGR_' + n + '_BIN_DIR)', mn(bin_dir(x)))
+                    yield ('$(MNGR_' + n + '_LIB_DIR)', mn(lib_dir(x)))
+                    yield ('$(MNGR_' + n + '_INC_DIR)', mn(inc_dir(x)))
 
     return subst_kv_base(data, iter1(), iter2(), iter3())
 
