@@ -4,6 +4,7 @@ import subprocess
 
 from .colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
 from .subst import subst_kv_base
+from .ft import deep_copy
 
 
 def new_cmd():
@@ -16,13 +17,18 @@ def xprint(*args):
     print >>sys.stderr, ' '.join(args)
 
 
-def run_makefile(data, *targets):
+def run_makefile(data, shell_out, targets):
     lst = []
     prev = None
     shell = '/bin/sh'
-    flags = ['-c']
+    flags = ['--noprofile', '--norc', '-c']
 
     for l in data.split('\n'):
+        p = l.find('##')
+
+        if p > 5:
+            l = l[:p]
+
         ls = l.strip()
 
         if not ls:
@@ -73,17 +79,40 @@ def run_makefile(data, *targets):
             by_dep[d] = x
 
     done = set()
+    do_compile = subprocess.check_output
+
+    if shell_out:
+        def do_compile_1(*args, **kwargs):
+            shell_out.append(deep_copy({'args': args, 'kwargs': kwargs}))
+
+            return ''
+
+        do_compile = do_compile_1
 
     def run_cmd(c):
-        errors = []
-
         if c in done:
             return xprint(BLUE + 'already done ' + c + RESET)
 
-        if os.path.exists(c):
+        if shell_out:
+            pass
+        elif os.path.exists(c):
             done.add(c)
+
             return xprint(BLUE + 'already done ' + c + RESET)
 
+        cleanups = []
+
+        try:
+            for c in run_cmd_1(c):
+                cleanups.append(c)
+        except Exception:
+            for c in cleanups:
+                c()
+
+            raise
+
+    def run_cmd_1(c):
+        errors = []
         n = by_dep[c]
 
         def cleanup():
@@ -95,6 +124,8 @@ def run_makefile(data, *targets):
                         os.unlink(d)
                     except Exception as e:
                         errors.append(str(e))
+
+        yield cleanup
 
         for d in n['deps1']:
             done.add(d)
@@ -108,7 +139,7 @@ def run_makefile(data, *targets):
             yield white_line
 
             if n['cmd']:
-                cmd = 'set -e; set -x; ' + '\n'.join(n['cmd']) + '\n'
+                cmd = '\n'.join(n['cmd']) + '\n'
 
                 yield RED + 'run ' + c + ':' + RESET
                 yield YELLOW + ' command:' + RESET
@@ -124,10 +155,12 @@ def run_makefile(data, *targets):
                 all_res = []
 
                 try:
-                    res = subprocess.check_output([shell] + flags + [cmd], stderr=subprocess.STDOUT, shell=False)
+                    res = do_compile(['/usr/bin/env', '-i', shell] + flags + [cmd], stderr=subprocess.STDOUT, shell=False)
                     all_res.append(res)
 
-                    if 'C compiler cannot create executables' in res:
+                    check_data = ''.join(all_res)
+
+                    if 'C compiler cannot create executables' in check_data:
                         raise Exception('C compiler cannot create executables')
                 except subprocess.CalledProcessError as err:
                     all_res.append(err.output)
@@ -156,8 +189,6 @@ def run_makefile(data, *targets):
         xprint('\n'.join(iter_lines(errors)))
 
         if errors:
-            cleanup()
-
             raise Exception('%s' % (', '.join(errors)))
 
     for t in targets:

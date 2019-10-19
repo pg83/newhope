@@ -30,4 +30,4 @@ def tar_runtime(info):
 
 @splitter(folders=['/share'])
 def tar_docs(info):
-    return tar0(info, [bestbox1(info), tar1(info), xz1(info), make1(info), curl1(info), musl1(info)], 'xz')
+    return tar(info)

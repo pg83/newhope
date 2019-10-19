@@ -24,9 +24,9 @@ def bestbox0(info, deps, codec):
         'deps': deps,
         'version': join_versions(deps[:2]),
         'codec': codec,
-        'subst': [
-            ('$(TB)', xp('/deps/0/node/name').upper()),
-            ('$(BB)', xp('/deps/1/node/name').upper()),
+        'extra': [
+            {'kind': 'subst', 'from': '$(TB)', 'to': xp('/deps/0/node/name').upper()},
+            {'kind': 'subst', 'from': '$(BB)', 'to': xp('/deps/1/node/name').upper()},
         ],
     }
 

@@ -5,6 +5,7 @@ import os
 
 from .ft import deep_copy, cached, singleton
 from .db import store_node, restore_node, deref_pointer, intern_struct
+from .ndk import find_android_linker_by_cc
 
 
 V = {
@@ -68,6 +69,10 @@ def small_repr(c):
     return c['os'] + '-' + c['arch']
 
 
+def small_repr_cons(c):
+    return small_repr(c['host']) + ' ' + small_repr(c['target'])
+
+
 def fix_constraints(h, t):
     for k, v in h.items():
         if k not in t:
@@ -98,21 +103,6 @@ def iter_comp():
         }
 
 
-def is_compat_x(info, comp_node):
-    for k in info:
-        if k not in comp_node:
-            return False
-
-        if info[k] != comp_node[k]:
-            return False
-
-    return True
-
-
-def is_compat(info, comp_node):
-    return is_compat_x(info.get('constraint', info), comp_node.get('constraint', comp_node))
-
-
 @cached(key=lambda x: x)
 def find_tool(name):
     return subprocess.check_output(['echo `which ' + name + '`'], shell=True).strip()
@@ -129,7 +119,7 @@ def iter_system_compilers():
                     'name': os.path.basename(tp),
                     'path': tp,
                     'data': subprocess.check_output([tp, '--version'], stderr=subprocess.STDOUT, shell=False),
-                    'codec': 'gz',
+                    'codec': 'xz',
                 }
         except Exception as e:
             print >>sys.stderr, e
@@ -140,15 +130,7 @@ def iter_targets(*extra):
         yield x
 
     for a in ('x86_64', 'aarch64'):
-        for o in ('linux',):
-            for l in ('musl', 'uclibc'):
-                yield {
-                    'arch': a,
-                    'os': o,
-                    'libc': l,
-                }
-
-        for o in ('darwin',):
+        for o in ('linux', 'darwin'):
             yield {
                 'arch': a,
                 'os': o,
@@ -156,54 +138,63 @@ def iter_targets(*extra):
 
 
 def iter_system_impl():
-    for c in iter_system_compilers():
-        if c['kind'] == 'clang':
-            data = c.pop('data')
+    def iter_c():
+        for c in iter_system_compilers():
+            if c['kind'] == 'clang':
+                yield c
 
-            for l in data.strip().split('\n'):
-                l = l.strip()
+    for c in iter_c():
+        data = c.pop('data')
 
-                if l:
-                    if not l.startswith('Target'):
-                        continue
+        for l in data.strip().split('\n'):
+            l = l.strip()
 
-                    k, v = l.split(':')
+            if not l:
+                continue
 
-                    if k == 'Target':
-                        a, b, _ = v.strip().split('-')
+            if not l.startswith('Target'):
+                continue
 
-                        host = {
-                            'arch': a,
-                            'os': {'apple': 'darwin'}.get(b, platform.system().lower()),
-                        }
+            k, v = l.split(':')
 
-                        for t in iter_targets(host):
-                            c = deep_copy(c)
+            if k != 'Target':
+                continue
 
-                            cc = {
-                                'host': host,
-                                'target': t,
-                            }
+            a, b, _ = v.strip().split('-')
 
-                            cc['is_cross'] = is_cross(cc)
+            host = {
+                'arch': a,
+                'os': {'apple': 'darwin'}.get(b, platform.system().lower()),
+            }
 
-                            c['constraint'] = cc
-                            c['version'] = '9.0.0'
-                            c['build'] = []
+            for t in iter_targets(host):
+                c = deep_copy(c)
 
-                            if cc['is_cross']:
-                                c['prefix'] = ['tool_cross_prefix', '']
-                                c['prepare'] = ['export CFLAGS="-O2 -target=%s-%s -fno-short-wchar"' % (t['os'], t['arch'])]
-                            else:
-                                c['prefix'] = ['tool_native_prefix', '']
-                                c['prepare'] = ['export CFLAGS="-O2"']
+                cc = {
+                    'host': host,
+                    'target': t,
+                }
 
-                            yield {
-                                'node': c,
-                                'deps': [],
-                            }
-        else:
-            print >>sys.stderr, 'drop', c
+                cc['is_cross'] = is_cross(cc)
+
+                c['constraint'] = cc
+                c['version'] = '9.0.0'
+                c['build'] = []
+
+                if cc['is_cross']:
+                    c['prefix'] = ['tool_cross_prefix', '']
+                    c['prepare'] = ['export CFLAGS="-O2 --target=%s-%s -fno-short-wchar"' % (t['os'], t['arch'])]
+                else:
+                    c['prefix'] = ['tool_native_prefix', '']
+                    c['prepare'] = ['export CFLAGS="-O2"']
+
+                for l in find_android_linker_by_cc(cc, small_repr_cons):
+                    c['extra_deps'] = [l]
+
+                    yield {
+                        'node': c,
+                        'deps': [l],
+                    }
 
 
 def iter_all_nodes():
@@ -225,7 +216,5 @@ def iter_all_compilers():
 
 def find_compiler(info):
     for d in iter_all_compilers():
-        node = restore_node(d)
-
-        if is_compat(info, node['node']()):
+        if small_repr_cons(info) == small_repr_cons(restore_node(d)['node']()['constraint']):
             yield d

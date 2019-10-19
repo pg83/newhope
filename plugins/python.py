@@ -1,6 +1,3 @@
-import base64
-
-
 python_setup_local = """
 array arraymodule.c    # array objects
 cmath cmathmodule.c _math.c # -lm # complex math library functions
@@ -52,9 +49,11 @@ parser parsermodule.c
 def python0(info, deps, codec):
     return {
         'code': """
-            echo '%s' | base64 -D -i - -o - > Modules/Setup.local
-            ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared && make && make install
-        """ % base64.b64encode(python_setup_local),
+            $(APPLY_EXTRA_PLAN_0)
+            ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared || exit 1
+            make || exit 1
+            make install
+        """,
         'src': 'https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz',
         'deps': deps,
         'codec': codec,

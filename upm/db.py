@@ -39,7 +39,7 @@ def check_db():
     return 'db ok, ncount = ' + str(len(III)) + ', size = ' + str(len(dumps_db([III, VVV]))) + ', check time = ' + str(t2 - t1) + 's'
 
 
-def visit_node(root):
+def visit_nodes(nodes):
     s = set()
 
     def do(k):
@@ -48,14 +48,24 @@ def visit_node(root):
         if kk not in s:
             s.add(kk)
 
-            for x in deref_pointer(deref_pointer(k)[1]):
+            yield k
+
+            def iter_node_links():
+                node = deref_pointer(k)
+
+                for x in deref_pointer(node[1]):
+                    yield x
+
+                for x in deref_pointer(node[0]).get('extra_nodes', []):
+                    yield x
+
+            for x in iter_node_links():
                 for v in do(x):
                     yield v
 
-            yield k
-
-    for x in do(root):
-        yield x
+    for x in nodes:
+        for y in do(x):
+            yield y
 
 
 def pointer(p):
@@ -102,7 +112,10 @@ def store_node_impl(node, extra_deps):
         for x in extra_deps:
             yield x
 
-    return intern_struct([intern_struct(node['node']), intern_struct(list(iter_deps()))])
+    return intern_struct([
+        intern_struct(node['node']),
+        intern_struct(list(iter_deps())),
+    ])
 
 
 def store_node_plain(node):
@@ -119,7 +132,7 @@ def store_node(node):
 
 @cached(key=lambda x: x)
 def gen_fetch_node(url):
-    return store_node_plain({
+    res = {
         'node': {
             'kind': 'fetch',
             'name': 'fetch_url',
@@ -136,4 +149,6 @@ def gen_fetch_node(url):
             'codec': 'tr',
         },
         'deps': [],
-    })
+    }
+
+    return store_node_plain(res)

@@ -6,13 +6,14 @@ import argparse
 import subprocess
 import shutil
 
-from .main import main as main_makefile
-from .build import prepare_pkg, get_pkg_link, build_sh_script
+from .main import main as main_makefile, tool_binary
+from .build import prepare_pkg, get_pkg_link
 from .run_make import run_makefile
 from .user import singleton, load_plugins
 from .colors import RED, RESET
 from .subst import subst_kv_base
 from .ft import profile
+from .run_sh import build_sh_script
 
 
 try:
@@ -20,24 +21,6 @@ try:
 except ImportError:
    def prepare_data():
       raise Exception('unimplemented')
-
-
-@singleton
-def docker_binary():
-   return subprocess.check_output(['/bin/sh -c "which docker"'], shell=True).strip()
-
-
-@singleton
-def tool_binary():
-   if sys.argv[0].endswith('upm'):
-      return os.path.abspath(sys.argv[0])
-
-   res = os.path.abspath(__file__)
-
-   if 'cli.py' in res:
-      res = os.path.dirname(os.path.dirname(res)) + '/cli'
-
-   return res
 
 
 def build_docker():
@@ -87,11 +70,12 @@ def prepare_root(r):
 
    p = os.path.join(r, 'bin', 'upm')
 
-   with open(p, 'w') as f:
-      f.write(data)
-      os.system('chmod +x ' + p)
+   if 0:
+      with open(p, 'w') as f:
+         f.write(data)
+         os.system('chmod +x ' + p)
 
-   os.execl(p, *([p] + sys.argv[1:]))
+      os.execl(p, *([p] + sys.argv[1:]))
 
 
 def cli_make(arg, verbose):
@@ -156,7 +140,7 @@ def cli_make(arg, verbose):
    else:
       data = sys.stdin.read()
 
-   run_makefile(subst_kv_base(data, iter_replaces()), *args.targets)
+   run_makefile(subst_kv_base(data, iter_replaces()), [], args.targets)
 
 
 def upm_root():
@@ -262,17 +246,7 @@ def cli_makefile(arg, verbose):
 
    try:
       if args.shell:
-         def iter_subst():
-            yield ('$(WDM)', '$(PREFIX)/m')
-            yield ('$(WDR)', '$(PREFIX)/r')
-            yield ('$(WDW)', '$(PREFIX)/w')
-            yield ('$(WDP)', '$(PREFIX)/p')
-            yield ('$(UPM)', tool_binary())
-            yield ('$(RM_TMP)', '## ')
-            yield ('$(PREFIX)', '$PREFIX')
-            yield ('$$', '$')
-
-         f.write(subst_kv_base(build_sh_script(args.shell), iter_subst()))
+         f.write(build_sh_script(args.shell))
       else:
          f.write(main_makefile(verbose))
 

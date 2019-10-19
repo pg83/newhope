@@ -6,7 +6,7 @@ def zlib0(info, deps):
             make && make install
         """,
         'prepare': '$(ADD_PATH)',
-        'deps': deps
+        'deps': deps,
     }
 
 
