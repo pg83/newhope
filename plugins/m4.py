@@ -1,10 +1,8 @@
-from .xpath import xp
-
-
 def m4_0(info, deps, codec):
-    if xp('/info/compilers/cross') is True:
-        def val(n):
-            return xp('/info/compilers/deps/%s/node/prefix/1/[:-1]' % n)
+    if 0:
+        if xp('/info/compilers/cross') is True:
+            def val(n):
+                return xp('/info/compilers/deps/%s/node/prefix/1/[:-1]' % n)
 
         cross = '--host=' + val(1) + ' --target=' + val(0)
     else:

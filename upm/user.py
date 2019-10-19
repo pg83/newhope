@@ -8,62 +8,13 @@ import functools
 import itertools
 
 from .ft import singleton, cached, fp, deep_copy
-from .cc import find_compiler, is_cross, iter_targets
+from .cc import find_compiler, is_cross, iter_targets, find_compilers
 from .gen_id import to_visible_name, calc_pkg_full_name
 from .xpath import xp
-from .db import restore_node, store_node, pointer, intern_struct
+from .db import restore_node, store_node, pointer
 from .subst import subst_kv_base
 from .ndk import iter_android_ndk_20
-
-
-def join_versions(deps):
-    def iter_v():
-        for d in deps:
-            yield xp('/d/node/version')
-
-    return '-'.join(iter_v())
-
-
-@singleton
-def current_host_platform():
-    return {
-        'arch': platform.machine(),
-        'os': platform.system().lower(),
-    }
-
-
-@cached(key=lambda x: x)
-def find_compiler_id(info):
-    for x in find_compiler(info):
-        return x
-
-    raise Exception('shit happen %s' % info)
-
-
-@cached(key=lambda x: x)
-def find_compilers(info):
-    def iter_compilers():
-        if is_cross(info):
-            cinfo = deep_copy(info)
-            cinfo['target'] = cinfo['host']
-
-            yield find_compiler_id(cinfo)
-
-        yield find_compiler_id(info)
-
-    return list(iter_compilers())
-
-
-def subst_info(info):
-    info = deep_copy(info)
-
-    if 'host' not in info:
-        info['host'] = current_host_platform()
-
-    if 'target' not in info:
-        info['target'] = deep_copy(info['host'])
-
-    return info
+from .helpers import current_host_platform, subst_info, to_lines
 
 
 USER_FUNCS_BY_NAME = {}
@@ -72,17 +23,6 @@ USER_FUNCS_BY_NAME = {}
 def simple_funcs():
     for k in sorted(USER_FUNCS_BY_NAME.keys()):
         yield k, USER_FUNCS_BY_NAME[k][0]
-
-
-def to_lines(text):
-    def iter_l():
-        for l in text.split('\n'):
-            l = l.strip()
-
-            if l:
-                yield l
-
-    return list(iter_l())
 
 
 @cached(key=lambda x: x)
@@ -96,7 +36,7 @@ def real_wrapper(func_name, info):
     except TypeError:
         param = {
             'compilers': {
-                'deps': compilers,
+                'deps': deep_copy(compilers),
                 'cross': len(compilers) > 1,
             },
             'info': info,
@@ -107,6 +47,8 @@ def real_wrapper(func_name, info):
     try:
         data = full_data['code']
     except TypeError:
+        return full_data
+    except KeyError:
         return full_data
 
     if '#pragma cc' not in data:
@@ -154,10 +96,12 @@ def real_wrapper(func_name, info):
 
     def iter_deps():
         for x in compilers:
-            yield x
+            if x:
+                yield x
 
         for x in full_data['deps']:
-            yield x
+            if x:
+                yield x
 
     return store_node({'node': node, 'deps': list(iter_deps())})
 
@@ -179,7 +123,7 @@ def move_many(fr, dirs):
     return '\n'.join([('cp -R %s $(INSTALL_DIR)/' % (fr + x)) for x in dirs]) + '\n'
 
 
-def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
+def gen_packs_1(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
     for name, func in simple_funcs():
         for target in iter_targets(host):
             yield func({'host': host, 'target': target})
@@ -188,44 +132,8 @@ def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['
         yield x
 
 
-def load_plugins_code(where):
-    def iter_plugins():
-        for x in os.listdir(where):
-            if '~' not in x and '#' not in x:
-                path = where + '/' + x
+def gen_packs(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
+    for x in gen_packs_1(host, targets, os):
+        assert x
 
-                with open(path, 'r') as f:
-                    yield path, f.read()
-
-    return dict(iter_plugins())
-
-
-def load_plugins_base(plugins):
-    vvv = dict()
-
-    def iter_modules():
-        for i, x in enumerate(sorted(plugins.keys())):
-            vvv[os.path.basename(x)] = i
-
-    iter_modules()
-
-    vvv['splitter.py'] = -1
-
-    for x in sorted(plugins.keys(), key=lambda x: vvv[os.path.basename(x)]):
-        data = plugins[x]
-
-        exec data in globals()
-
-
-def load_plugins(where):
-    builtin_plugins = {}
-    ## builtin_plugins
-    load_plugins_base(builtin_plugins)
-
-    for x in itertools.chain(where):
-        load_plugins_base(load_plugins_code(os.path.abspath(x)))
-
-
-@singleton
-def getuser():
-    return os.getusername()
+        yield x

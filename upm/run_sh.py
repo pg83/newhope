@@ -4,6 +4,7 @@ import base64
 from .main import tool_binary, main as main_makefile
 from .run_make import run_makefile
 from .subst import subst_kv_base
+from .helpers import xprint
 
 
 def subst(v):
@@ -34,6 +35,6 @@ def build_sh_script(targets):
 
                 yield '(echo "' + base64.b64encode(subst(cmd)) + '" | base64 -D -i - -o - | /usr/bin/env -i PREFIX=$1 /bin/sh -s) || exit 1'
             except Exception as e:
-                print >>sys.stderr, '------------------------------------------\n', cmd, e
+                xprint('------------------------------------------\n', cmd, e)
 
     return '\n\n'.join(iter_cmd()) + '\n'

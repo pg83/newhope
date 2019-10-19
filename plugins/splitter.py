@@ -1,3 +1,6 @@
+from .ft import deep_copy
+
+
 def split_name(b, c):
     return ('_'.join(['split', b.__name__] + [x.replace('/', '') for x in c])).replace('-', '_')
 
@@ -33,9 +36,15 @@ def real_calc(folders, func, info):
 
 
 def splitter(folders=['/bin']):
-    res = {
-        'folders': folders
-    }
+    return modifier(folders=folders)
+
+
+def options(folders=['/bin']):
+    return modifier(folders=folders)
+
+
+def modifier(**kwargs):
+    res = deep_copy(kwargs)
 
     def wrap_func(func):
         res['func'] = func

@@ -2,6 +2,7 @@ import sys
 import json
 import time
 import binascii
+import random
 
 from .ft import struct_dump_bytes, dumps as dumps_db, cached, singleton
 from .gen_id import calc_pkg_full_name
@@ -9,10 +10,15 @@ from .gen_id import calc_pkg_full_name
 
 III = {}
 VVV = []
+ZZZ = {}
 
 
 def struct_ptr(s):
     return struct_dump_bytes(s)
+
+
+def intern_list(l):
+    return intern_struct(l)
 
 
 def intern_struct(n):
@@ -43,7 +49,9 @@ def visit_nodes(nodes):
     s = set()
 
     def do(k):
-        kk = k
+        kk = hash_key(k)
+
+        #print kk, deref_pointer(deref_pointer(kk)[0]), deref_pointer(deref_pointer(kk)[1])
 
         if kk not in s:
             s.add(kk)
@@ -72,15 +80,21 @@ def pointer(p):
     return mangle_pointer(p)
 
 
+def hash_key(p):
+    return demangle_pointer(p)
+
+
 def mangle_pointer(p):
-    return (p, 'p')
-    return p
+    y = random.randint(0, 10000)
+    x = p - y
+
+    return json.dumps([x, [y]], sort_keys=True)
 
 
 def demangle_pointer(p):
-    assert p[1] == 'p'
-    return p[0]
-    return p
+    p = json.loads(p)
+
+    return p[0] + p[1][0]
 
 
 def deref_pointer(v):
@@ -105,6 +119,9 @@ def restore_node(ptr):
 
 
 def store_node_impl(node, extra_deps):
+    if node is None:
+        raise Exception('shit')
+
     def iter_deps():
         for x in node['deps']:
             yield x
@@ -112,9 +129,11 @@ def store_node_impl(node, extra_deps):
         for x in extra_deps:
             yield x
 
+    #print node
+
     return intern_struct([
         intern_struct(node['node']),
-        intern_struct(list(iter_deps())),
+        intern_list(list(iter_deps())),
     ])
 
 
@@ -123,6 +142,15 @@ def store_node_plain(node):
 
 
 def store_node(node):
+    if node is None:
+        raise Exception('shit')
+
+    try:
+        assert node['node']['kind'] != 'fetch'
+    except Exception:
+        #print node
+        pass
+
     def extra():
         if 'url' in node['node']:
             yield gen_fetch_node(node['node']['url'])
@@ -132,6 +160,8 @@ def store_node(node):
 
 @cached(key=lambda x: x)
 def gen_fetch_node(url):
+    #print url
+
     res = {
         'node': {
             'kind': 'fetch',

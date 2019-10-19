@@ -11,6 +11,7 @@ from .db import visit_nodes, restore_node, check_db, store_node
 from .gen_id import to_visible_name, short_const_1
 from .ft import deep_copy, singleton
 from .subst import subst_kv_base
+from .helpers import xprint
 
 
 codecs = {
@@ -69,7 +70,7 @@ def subst_values(data, root, iter_deps):
             return '$(WDM)' + x[6:]
 
         for x in iter_deps():
-            name = x['node']()['name'].upper()
+            name = x['node']()['name'].upper().replace('-', '_')
 
             yield ('$(MNGR_' + name + '_DIR)', mn(install_dir(x)))
             yield ('$(MNGR_' + name + '_BIN_DIR)', mn(bin_dir(x)))
@@ -170,35 +171,6 @@ def build_makefile_impl(nodes, replaces):
             yield n
 
     return '\n'.join(iter_parts()) + '\n'
-
-
-def upm_mngr():
-    res = {
-        'lst': [],
-    }
-
-    def on_line(ll):
-        if ll.startswith('$(UPM)'):
-            res['lst'].append(ll)
-        else:
-            lst = res['lst']
-
-            if lst:
-                if len(lst) > 1:
-                    for l in lst:
-                        yield l.replace(' #', ' & ')
-
-                    yield '; '.join('wait' for l in lst)
-                else:
-                    for l in lst:
-                        yield l
-
-            res['lst'] = []
-
-            if ll:
-                yield ll
-
-    return on_line
 
 
 def print_one_node(root):
@@ -314,4 +286,4 @@ def build_makefile(nodes, verbose):
         return subst_kv_base(data, replaces.iteritems())
     finally:
         if verbose:
-            print >>sys.stderr, check_db()
+            xprint(check_db())

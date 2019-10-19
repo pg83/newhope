@@ -6,14 +6,16 @@ import argparse
 import subprocess
 import shutil
 
+from .loader import load_plugins
 from .main import main as main_makefile, tool_binary
 from .build import prepare_pkg, get_pkg_link
 from .run_make import run_makefile
-from .user import singleton, load_plugins
+from .user import singleton
 from .colors import RED, RESET
 from .subst import subst_kv_base
 from .ft import profile
 from .run_sh import build_sh_script
+from .helpers import xprint
 
 
 try:
@@ -28,7 +30,7 @@ def build_docker():
    lines = data.split('\n')
    line = lines[len(lines) - 2]
 
-   print data.strip()
+   xprint(data.strip(), where=sys.stdout)
 
    return line.split(' ')[2]
 
@@ -60,7 +62,7 @@ def prepare_root(r):
          if 'No such file or directory' in str(e):
             pass
          else:
-            print >>sys.stderr, f, e
+            xprint(f, e)
 
    for f in ('bin', 'tmp'):
       try:
@@ -223,7 +225,7 @@ def cli_help(args, verbose):
          if k.startswith('cli_'):
             yield k[4:]
 
-   print >>sys.stderr, 'usage: ' + sys.argv[0] + '(-v, --verbose, --profile)* ' + '[' + ', '.join(iter_funcs()) + '] ....'
+   xprint('usage: ' + sys.argv[0] + '(-v, --verbose, --profile)* ' + '[' + ', '.join(iter_funcs()) + '] ....')
 
 
 def cli_makefile(arg, verbose):
@@ -267,7 +269,7 @@ def cli_subcommand(args, verbose):
 
 
 def cli_release(args, verbose):
-   print prepare_data()
+   xprint(prepare_data(), where=sys.stdout)
 
 
 def check_arg(args, params):
@@ -298,9 +300,9 @@ def run_main():
       func()
    except Exception as e:
       if do_verbose:
-         print RED + traceback.format_exc() + RESET
+         xprint(traceback.format_exc(), color='red')
       else:
-         print RED + str(e) + RESET
+         xprint(str(e), color='red')
 
       return 1
 

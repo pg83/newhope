@@ -1,7 +1,7 @@
 @helper
 def busybox(info):
     if xp('/info/info/host/os') == 'darwin':
-        return system0(info)
+        return system00(info)
 
     ver = '1.30.1'
 
@@ -30,7 +30,7 @@ def busybox2(info):
 
 def busybox0(info, deps, codec):
     if xp('/info/info/host/os') == 'darwin':
-        return system0(info)
+        return system00(info)
 
     host = info['info']['host']['arch']
     arch = {'aarch64': 'arm81'}.get(host, host)

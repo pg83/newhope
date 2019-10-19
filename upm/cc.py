@@ -6,6 +6,8 @@ import os
 from .ft import deep_copy, cached, singleton
 from .db import store_node, restore_node, deref_pointer, intern_struct
 from .ndk import find_android_linker_by_cc
+from .xpath import xp
+from .helpers import xprint
 
 
 V = {
@@ -70,7 +72,7 @@ def small_repr(c):
 
 
 def small_repr_cons(c):
-    return small_repr(c['host']) + ' ' + small_repr(c['target'])
+    return small_repr(c['host']) + '$' + small_repr(c['target'])
 
 
 def fix_constraints(h, t):
@@ -122,7 +124,7 @@ def iter_system_compilers():
                     'codec': 'xz',
                 }
         except Exception as e:
-            print >>sys.stderr, e
+            xprint(e)
 
 
 def iter_targets(*extra):
@@ -188,7 +190,16 @@ def iter_system_impl():
                     c['prefix'] = ['tool_native_prefix', '']
                     c['prepare'] = ['export CFLAGS="-O2"']
 
+                yield {
+                    'node': c,
+                    'deps': [],
+                }
+
+                oc = c
+
                 for l in find_android_linker_by_cc(cc, small_repr_cons):
+                    c  = deep_copy(oc)
+
                     c['extra_deps'] = [l]
 
                     yield {
@@ -217,4 +228,34 @@ def iter_all_compilers():
 def find_compiler(info):
     for d in iter_all_compilers():
         if small_repr_cons(info) == small_repr_cons(restore_node(d)['node']()['constraint']):
-            yield d
+            yield
+
+
+def join_versions(deps):
+    def iter_v():
+        for d in deps:
+            yield xp('/d/node/version')
+
+    return '-'.join(iter_v())
+
+
+@cached(key=lambda x: x)
+def find_compiler_id(info):
+    for x in find_compiler(info):
+        return x
+
+    raise Exception('shit happen %s' % info)
+
+
+@cached(key=lambda x: x)
+def find_compilers(info):
+    def iter_compilers():
+        if is_cross(info):
+            cinfo = deep_copy(info)
+            cinfo['target'] = cinfo['host']
+
+            yield find_compiler_id(cinfo)
+
+        yield find_compiler_id(info)
+
+    return list(iter_compilers())

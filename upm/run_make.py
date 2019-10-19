@@ -5,16 +5,13 @@ import subprocess
 from .colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
 from .subst import subst_kv_base
 from .ft import deep_copy
+from .helpers import xprint
 
 
 def new_cmd():
     return {
         'cmd': [],
     }
-
-
-def xprint(*args):
-    print >>sys.stderr, ' '.join(args)
 
 
 def run_makefile(data, shell_out, targets):

@@ -1,5 +1,4 @@
-@helper
-def system0(info):
+def system00(info=1):
     return {
         'code': '',
         'name': 'system',
@@ -7,6 +6,11 @@ def system0(info):
         'deps': [],
         'codec': 'tr',
     }
+
+
+@helper
+def system0(info):
+    return system00()
 
 
 @cached(lambda x: x)

@@ -3,4 +3,5 @@ BAD_SUBSTRINGS = [
     'Error:',
     '***',
     'C compiler cannot create executables',
+    'No such file or directory',
 ]

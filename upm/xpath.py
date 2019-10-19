@@ -1,6 +1,7 @@
 import inspect
 
 from .db import restore_node
+from .ft import deep_copy
 
 
 def apply_base(funcs, log):
@@ -36,6 +37,8 @@ def apply_all(v, lst, log):
 
 
 def run_xpath(val, path, log=[]):
+    val = deep_copy(val)
+
     def try_call(x):
         return apply_any(x, (restore_node, lambda x: x(), lambda x: x), log)
 
@@ -99,7 +102,7 @@ def xp(path):
             ol = frame.f_locals
 
             if name in ol:
-                return run_xpath_simple(ol[name], path)
+                return run_xpath_simple(deep_copy(ol[name]), path)
 
             frame = frame.f_back
 
