@@ -10,21 +10,21 @@ def curl0(info, name, deps, codec):
     }
 
 
-@helper
+@y.helper
 def curl2(info):
     return curl0(info, "mbedtls2", [bestbox2(info), mbedtls2(info), make2(info)], 'gz')
 
 
-@helper
+@y.helper
 def curl1(info):
     return curl0(info, "mbedtls1_dev", [bestbox1(info), mbedtls1_dev(info), make1(info), tar1(info), xz1(info)], 'xz')
 
 
-@helper
+@y.helper
 def curl(info):
     return curl0(info, "mbedtls1_dev", [bestbox1(info), mbedtls1_dev(info), make1(info), tar1(info), xz1(info), musl1(info)], 'xz')
 
 
-@splitter(folders=['/bin'])
+@y.splitter(folders=['/bin'])
 def curl_runtime(info):
     return curl(info)

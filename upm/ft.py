@@ -36,13 +36,20 @@ def singleton(f):
     return wrapper
 
 
-def cached(key=lambda x: x):
+def default_key(*args, **kwargs):
+    return struct_dump_bytes([args, kwargs])
+
+
+def cached(key=default_key):
     vvv = {}
+
+    def calc_key(*args, **kwargs):
+        return struct_dump_bytes(key(*args, **kwargs))
 
     def real_cached(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
-            k = struct_dump_bytes(key({'a': args, 'b': kwargs, 'c': f.__name__}))
+            k = struct_dump_bytes([f.__name__, key(*args, **kwargs)])
 
             if k not in vvv:
                 vvv[k] = f(*args, **kwargs)

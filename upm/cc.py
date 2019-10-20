@@ -21,7 +21,6 @@ V = {
             'rm -rf $(BUILD_DIR)/fetched_urls',
             'mv $(BUILD_DIR)/* $(INSTALL_DIR)/'
         ],
-        "from": __file__,
         'codec': 'gz',
         'prepare': [
             'export PATH=$(GCC_BIN_DIR):$PATH',
@@ -105,7 +104,7 @@ def iter_comp():
         }
 
 
-@cached(key=lambda x: x)
+@cached()
 def find_tool(name):
     return subprocess.check_output(['echo `which ' + name + '`'], shell=True).strip()
 
@@ -234,12 +233,16 @@ def find_compiler(info):
 def join_versions(deps):
     def iter_v():
         for d in deps:
-            yield d['node']()['version']
+            x = restore_node(d)
+
+            print d, x['node']()
+
+            yield x['node']()['version']
 
     return '-'.join(iter_v())
 
 
-@cached(key=lambda x: x)
+@cached()
 def find_compiler_id(info):
     for x in find_compiler(info):
         return x
@@ -247,7 +250,7 @@ def find_compiler_id(info):
     raise Exception('shit happen %s' % info)
 
 
-@cached(key=lambda x: x)
+@cached()
 def find_compilers(info):
     def iter_compilers():
         if is_cross(info):

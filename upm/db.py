@@ -7,6 +7,7 @@ import random
 from .ft import struct_dump_bytes, dumps as dumps_db, cached, singleton
 from .gen_id import calc_pkg_full_name
 
+# intern_struct vs. deref_pointer
 
 III = {}
 VVV = []

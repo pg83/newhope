@@ -9,16 +9,16 @@ def musl0(info, codec, deps):
     }
 
 
-@helper
+@y.helper
 def musl2(info):
     return musl0(info, 'gz', [make2(info), bestbox2(info)])
 
 
-@helper
+@y.helper
 def musl1(info):
     return musl0(info, 'xz', [make2(info), bestbox2(info), tar2(info), xz2(info)])
 
 
-@helper
+@y.helper
 def musl(info):
     return musl0(info, 'xz', [make1(info), bestbox1(info), tar1(info), xz1(info), curl1(info)])

@@ -6,7 +6,6 @@ import argparse
 import subprocess
 import shutil
 
-from .loader import load_plugins
 from .main import main as main_makefile, tool_binary
 from .build import prepare_pkg, get_pkg_link
 from .run_make import run_makefile
@@ -16,6 +15,7 @@ from .subst import subst_kv_base
 from .ft import profile
 from .run_sh import build_sh_script
 from .helpers import xprint
+from .plugins import load_plugins
 
 
 try:
@@ -53,8 +53,6 @@ def prepare_root(r):
       for f in ('m', 'w', 'd', 'bin', 'tmp'):
          yield os.path.join(r, f)
 
-      ## yield '/private'
-
    for f in iter_trash():
       try:
          shutil.rmtree(f)
@@ -72,12 +70,11 @@ def prepare_root(r):
 
    p = os.path.join(r, 'bin', 'upm')
 
-   if 0:
-      with open(p, 'w') as f:
-         f.write(data)
-         os.system('chmod +x ' + p)
+   with open(p, 'w') as f:
+      f.write(data)
+      os.system('chmod +x ' + p)
 
-      os.execl(p, *([p] + sys.argv[1:]))
+   os.execl(p, *([p] + sys.argv[1:]))
 
 
 def cli_make(arg, verbose):
@@ -110,7 +107,6 @@ def cli_make(arg, verbose):
       raise Exception('can not determine root')
 
    root = calc_root()
-
    prepare_root(root)
 
    def iter_replaces():
@@ -244,14 +240,14 @@ def cli_makefile(arg, verbose):
       f = sys.stdout
       close = lambda: 0
 
-   load_plugins([os.path.abspath(x) for x in args.plugins] + [os.path.abspath(__file__) + '/../../plugins'])
-
    try:
+      load_plugins([os.path.abspath(__file__) + '/../../plugins'])
+
       if args.shell:
-         f.write(build_sh_script(args.shell))
+         f.write(build_sh_script(args.shell), verbose)
       else:
          funcs = []
-         f.write(main_makefile(verbose, funcs))
+         f.write(main_makefile(verbose))
 
       f.flush()
    finally:

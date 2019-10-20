@@ -1,4 +1,4 @@
-@helper
+@y.helper
 def pkg_config(info):
     return {
         'code': """

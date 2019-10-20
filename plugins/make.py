@@ -12,16 +12,16 @@ def make0(do_make, deps, codec='gz'):
     }
 
 
-@helper
+@y.helper
 def make2(info):
     return make0('sh ./build.sh', [bestbox2(info)])
 
 
-@helper
+@y.helper
 def make1(info):
     return make0('make', [make2(info), bestbox2(info)])
 
 
-@helper
+@y.helper
 def make(info):
     return make0('make', [make1(info), bestbox1(info), tar1(info), xz1(info), curl1(info), musl1(info)], codec='xz')

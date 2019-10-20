@@ -8,26 +8,26 @@ def tar0(info, deps, codec):
     }
 
 
-@helper
+@y.helper
 def tar2(info):
     return tar0(info, [bestbox2(info), make2(info)], 'gz')
 
 
-@helper
+@y.helper
 def tar1(info):
     return tar0(info, [bestbox2(info), tar2(info), xz2(info), make2(info), curl2(info), musl2(info)], 'xz')
 
 
-@helper
+@y.helper
 def tar(info):
     return tar0(info, [bestbox1(info), tar1(info), xz1(info), make1(info), curl1(info), musl1(info)], 'xz')
 
 
-@splitter(folders=['/bin'])
+@y.splitter(folders=['/bin'])
 def tar_runtime(info):
     return tar(info)
 
 
-@splitter(folders=['/share'])
+@y.splitter(folders=['/share'])
 def tar_docs(info):
     return tar(info)

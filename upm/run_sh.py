@@ -21,9 +21,9 @@ def subst(v):
     return subst_kv_base(v, iter_subst())
 
 
-def build_sh_script(targets):
+def build_sh_script(targets, verbose):
     res = [1]
-    run_makefile(main_makefile(True), res, targets)
+    run_makefile(main_makefile(verbose), res, targets)
     res = res[1:]
 
     def iter_cmd():

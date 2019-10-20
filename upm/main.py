@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-from .user import gen_packs
+from .iface import y
 from .build import build_makefile
 from .ft import singleton
 
@@ -25,5 +25,5 @@ def tool_binary():
    return res
 
 
-def main(verbose, funcs):
-    return build_makefile(list(gen_packs(extra_funcs=funcs)), verbose)
+def main(verbose):
+   return build_makefile(list(y.gen_packs()), verbose)

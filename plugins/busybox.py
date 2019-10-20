@@ -1,7 +1,8 @@
-@helper
+@y.helper
 def busybox(info):
-    #if xp('/info/info/host/os') == 'darwin':
-    return system00(info)
+    if 0:
+        if y.xp('/info/info/host/os') == 'darwin':
+            return system00(info)
 
     ver = '1.30.1'
 
@@ -18,19 +19,20 @@ def busybox(info):
     }
 
 
-@helper
+@y.helper
 def busybox1(info):
     return busybox0(info, [busybox2(info)], 'gz')
 
 
-@helper
+@y.helper
 def busybox2(info):
     return busybox0(info, [system0(info)], 'gz')
 
 
 def busybox0(info, deps, codec):
-    #if xp('/info/info/host/os') == 'darwin':
-    return system00(info)
+    if 0:
+        if xp('/info/info/host/os') == 'darwin':
+            return system00(info)
 
     host = info['info']['host']['arch']
     arch = {'aarch64': 'arm81'}.get(host, host)

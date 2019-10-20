@@ -1,6 +1,7 @@
 def bestbox0(info, deps, codec):
-    #if xp('/info/info/host/os') == 'darwin':
-    return system00(info)
+    if 0:
+        if y.xp('/info/info/host/os') == 'darwin':
+            return system00(info)
 
     return {
         'code': """
@@ -22,25 +23,25 @@ def bestbox0(info, deps, codec):
             export PATH=$(BUILD_DIR)/bin:$PATH
         """,
         'deps': deps,
-        'version': join_versions(deps[:2]),
+        'version': y.join_versions(deps[:2]),
         'codec': codec,
         'extra': [
-            {'kind': 'subst', 'from': '$(TB)', 'to': xp('/deps/0/node/name').upper()},
-            {'kind': 'subst', 'from': '$(BB)', 'to': xp('/deps/1/node/name').upper()},
+            {'kind': 'subst', 'from': '$(TB)', 'to': y.xp('/deps/0/node/name').upper()},
+            {'kind': 'subst', 'from': '$(BB)', 'to': y.xp('/deps/1/node/name').upper()},
         ],
     }
 
 
-@helper
+@y.helper
 def bestbox2(info):
     return bestbox0(info, [toybox2(info), busybox2(info)], 'gz')
 
 
-@helper
+@y.helper
 def bestbox1(info):
     return bestbox0(info, [toybox1(info), busybox1(info)], 'gz')
 
 
-@helper
+@y.helper
 def bestbox(info):
     return bestbox0(info, [toybox(info), busybox(info), tar1(info), xz1(info)], 'xz')
