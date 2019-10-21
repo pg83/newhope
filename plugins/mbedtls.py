@@ -11,16 +11,11 @@ def mbedtls0(deps, codec):
     }
 
 
-@y.helper
+@y.options()
 def mbedtls2(info):
-    return mbedtls0([make2(info), bestbox2(info)], 'gz')
+    return mbedtls0([make2_run(info), bestbox2_run(info)], 'gz')
 
 
-@y.helper
+@y.options()
 def mbedtls1(info):
-    return mbedtls0([make1(info), bestbox1(info), tar1(info), xz1(info)], 'xz')
-
-
-@y.splitter(folders=['/lib', '/include'])
-def mbedtls1_dev(info):
-    return mbedtls1(info)
+    return mbedtls0([make1_run(info), bestbox1_run(info), tar1_run(info), xz1_run(info)], 'xz')

@@ -3,11 +3,11 @@ import subprocess
 import platform
 import os
 
-from .ft import deep_copy, cached, singleton
-from .db import store_node, restore_node, deref_pointer, intern_struct
-from .ndk import find_android_linker_by_cc
-from .xpath import xp
-from .helpers import xprint
+from upm_ft import deep_copy, cached, singleton
+from upm_db import store_node, restore_node, deref_pointer, intern_struct
+from upm_ndk import find_android_linker_by_cc
+from upm_xpath import xp
+from upm_helpers import xprint
 
 
 V = {
@@ -233,11 +233,7 @@ def find_compiler(info):
 def join_versions(deps):
     def iter_v():
         for d in deps:
-            x = restore_node(d)
-
-            print d, x['node']()
-
-            yield x['node']()['version']
+            yield restore_node(d)['node']()['version']
 
     return '-'.join(iter_v())
 

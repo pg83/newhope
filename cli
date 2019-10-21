@@ -1,18 +1,111 @@
 #!/usr/bin/env python
-## install_me
-
+import imp
+import json
+import base64
+import zlib
 import os
 import sys
+import signal
 
+
+__file__ = os.path.abspath(__file__)
+
+
+signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 sys.dont_write_bytecode = True
 
-try:
-   from upm_cli import run_main
-except ImportError:
-   sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-   from upm.cli import run_main
+class StringImporter(object):
+   def __init__(self, modules):
+      self._modules = dict(modules)
+      self._compiled = {}
+
+   def find_module(self, fullname, path):
+      if fullname in self._modules:
+         return self
+
+      return None
+
+   def load_module(self, fullname):
+      if fullname not in self._compiled:
+         if fullname not in self._modules:
+            raise ImportError(fullname)
+
+         new_module = imp.new_module(fullname)
+         sys.modules[fullname] = new_module
+         exec self._modules[fullname] in new_module.__dict__
+         self._compiled[fullname] = new_module
+
+      return self._compiled[fullname]
+
+
+def load_local_code(where):
+   path = os.path.dirname(__file__) + '/' + where + '/'
+
+   for m in os.listdir(path):
+      if '~' in m:
+         continue
+
+      if '#' in m:
+         continue
+
+      if '__init__' in m:
+         continue
+
+      if not m.endswith('.py'):
+         continue
+
+      mpath = path + m
+
+      with open(mpath, 'r') as f:
+         yield mpath, f.read()
+
+
+def load_program_modules():
+   res = {}
+
+   for path, data in load_local_code('upm'):
+      res['upm_' + os.path.basename(path)[:-3]] = data
+
+   return res
+
+
+def load_plugin_modules():
+   res = {}
+
+   for path, data in load_local_code('plugins'):
+      res[os.path.basename(path)] = data
+
+   return res
+
+
+def install():
+   builtin_modules = {}
+   ## builtin_modules
+
+   if not builtin_modules:
+      builtin_modules = {
+         'upm': load_program_modules(),
+         'plu': load_plugin_modules(),
+      }
+
+   u = builtin_modules['upm']
+   v = builtin_modules['plu']
+
+   u['upm_plugins'] += '\n'.join(sorted(list(v.values()), key=lambda x: -len(x)))
+
+   sys.meta_path = [StringImporter(u)]
+   sys.builtin_modules = builtin_modules
+
+
+install()
 
 
 if __name__ == '__main__':
-   sys.exit(run_main())
+   try:
+      from upm_modlst import my_modules
+
+      mm = my_modules()
+      sys.exit(getattr(mm['upm_cli'], 'run_main')())
+   finally:
+      print sys.modules.keys()

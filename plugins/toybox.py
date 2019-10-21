@@ -15,16 +15,16 @@ def toybox0(info, deps, codec):
     }
 
 
-@y.helper
-def toybox2(info):
+@y.options(folders=[])
+def toybox2_run(info):
     return toybox0(info, [system0(info)], 'gz')
 
 
-@y.helper
-def toybox1(info):
-    return toybox0(info, [bestbox2(info), tar2(info), xz2(info)], 'xz')
+@y.options(folders=[])
+def toybox1_run(info):
+    return toybox0(info, [bestbox2_run(info), tar2_run(info), xz2_run(info)], 'xz')
 
 
-@y.helper
-def toybox(info):
-    return toybox0(info, [bestbox1(info), tar1(info), xz1(info), curl1(info)], 'xz')
+@y.options(folders=[])
+def toybox_run(info):
+    return toybox0(info, [bestbox1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)], 'xz')

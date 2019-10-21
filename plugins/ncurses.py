@@ -1,4 +1,4 @@
-@y.helper
+@y.options()
 def ncurses(info):
     return {
         'code': """

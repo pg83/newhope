@@ -8,21 +8,16 @@ def xz0(info, deps, codec):
     }
 
 
-@y.helper
+@y.options()
 def xz2(info):
-    return xz0(info, [make2(info), bestbox2(info), tar2(info)], 'gz')
+    return xz0(info, [make2_run(info), bestbox2_run(info), tar2_run(info)], 'gz')
 
 
-@y.helper
+@y.options()
 def xz1(info):
-    return xz0(info, [make2(info), bestbox2(info), tar2(info), xz2(info), musl2(info)], 'xz')
+    return xz0(info, [make2_run(info), bestbox2_run(info), tar2_run(info), xz2_run(info)], 'xz')
 
 
-@y.helper
+@y.options()
 def xz(info):
-    return xz0(info, [make1(info), bestbox1(info), tar1(info), xz1(info), curl2(info), musl1(info)], 'xz')
-
-
-@y.splitter(folders=['/bin'])
-def xz_runtime(info):
-    return xz(info)
+    return xz0(info, [make1_run(info), bestbox1_run(info), tar1_run(info), xz1_run(info), curl2_run(info)], 'xz')

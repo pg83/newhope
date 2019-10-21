@@ -2,9 +2,9 @@ import os
 import sys
 import subprocess
 
-from .iface import y
-from .build import build_makefile
-from .ft import singleton
+from upm_iface import y
+from upm_build import build_makefile
+from upm_ft import singleton
 
 
 @singleton

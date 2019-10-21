@@ -1,14 +1,13 @@
 def bestbox0(info, deps, codec):
-    if 0:
-        if y.xp('/info/info/host/os') == 'darwin':
-            return system00(info)
+    if not y.xp('/info/info/host/os') == 'linux':
+        return system00(info)
 
     return {
         'code': """
             mkdir -p $(INSTALL_DIR)/bin
 
-            ln $($(TB)_DIR)/bin/toybox $(INSTALL_DIR)/bin
-            ln $($(BB)_DIR)/bin/busybox $(INSTALL_DIR)/bin
+            ln $(MNGR_$(TB)_DIR)/bin/toybox $(INSTALL_DIR)/bin
+            ln $(MNGR_$(BB)_DIR)/bin/busybox $(INSTALL_DIR)/bin
         """,
         'prepare': """
             mkdir $(BUILD_DIR)/bin
@@ -32,16 +31,16 @@ def bestbox0(info, deps, codec):
     }
 
 
-@y.helper
-def bestbox2(info):
-    return bestbox0(info, [toybox2(info), busybox2(info)], 'gz')
+@y.options(folders=[])
+def bestbox2_run(info):
+    return bestbox0(info, [toybox2_run(info), busybox2_run(info)], 'gz')
 
 
-@y.helper
-def bestbox1(info):
-    return bestbox0(info, [toybox1(info), busybox1(info)], 'gz')
+@y.options(folders=[])
+def bestbox1_run(info):
+    return bestbox0(info, [toybox1_run(info), busybox1_run(info)], 'gz')
 
 
-@y.helper
-def bestbox(info):
-    return bestbox0(info, [toybox(info), busybox(info), tar1(info), xz1(info)], 'xz')
+@y.options(folders=[])
+def bestbox_run(info):
+    return bestbox0(info, [toybox_run(info), busybox_run(info), tar1_run(info), xz1_run(info)], 'xz')

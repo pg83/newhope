@@ -1,4 +1,6 @@
 def musl0(info, codec, deps):
+    return system00(info)
+
     return {
         'code': """
             ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared || exit 1
@@ -9,16 +11,16 @@ def musl0(info, codec, deps):
     }
 
 
-@y.helper
+@y.options()
 def musl2(info):
-    return musl0(info, 'gz', [make2(info), bestbox2(info)])
+    return musl0(info, 'gz', [make2_run(info), bestbox2_run(info)])
 
 
-@y.helper
+@y.options()
 def musl1(info):
-    return musl0(info, 'xz', [make2(info), bestbox2(info), tar2(info), xz2(info)])
+    return musl0(info, 'xz', [make2_run(info), bestbox2_run(info), tar2_run(info), xz2_run(info)])
 
 
-@y.helper
+@y.options()
 def musl(info):
-    return musl0(info, 'xz', [make1(info), bestbox1(info), tar1(info), xz1(info), curl1(info)])
+    return musl0(info, 'xz', [make1_run(info), bestbox1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)])

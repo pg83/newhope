@@ -1,4 +1,4 @@
-def system00(info=1):
+def system00(info):
     return {
         'code': '',
         'name': 'system',
@@ -8,34 +8,32 @@ def system00(info=1):
     }
 
 
-@y.helper
-def system0():
-    return system00()
+@y.options(folders=[])
+def system0(info):
+    return system00(info)
 
 
 @y.cached()
 def devtools2(info):
-    return [bestbox2(info), tar2(info), xz2(info), curl2(info), make2(info), musl2(info)]
+    return [bestbox2_run(info), tar2_run(info), xz2_run(info), curl2_run(info), make2_run(info)]
 
 
 @y.cached()
 def devtools1(info):
-    return [bestbox1(info), tar1(info), xz1(info), curl1(info), make1(info), musl1(info), python1(info)]
+    return [bestbox1_run(info), tar1_run(info), xz1_run(info), curl1_run(info), make1_run(info), python1_run(info)]
 
 
 @y.cached()
 def devtools(info):
     return [
-        bestbox(info), tar(info), xz(info),
-        curl(info), make(info), musl(info),
-        python(info), m4(info),
+        bestbox_run(info), tar_run(info), xz_run(info),
+        curl_run(info), make_run(info), python_run(info), m4_run(info),
     ]
 
 
 @y.cached()
 def devtools_last(info):
     return [
-        bestbox(info), tar_runtime(info), xz_runtime(info),
-        curl_runtime(info), make(info), musl(info),
-        python(info), m4(info),
+        bestbox_run(info), tar_run(info), xz_run(info),
+        curl_run(info), make_run(info), python_run(info), m4_run(info),
     ]

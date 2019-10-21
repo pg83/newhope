@@ -10,6 +10,6 @@ def zlib0(info, deps):
     }
 
 
-@y.helper
+@y.options()
 def zlib2(info):
     return zlib0(info, devtools_last(info))

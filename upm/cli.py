@@ -6,20 +6,19 @@ import argparse
 import subprocess
 import shutil
 
-from .main import main as main_makefile, tool_binary
-from .build import prepare_pkg, get_pkg_link
-from .run_make import run_makefile
-from .user import singleton
-from .colors import RED, RESET
-from .subst import subst_kv_base
-from .ft import profile
-from .run_sh import build_sh_script
-from .helpers import xprint
-from .plugins import load_plugins
+from upm_main import main as main_makefile, tool_binary
+from upm_build import prepare_pkg, get_pkg_link
+from upm_run_make import run_makefile
+from upm_user import singleton
+from upm_colors import RED, RESET
+from upm_subst import subst_kv_base
+from upm_ft import profile
+from upm_helpers import xprint
+from upm_iface import y
 
 
 try:
-   from .release_me import prepare_data
+   from upm_release_me import prepare_data
 except ImportError:
    def prepare_data():
       raise Exception('unimplemented')
@@ -45,7 +44,7 @@ def prepare_root(r):
       data = prepare_data()
    except Exception as e:
       if 'unimplemented' not in str(e):
-         raise e
+         raise
 
       return
 
@@ -74,7 +73,7 @@ def prepare_root(r):
       f.write(data)
       os.system('chmod +x ' + p)
 
-   os.execl(p, *([p] + sys.argv[1:]))
+   #os.execl(p, *([p] + sys.argv[1:]))
 
 
 def cli_make(arg, verbose):
@@ -241,10 +240,8 @@ def cli_makefile(arg, verbose):
       close = lambda: 0
 
    try:
-      load_plugins([os.path.abspath(__file__) + '/../../plugins'])
-
       if args.shell:
-         f.write(build_sh_script(args.shell), verbose)
+         f.write(y.build_sh_script(args.shell), verbose)
       else:
          funcs = []
          f.write(main_makefile(verbose))
@@ -296,6 +293,9 @@ def run_main():
    try:
       func()
    except Exception as e:
+      if 'Broken pipe' in str(e):
+         return -1
+
       if do_verbose:
          xprint(traceback.format_exc(), color='red')
       else:

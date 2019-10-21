@@ -1,7 +1,7 @@
 import inspect
 
-from .db import restore_node
-from .ft import deep_copy
+from upm_db import restore_node
+from upm_ft import deep_copy
 
 
 def apply_base(funcs, log):

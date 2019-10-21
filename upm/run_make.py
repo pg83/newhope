@@ -2,10 +2,10 @@ import os
 import sys
 import subprocess
 
-from .colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
-from .subst import subst_kv_base
-from .ft import deep_copy
-from .helpers import xprint
+from upm_colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
+from upm_subst import subst_kv_base
+from upm_ft import deep_copy
+from upm_helpers import xprint
 
 
 def new_cmd():

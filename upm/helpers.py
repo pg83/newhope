@@ -2,8 +2,8 @@ import os
 import sys
 import platform
 
-from .colors import colorize
-from .ft import deep_copy, singleton
+from upm_colors import colorize
+from upm_ft import deep_copy, singleton
 
 
 def to_lines(text):
@@ -80,3 +80,11 @@ def xprint(*args, **kwargs):
         text = colorize(text, color)
 
     where.write(text + '\n')
+
+
+def script_path():
+   return getattr(sys.modules['__main__'], '__file__')
+
+
+def path_by_script(path):
+   return os.path.dirname(script_path()) + '/' + path

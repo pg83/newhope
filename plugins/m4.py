@@ -17,6 +17,6 @@ def m4_0(info, deps, codec):
     }
 
 
-@y.helper
+@y.options()
 def m4(info):
-    return m4_0(info, [bestbox(info), make(info), tar_runtime(info), xz(info), curl(info), musl(info)], 'xz')
+    return m4_0(info, [bestbox_run(info), make_run(info), tar_run(info), xz_run(info), curl_run(info)], 'xz')

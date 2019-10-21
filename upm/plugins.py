@@ -1,8 +1,11 @@
-from .iface import y
+import sys
+
+from upm_iface import y
 
 
-def load_plugins(where):
-    y.load_plugins(where, globals())
+def register_plugin_func(func):
+    globals()[func.__name__] = func
 
 
-load_plugins(['builtin'])
+def dep_name(dep):
+    return y.restore_node(dep)['node']()['name']

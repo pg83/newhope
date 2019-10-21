@@ -1,8 +1,7 @@
-@y.helper
-def busybox(info):
-    if 0:
-        if y.xp('/info/info/host/os') == 'darwin':
-            return system00(info)
+@y.options(folders=[])
+def busybox_run(info):
+    if y.xp('/info/info/host/os') == 'darwin':
+        return system00(info)
 
     ver = '1.30.1'
 
@@ -15,17 +14,17 @@ def busybox(info):
         """,
         'src': 'https://www.busybox.net/downloads/busybox-' + ver + '.tar.bz2',
         'version': ver,
-        'deps': [bestbox1(info), make1(info), tar1(info), xz1(info), curl1(info)],
+        'deps': [bestbox1_run(info), make1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)],
     }
 
 
-@y.helper
-def busybox1(info):
-    return busybox0(info, [busybox2(info)], 'gz')
+@y.options(folders=[])
+def busybox1_run(info):
+    return busybox0(info, [busybox2_run(info)], 'gz')
 
 
-@y.helper
-def busybox2(info):
+@y.options(folders=[])
+def busybox2_run(info):
     return busybox0(info, [system0(info)], 'gz')
 
 

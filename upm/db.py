@@ -4,8 +4,9 @@ import time
 import binascii
 import random
 
-from .ft import struct_dump_bytes, dumps as dumps_db, cached, singleton
-from .gen_id import calc_pkg_full_name
+from upm_ft import struct_dump_bytes, dumps as dumps_db, cached, singleton
+from upm_gen_id import calc_pkg_full_name
+from upm_helpers import xprint
 
 # intern_struct vs. deref_pointer
 
@@ -18,13 +19,17 @@ def struct_ptr(s):
     return struct_dump_bytes(s)
 
 
+def key_struct_ptr(n):
+    return struct_ptr(n)[:8]
+
+
 def intern_list(l):
     assert None not in l
     return intern_struct(l)
 
 
 def intern_struct(n):
-    k = struct_ptr(n)[:8]
+    k = key_struct_ptr(n)
 
     if k in III:
         p = III[k]
@@ -37,14 +42,14 @@ def intern_struct(n):
 
 
 def check_db():
-    t1 = time.time()
-
     for k, v in III.iteritems():
         assert k == VVV[v][1]
 
-    t2 = time.time()
+    for n, k in VVV:
+        assert key_struct_ptr(n) == k
+        assert VVV[III[k]][1] == k
 
-    return 'db ok, ncount = ' + str(len(III)) + ', size = ' + str(len(dumps_db([III, VVV]))) + ', check time = ' + str(t2 - t1) + 's'
+    return 'db ok, ncount = ' + str(len(III)) + ', size = ' + str(len(dumps_db([III, VVV])))
 
 
 def visit_nodes(nodes):
@@ -85,23 +90,28 @@ def hash_key(p):
 
 
 def mangle_pointer(p):
-    return p
+    return p - 1
 
 
 def demangle_pointer(p):
-    return p
+    return p + 1
 
 
 def deref_pointer(v):
     return VVV[demangle_pointer(v)][0]
 
 
-def restore_node(ptr):
+def restore_node(ptr, rd=True):
     res = deref_pointer(ptr)
+
+    if rd:
+        f = restore_node
+    else:
+        f = lambda x: x
 
     def iter_deps():
         for p in deref_pointer(res[1]):
-            yield restore_node(p)
+            yield f(p)
 
     def get_node():
         return deref_pointer(res[0])
@@ -113,10 +123,17 @@ def restore_node(ptr):
     }
 
 
-def store_node_impl(node, extra_deps):
-    if node is None:
-        raise Exception('shit')
+def restore_node_simple(v):
+    v = restore_node(v, rd=False)
 
+    return {
+        'node': v['node'](),
+        'deps': list(v['deps']()),
+        'noid': v['noid'],
+    }
+
+
+def store_node_impl(node, extra_deps):
     def iter_deps():
         for x in node['deps']:
             if x:
@@ -137,9 +154,6 @@ def store_node_plain(node):
 
 
 def store_node(node):
-    if node is None:
-        raise Exception('shit')
-
     def extra():
         if 'url' in node['node']:
             yield gen_fetch_node(node['node']['url'])
@@ -153,7 +167,6 @@ def gen_fetch_node(url):
         'node': {
             'kind': 'fetch',
             'name': 'fetch_url',
-            'file': __file__,
             'url': url,
             'pkg_full_name': calc_pkg_full_name(url),
             'build': [
@@ -169,3 +182,43 @@ def gen_fetch_node(url):
     }
 
     return store_node_plain(res)
+
+
+def debug_print(y):
+    def iter_node(x):
+        n = x['node']()
+        nn = n['name'] + ':'
+
+        yield nn + 'node:', n
+
+        deps = list(x['deps']())
+
+        yield nn + 'deps:', deps
+
+        for d in deps:
+            nd = nn + 'dep:'
+
+            yield nd, d
+
+            try:
+                for a, b in iter_values(d):
+                    yield nd + a, b
+            except Exception as e:
+                yield nd + a + ':error', str(e)
+
+    def iter_values(x):
+        yield 'val:' + 'x', x
+
+        try:
+            for a, b in iter_node(restore_node(x)):
+                yield 'val:' + a, b
+        except Exception as e:
+            yield 'val:' + 'error', str(e)
+
+        try:
+            yield 'val:' + 'deref_pointer', deref_pointer(x)
+        except Exception as e:
+            yield 'val:' + 'error', str(e)
+
+    xprint('----------------------------\n' + '\n'.join(x + ' = ' + str(y) for x, y in iter_values(y)), color='yellow')
+

@@ -12,16 +12,16 @@ def make0(do_make, deps, codec='gz'):
     }
 
 
-@y.helper
-def make2(info):
-    return make0('sh ./build.sh', [bestbox2(info)])
+@y.options(folders=[])
+def make2_run(info):
+    return make0('sh ./build.sh', [bestbox2_run(info)])
 
 
-@y.helper
-def make1(info):
-    return make0('make', [make2(info), bestbox2(info)])
+@y.options(folders=[])
+def make1_run(info):
+    return make0('make', [make2_run(info), bestbox2_run(info)])
 
 
-@y.helper
-def make(info):
-    return make0('make', [make1(info), bestbox1(info), tar1(info), xz1(info), curl1(info), musl1(info)], codec='xz')
+@y.options(folders=[])
+def make_run(info):
+    return make0('make', [make1_run(info), bestbox1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)], codec='xz')

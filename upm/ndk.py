@@ -1,5 +1,6 @@
-from .ft import singleton
-from .db import store_node, restore_node
+from upm_ft import singleton
+from upm_db import store_node, restore_node
+from upm_xpath import run_xpath_simple as xpp
 
 
 def iter_targets():
@@ -22,10 +23,6 @@ def iter_rare_targets():
 
 @singleton
 def iter_android_ndk_20():
-    return list(iter_android_ndk_20_x())
-
-
-def iter_android_ndk_20_x():
     host = {'arch': 'x86_64', 'os': 'darwin'}
 
     by_arch = {
@@ -134,5 +131,5 @@ def iter_android_ndk_20_x():
 
 def find_android_linker_by_cc(cc, cmp):
     for n in iter_android_ndk_20():
-        if cmp(restore_node(n)['node']()['constraint']) == cmp(cc):
+        if cmp(xpp(n, 'node/constraint')) == cmp(cc):
             yield n

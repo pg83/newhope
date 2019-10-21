@@ -1,10 +1,10 @@
 import sys
 import base64
 
-from .main import tool_binary, main as main_makefile
-from .run_make import run_makefile
-from .subst import subst_kv_base
-from .helpers import xprint
+from upm_main import tool_binary, main as main_makefile
+from upm_run_make import run_makefile
+from upm_subst import subst_kv_base
+from upm_helpers import xprint
 
 
 def subst(v):

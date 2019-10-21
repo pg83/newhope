@@ -1,4 +1,4 @@
-from .gen_id import deep_copy
+from upm_ft import deep_copy
 
 
 V = {
