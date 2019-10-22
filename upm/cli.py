@@ -6,7 +6,8 @@ import argparse
 import subprocess
 import shutil
 
-from upm_main import main as main_makefile, tool_binary
+from upm_iface import y
+from upm_main import main as main_makefile
 from upm_build import prepare_pkg, get_pkg_link
 from upm_run_make import run_makefile
 from upm_user import singleton
@@ -14,7 +15,6 @@ from upm_colors import RED, RESET
 from upm_subst import subst_kv_base
 from upm_ft import profile
 from upm_helpers import xprint
-from upm_iface import y
 
 
 try:
@@ -118,7 +118,7 @@ def cli_make(arg, verbose):
 
       if local:
          yield ('$(WDP)', '$(PREFIX)/p')
-         yield ('$(UPM)', tool_binary())
+         yield ('$(UPM)', y.script_path())
          yield ('$(RM_TMP)', 'rm -rf')
 
       if args.production:

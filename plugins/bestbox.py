@@ -1,7 +1,4 @@
 def bestbox0(info, deps, codec):
-    if not y.xp('/info/info/host/os') == 'linux':
-        return system00(info)
-
     return {
         'code': """
             mkdir -p $(INSTALL_DIR)/bin
@@ -33,14 +30,23 @@ def bestbox0(info, deps, codec):
 
 @y.options(folders=[])
 def bestbox2_run(info):
+    if y.xp('/info/info/host/os') == 'darwin':
+        return system0(info)
+
     return bestbox0(info, [toybox2_run(info), busybox2_run(info)], 'gz')
 
 
 @y.options(folders=[])
 def bestbox1_run(info):
+    if y.xp('/info/info/host/os') == 'darwin':
+        return coreutils2_run(info)
+
     return bestbox0(info, [toybox1_run(info), busybox1_run(info)], 'gz')
 
 
 @y.options(folders=[])
 def bestbox_run(info):
+    if y.xp('/info/info/host/os') == 'darwin':
+        return coreutils2_run(info)
+
     return bestbox0(info, [toybox_run(info), busybox_run(info), tar1_run(info), xz1_run(info)], 'xz')

@@ -1,6 +1,6 @@
 def system00(info):
     return {
-        'code': '',
+        'code': 'echo 1 > 2',
         'name': 'system',
         'version': '1.0.0',
         'deps': [],
@@ -26,7 +26,7 @@ def devtools1(info):
 @y.cached()
 def devtools(info):
     return [
-        bestbox_run(info), tar_run(info), xz_run(info),
+        bestbox_run(info), coreutils_run(info), tar_run(info), xz_run(info),
         curl_run(info), make_run(info), python_run(info), m4_run(info),
     ]
 
@@ -34,6 +34,6 @@ def devtools(info):
 @y.cached()
 def devtools_last(info):
     return [
-        bestbox_run(info), tar_run(info), xz_run(info),
+        bestbox_run(info), coreutils_run(info), tar_run(info), xz_run(info),
         curl_run(info), make_run(info), python_run(info), m4_run(info),
     ]

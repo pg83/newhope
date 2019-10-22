@@ -6,7 +6,6 @@ def curl0(info, deps, codec):
         'src': 'https://curl.haxx.se/snapshots/curl-7.67.0-20191011.tar.bz2',
         'deps': deps,
         'codec': codec,
-        'prepare': '$(ADD_PATH)',
     }
 
 

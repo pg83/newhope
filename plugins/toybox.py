@@ -1,7 +1,6 @@
 def toybox0(info, deps, codec):
-    if 0:
-        if xp('/info/host/os') == 'darwin':
-            return system00(info)
+    if y.xp('/info/info/host/os') == 'darwin':
+        return system00(info)
 
     name = 'toybox-' + info['info']['host']['arch']
     ver = '0.8.1'
@@ -17,7 +16,7 @@ def toybox0(info, deps, codec):
 
 @y.options(folders=[])
 def toybox2_run(info):
-    return toybox0(info, [system0(info)], 'gz')
+    return toybox0(info, [], 'gz')
 
 
 @y.options(folders=[])

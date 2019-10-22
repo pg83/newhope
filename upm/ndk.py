@@ -1,4 +1,5 @@
-from upm_ft import singleton
+from upm_iface import y
+from upm_ft import singleton, deep_copy
 from upm_db import store_node, restore_node
 from upm_xpath import run_xpath_simple as xpp
 
@@ -50,14 +51,12 @@ def iter_android_ndk_20():
                     'export PATH=$(CUR_DIR)/darwin-x86_64/' + t['arch'] + '-linux-android/bin:$PATH'
                 ],
                 'url': 'https://dl.google.com/android/repository/android-ndk-r20-darwin-x86_64.zip',
-                'pkg_full_name': 'android-ndk-r20-darwin-x86_64.zip',
-                'kind': 'spizdili',
-                'name': 'android-darwin-' + t['arch'],
+                'kind': ['c', 'c++', 'linker'],
+                'name': 'google',
                 'version': 'r20',
                 'constraint': {'host': host, 'target': t},
-                'codec': 'xz',
             },
-            'deps': []
+            'deps': [],
         }
 
         need.append(store_node(res))
@@ -113,13 +112,10 @@ def iter_android_ndk_20():
                     'mkdir $(INSTALL_DIR)/bin',
                     'cp -R bin/' + t['arch'] + '* $(INSTALL_DIR)/bin/',
                 ] + [('cp -R ' + x + ' $(INSTALL_DIR)/bin/')  for x in llvm],
-                'prepare': [
-                ],
-                'kind': 'spizdili',
-                'name': 'small-darwin',
+                'kind': ['c', 'c++', 'linker'],
+                'name': 'google-llvm',
                 'version': 'r20',
                 'constraint': {'host': host, 'target': t},
-                'codec': 'xz',
             },
             'deps': [big_one[1]],
         }
@@ -133,3 +129,45 @@ def find_android_linker_by_cc(cc, cmp):
     for n in iter_android_ndk_20():
         if cmp(xpp(n, 'node/constraint')) == cmp(cc):
             yield n
+
+
+def iter_ndk_tools():
+    for nd in iter_android_ndk_20():
+        n = y.restore_node_simple(nd)
+
+        if n['node']['constraint']['target']['arch'] == 'llvm':
+            continue
+
+        c = deep_copy(n)
+        l = deep_copy(n)
+
+        c['node']['kind'] = 'c/c+';
+        l['node']['kind'] = 'linker';
+
+        if n['node']['name'] == 'google':
+            c['node']['type'] = 'gcc'
+            l['node']['type'] = 'binutils'
+
+            all = [c, l]
+        else:
+            c['node']['type'] = 'clang'
+
+            lb = deep_copy(l)
+            lb['node']['type'] = 'binutils'
+
+            ll = deep_copy(l)
+            ll['node']['type'] = 'llvm'
+
+            all = [c, lb, ll]
+
+        for x in all:
+            xn = x['node']
+
+            xn.pop('url', None)
+            xn.pop('build')
+            xn.pop('prepare', None)
+            xn['extra_deps'] = [nd]
+            xn['name'] = 'ndk-' + xn['kind'] + '-' + xn['type']
+
+            yield deep_copy(x)
+

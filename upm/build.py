@@ -8,6 +8,7 @@ import shutil
 import hashlib
 
 from upm_iface import y
+
 from upm_db import visit_nodes, restore_node, check_db, store_node
 from upm_gen_id import to_visible_name, short_const_1
 from upm_ft import deep_copy, singleton
@@ -111,11 +112,19 @@ def get_pkg_link(p, m):
 
 
 def prepare_pkg(fr, to, codec):
-    return [
-        'mkdir -p $(WDR) ## archive package',
-        'cd ' + fr + ' && ' + 'tar -v -c' + codecs[codec]  + 'f ' + to + '-tmp' + ' .',
-        'mv ' + to + '-tmp ' + to,
-    ]
+    def iter_lines():
+        yield 'mkdir -p $(WDR) ## archive package'
+        yield 'which tar'
+        yield 'which xz'
+
+        if codec == 'xz':
+            yield 'cd ' + fr + ' && ' + '(tar -v -cf - . | xz -zc) > ' + to + '-tmp'
+        else:
+            yield 'cd ' + fr + ' && ' + 'tar -v -c' + codecs[codec] + 'f ' + to + '-tmp' + ' .'
+
+        yield 'mv ' + to + '-tmp ' + to
+
+    return list(iter_lines())
 
 
 def gen_pkg_path(v):
@@ -207,6 +216,9 @@ def print_one_node(root):
         yield target + ': ' + ' '.join([x[0] for x in nodes])+ ' ## node ' + root['noid']
 
         def iter_body():
+            yield 'rmmkcd $(INSTALL_DIR); mkcd log; cat > run.sh; exec $(SHELL) $(SHELL_FLAGS) run.sh'
+            yield 'ls -la; exec 1>stdout.log'
+
             def iter_env():
                 env = [
                     ('TMPDIR', '"$(BUILD_DIR)"'),
@@ -222,8 +234,9 @@ def print_one_node(root):
                     yield 'export ' + k + '=' + v
 
             yield 'cd /; /usr/bin/env; ' + '; '.join(iter_env())
-            yield '$(RM_TMP) $(INSTALL_DIR) $(BUILD_DIR) || true'
-            yield 'mkdir -p $(INSTALL_DIR) $(BUILD_DIR)'
+            yield '$(RM_TMP) $(BUILD_DIR) || true'
+            yield 'mkdir -p $(BUILD_DIR)'
+            yield 'ln $(STDOUT_LOG) $(BUILD_DIR)/'
 
             for pkg_path, x in nodes:
                 xnode = x['node']()
@@ -250,6 +263,7 @@ def print_one_node(root):
             for l in prepare_pkg('$(INSTALL_DIR)', '$(PKG_FILE)', root_node['codec']):
                 yield l
 
+            yield '(echo "last log:"; tail -n 100 $(BUILD_DIR)/stdout.log | while read l; do echo "$l"; done;) 1>&2'
             yield '$(RM_TMP) $(INSTALL_DIR) $(BUILD_DIR) || true'
 
         for l in iter_body():
@@ -274,6 +288,7 @@ def print_one_node(root):
 
     for i in (1, 2):
         data = subst_values(data, root, iter_deps)
+        data = data.replace('$(STDOUT_LOG)', '$(INSTALL_DIR)/log/stdout.log')
 
     return data
 

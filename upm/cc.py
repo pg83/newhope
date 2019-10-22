@@ -3,17 +3,18 @@ import subprocess
 import platform
 import os
 
+
+from upm_iface import y
 from upm_ft import deep_copy, cached, singleton
 from upm_db import store_node, restore_node, deref_pointer, intern_struct
-from upm_ndk import find_android_linker_by_cc
 from upm_xpath import xp
 from upm_helpers import xprint
 
 
 V = {
     'common': {
-        'kind': 'c/c++ compiler',
-        'name': 'gcc',
+        'kind': ['c', 'c++', 'linker'],
+        'type': 'gcc',
         'version': '9.2',
         'build': [
             '#pragma manual deps',
@@ -21,12 +22,12 @@ V = {
             'rm -rf $(BUILD_DIR)/fetched_urls',
             'mv $(BUILD_DIR)/* $(INSTALL_DIR)/'
         ],
-        'codec': 'gz',
         'prepare': [
             'export PATH=$(GCC_BIN_DIR):$PATH',
             'export LDFLAGS="--static $LDFLAGS"',
             'export CFLAGS="-O2 -I$(GCC_INC_DIR) $CFLAGS"',
-        ]
+        ],
+        'codec': 'gz',
     },
     "barebone": [
         {
@@ -66,18 +67,31 @@ V = {
 }
 
 
+def fix_constraints(h, t):
+    for k, v in h.items():
+        if k not in t:
+            t[k] = v
+
+
+def fix_constraints_cc(cc):
+    cc = deep_copy(cc)
+
+    if 'target' not in cc:
+        cc['target'] = {}
+
+    fix_constraints(cc['host'], cc['target'])
+
+    cc['is_cross'] = is_cross(cc)
+
+    return deep_copy(cc)
+
+
 def small_repr(c):
     return c['os'] + '-' + c['arch']
 
 
 def small_repr_cons(c):
     return small_repr(c['host']) + '$' + small_repr(c['target'])
-
-
-def fix_constraints(h, t):
-    for k, v in h.items():
-        if k not in t:
-            t[k] = v
 
 
 def is_cross(cc):
@@ -89,14 +103,7 @@ def iter_comp():
         v = deep_copy(v)
         v.update(deep_copy(V['common']))
 
-        cc = v['constraint']
-
-        if 'target' not in cc:
-            cc['target'] = {}
-
-        fix_constraints(cc['host'], cc['target'])
-
-        cc['is_cross'] = is_cross(cc)
+        v['constraint'] = fix_constraints_cc(v['constraint'])
 
         yield {
             'node': v,
@@ -104,26 +111,42 @@ def iter_comp():
         }
 
 
-@cached()
-def find_tool(name):
-    return subprocess.check_output(['echo `which ' + name + '`'], shell=True).strip()
+def iter_musl_cc_tools():
+    for n in iter_comp():
+        nd = store_node(n)
+
+        c = deep_copy(n)
+        l = deep_copy(n)
+
+        c['node']['kind'] = 'c/c++'
+        c['node']['type'] = 'gcc'
+
+        l['node']['kind'] = 'linker'
+        l['node']['type'] = 'binutils'
+
+        for x in (c, l):
+            xn = x['node']
+
+            xn.pop('url', None)
+            xn.pop('build')
+            xn.pop('prepare', None)
+            xn['extra_deps'] = [nd]
+            xn['name'] = 'muslcc-' + xn['kind'] + '-' + xn['type']
+
+            yield deep_copy(x)
 
 
 def iter_system_compilers():
     for t in ('gcc', 'clang'):
-        try:
-            tp = find_tool(t)
+        tp = y.find_tool(t)
 
-            if tp:
-                yield {
-                    'kind': 'clang',
-                    'name': os.path.basename(tp),
-                    'path': tp,
-                    'data': subprocess.check_output([tp, '--version'], stderr=subprocess.STDOUT, shell=False),
-                    'codec': 'xz',
-                }
-        except Exception as e:
-            xprint(e)
+        yield {
+            'kind': ['c', 'c++', 'linker'],
+            'type': 'clang',
+            'name': os.path.basename(tp),
+            'path': tp,
+            'data': subprocess.check_output([tp, '--version'], stderr=subprocess.STDOUT, shell=False),
+        }
 
 
 def iter_targets(*extra):
@@ -141,7 +164,7 @@ def iter_targets(*extra):
 def iter_system_impl():
     def iter_c():
         for c in iter_system_compilers():
-            if c['kind'] == 'clang':
+            if c['type'] == 'clang':
                 yield c
 
     for c in iter_c():
@@ -181,6 +204,7 @@ def iter_system_impl():
                 c['constraint'] = cc
                 c['version'] = '9.0.0'
                 c['build'] = []
+                c['codec'] = 'gz'
 
                 if cc['is_cross']:
                     c['prefix'] = ['tool_cross_prefix', '']
@@ -194,17 +218,29 @@ def iter_system_impl():
                     'deps': [],
                 }
 
-                oc = c
 
-                for l in find_android_linker_by_cc(cc, small_repr_cons):
-                    c  = deep_copy(oc)
+def iter_system_tools():
+    for n in iter_system_impl():
+        c = deep_copy(n)
+        l = deep_copy(n)
 
-                    c['extra_deps'] = [l]
+        c['node']['kind'] = 'c/c++'
+        c['node']['type'] = 'clang'
 
-                    yield {
-                        'node': c,
-                        'deps': [l],
-                    }
+        l['node']['kind'] = 'linker'
+        l['node']['type'] = 'binutils'
+
+        for x in (l, c):
+            xn = x['node']
+
+            xn.pop('url', None)
+            xn.pop('data', None)
+            xn.pop('build')
+            xn.pop('prepare', None)
+            xn['extra_deps'] = [store_node(n)]
+            xn['name'] = 'system-' + xn['kind'] + '-' + xn['type']
+
+            yield deep_copy(x)
 
 
 def iter_all_nodes():
@@ -227,7 +263,7 @@ def iter_all_compilers():
 def find_compiler(info):
     for d in iter_all_compilers():
         if small_repr_cons(info) == small_repr_cons(restore_node(d)['node']()['constraint']):
-            yield
+            yield d
 
 
 def join_versions(deps):
@@ -241,6 +277,7 @@ def join_versions(deps):
 @cached()
 def find_compiler_id(info):
     for x in find_compiler(info):
+        assert x
         return x
 
     raise Exception('shit happen %s' % info)
@@ -250,10 +287,9 @@ def find_compiler_id(info):
 def find_compilers(info):
     def iter_compilers():
         if is_cross(info):
-            cinfo = deep_copy(info)
-            cinfo['target'] = cinfo['host']
+            host = info['host']
 
-            yield find_compiler_id(cinfo)
+            yield find_compiler_id({'target': host, 'host': host})
 
         yield find_compiler_id(info)
 

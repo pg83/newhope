@@ -26,15 +26,31 @@ class StringImporter(object):
 
       return None
 
+   def get_source(self, fullname):
+      if fullname in self._modules:
+         return self._modules[fullname]
+
+      raise ImportError()
+
+   def get_code(self, fullname):
+      if fullname in self._compiled:
+         return self._compiled[fullname]
+
+      return self.load_module(fullname)
+
    def load_module(self, fullname):
       if fullname not in self._compiled:
          if fullname not in self._modules:
             raise ImportError(fullname)
 
-         new_module = imp.new_module(fullname)
-         sys.modules[fullname] = new_module
-         exec self._modules[fullname] in new_module.__dict__
-         self._compiled[fullname] = new_module
+         mod = sys.modules.setdefault(fullname, imp.new_module(fullname))
+         mod.__file__ = 'upm/' + fullname + '.py'
+         mod.__loader__ = self
+         mod.__package__ = fullname
+
+         exec self._modules[fullname] in mod.__dict__
+
+         self._compiled[fullname] = mod
 
       return self._compiled[fullname]
 
@@ -65,7 +81,8 @@ def load_program_modules():
    res = {}
 
    for path, data in load_local_code('upm'):
-      res['upm_' + os.path.basename(path)[:-3]] = data
+      m = 'upm_' + os.path.basename(path)[:-3]
+      res[m] = data
 
    return res
 
@@ -94,18 +111,15 @@ def install():
 
    u['upm_plugins'] += '\n'.join(sorted(list(v.values()), key=lambda x: -len(x)))
 
-   sys.meta_path = [StringImporter(u)]
+   sys.meta_path.append(StringImporter(u))
    sys.builtin_modules = builtin_modules
 
 
 install()
 
 
-if __name__ == '__main__':
-   try:
-      from upm_modlst import my_modules
+from upm_iface import y
 
-      mm = my_modules()
-      sys.exit(getattr(mm['upm_cli'], 'run_main')())
-   finally:
-      print sys.modules.keys()
+
+if __name__ == '__main__':
+   sys.exit(y.run_main())

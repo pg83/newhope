@@ -1,7 +1,9 @@
 import os
 import sys
 import subprocess
+import random
 
+from upm_bad import BAD_SUBSTRINGS
 from upm_colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
 from upm_subst import subst_kv_base
 from upm_ft import deep_copy
@@ -14,11 +16,25 @@ def new_cmd():
     }
 
 
+BASH_RUNTIME = """
+set -e
+set -x
+
+rmmkcd() {
+    (rm -rf "$1" || true) && (mkdir -p "$1") && cd "$1"
+}
+
+mkcd() {
+    mkdir -p "$1" && cd "$1"
+}
+"""
+
+
 def run_makefile(data, shell_out, targets):
     lst = []
     prev = None
     shell = '/bin/sh'
-    flags = ['--noprofile', '--norc', '-c']
+    flags = ['--noprofile', '--norc', '-e']
 
     for l in data.split('\n'):
         p = l.find('##')
@@ -152,20 +168,33 @@ def run_makefile(data, shell_out, targets):
                 all_res = []
 
                 try:
-                    res = do_compile(['/usr/bin/env', '-i', shell] + flags + [cmd], stderr=subprocess.STDOUT, shell=False)
-                    all_res.append(res)
+                    args = ['/usr/bin/env', '-i', shell] + flags
+                    input = BASH_RUNTIME + '\n' + cmd
+                    input = input.replace('$(SHELL)', shell).replace('$(SHELL_FLAGS)', ' '.join(flags[:2]))
+
+                    p = subprocess.Popen(args, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+                    res, _ = p.communicate(input=input)
+
+                    if res:
+                        all_res.append(str(res))
 
                     check_data = ''.join(all_res)
 
-                    if 'C compiler cannot create executables' in check_data:
-                        raise Exception('C compiler cannot create executables')
+                    for t in BAD_SUBSTRINGS:
+                        if t in check_data:
+                            raise Exception("error detected: %s" % t)
                 except subprocess.CalledProcessError as err:
                     all_res.append(err.output)
                     errors.append('can not build ' + c)
                 except Exception as err:
                     errors.append(str(err))
 
-                yield GREEN + ' log:' + RESET
+                if errors:
+                    color = RED
+                else:
+                    color = GREEN
+
+                yield color + ' log:' + RESET
 
                 for l in ('\n'.join(all_res)).strip().split('\n'):
                     l = l.rstrip()
@@ -173,10 +202,19 @@ def run_makefile(data, shell_out, targets):
                     if l:
                         l = l.decode('utf-8')
 
-                        if RED in l:
-                            errors.append(l)
+                        if 'last log:' in l:
+                            color = BLUE
+
+                            yield ''
+
+                            l = ' ' + color + l.strip() + RESET
+
+                            yield l
                         else:
-                            yield '  ' + GREEN + l + RESET
+                            if RED in l:
+                                errors.append(l)
+                            else:
+                                yield '  ' + color + l + RESET
 
                 if errors:
                     yield white_line
@@ -186,7 +224,9 @@ def run_makefile(data, shell_out, targets):
         xprint('\n'.join(iter_lines(errors)))
 
         if errors:
-            raise Exception('%s' % (', '.join(errors)))
+            data = ', '.join(errors)
+
+            raise Exception('%s' % data)
 
     for t in targets:
         run_cmd(t)

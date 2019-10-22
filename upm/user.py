@@ -4,11 +4,11 @@ import base64
 import functools
 import itertools
 
+from upm_iface import y
 from upm_ft import singleton, cached, fp, deep_copy
 from upm_cc import find_compilers
 from upm_subst import subst_kv_base
 from upm_helpers import subst_info, to_lines
-from upm_iface import y
 
 
 def v1_to_v2_key(func, info):
@@ -28,8 +28,6 @@ def v1_to_v2(func, info):
     }
 
     full_data = func(param)
-
-    #y.debug_print(full_data)
 
     try:
         data = full_data['code']

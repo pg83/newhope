@@ -1,7 +1,8 @@
 import sys
 import base64
 
-from upm_main import tool_binary, main as main_makefile
+from upm_iface import y
+from upm_main import main as main_makefile
 from upm_run_make import run_makefile
 from upm_subst import subst_kv_base
 from upm_helpers import xprint
@@ -13,7 +14,7 @@ def subst(v):
         yield ('$(WDR)', '$(PREFIX)/r')
         yield ('$(WDW)', '$(PREFIX)/w')
         yield ('$(WDP)', '$(PREFIX)/p')
-        yield ('$(UPM)', tool_binary())
+        yield ('$(UPM)', y.script_path())
         yield ('$(RM_TMP)', '## ')
         yield ('$(PREFIX)', '$PREFIX')
         yield ('$$', '$')

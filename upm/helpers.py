@@ -1,9 +1,10 @@
 import os
 import sys
 import platform
+import subprocess
 
 from upm_colors import colorize
-from upm_ft import deep_copy, singleton
+from upm_ft import deep_copy, singleton, cached
 
 
 def to_lines(text):
@@ -72,9 +73,22 @@ def current_host_platform():
 
 
 def xprint(*args, **kwargs):
+    def fixx(x):
+        try:
+            x = str(x)
+        except:
+            pass
+
+        try:
+            x = x.decode('utf-8')
+        except:
+            pass
+
+        return x
+
     color = kwargs.get('color')
     where = kwargs.get('where', sys.stderr)
-    text = ' '.join([str(x) for x in args])
+    text = ' '.join([fixx(x) for x in args])
 
     if color:
         text = colorize(text, color)
@@ -82,8 +96,27 @@ def xprint(*args, **kwargs):
     where.write(text + '\n')
 
 
+@singleton
 def script_path():
    return getattr(sys.modules['__main__'], '__file__')
+
+
+@cached()
+def find_tool(name):
+    return subprocess.check_output(['echo `which ' + name + '`'], shell=True).strip()
+
+
+@singleton
+def _tool_binary():
+   if sys.argv[0].endswith('upm'):
+      return os.path.abspath(sys.argv[0])
+
+   res = os.path.abspath(__file__)
+
+   if 'main.py' in res:
+      res = os.path.dirname(os.path.dirname(res)) + '/cli'
+
+   return res
 
 
 def path_by_script(path):

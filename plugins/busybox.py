@@ -25,13 +25,12 @@ def busybox1_run(info):
 
 @y.options(folders=[])
 def busybox2_run(info):
-    return busybox0(info, [system0(info)], 'gz')
+    return busybox0(info, [], 'gz')
 
 
 def busybox0(info, deps, codec):
-    if 0:
-        if xp('/info/info/host/os') == 'darwin':
-            return system00(info)
+    if y.xp('/info/info/host/os') == 'darwin':
+        return system00(info)
 
     host = info['info']['host']['arch']
     arch = {'aarch64': 'arm81'}.get(host, host)

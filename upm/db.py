@@ -4,6 +4,7 @@ import time
 import binascii
 import random
 
+from upm_iface import y
 from upm_ft import struct_dump_bytes, dumps as dumps_db, cached, singleton
 from upm_gen_id import calc_pkg_full_name
 from upm_helpers import xprint
@@ -77,8 +78,8 @@ def visit_nodes(nodes):
                     yield v
 
     for x in nodes:
-        for y in do(x):
-            yield y
+        for z in do(x):
+            yield z
 
 
 def pointer(p):
@@ -136,12 +137,14 @@ def restore_node_simple(v):
 def store_node_impl(node, extra_deps):
     def iter_deps():
         for x in node['deps']:
-            if x:
-                yield x
+            assert x
+            yield x
 
         for x in extra_deps:
-            if x:
-                yield x
+            assert x
+            yield x
+
+    node = y.fix_v2(node)
 
     return intern_struct([
         intern_struct(node['node']),
