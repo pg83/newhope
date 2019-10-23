@@ -9,12 +9,11 @@ import hashlib
 
 from upm_iface import y
 
-from upm_db import visit_nodes, restore_node, check_db, store_node
-from upm_gen_id import to_visible_name, short_const_1
-from upm_ft import deep_copy, singleton
-from upm_subst import subst_kv_base
-from upm_helpers import xprint
+from upm_gen_id import short_const_1
 
+deep_copy = y.deep_copy
+singleton = y.singleton
+to_visible_name = y.to_visible_name
 
 codecs = {
     'gz': 'z',
@@ -80,7 +79,7 @@ def subst_values(data, root, iter_deps):
                     yield ('$(MNGR_' + n + '_LIB_DIR)', mn(lib_dir(x)))
                     yield ('$(MNGR_' + n + '_INC_DIR)', mn(inc_dir(x)))
 
-    return subst_kv_base(data, iter1(), iter2(), iter3())
+    return y.subst_kv_base(data, iter1(), iter2(), iter3())
 
 
 def calc_mode(name):
@@ -132,11 +131,11 @@ def gen_pkg_path(v):
 
 
 def build_makefile_impl(nodes, replaces):
-    full = list(visit_nodes(nodes))
+    full = list(y.visit_nodes(nodes))
     by_name = {}
 
     for ptr in full:
-        root = restore_node(ptr)
+        root = y.restore_node(ptr)
         node = root['node']()
         nnn = node['name']
         cc = node.get('constraint', {})
@@ -158,7 +157,7 @@ def build_makefile_impl(nodes, replaces):
 
     def iter_nodes():
         for ptr in full:
-            root = restore_node(ptr)
+            root = y.restore_node(ptr)
             data = print_one_node(root)
             link = to_visible_name(root)
             replaces[link] = hashlib.md5(data).hexdigest()[:8] + link[8:]
@@ -184,6 +183,18 @@ def build_makefile_impl(nodes, replaces):
     return '\n'.join(iter_parts()) + '\n'
 
 
+def uniq_deps(iter):
+    visited = set()
+
+    for x in iter:
+        p = gen_pkg_path(x)
+
+        if p not in visited:
+            visited.add(p)
+
+            yield (p, x)
+
+
 def print_one_node(root):
     root_node = root['node']()
     old_root_deps = root['deps']
@@ -193,25 +204,13 @@ def print_one_node(root):
             yield x
 
             for y in x['node']().get('extra_deps', []):
-                yield restore_node(y)
+                yield y.restore_node(y)
 
     del root['deps']
 
     def iter_part():
         target = gen_pkg_path(root)
-
-        def iter_nodes():
-            visited = set()
-
-            for x in iter_deps():
-                p = gen_pkg_path(x)
-
-                if p not in visited:
-                    visited.add(p)
-
-                    yield (p, x)
-
-        nodes = list(iter_nodes())
+        nodes = list(uniq_deps(iter_deps()))
 
         yield target + ': ' + ' '.join([x[0] for x in nodes])+ ' ## node ' + root['noid']
 
@@ -263,7 +262,7 @@ def print_one_node(root):
             for l in prepare_pkg('$(INSTALL_DIR)', '$(PKG_FILE)', root_node['codec']):
                 yield l
 
-            yield '(echo "last log:"; tail -n 100 $(BUILD_DIR)/stdout.log | while read l; do echo "$l"; done;) 1>&2'
+            yield '(echo "last log:"; tail -n 100 $(BUILD_DIR)/stdout.log) 1>&2'
             yield '$(RM_TMP) $(INSTALL_DIR) $(BUILD_DIR) || true'
 
         for l in iter_body():
@@ -294,11 +293,7 @@ def print_one_node(root):
 
 
 def build_makefile(nodes, verbose):
-    try:
-        replaces = {}
-        data = build_makefile_impl(nodes, replaces)
+    replaces = {}
+    data = build_makefile_impl(nodes, replaces)
 
-        return subst_kv_base(data, replaces.iteritems())
-    finally:
-        if verbose:
-            xprint(check_db())
+    return y.subst_kv_base(data, replaces.iteritems())

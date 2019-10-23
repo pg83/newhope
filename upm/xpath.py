@@ -1,7 +1,6 @@
 import inspect
 
-from upm_db import restore_node
-from upm_ft import deep_copy
+from upm_iface import y
 
 
 def apply_base(funcs, log):
@@ -38,7 +37,7 @@ def apply_all(v, lst, log):
 
 def run_xpath(val, path, log=[]):
     def try_call(x):
-        return apply_any(x, (restore_node, lambda x: x(), lambda x: x), log)
+        return apply_any(x, (y.restore_node, lambda x: x(), lambda x: x), log)
 
     def param_lst(p):
         return apply_all(p, (str, int, float), log)
@@ -58,10 +57,8 @@ def run_xpath(val, path, log=[]):
             for p in pp:
                 yield fv(f, (x, p))
 
-        def gen_eval(x, pp):
-            return 'x' + pp[0]
-
         yield lambda: eval('x' + pp[0], {'x': x, 'pp': pp})
+        yield lambda: eval('x.' + pp[0], {'x': x, 'pp': pp})
 
     x = val
 

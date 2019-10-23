@@ -6,53 +6,14 @@ import zlib
 import os
 import sys
 import signal
-
+import traceback
+import random
 
 __file__ = os.path.abspath(__file__)
 
 
 signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 sys.dont_write_bytecode = True
-
-
-class StringImporter(object):
-   def __init__(self, modules):
-      self._modules = dict(modules)
-      self._compiled = {}
-
-   def find_module(self, fullname, path):
-      if fullname in self._modules:
-         return self
-
-      return None
-
-   def get_source(self, fullname):
-      if fullname in self._modules:
-         return self._modules[fullname]
-
-      raise ImportError()
-
-   def get_code(self, fullname):
-      if fullname in self._compiled:
-         return self._compiled[fullname]
-
-      return self.load_module(fullname)
-
-   def load_module(self, fullname):
-      if fullname not in self._compiled:
-         if fullname not in self._modules:
-            raise ImportError(fullname)
-
-         mod = sys.modules.setdefault(fullname, imp.new_module(fullname))
-         mod.__file__ = 'upm/' + fullname + '.py'
-         mod.__loader__ = self
-         mod.__package__ = fullname
-
-         exec self._modules[fullname] in mod.__dict__
-
-         self._compiled[fullname] = mod
-
-      return self._compiled[fullname]
 
 
 def load_local_code(where):
@@ -81,8 +42,7 @@ def load_program_modules():
    res = {}
 
    for path, data in load_local_code('upm'):
-      m = 'upm_' + os.path.basename(path)[:-3]
-      res[m] = data
+      res[path] = ('upm_' + os.path.basename(path)[:-3], data)
 
    return res
 
@@ -109,11 +69,39 @@ def install():
    u = builtin_modules['upm']
    v = builtin_modules['plu']
 
-   u['upm_plugins'] += '\n'.join(sorted(list(v.values()), key=lambda x: -len(x)))
-
-   sys.meta_path.append(StringImporter(u))
+   plugins_code = '\n'.join(sorted(list(v.values()), key=lambda x: -len(x)))
    sys.builtin_modules = builtin_modules
 
+   mods = []
+
+   for path in sys.builtin_modules['upm'].keys():
+      name, value = sys.builtin_modules['upm'][path]
+
+      if name == 'upm_plugins':
+         value += plugins_code
+
+      if name not in sys.modules:
+         mod = sys.modules.setdefault(name, imp.new_module(name))
+         mod.__file__ = path
+         mod.__name__ = name
+         mod.__package__ = name.encode('utf-8')
+         mods.append((mod, path, value, []))
+
+   while mods:
+      new_mods = []
+
+      for mod, path, data, exc in mods:
+         try:
+            exec compile(data, path, 'exec') in mod.__dict__
+         except Exception as e:
+            if 1:
+               if len(exc) > 20 and len(frozenset(exc[:-20])) == 1:
+                  raise e
+
+            new_mods.append((mod, path, data, exc + [e]))
+
+      random.shuffle(new_mods)
+      mods = new_mods
 
 install()
 

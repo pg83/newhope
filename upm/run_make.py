@@ -3,11 +3,11 @@ import sys
 import subprocess
 import random
 
+
+from upm_iface import y
+
 from upm_bad import BAD_SUBSTRINGS
 from upm_colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
-from upm_subst import subst_kv_base
-from upm_ft import deep_copy
-from upm_helpers import xprint
 
 
 def new_cmd():
@@ -96,7 +96,7 @@ def run_makefile(data, shell_out, targets):
 
     if shell_out:
         def do_compile_1(*args, **kwargs):
-            shell_out.append(deep_copy({'args': args, 'kwargs': kwargs}))
+            shell_out.append(y.deep_copy({'args': args, 'kwargs': kwargs}))
 
             return ''
 
@@ -104,14 +104,14 @@ def run_makefile(data, shell_out, targets):
 
     def run_cmd(c):
         if c in done:
-            return xprint(BLUE + 'already done ' + c + RESET)
+            return y.xprint(BLUE + 'already done ' + c + RESET)
 
         if shell_out:
             pass
         elif os.path.exists(c):
             done.add(c)
 
-            return xprint(BLUE + 'already done ' + c + RESET)
+            return y.xprint(BLUE + 'already done ' + c + RESET)
 
         cleanups = []
 
@@ -221,7 +221,7 @@ def run_makefile(data, shell_out, targets):
             else:
                 yield BLUE + 'done fake ' + c + RESET
 
-        xprint('\n'.join(iter_lines(errors)))
+        y.xprint('\n'.join(iter_lines(errors)))
 
         if errors:
             data = ', '.join(errors)

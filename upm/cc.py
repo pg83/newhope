@@ -5,10 +5,6 @@ import os
 
 
 from upm_iface import y
-from upm_ft import deep_copy, cached, singleton
-from upm_db import store_node, restore_node, deref_pointer, intern_struct
-from upm_xpath import xp
-from upm_helpers import xprint
 
 
 V = {
@@ -74,7 +70,7 @@ def fix_constraints(h, t):
 
 
 def fix_constraints_cc(cc):
-    cc = deep_copy(cc)
+    cc = y.deep_copy(cc)
 
     if 'target' not in cc:
         cc['target'] = {}
@@ -83,7 +79,7 @@ def fix_constraints_cc(cc):
 
     cc['is_cross'] = is_cross(cc)
 
-    return deep_copy(cc)
+    return y.deep_copy(cc)
 
 
 def small_repr(c):
@@ -100,8 +96,8 @@ def is_cross(cc):
 
 def iter_comp():
     for v in V['barebone']:
-        v = deep_copy(v)
-        v.update(deep_copy(V['common']))
+        v = y.deep_copy(v)
+        v.update(y.deep_copy(V['common']))
 
         v['constraint'] = fix_constraints_cc(v['constraint'])
 
@@ -113,10 +109,10 @@ def iter_comp():
 
 def iter_musl_cc_tools():
     for n in iter_comp():
-        nd = store_node(n)
+        nd = y.store_node(n)
 
-        c = deep_copy(n)
-        l = deep_copy(n)
+        c = y.deep_copy(n)
+        l = y.deep_copy(n)
 
         c['node']['kind'] = 'c/c++'
         c['node']['type'] = 'gcc'
@@ -133,7 +129,7 @@ def iter_musl_cc_tools():
             xn['extra_deps'] = [nd]
             xn['name'] = 'muslcc-' + xn['kind'] + '-' + xn['type']
 
-            yield deep_copy(x)
+            yield y.deep_copy(x)
 
 
 def iter_system_compilers():
@@ -192,7 +188,7 @@ def iter_system_impl():
             }
 
             for t in iter_targets(host):
-                c = deep_copy(c)
+                c = y.deep_copy(c)
 
                 cc = {
                     'host': host,
@@ -221,8 +217,8 @@ def iter_system_impl():
 
 def iter_system_tools():
     for n in iter_system_impl():
-        c = deep_copy(n)
-        l = deep_copy(n)
+        c = y.deep_copy(n)
+        l = y.deep_copy(n)
 
         c['node']['kind'] = 'c/c++'
         c['node']['type'] = 'clang'
@@ -237,10 +233,10 @@ def iter_system_tools():
             xn.pop('data', None)
             xn.pop('build')
             xn.pop('prepare', None)
-            xn['extra_deps'] = [store_node(n)]
+            xn['extra_deps'] = [y.store_node(n)]
             xn['name'] = 'system-' + xn['kind'] + '-' + xn['type']
 
-            yield deep_copy(x)
+            yield y.deep_copy(x)
 
 
 def iter_all_nodes():
@@ -251,30 +247,30 @@ def iter_all_nodes():
         yield node
 
 
-@singleton
+@y.singleton
 def compilers_ptr():
-    return intern_struct([store_node(x) for x in iter_all_nodes()])
+    return y.intern_struct([y.store_node(x) for x in iter_all_nodes()])
 
 
 def iter_all_compilers():
-    return deref_pointer(compilers_ptr())
+    return y.deref_pointer(compilers_ptr())
 
 
 def find_compiler(info):
     for d in iter_all_compilers():
-        if small_repr_cons(info) == small_repr_cons(restore_node(d)['node']()['constraint']):
+        if small_repr_cons(info) == small_repr_cons(y.restore_node(d)['node']()['constraint']):
             yield d
 
 
 def join_versions(deps):
     def iter_v():
         for d in deps:
-            yield restore_node(d)['node']()['version']
+            yield y.restore_node(d)['node']()['version']
 
     return '-'.join(iter_v())
 
 
-@cached()
+@y.cached()
 def find_compiler_id(info):
     for x in find_compiler(info):
         assert x
@@ -283,7 +279,7 @@ def find_compiler_id(info):
     raise Exception('shit happen %s' % info)
 
 
-@cached()
+@y.cached()
 def find_compilers(info):
     def iter_compilers():
         if is_cross(info):

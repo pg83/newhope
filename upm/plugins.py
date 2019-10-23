@@ -1,10 +1,10 @@
 import sys
 
 from upm_iface import y
+import upm_decor as decor
 
 
-def register_plugin_func(func):
-    globals()[func.__name__] = func
+GENERATED = {}
 
 
 def dep_name(dep):
@@ -13,3 +13,4 @@ def dep_name(dep):
 
 def dep_list(info, iter):
     return [x(info) for x in iter]
+

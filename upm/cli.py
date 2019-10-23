@@ -5,23 +5,9 @@ import traceback
 import argparse
 import subprocess
 import shutil
+import traceback
 
 from upm_iface import y
-from upm_main import main as main_makefile
-from upm_build import prepare_pkg, get_pkg_link
-from upm_run_make import run_makefile
-from upm_user import singleton
-from upm_colors import RED, RESET
-from upm_subst import subst_kv_base
-from upm_ft import profile
-from upm_helpers import xprint
-
-
-try:
-   from upm_release_me import prepare_data
-except ImportError:
-   def prepare_data():
-      raise Exception('unimplemented')
 
 
 def build_docker():
@@ -29,19 +15,19 @@ def build_docker():
    lines = data.split('\n')
    line = lines[len(lines) - 2]
 
-   xprint(data.strip(), where=sys.stdout)
+   y.xprint(data.strip(), where=sys.stdout)
 
    return line.split(' ')[2]
 
 
-@singleton
+@y.singleton
 def user_home():
    return os.path.expanduser('~')
 
 
 def prepare_root(r):
    try:
-      data = prepare_data()
+      data = y.prepare_data()
    except Exception as e:
       if 'unimplemented' not in str(e):
          raise
@@ -59,7 +45,7 @@ def prepare_root(r):
          if 'No such file or directory' in str(e):
             pass
          else:
-            xprint(f, e)
+            y.xprint(f, e)
 
    for f in ('bin', 'tmp'):
       try:
@@ -137,7 +123,7 @@ def cli_make(arg, verbose):
    else:
       data = sys.stdin.read()
 
-   run_makefile(subst_kv_base(data, iter_replaces()), [], args.targets)
+   y.run_makefile(y.subst_kv_base(data, iter_replaces()), [], args.targets)
 
 
 def upm_root():
@@ -220,7 +206,7 @@ def cli_help(args, verbose):
          if k.startswith('cli_'):
             yield k[4:]
 
-   xprint('usage: ' + sys.argv[0] + '(-v, --verbose, --profile)* ' + '[' + ', '.join(iter_funcs()) + '] ....')
+   y.xprint('usage: ' + sys.argv[0] + '(-v, --verbose, --profile)* ' + '[' + ', '.join(iter_funcs()) + '] ....')
 
 
 def cli_makefile(arg, verbose):
@@ -243,8 +229,7 @@ def cli_makefile(arg, verbose):
       if args.shell:
          f.write(y.build_sh_script(args.shell), verbose)
       else:
-         funcs = []
-         f.write(main_makefile(verbose))
+         f.write(y.main_makefile(verbose))
 
       f.flush()
    finally:
@@ -254,7 +239,7 @@ def cli_makefile(arg, verbose):
 def cli_subcommand(args, verbose):
    cmds = {}
 
-   for cmd in [prepare_pkg, get_pkg_link]:
+   for cmd in [y.prepare_pkg, y.get_pkg_link]:
       cmds[cmd.__name__] = cmd
 
    args = args[args.index('--') + 1:]
@@ -263,13 +248,26 @@ def cli_subcommand(args, verbose):
 
 
 def cli_release(args, verbose):
-   xprint(prepare_data(), where=sys.stdout)
+   y.xprint(y.prepare_data(), where=sys.stdout)
 
 
 def check_arg(args, params):
    new_args = list(filter(lambda x: x not in params, args))
 
    return new_args, len(args) != len(new_args)
+
+
+def cli_selftest(args, verbose):
+   @y.cached(seed=1)
+   def f1(a, b):
+      return a + b
+
+   @y.cached(seed=187564)
+   def f2(a, b):
+      return a + b
+
+   for i in range(0, 100):
+      print f1(i, i * 13 - 17), f2(i, i * 13 - 17)
 
 
 def run_main():
@@ -288,7 +286,7 @@ def run_main():
 
       ff(args[2:], do_verbose)
 
-   func = profile(func, really=do_profile)
+   func = y.profile(func, really=do_profile)
 
    try:
       func()
@@ -297,9 +295,9 @@ def run_main():
          return -1
 
       if do_verbose:
-         xprint(traceback.format_exc(), color='red')
+         y.xprint(traceback.print_exception(*sys.exc_info()), color='red')
       else:
-         xprint(str(e), color='red')
+         y.xprint(str(e), color='red')
 
       return 1
 

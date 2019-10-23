@@ -5,23 +5,19 @@ import functools
 import itertools
 
 from upm_iface import y
-from upm_ft import singleton, cached, fp, deep_copy
-from upm_cc import find_compilers
-from upm_subst import subst_kv_base
-from upm_helpers import subst_info, to_lines
 
 
 def v1_to_v2_key(func, info):
     return [func.__name__, info]
 
 
-@cached(key=v1_to_v2_key)
+@y.cached(key=v1_to_v2_key)
 def v1_to_v2(func, info):
-    compilers = find_compilers(info)
+    compilers = y.find_compilers(info)
 
     param = {
         'compilers': {
-            'deps': deep_copy(compilers),
+            'deps': y.deep_copy(compilers),
             'cross': len(compilers) > 1,
         },
         'info': info,
@@ -46,7 +42,7 @@ def v1_to_v2(func, info):
     }
 
     def iter_prepare():
-        for l in to_lines(full_data.get('prepare', '')):
+        for l in y.to_lines(full_data.get('prepare', '')):
             yield l
 
     node['prepare'] = list(iter_prepare())
@@ -74,7 +70,7 @@ def v1_to_v2(func, info):
             if v['kind'] == 'subst':
                 yield (v['from'], v['to'])
 
-    node['build'] = list(iter_extra_lines()) + to_lines(subst_kv_base(data, iter_subst()))
+    node['build'] = list(iter_extra_lines()) + y.to_lines(y.subst_kv_base(data, iter_subst()))
 
     return {
         'node': node,

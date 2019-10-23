@@ -1,7 +1,4 @@
 from upm_iface import y
-from upm_ft import singleton, deep_copy
-from upm_db import store_node, restore_node
-from upm_xpath import run_xpath_simple as xpp
 
 
 def iter_targets():
@@ -22,7 +19,7 @@ def iter_rare_targets():
             }
 
 
-@singleton
+@y.singleton
 def iter_android_ndk_20():
     host = {'arch': 'x86_64', 'os': 'darwin'}
 
@@ -59,12 +56,12 @@ def iter_android_ndk_20():
             'deps': [],
         }
 
-        need.append(store_node(res))
+        need.append(y.store_node(res))
 
     by_arch = {}
 
     for t in need:
-        res = restore_node(t)
+        res = y.restore_node(t)
         node = res['node']()
         arch = node['constraint']['target']['arch']
         by_arch[arch] = [res, t]
@@ -120,14 +117,14 @@ def iter_android_ndk_20():
             'deps': [big_one[1]],
         }
 
-        need.append(store_node(res))
+        need.append(y.store_node(res))
 
     return need
 
 
 def find_android_linker_by_cc(cc, cmp):
     for n in iter_android_ndk_20():
-        if cmp(xpp(n, 'node/constraint')) == cmp(cc):
+        if cmp(y.run_xpath_simple(n, 'node/constraint')) == cmp(cc):
             yield n
 
 
@@ -138,8 +135,8 @@ def iter_ndk_tools():
         if n['node']['constraint']['target']['arch'] == 'llvm':
             continue
 
-        c = deep_copy(n)
-        l = deep_copy(n)
+        c = y.deep_copy(n)
+        l = y.deep_copy(n)
 
         c['node']['kind'] = 'c/c+';
         l['node']['kind'] = 'linker';
@@ -152,10 +149,10 @@ def iter_ndk_tools():
         else:
             c['node']['type'] = 'clang'
 
-            lb = deep_copy(l)
+            lb = y.deep_copy(l)
             lb['node']['type'] = 'binutils'
 
-            ll = deep_copy(l)
+            ll = y.deep_copy(l)
             ll['node']['type'] = 'llvm'
 
             all = [c, lb, ll]
@@ -169,5 +166,5 @@ def iter_ndk_tools():
             xn['extra_deps'] = [nd]
             xn['name'] = 'ndk-' + xn['kind'] + '-' + xn['type']
 
-            yield deep_copy(x)
+            yield y.deep_copy(x)
 

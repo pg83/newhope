@@ -5,52 +5,6 @@ import binascii
 import random
 
 from upm_iface import y
-from upm_ft import struct_dump_bytes, dumps as dumps_db, cached, singleton
-from upm_gen_id import calc_pkg_full_name
-from upm_helpers import xprint
-
-# intern_struct vs. deref_pointer
-
-III = {}
-VVV = []
-ZZZ = {}
-
-
-def struct_ptr(s):
-    return struct_dump_bytes(s)
-
-
-def key_struct_ptr(n):
-    return struct_ptr(n)[:8]
-
-
-def intern_list(l):
-    assert None not in l
-    return intern_struct(l)
-
-
-def intern_struct(n):
-    k = key_struct_ptr(n)
-
-    if k in III:
-        p = III[k]
-    else:
-        VVV.append((n, k))
-        p = len(VVV) - 1
-        III[k] = p
-
-    return pointer(p)
-
-
-def check_db():
-    for k, v in III.iteritems():
-        assert k == VVV[v][1]
-
-    for n, k in VVV:
-        assert key_struct_ptr(n) == k
-        assert VVV[III[k]][1] == k
-
-    return 'db ok, ncount = ' + str(len(III)) + ', size = ' + str(len(dumps_db([III, VVV])))
 
 
 def visit_nodes(nodes):
@@ -80,26 +34,6 @@ def visit_nodes(nodes):
     for x in nodes:
         for z in do(x):
             yield z
-
-
-def pointer(p):
-    return mangle_pointer(p)
-
-
-def hash_key(p):
-    return demangle_pointer(p)
-
-
-def mangle_pointer(p):
-    return p - 1
-
-
-def demangle_pointer(p):
-    return p + 1
-
-
-def deref_pointer(v):
-    return VVV[demangle_pointer(v)][0]
 
 
 def restore_node(ptr, rd=True):
@@ -164,16 +98,16 @@ def store_node(node):
     return store_node_impl(node, list(extra()))
 
 
-@cached()
+@y.cached()
 def gen_fetch_node(url):
     res = {
         'node': {
             'kind': 'fetch',
             'name': 'fetch_url',
             'url': url,
-            'pkg_full_name': calc_pkg_full_name(url),
+            'pkg_full_name': y.calc_pkg_full_name(url),
             'build': [
-                'cd $(INSTALL_DIR) && ((wget -O $(URL_BASE) $(URL) >& wget.log) || (curl -L -k -o $(URL_BASE) $(URL) >& curl.log)) && ls -la',
+                'cd $(INSTALL_DIR) && ((wget -O $(URL_BASE) $(URL) >& $(INSTALL_DIR/log/wget.log)) || (curl -L -k -o $(URL_BASE) $(URL) >&$(INSTALL_DIR/log/curl.log)) && ls -la',
             ],
             'prepare': [
                 'mkdir -p $(BUILD_DIR)/fetched_urls/',
@@ -185,43 +119,3 @@ def gen_fetch_node(url):
     }
 
     return store_node_plain(res)
-
-
-def debug_print(y):
-    def iter_node(x):
-        n = x['node']()
-        nn = n['name'] + ':'
-
-        yield nn + 'node:', n
-
-        deps = list(x['deps']())
-
-        yield nn + 'deps:', deps
-
-        for d in deps:
-            nd = nn + 'dep:'
-
-            yield nd, d
-
-            try:
-                for a, b in iter_values(d):
-                    yield nd + a, b
-            except Exception as e:
-                yield nd + a + ':error', str(e)
-
-    def iter_values(x):
-        yield 'val:' + 'x', x
-
-        try:
-            for a, b in iter_node(restore_node(x)):
-                yield 'val:' + a, b
-        except Exception as e:
-            yield 'val:' + 'error', str(e)
-
-        try:
-            yield 'val:' + 'deref_pointer', deref_pointer(x)
-        except Exception as e:
-            yield 'val:' + 'error', str(e)
-
-    xprint('----------------------------\n' + '\n'.join(x + ' = ' + str(y) for x, y in iter_values(y)), color='yellow')
-

@@ -1,32 +1,40 @@
 import sys
-import imp
-import importlib
+
+
+load_complete = False
 
 
 def my_modules():
-    def do():
-        for name, text in sys.builtin_modules['upm'].iteritems():
-            if name.startswith('upm'):
-                yield name, importlib.import_module(name)
+    for path in sorted(sys.builtin_modules['upm'].keys()):
+        name, data = sys.builtin_modules['upm'][path]
 
-    try:
-        my_modules.__res
-    except AttributeError:
-        my_modules.__res = dict(do())
-
-    return my_modules.__res
+        if name.startswith('upm'):
+            yield name, sys.modules[name]
 
 
 def find_function(name):
+    if name == 'options':
+        #from upm_decor import options
+        #return options
+        sys.modules['upm_decor'].__dict__['options']
+
+    if name == 'wraps':
+        from upm_ft import wraps
+
+        return wraps
+
     subst = {
         'xpath': 'run_xpath_simple'
     }
 
-    name = subst.get(name, name)
-
-    for m in my_modules().values():
+    for _, m in my_modules():
         if name in m.__dict__:
             return m.__dict__[name]
+
+    try:
+        return __import__('upm_' + name)
+    except ImportError:
+        pass
 
     raise AttributeError(name)
 

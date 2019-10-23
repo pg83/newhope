@@ -2,10 +2,6 @@ import sys
 import base64
 
 from upm_iface import y
-from upm_main import main as main_makefile
-from upm_run_make import run_makefile
-from upm_subst import subst_kv_base
-from upm_helpers import xprint
 
 
 def subst(v):
@@ -19,12 +15,12 @@ def subst(v):
         yield ('$(PREFIX)', '$PREFIX')
         yield ('$$', '$')
 
-    return subst_kv_base(v, iter_subst())
+    return y.subst_kv_base(v, iter_subst())
 
 
 def build_sh_script(targets, verbose):
     res = [1]
-    run_makefile(main_makefile(verbose), res, targets)
+    y.run_makefile(y.main_makefile(verbose), res, targets)
     res = res[1:]
 
     def iter_cmd():
@@ -36,6 +32,6 @@ def build_sh_script(targets, verbose):
 
                 yield '(echo "' + base64.b64encode(subst(cmd)) + '" | base64 -D -i - -o - | /usr/bin/env -i PREFIX=$1 /bin/sh -s) || exit 1'
             except Exception as e:
-                xprint('------------------------------------------\n', cmd, e)
+                y.xprint('------------------------------------------\n', cmd, e)
 
     return '\n\n'.join(iter_cmd()) + '\n'

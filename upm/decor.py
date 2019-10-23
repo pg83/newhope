@@ -5,15 +5,9 @@ import functools
 import itertools
 
 from upm_iface import y
-from upm_ft import deep_copy, cached
-from upm_db import store_node, restore_node, restore_node_simple
-from upm_ndk import iter_android_ndk_20
-from upm_cc import iter_targets
-from upm_helpers import current_host_platform, subst_info
-from upm_gen_id import calc_pkg_full_name
 
 
-MY_FUNCS = []
+MY_FUNCS = {}
 
 
 def fix_v2(v):
@@ -22,9 +16,9 @@ def fix_v2(v):
     try:
         v['node']
     except Exception:
-        v = restore_node_simple(v)
+        v = y.restore_node_simple(v)
 
-    v = deep_copy(v)
+    v = y.deep_copy(v)
     n = v['node']
 
     if 'codec' not in n:
@@ -32,12 +26,12 @@ def fix_v2(v):
 
     if 'url' in n:
         if 'pkg_full_name' not in n:
-            n['pkg_full_name'] = calc_pkg_full_name(n['url'])
+            n['pkg_full_name'] = y.calc_pkg_full_name(n['url'])
 
     return v
 
 
-@cached()
+@y.cached()
 def folders_calc(node, folders, func_name, dep, info):
     version = node.get('version')
     kind = func_name.split('_')[-1]
@@ -91,50 +85,91 @@ REPACK_FUNCS = {
 }
 
 
-def options(folders=REPACK_FUNCS, convert_to_v2=True, helper=True, store_out=True):
-    return modifier(folders=folders, convert_to_v2=convert_to_v2, helper=helper, store_out=store_out)
+def options(folders=REPACK_FUNCS, convert_to_v2=True, store_out=True, use_cache=True):
+    return modifier(folders=folders, convert_to_v2=convert_to_v2, store_out=store_out, use_cache=use_cache)
 
 
-def calcer_key(info, res, func):
-    return [info, res, func.__name__]
+def deco_fix_info():
+    @y.wraps(set_name=deco_fix_info)
+    def wrapper(info):
+        return y.subst_info(info.get('info', info))
+
+    return wrapper
 
 
-@cached(key=calcer_key)
-def mcalcer1(info, res, func):
-    if res['helper']:
-        info = info.get('info', info)
+def deco_run_v1_plugin(func):
+    @y.wraps(set_name=deco_run_v1_plugin)
+    def wrapper(info):
+        return y.v1_to_v2(func, info)
 
-    info = subst_info(info)
-
-    if res['convert_to_v2']:
-        data = y.v1_to_v2(func, info)
-        assert data
-        data = fix_v2(data)
-    else:
-        data = fix_v2(func(info))
-
-    return store_node(data)
+    return wrapper
 
 
-@cached()
+def deco_id(func):
+    @y.wraps(set_name=deco_id)
+    def wrappper(info):
+        return func(info)
+
+    return wrapper
+
+
+def deco_fix_v2():
+    @y.wraps(set_name=deco_fix_v2)
+    def wrapper(info):
+        return fix_v2(info)
+
+    return wrapper
+
+
+def deco_store_node():
+    @y.wraps(set_name=deco_store_node)
+    def wrapper(info):
+        return y.store_node(info)
+
+    return wrapper
+
+
+def mcalcer1(**kwargs):
+    res = y.deep_copy(kwargs)
+
+    def wrapper(func):
+        def iter_funcs():
+            yield deco_fix_info()
+
+            if res['convert_to_v2']:
+                yield deco_run_v1_plugin(func)
+            else:
+                yield deco_id(func)
+
+            yield deco_fix_v2()
+
+            if res['store_out']:
+                yield deco_store_node()
+
+        return y.compose_simple(*reversed(list(iter_funcs())))
+
+    return wrapper
+
+
+@y.cached()
 def mcalcer2(info, res, func_name, folders, dep):
-    data = restore_node(dep)
+    data = y.restore_node(dep)
     data = folders_calc(data['node'](), folders, func_name, dep, info)
 
     if res['store_out']:
-        data = store_node(data)
+        data = y.store_node(data)
 
     return data
 
 
 def reg_in_funcs(func):
-    MY_FUNCS.append(func)
+    MY_FUNCS[func.__name__] = func
 
     return func
 
 
-def reg_in_plug(func):
-    y.register_plugin_func(func)
+def reg_in_plug(func, arg=y.plugins.__dict__):
+    arg[func.__name__] = func
 
     return func
 
@@ -146,56 +181,87 @@ def set_func_name(func, name):
 
 
 def check_not_null(func):
-    @functools.wraps(func)
     def wrapper(info):
         res = func(info)
+
         assert res is not None
         return res
 
     return wrapper
 
 
+def reg_main(f, **kwargs):
+    def sn(ff):
+        return set_func_name(ff, f.__name__)
+
+    return y.compose_simple(sn, use_cache, reg_in_funcs, sn, check_not_null, mcalcer1(**kwargs))
+
+
+def reg_slave(fn):
+    def sn(ff):
+        return set_func_name(ff, fn)
+
+    return y.compose_simple(sn, use_cache, reg_in_funcs, reg_in_plug, sn, check_not_null, add_xz_dep, sn)
+
+
+def flt_deps(deps):
+    for x, d in [(y.restore_node_simple(d)['node']['name'], d) for d in deps]:
+        if 'xz' in x or 'tar' in x:
+            yield d, x
+
+
+def add_xz_dep(func):
+    @y.wraps(set_name=func)
+    def wrapper(info):
+        res = y.deep_copy(y.restore_node_simple(func(info)))
+
+        #print res['deps'], res['node']['name']
+
+        slave = y.restore_node_simple(res['deps'][0])
+        extra = list(flt_deps(slave['deps']))
+        res['deps'] = res['deps'] + [e[0] for e in extra]
+
+        #print [(y.restore_node_simple(d)['node']['name'], d) for d in slave['deps']]
+        #print res['deps']
+
+        return y.store_node(res)
+
+    return wrapper
+
+
+def use_cache(func):
+    @y.wraps(set_name=func, use_cache=True)
+    def wrapper(args):
+        return func(args)
+
+    return wrapper
+
+
 def modifier(**kwargs):
-    res = deep_copy(kwargs)
+    res = y.deep_copy(kwargs)
     folders = res.pop('folders') or {}
 
-    def gen_other_one(main_func, func_name, my_folders):
+    def gen_other_one(mf, fn, my_folders):
+        @reg_slave(fn)
         def folder_func(info):
-            return mcalcer2(info, res, func_name, my_folders, main_func(info))
+            return mcalcer2(info, res, fn, my_folders, mf(info))
 
-        return reg_in_funcs(reg_in_plug(set_func_name(check_not_null(folder_func), func_name)))
+        return folder_func
 
-    def gen_other(main_func):
+    def gen_other(mf):
         for k, fl in folders.items():
-            gen_other_one(main_func, main_func.__name__ + '_' + k, fl)
+            gen_other_one(mf, mf.__name__ + '_' + k, fl)
 
-        return main_func
+        return mf
 
     def wrap_func(func):
-        @functools.wraps(func)
-        def main(info):
-            return mcalcer1(info, res, func)
+        rm = reg_main(func, **res)
 
-        return gen_other(reg_in_funcs(check_not_null(main)))
+        return gen_other(rm(func))
 
     return wrap_func
 
 
 def gen_all_funcs():
-    for f in MY_FUNCS:
-        yield f
-
-
-def gen_packs_1(host=current_host_platform(), targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
-    for func in gen_all_funcs():
-        for target in iter_targets(host):
-            yield func({'host': host, 'target': target})
-
-    for x in iter_android_ndk_20():
-        yield x
-
-
-def gen_packs(*args, **kwargs):
-    for x in gen_packs_1(*args, **kwargs):
-        assert x
-        yield x
+    for k in sorted(MY_FUNCS.keys()):
+        yield MY_FUNCS[k]

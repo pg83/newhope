@@ -3,8 +3,7 @@ import sys
 import platform
 import subprocess
 
-from upm_colors import colorize
-from upm_ft import deep_copy, singleton, cached
+from upm_iface import y
 
 
 def to_lines(text):
@@ -19,18 +18,18 @@ def to_lines(text):
 
 
 def subst_info(info):
-    info = deep_copy(info)
+    info = y.deep_copy(info)
 
     if 'host' not in info:
         info['host'] = current_host_platform()
 
     if 'target' not in info:
-        info['target'] = deep_copy(info['host'])
+        info['target'] = y.deep_copy(info['host'])
 
     return info
 
 
-@singleton
+@y.singleton
 def getuser():
     return os.getusername()
 
@@ -64,7 +63,7 @@ def upm_mngr():
     return on_line
 
 
-@singleton
+@y.singleton
 def current_host_platform():
     return {
         'arch': platform.machine(),
@@ -91,22 +90,22 @@ def xprint(*args, **kwargs):
     text = ' '.join([fixx(x) for x in args])
 
     if color:
-        text = colorize(text, color)
+        text = y.colorize(text, color)
 
     where.write(text + '\n')
 
 
-@singleton
+@y.singleton
 def script_path():
    return getattr(sys.modules['__main__'], '__file__')
 
 
-@cached()
+@y.cached()
 def find_tool(name):
     return subprocess.check_output(['echo `which ' + name + '`'], shell=True).strip()
 
 
-@singleton
+@y.singleton
 def _tool_binary():
    if sys.argv[0].endswith('upm'):
       return os.path.abspath(sys.argv[0])
@@ -121,3 +120,8 @@ def _tool_binary():
 
 def path_by_script(path):
    return os.path.dirname(script_path()) + '/' + path
+
+
+@y.singleton
+def docker_binary():
+   return subprocess.check_output(['/bin/sh -c "which docker"'], shell=True).strip()
