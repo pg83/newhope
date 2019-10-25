@@ -35,9 +35,18 @@ def apply_all(v, lst, log):
     return list(apply_base(iter_lst(v, lst), log))
 
 
+def my_restore_node(x):
+    res = y.is_pointer(x)
+
+    if res:
+        return res
+
+    raise TypeError()
+
+
 def run_xpath(val, path, log=[]):
     def try_call(x):
-        return apply_any(x, (y.restore_node, lambda x: x(), lambda x: x), log)
+        return apply_any(x, (my_restore_node, lambda x: x(), lambda x: x), log)
 
     def param_lst(p):
         return apply_all(p, (str, int, float), log)
@@ -85,6 +94,10 @@ def run_xpath_simple(val, path):
         raise Exception('shit happen %s' % '\n'.join(iter_recs()))
 
 
+def xpp(val, path):
+    return run_xpath_simple(val, path)
+
+
 def xp(path):
     if path.startswith('//'):
         return run_xpath_simple(globals(), path[2:])
@@ -94,10 +107,9 @@ def xp(path):
         frame = inspect.currentframe()
 
         while True:
-            frame = frame.f_back
-            ol = frame.f_locals
+            if name in frame.f_locals:
+                return run_xpath_simple(frame.f_locals[name], path)
 
-            if name in ol:
-                return run_xpath_simple(ol[name], path)
+            frame = frame.f_back
 
     raise Exception('shit happen')

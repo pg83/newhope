@@ -14,3 +14,5 @@ def dep_name(dep):
 def dep_list(info, iter):
     return [x(info) for x in iter]
 
+
+to_v2 = y.to_v2

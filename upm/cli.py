@@ -20,11 +20,6 @@ def build_docker():
    return line.split(' ')[2]
 
 
-@y.singleton
-def user_home():
-   return os.path.expanduser('~')
-
-
 def prepare_root(r):
    try:
       data = y.prepare_data()
@@ -248,7 +243,7 @@ def cli_subcommand(args, verbose):
 
 
 def cli_release(args, verbose):
-   y.xprint(y.prepare_data(), where=sys.stdout)
+   print y.prepare_release_data()
 
 
 def check_arg(args, params):
@@ -266,11 +261,17 @@ def cli_selftest(args, verbose):
    def f2(a, b):
       return a + b
 
-   for i in range(0, 100):
-      print f1(i, i * 13 - 17), f2(i, i * 13 - 17)
+   def f3(a, b):
+      return a + b
+
+   for i in range(0, 5):
+      y.xprint(f1(i, i * 13 - 17), f2(i, i * 13 - 17), f3(i, i * 13 - 17))
+
+   y.print_db()
 
 
 def run_main():
+   # y.run_from_now()
    args = sys.argv
 
    args, do_verbose = check_arg(args, ('-v', '--verbose'))
@@ -287,6 +288,16 @@ def run_main():
       ff(args[2:], do_verbose)
 
    func = y.profile(func, really=do_profile)
+
+   if do_verbose:
+      try:
+         return func()
+      finally:
+         #print sys.modules['upm_plugins'].__dict__.keys()
+         #print y.MY_FUNCS.keys()
+         pass
+         #y.print_db()
+
 
    try:
       func()

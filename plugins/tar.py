@@ -1,11 +1,11 @@
 def tar0(info, deps, codec):
-    return {
+    return to_v2({
         'code': 'FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=$(INSTALL_DIR) && make && make install',
         'prepare': '$(ADD_PATH)',
         'src': 'https://ftp.gnu.org/gnu/tar/tar-1.32.tar.gz',
         'deps': deps,
         'codec': codec,
-    }
+    }, info)
 
 
 @y.options()

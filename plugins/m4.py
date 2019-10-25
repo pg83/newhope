@@ -1,20 +1,13 @@
 def m4_0(info, deps, codec):
-    if 0:
-        if xp('/info/compilers/cross') is True:
-            def val(n):
-                return xp('/info/compilers/deps/%s/node/prefix/1/[:-1]' % n)
+    cross = ''
 
-        cross = '--host=' + val(1) + ' --target=' + val(0)
-    else:
-        cross = ''
-
-    return {
+    return to_v2({
         'code': './configure $(CROSS) --prefix=$(INSTALL_DIR) && make && make install'.replace('$(CROSS)', cross),
         'prepare': '$(ADD_PATH)',
         'src': 'https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz',
         'deps': deps,
         'codec': codec,
-    }
+    }, info)
 
 
 @y.options()

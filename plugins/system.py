@@ -1,14 +1,14 @@
 def system00(info):
-    return {
+    return to_v2({
         'code': 'echo 1 > 2',
         'name': 'system',
         'version': '1.0.0',
         'deps': [],
         'codec': 'tr',
-    }
+    }, info)
 
 
-@y.options(folders=[])
+@y.options(repacks=None)
 def system0(info):
     return system00(info)
 

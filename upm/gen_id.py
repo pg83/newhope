@@ -2,6 +2,9 @@ import os
 import sys
 
 
+from upm_iface import y
+
+
 def calc_pkg_full_name(url):
     if url.endswith('download'):
         url = os.path.dirname(url)
@@ -126,5 +129,6 @@ def cur_build_system_version():
     return len(FUNCS) - 1
 
 
+y.logged_wrapper
 def to_visible_name(root):
     return FUNCS[cur_build_system_version()](root)

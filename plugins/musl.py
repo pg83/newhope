@@ -1,14 +1,14 @@
 def musl0(info, codec, deps):
     return system00(info)
 
-    return {
+    return to_v2({
         'code': """
             ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared || exit 1
             make && make install
         """,
         'src': 'https://www.musl-libc.org/releases/musl-1.1.24.tar.gz',
         'deps': deps,
-    }
+    }, info)
 
 
 @y.options()

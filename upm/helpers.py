@@ -34,33 +34,9 @@ def getuser():
     return os.getusername()
 
 
-def upm_mngr():
-    res = {
-        'lst': [],
-    }
-
-    def on_line(ll):
-        if ll.startswith('$(UPM)'):
-            res['lst'].append(ll)
-        else:
-            lst = res['lst']
-
-            if lst:
-                if len(lst) > 1:
-                    for l in lst:
-                        yield l.replace(' #', ' & ')
-
-                    yield '; '.join('wait' for l in lst)
-                else:
-                    for l in lst:
-                        yield l
-
-            res['lst'] = []
-
-            if ll:
-                yield ll
-
-    return on_line
+@y.singleton
+def user_home():
+   return os.path.expanduser('~')
 
 
 @y.singleton
@@ -97,31 +73,26 @@ def xprint(*args, **kwargs):
 
 @y.singleton
 def script_path():
-   return getattr(sys.modules['__main__'], '__file__')
+   if sys.argv[0].endswith('upm'):
+      return os.path.abspath(sys.argv[0])
+
+   return sys.modules['__main__'].__file__
+
+
+@y.singleton
+def script_dir():
+    return os.path.dirname(script_path())
 
 
 @y.cached()
 def find_tool(name):
-    return subprocess.check_output(['echo `which ' + name + '`'], shell=True).strip()
-
-
-@y.singleton
-def _tool_binary():
-   if sys.argv[0].endswith('upm'):
-      return os.path.abspath(sys.argv[0])
-
-   res = os.path.abspath(__file__)
-
-   if 'main.py' in res:
-      res = os.path.dirname(os.path.dirname(res)) + '/cli'
-
-   return res
+    return subprocess.check_output(['which ' + name], shell=True).strip()
 
 
 def path_by_script(path):
-   return os.path.dirname(script_path()) + '/' + path
+   return script_dir() + '/' + path
 
 
 @y.singleton
 def docker_binary():
-   return subprocess.check_output(['/bin/sh -c "which docker"'], shell=True).strip()
+   return find_tool('docker')

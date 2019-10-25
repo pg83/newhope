@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import marshal
@@ -11,21 +12,58 @@ import random
 from upm_iface import y
 
 
-def wraps(set_name='', use_cache=False, key_func=None, store_out=False, log_error=False):
-    res = dict(set_name=set_name, use_cache=use_cache, key_func=key_func, store_out=store_out)
+def logged_wrapper(func):
+    def wrapper(arg):
+        try:
+            return func(arg)
+        except Exception as e:
+            y.xprint(str(wrapper), str(f), str(arg), str(e), color='yellow')
 
+            raise
+
+    return wrapper
+
+
+def copy_attrs(to, fr):
+    #to.__module__ = fr.__module__
+    to.__name__ = fr.__name__
+    #to.__func__ = fr
+
+    return to
+
+
+class W(object):
+    def __init__(self, w, args):
+        self._w = w
+        self._a = args
+
+    def __call__(self, *args, **kwargs):
+        return self._w(*args, **kwargs)
+
+    def __str__(self):
+        return '<functor {module}.{name} from {path}>'.format(**self._a)
+
+
+def wrap_kw(func):
+    def wrapper(*args, **kwargs):
+        return func([args, kwargs])
+
+    return copy_attrs(wrapper, func)
+
+
+def unwrap_kw(func):
+    def wrapper(arg):
+        return func(*arg[0], **arg[1])
+
+    return copy_attrs(wrapper, func)
+
+
+def wraps(set_name=None, use_cache=False, key_func=None, store_out=False, log_error=False, log_time=False):
     def decorator(f):
-        def logged_wrapper(func):
-            @wraps(set_name='logged_' + func.__name__)
-            def wrapper(arg):
-                try:
-                    return func(arg)
-                except Exception as e:
-                    y.xprint(str(f), str(arg), str(e), color='yellow')
-
-                    raise e
-
-            return wrapper
+        func = set_name or f
+        path = os.path.basename(sys.modules[f.__module__].__file__)
+        orig_f = f
+        f = unwrap_kw(f)
 
         def wrapper(arg):
             arg = f(arg)
@@ -38,18 +76,19 @@ def wraps(set_name='', use_cache=False, key_func=None, store_out=False, log_erro
         if log_error:
             wrapper = logged_wrapper(wrapper)
 
-        scn = wraps(set_name='cached_' + wrapper.__name__)
-
         if use_cache:
-            wrapper = scn(y.cached()(wrapper))
+            wrapper = y.cached()(wrapper)
         elif key_func:
-            wrapper = scn(y.cached(key=key_func)(wrapper))
+            wrapper = y.cached(key=key_func)(wrapper)
 
-        if set_name:
-            try:
-                wrapper.__name__ = set_name.__name__
-            except AttributeError:
-                wrapper.__name__ = set_name
+        e = {}
+
+        e['name'] = func.__name__
+        e['module'] = func.__module__
+        e['path'] = path
+
+        wrapper = W(wrap_kw(wrapper), e)
+        wrapper = copy_attrs(wrapper, orig_f)
 
         return wrapper
 
@@ -57,7 +96,6 @@ def wraps(set_name='', use_cache=False, key_func=None, store_out=False, log_erro
 
 
 def singleton(f):
-    @functools.wraps(f)
     def wrapper():
         try:
             f.__res
@@ -80,12 +118,11 @@ def restore_name(f):
 def cached(key=default_key, seed=None):
     seed = seed or int((random.random() * 10000000))
     rn_key = restore_name(key)
-    restore = compose_simple(y.intern_struct, y.deref_pointer)
+    restore = compose_simple(y.intern_struct, y.load_struct)
 
     def real_cached(f):
         rn_f = restore_name(f)
 
-        @wraps(set_name='cached_' + f.__name__)
         def slave(*args, **kwargs):
             x = {
                 'k': rn_key,
@@ -108,7 +145,7 @@ def cached(key=default_key, seed=None):
 
 
 def fp(f, v, *args, **kwargs):
-    @wraps(set_name=f)
+    @functools.wraps(f)
     def wrap(*args, **kwargs):
         return f(v, *args, **kwargs)
 
@@ -119,7 +156,7 @@ def profile(func, really=True):
     if not really:
         return func
 
-    @wraps(set_name=func)
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         p = cProfile.Profile()
 
@@ -140,8 +177,6 @@ def compose_simple(*funcs):
             data = f(data)
 
         return data
-
-    wrapper.__name__ = 'compose_' + '.'.join(f.__name__ for f in funcs)
 
     return wrapper
 

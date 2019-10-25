@@ -2,6 +2,7 @@ import sys
 import subprocess
 import platform
 import os
+import marshal
 
 
 from upm_iface import y
@@ -121,12 +122,13 @@ def iter_musl_cc_tools():
         l['node']['type'] = 'binutils'
 
         for x in (c, l):
+            x['deps'] = [nd]
             xn = x['node']
 
             xn.pop('url', None)
             xn.pop('build')
             xn.pop('prepare', None)
-            xn['extra_deps'] = [nd]
+
             xn['name'] = 'muslcc-' + xn['kind'] + '-' + xn['type']
 
             yield y.deep_copy(x)
@@ -137,7 +139,7 @@ def iter_system_compilers():
         tp = y.find_tool(t)
 
         yield {
-            'kind': ['c', 'c++', 'linker'],
+            'kind': 'c/c++/linker',
             'type': 'clang',
             'name': os.path.basename(tp),
             'path': tp,
@@ -233,7 +235,7 @@ def iter_system_tools():
             xn.pop('data', None)
             xn.pop('build')
             xn.pop('prepare', None)
-            xn['extra_deps'] = [y.store_node(n)]
+
             xn['name'] = 'system-' + xn['kind'] + '-' + xn['type']
 
             yield y.deep_copy(x)
@@ -249,11 +251,11 @@ def iter_all_nodes():
 
 @y.singleton
 def compilers_ptr():
-    return y.intern_struct([y.store_node(x) for x in iter_all_nodes()])
+    return marshal.dumps([y.store_node(x) for x in iter_all_nodes()])
 
 
 def iter_all_compilers():
-    return y.deref_pointer(compilers_ptr())
+    return marshal.loads(compilers_ptr())
 
 
 def find_compiler(info):

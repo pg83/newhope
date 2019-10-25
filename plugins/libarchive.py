@@ -2,7 +2,7 @@ def libarchive0(info, deps):
     version = '3.4.0'
     name = 'libarchive'
 
-    return {
+    return to_v2({
         'url': 'https://libarchive.org/downloads/' + name + '-' + version + '.tar.gz',
         'code': """
             ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared
@@ -10,7 +10,7 @@ def libarchive0(info, deps):
         'name': name,
         'version': version,
         'deps': dep_list(info, deps),
-    }
+    }, info)
 
 
 @y.options()

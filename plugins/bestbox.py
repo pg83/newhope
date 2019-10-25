@@ -1,5 +1,5 @@
 def bestbox0(info, deps, codec):
-    return {
+    return to_v2({
         'code': """
             mkdir -p $(INSTALL_DIR)/bin
 
@@ -25,30 +25,28 @@ def bestbox0(info, deps, codec):
             {'kind': 'subst', 'from': '$(TB)', 'to': y.xp('/deps/0/node/name').upper()},
             {'kind': 'subst', 'from': '$(BB)', 'to': y.xp('/deps/1/node/name').upper()},
         ],
-    }
+    }, info)
 
 
-@y.options(folders=[])
+@y.options(repacks=None)
 def bestbox2_run(info):
-    if y.xp('/info/host/os') == 'darwin':
+    if y.xp('/info/info/host/os') == 'darwin':
         return system0(info)
 
     return bestbox0(info, [toybox2_run(info), busybox2_run(info)], 'gz')
 
 
-@y.options(folders=[])
+@y.options(repacks=None)
 def bestbox1_run(info):
-    if y.xp('/info/host/os') == 'darwin':
+    if y.xp('/info/info/host/os') == 'darwin':
         return system0(info)
-        #return coreutils2_run(info)
 
     return bestbox0(info, [toybox1_run(info), busybox1_run(info)], 'gz')
 
 
-@y.options(folders=[])
+@y.options(repacks=None)
 def bestbox_run(info):
-    if y.xp('/info/host/os') == 'darwin':
+    if y.xp('/info/info/host/os') == 'darwin':
         return system0(info)
-        #return coreutils2_run(info)
 
     return bestbox0(info, [toybox_run(info), busybox_run(info), tar1_run(info), xz1_run(info)], 'xz')

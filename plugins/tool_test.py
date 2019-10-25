@@ -1,5 +1,5 @@
 def tool_test0(info, deps, codec):
-    return {
+    return to_v2({
         'code': """
            mkdir -p $(INSTALL_DIR)/bin; echo 1 > $(INSTALL_DIR)/bin/x
            which tar
@@ -7,7 +7,7 @@ def tool_test0(info, deps, codec):
         """,
         'deps': deps,
         'codec': codec,
-    }
+    }, info)
 
 
 @y.options()

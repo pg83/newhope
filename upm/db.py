@@ -3,86 +3,100 @@ import json
 import time
 import binascii
 import random
+import itertools
 
 from upm_iface import y
 
+hash_key = y.hash_key
+deref_pointer = y.deref_pointer
+load_struct = y.load_struct
 
-def visit_nodes(nodes):
+
+def visit_nodes(nodes, debug=False):
     s = set()
 
-    def do(k):
+    def check_hash(k):
+        assert k
+
         kk = hash_key(k)
 
-        if kk not in s:
-            s.add(kk)
+        if kk in s:
+            return True
 
-            yield k
+        s.add(kk)
 
-            def iter_node_links():
-                node = deref_pointer(k)
+        return False
 
-                for x in deref_pointer(node[1]):
-                    yield x
 
-                for x in deref_pointer(node[0]).get('extra_nodes', []):
-                    yield x
+    def do(k):
+        if check_hash(k):
+            return
 
-            for x in iter_node_links():
-                for v in do(x):
-                    yield v
+        yield k
+
+        def iter_node_links2():
+            node = y.restore_node(k)
+
+            for x in node['ptrs']():
+                yield x
+
+        for x in list(iter_node_links2()):
+            for v in list(do(x)):
+                yield v
 
     for x in nodes:
         for z in do(x):
             yield z
 
 
-def restore_node(ptr, rd=True):
-    res = deref_pointer(ptr)
-
-    if rd:
-        f = restore_node
-    else:
-        f = lambda x: x
+def restore_node(ptr):
+    res = y.load_list(ptr)
+    deps = y.load_list(res[1])
 
     def iter_deps():
-        for p in deref_pointer(res[1]):
-            yield f(p)
+        for p in deps:
+            yield restore_node(p)
+
+    def iter_deps_ptr():
+        return deps
 
     def get_node():
-        return deref_pointer(res[0])
+        return load_struct(res[0])
+
+    def iter_keys():
+        yield hash_key(ptr)
+
+        for d in deps:
+            yield hash_key(d)
+
+    x = list(iter_keys())
+    id = 'i:' + y.key_struct_ptr(x)[2:]
 
     return {
         'node': get_node,
         'deps': iter_deps,
-        'noid': binascii.hexlify(VVV[demangle_pointer(ptr)][1]),
+        'ptrs': iter_deps_ptr,
+        'noid': id,
     }
 
 
 def restore_node_simple(v):
-    v = restore_node(v, rd=False)
+    u = hash_key(v)
+    v = restore_node(v)
 
     return {
         'node': v['node'](),
-        'deps': list(v['deps']()),
+        'deps': v['ptrs'](),
         'noid': v['noid'],
     }
 
 
 def store_node_impl(node, extra_deps):
-    def iter_deps():
-        for x in node['deps']:
-            assert x
-            yield x
-
-        for x in extra_deps:
-            assert x
-            yield x
-
     node = y.fix_v2(node)
 
-    return intern_struct([
-        intern_struct(node['node']),
-        intern_list(list(iter_deps())),
+    return y.intern_list([
+        y.intern_struct(node['node']),
+        y.intern_list(list(itertools.chain(node['deps'], extra_deps))),
     ])
 
 
@@ -93,29 +107,6 @@ def store_node_plain(node):
 def store_node(node):
     def extra():
         if 'url' in node['node']:
-            yield gen_fetch_node(node['node']['url'])
+            yield y.gen_fetch_node(node['node']['url'])
 
     return store_node_impl(node, list(extra()))
-
-
-@y.cached()
-def gen_fetch_node(url):
-    res = {
-        'node': {
-            'kind': 'fetch',
-            'name': 'fetch_url',
-            'url': url,
-            'pkg_full_name': y.calc_pkg_full_name(url),
-            'build': [
-                'cd $(INSTALL_DIR) && ((wget -O $(URL_BASE) $(URL) >& $(INSTALL_DIR/log/wget.log)) || (curl -L -k -o $(URL_BASE) $(URL) >&$(INSTALL_DIR/log/curl.log)) && ls -la',
-            ],
-            'prepare': [
-                'mkdir -p $(BUILD_DIR)/fetched_urls/',
-                'ln $(CUR_DIR)/$(URL_BASE) $(BUILD_DIR)/fetched_urls/',
-            ],
-            'codec': 'tr',
-        },
-        'deps': [],
-    }
-
-    return store_node_plain(res)

@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-import imp
-import json
-import base64
-import zlib
-import os
+#!/usr/bin/python
+
 import sys
+import os
 import signal
-import traceback
-import random
 
 __file__ = os.path.abspath(__file__)
 
@@ -15,99 +10,17 @@ __file__ = os.path.abspath(__file__)
 signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 sys.dont_write_bytecode = True
 
-
-def load_local_code(where):
-   path = os.path.dirname(__file__) + '/' + where + '/'
-
-   for m in os.listdir(path):
-      if '~' in m:
-         continue
-
-      if '#' in m:
-         continue
-
-      if '__init__' in m:
-         continue
-
-      if not m.endswith('.py'):
-         continue
-
-      mpath = path + m
-
-      with open(mpath, 'r') as f:
-         yield mpath, f.read()
-
-
-def load_program_modules():
-   res = {}
-
-   for path, data in load_local_code('upm'):
-      res[path] = ('upm_' + os.path.basename(path)[:-3], data)
-
-   return res
-
-
-def load_plugin_modules():
-   res = {}
-
-   for path, data in load_local_code('plugins'):
-      res[os.path.basename(path)] = data
-
-   return res
-
-
-def install():
-   builtin_modules = {}
-   ## builtin_modules
-
-   if not builtin_modules:
-      builtin_modules = {
-         'upm': load_program_modules(),
-         'plu': load_plugin_modules(),
-      }
-
-   u = builtin_modules['upm']
-   v = builtin_modules['plu']
-
-   plugins_code = '\n'.join(sorted(list(v.values()), key=lambda x: -len(x)))
-   sys.builtin_modules = builtin_modules
-
-   mods = []
-
-   for path in sys.builtin_modules['upm'].keys():
-      name, value = sys.builtin_modules['upm'][path]
-
-      if name == 'upm_plugins':
-         value += plugins_code
-
-      if name not in sys.modules:
-         mod = sys.modules.setdefault(name, imp.new_module(name))
-         mod.__file__ = path
-         mod.__name__ = name
-         mod.__package__ = name.encode('utf-8')
-         mods.append((mod, path, value, []))
-
-   while mods:
-      new_mods = []
-
-      for mod, path, data, exc in mods:
-         try:
-            exec compile(data, path, 'exec') in mod.__dict__
-         except Exception as e:
-            if 1:
-               if len(exc) > 20 and len(frozenset(exc[:-20])) == 1:
-                  raise e
-
-            new_mods.append((mod, path, data, exc + [e]))
-
-      random.shuffle(new_mods)
-      mods = new_mods
-
-install()
-
-
-from upm_iface import y
-
+##
 
 if __name__ == '__main__':
-   sys.exit(y.run_main())
+    with open(__file__) as f:
+        data = f.read()
+        data = data[:data.find('##')]
+
+    sys.modules['__main__'].__text__ = data
+    fp = os.path.dirname(__file__) + '/upm/release_me.py'
+
+    with open(fp, 'r') as f:
+        exec compile(f.read() + '\n\nbootstrap(2)\n', fp, 'exec') in globals()
+
+    sys.exit(0)

@@ -2,17 +2,18 @@ def bison0(info, deps):
     version = '3.4.2'
     url = 'https://ftp.gnu.org/gnu/bison/bison-' + version + '.tar.xz'
 
-    return {
+    return to_v2({
         'code': """
              ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static || exit 1
              make
              make install
+             $(MOVE_LOG) config.log
         """,
         'url': url,
         'deps': dep_list(info, deps),
         'version': version,
         'prepare': '$(ADD_PATH)',
-    }
+    }, info)
 
 
 @y.options()

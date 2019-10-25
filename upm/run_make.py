@@ -5,7 +5,6 @@ import random
 
 
 from upm_iface import y
-
 from upm_bad import BAD_SUBSTRINGS
 from upm_colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
 

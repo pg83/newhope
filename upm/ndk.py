@@ -48,7 +48,7 @@ def iter_android_ndk_20():
                     'export PATH=$(CUR_DIR)/darwin-x86_64/' + t['arch'] + '-linux-android/bin:$PATH'
                 ],
                 'url': 'https://dl.google.com/android/repository/android-ndk-r20-darwin-x86_64.zip',
-                'kind': ['c', 'c++', 'linker'],
+                'kind': 'c/c++/linker',
                 'name': 'google',
                 'version': 'r20',
                 'constraint': {'host': host, 'target': t},
@@ -109,7 +109,7 @@ def iter_android_ndk_20():
                     'mkdir $(INSTALL_DIR)/bin',
                     'cp -R bin/' + t['arch'] + '* $(INSTALL_DIR)/bin/',
                 ] + [('cp -R ' + x + ' $(INSTALL_DIR)/bin/')  for x in llvm],
-                'kind': ['c', 'c++', 'linker'],
+                'kind': 'c/c++/linker',
                 'name': 'google-llvm',
                 'version': 'r20',
                 'constraint': {'host': host, 'target': t},
@@ -158,12 +158,13 @@ def iter_ndk_tools():
             all = [c, lb, ll]
 
         for x in all:
+            x['deps'] = [nd]
             xn = x['node']
 
             xn.pop('url', None)
             xn.pop('build')
             xn.pop('prepare', None)
-            xn['extra_deps'] = [nd]
+
             xn['name'] = 'ndk-' + xn['kind'] + '-' + xn['type']
 
             yield y.deep_copy(x)

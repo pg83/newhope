@@ -9,11 +9,6 @@ import hashlib
 
 from upm_iface import y
 
-from upm_gen_id import short_const_1
-
-deep_copy = y.deep_copy
-singleton = y.singleton
-to_visible_name = y.to_visible_name
 
 codecs = {
     'gz': 'z',
@@ -26,7 +21,7 @@ def install_dir(pkg):
     try:
         pkg['idir']
     except KeyError:
-        pkg['idir'] = '$(WDP)/' + to_visible_name(pkg)
+        pkg['idir'] = '$(WDP)/' + y.to_visible_name(pkg)
 
     return pkg['idir']
 
@@ -127,7 +122,7 @@ def prepare_pkg(fr, to, codec):
 
 
 def gen_pkg_path(v):
-    return '$(WDR)/' + to_visible_name(v)
+    return '$(WDR)/' + y.to_visible_name(v)
 
 
 def build_makefile_impl(nodes, replaces):
@@ -143,9 +138,9 @@ def build_makefile_impl(nodes, replaces):
         def iter_groups():
             yield 'all'
             yield nnn
-            x = nnn + '-' + short_const_1(cc.get('host', {}))
+            x = nnn + '-' + y.short_const_1(cc.get('host', {}))
             yield x
-            yield x + short_const_1(cc.get('target', {}))
+            yield x + y.short_const_1(cc.get('target', {}))
 
         for name in iter_groups():
             name = name.replace('_', '-')
@@ -159,7 +154,7 @@ def build_makefile_impl(nodes, replaces):
         for ptr in full:
             root = y.restore_node(ptr)
             data = print_one_node(root)
-            link = to_visible_name(root)
+            link = y.to_visible_name(root)
             replaces[link] = hashlib.md5(data).hexdigest()[:8] + link[8:]
 
             yield data
@@ -197,16 +192,7 @@ def uniq_deps(iter):
 
 def print_one_node(root):
     root_node = root['node']()
-    old_root_deps = root['deps']
-
-    def iter_deps():
-        for x in old_root_deps():
-            yield x
-
-            for y in x['node']().get('extra_deps', []):
-                yield y.restore_node(y)
-
-    del root['deps']
+    iter_deps = root['deps']
 
     def iter_part():
         target = gen_pkg_path(root)

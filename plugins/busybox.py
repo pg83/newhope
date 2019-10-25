@@ -1,11 +1,11 @@
-@y.options(folders=[])
+@y.options(repacks=None)
 def busybox_run(info):
     if y.xp('/info/info/host/os') == 'darwin':
         return system00(info)
 
     ver = '1.30.1'
 
-    return {
+    return to_v2({
         'code': """
             make CROSS_COMPILE=$TOOL_CROSS_PREFIX defconfig
             make CROSS_COMPILE=$TOOL_CROSS_PREFIX
@@ -15,15 +15,15 @@ def busybox_run(info):
         'src': 'https://www.busybox.net/downloads/busybox-' + ver + '.tar.bz2',
         'version': ver,
         'deps': [bestbox1_run(info), make1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)],
-    }
+    }, info)
 
 
-@y.options(folders=[])
+@y.options(repacks=None)
 def busybox1_run(info):
     return busybox0(info, [busybox2_run(info)], 'gz')
 
 
-@y.options(folders=[])
+@y.options(repacks=None)
 def busybox2_run(info):
     return busybox0(info, [], 'gz')
 
@@ -36,7 +36,7 @@ def busybox0(info, deps, codec):
     arch = {'aarch64': 'arm81'}.get(host, host)
     ver = '1.31.0'
 
-    return {
+    return to_v2({
         'code': """
             mkdir -p $(INSTALL_DIR)/bin
             cd $(INSTALL_DIR)/bin
@@ -48,4 +48,4 @@ def busybox0(info, deps, codec):
         'version': ver,
         'deps': deps,
         'codec': codec,
-    }
+    }, info)

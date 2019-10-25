@@ -1,28 +1,15 @@
 import sys
-
-
-load_complete = False
+import imp
 
 
 def my_modules():
     for path in sorted(sys.builtin_modules['upm'].keys()):
-        name, data = sys.builtin_modules['upm'][path]
+        name, _ = sys.builtin_modules['upm'][path]
 
-        if name.startswith('upm'):
-            yield name, sys.modules[name]
+        yield name, sys.modules[name]
 
 
 def find_function(name):
-    if name == 'options':
-        #from upm_decor import options
-        #return options
-        sys.modules['upm_decor'].__dict__['options']
-
-    if name == 'wraps':
-        from upm_ft import wraps
-
-        return wraps
-
     subst = {
         'xpath': 'run_xpath_simple'
     }
@@ -32,7 +19,12 @@ def find_function(name):
             return m.__dict__[name]
 
     try:
-        return __import__('upm_' + name)
+        return sys.modules['upm_' + name]
+    except KeyError:
+        pass
+
+    try:
+        return __import__(name)
     except ImportError:
         pass
 

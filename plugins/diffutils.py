@@ -2,7 +2,7 @@ def diffutils0(info, deps):
     version = '3.7'
     url = 'https://ftp.gnu.org/gnu/diffutils/diffutils-' + version + '.tar.xz'
 
-    return {
+    return to_v2({
         'code': """
              ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static || exit 1
              make
@@ -12,7 +12,7 @@ def diffutils0(info, deps):
         'deps': dep_list(info, deps),
         'version': version,
         'prepare': '$(ADD_PATH)',
-    }
+    }, info)
 
 
 @y.options()

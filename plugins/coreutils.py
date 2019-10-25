@@ -1,7 +1,7 @@
 def coreutils0(info, deps):
     version = '8.31'
 
-    return {
+    return to_v2({
         'code': """
              ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static || exit 1
              make
@@ -11,7 +11,7 @@ def coreutils0(info, deps):
         'deps': dep_list(info, deps),
         'version': version,
         'prepare': '$(ADD_PATH)',
-    }
+    }, info)
 
 
 @y.options()

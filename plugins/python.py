@@ -47,7 +47,7 @@ parser parsermodule.c
 
 
 def python0(info, deps, codec):
-    return {
+    return to_v2({
         'code': """
             $(APPLY_EXTRA_PLAN_0)
             ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared || exit 1
@@ -55,19 +55,19 @@ def python0(info, deps, codec):
             make install
         """,
         'src': 'https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz',
-        'deps': deps,
+        'deps': [x(info) for x in deps],
         'codec': codec,
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup.local', 'data': python_setup_local},
         ],
-    }
+    }, info)
 
 
 @y.options()
 def python1(info):
-    return python0(info, [bestbox2_run(info), make2_run(info), tar2_run(info), xz2_run(info), curl2_run(info)], 'xz')
+    return python0(info, [bestbox2_run, coreutils2_run, make2_run, tar2_run, xz2_run, curl2_run], 'xz')
 
 
 @y.options()
 def python(info):
-    return python0(info, [bestbox1_run(info), make1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)], 'xz')
+    return python0(info, [bestbox1_run, make1_run, tar1_run, xz1_run, curl1_run], 'xz')

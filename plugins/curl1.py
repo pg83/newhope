@@ -1,12 +1,12 @@
 def curl0(info, deps, codec):
-    return {
+    return to_v2({
         'code': """
             ./configure --prefix=$(INSTALL_DIR) --with-mbedtls=$(MNGR_$(SS)_LIB_DIR) --enable-static --disable-shared && make && make install
         """.replace('$(SS)', dep_name(deps[1]).upper()),
         'src': 'https://curl.haxx.se/snapshots/curl-7.67.0-20191011.tar.bz2',
         'deps': deps,
         'codec': codec,
-    }
+    }, info)
 
 
 @y.options()
