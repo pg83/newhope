@@ -6,7 +6,7 @@ WHITE = u'\u001b[37;1m'
 BLUE = u'\u001b[34;1m'
 
 
-S = {
+COLOR_MAP = {
     'red': RED,
     'green': GREEN,
     'reset': RESET,
@@ -17,7 +17,7 @@ S = {
 
 
 def get_color(n):
-    return S[n]
+    return COLOR_MAP[n]
 
 
 def colorize(text, color):

@@ -13,7 +13,12 @@ import subprocess
 
 
 def script_path():
-   return sys.modules['__main__'].__file__
+   try:
+      return script_path_ex()
+   except Exception:
+      pass
+
+   return sys.modules['__main__'].__path__
 
 
 def prepare_modules_data():
@@ -25,17 +30,10 @@ def prepare_modules_data():
    return ''.join(iter_parts())
 
 
-def prepare_script_data():
-   with open(script_path(), 'r') as f:
-      script = f.read()
-
-   return script.replace('## builtin_' + 'modules', prepare_modules_data())
-
-
-def load_local_code(where):
+def load_local_code(where, ext='.py'):
    path = os.path.dirname(script_path()) + '/' + where + '/'
 
-   for m in os.listdir(path):
+   for m in list(os.listdir(path)):
      if '~' in m:
         continue
 
@@ -45,13 +43,17 @@ def load_local_code(where):
      if '__init__' in m:
         continue
 
-     if not m.endswith('.py'):
+     if not m.endswith(ext):
         continue
 
      mpath = path + m
 
      with open(mpath, 'r') as f:
         yield mpath, f.read()
+
+   if ext == '.py':
+      with open(script_path(), 'r') as f:
+         yield path + 'cmd.py', f.read()
 
 
 def load_program_modules():
@@ -72,6 +74,15 @@ def load_plugin_modules():
    return res
 
 
+def load_bash_modules():
+   res = {}
+
+   for path, data in load_local_code('scripts', ext=''):
+      res[os.path.basename(path)] = data
+
+   return res
+
+
 def install():
    def bm():
       return sys.builtin_modules
@@ -85,6 +96,7 @@ def install():
       builtin_modules = {
          'upm': load_program_modules(),
          'plu': load_plugin_modules(),
+         'mod': load_bash_modules(),
       }
 
    u = builtin_modules['upm']
@@ -109,11 +121,12 @@ def install():
          mod = sys.modules.setdefault(name, imp.new_module(name))
          mod.__file__ = path
          mod.__name__ = name
-         mod.__package__ = name.encode('utf-8')
+         mod.__pkg__ = name.rstrip('.')[-1]
          mod.__text__ = value
          mods.append((mod, path, value, []))
 
    prev_order = dict(enumerate(bm().get('ord', [])))
+   prev_order['upm_iface'] = -100
 
    def get_order(x):
       return prev_order.get(x[0].__name__, 0)
@@ -130,27 +143,32 @@ def install():
                exec compile(data, path, 'exec') in mod.__dict__
                order.append(mod.__name__)
             except Exception as e:
+               #print e, path, traceback.print_exc(e)
                new_mods.append((mod, path, data, exc + [e]))
 
-               raise
+               raise e
          except AttributeError:
             pass
          except ImportError:
             pass
-         except Exception as e:
-            print path, e, traceback.format_exc()
-
-            raise
 
       random.shuffle(new_mods)
       mods = new_mods
 
    bm()['ord'] = order
+   bm()['txt'] = prepare_release_data1()
+
+
+def prepare_release_data1():
+   script_data = sys.modules['upm_cmd'].__text__.replace("__main__':", "__newmain__':")
+   script_data = script_data + '\n\n__file__ = "' + script_path() + '"\n'
+   script_data = script_data + '\n\n' + sys.modules['upm_release_me'].__text__
+
+   return script_data
 
 
 def prepare_release_data():
-   script_data = sys.modules['__main__'].__text__ + '\n\n' + '__file__ = "<stdin>"\n'
-   script_data = script_data + '\n\n' + sys.modules['upm_release_me'].__text__
+   script_data = sys.builtin_modules['txt']
    script_data = script_data.replace('## builtin' + '_modules', prepare_modules_data())
 
    return script_data

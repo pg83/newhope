@@ -5,7 +5,7 @@ def diffutils0(info, deps):
     return to_v2({
         'code': """
              ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static || exit 1
-             make
+             make -j2
              make install
         """,
         'url': url,

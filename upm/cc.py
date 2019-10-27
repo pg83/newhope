@@ -92,6 +92,9 @@ def small_repr_cons(c):
 
 
 def is_cross(cc):
+    if not cc:
+        return False
+
     return small_repr(cc['host']) != small_repr(cc['target'])
 
 

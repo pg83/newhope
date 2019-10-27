@@ -4,12 +4,12 @@ import json
 from upm_iface import y
 
 
-y.singleton
+@y.singleton
 def iter_all_tools():
     return list(y.iter_system_tools()) + list(y.iter_musl_cc_tools()) + list(y.iter_ndk_tools())
 
 
-y.singleton
+@y.singleton
 def group_by_cc():
     try:
         group_by_cc.__res

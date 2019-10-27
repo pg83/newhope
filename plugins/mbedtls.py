@@ -3,7 +3,7 @@ def mbedtls0(info, deps, codec):
         'code': """
             #pragma cc
             cat Makefile | grep -v 'DESTDIR=' > M && mv M Makefile
-            CC=gcc make programs lib && make DESTDIR=$(INSTALL_DIR) install
+            CC=gcc make -j2 programs lib && make DESTDIR=$(INSTALL_DIR) install
         """,
         'src': 'https://tls.mbed.org/download/mbedtls-2.16.3-apache.tgz',
         'deps': deps,

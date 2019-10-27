@@ -3,24 +3,39 @@
 import sys
 import os
 import signal
+import traceback
 
-__file__ = os.path.abspath(__file__)
 
+def script_path_ex():
+   def iter_f():
+      yield __file__
+      yield sys.modules['__main__'].__file__
+      yield os.path.abspath(sys.argv[0])
+      yield os.getenv('Y_SCRIPT_PATH')
+
+   for f in iter_f():
+      if f:
+         f = os.path.abspath(f)
+
+         if os.path.isfile(f):
+            return f
+
+   return '<unknown>'
+
+
+__file__ = script_path_ex()
+
+os.environ['Y_SCRIPT_PATH]'] = __file__
 
 signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 sys.dont_write_bytecode = True
 
-##
 
 if __name__ == '__main__':
     with open(__file__) as f:
         data = f.read()
-        data = data[:data.find('##')]
 
-    sys.modules['__main__'].__text__ = data
     fp = os.path.dirname(__file__) + '/upm/release_me.py'
 
     with open(fp, 'r') as f:
-        exec compile(f.read() + '\n\nbootstrap(2)\n', fp, 'exec') in globals()
-
-    sys.exit(0)
+       exec compile(f.read() + '\n\nbootstrap(0)\n', fp, 'exec') in globals()

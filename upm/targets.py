@@ -1,8 +1,13 @@
+import os
+
 from upm_iface import y
 
 
 @y.cached()
 def gen_fetch_node(url):
+    if 'libarchive.org' in url:
+        return gen_fetch_node2(url)
+
     res = {
         'node': {
             'kind': 'fetch',
@@ -10,13 +15,53 @@ def gen_fetch_node(url):
             'url': url,
             'pkg_full_name': y.calc_pkg_full_name(url),
             'build': [
-                'cd $(INSTALL_DIR) && ((wget -O $(URL_BASE) $(URL) >& $(INSTALL_DIR/log/wget.log)) || (curl -L -k -o $(URL_BASE) $(URL) >&$(INSTALL_DIR/log/curl.log)) && ls -la',
-            ],
-            'prepare': [
-                'mkdir -p $(BUILD_DIR)/fetched_urls/',
-                'ln $(CUR_DIR)/$(URL_BASE) $(BUILD_DIR)/fetched_urls/',
+                'source fetch_url $(URL_BASE) $(URL)',
             ],
             'codec': 'tr',
+        },
+        'deps': [],
+    }
+
+    return y.store_node_plain(res)
+
+
+@y.cached()
+def gen_fetch_node2(url):
+    res = {
+        'node': {
+            'kind': 'fetch',
+            'name': 'fetch_url',
+            'url': url,
+            'pkg_full_name': y.calc_pkg_full_name(url),
+            'build': [
+                'echo $PATH 1>&2',
+                '(which curl && which tar && which xz) 1>&2',
+                'source fetch_url $(URL_BASE) $(URL)',
+            ],
+            'codec': 'tr',
+        },
+        'deps': [],
+    }
+
+    return y.store_node_plain(res)
+
+
+@y.cached()
+def gen_unpack_node(pkg):
+    mpkg = y.mgr_pkg(pkg)
+
+    res = {
+        'node': {
+            'name': 'unpack',
+            'kind': 'gen_unpack_node',
+            'internal': True,
+            'inputs': [pkg],
+            'output': mpkg,
+            'build': [
+                y.rmmkcd(os.path.dirname(mpkg)),
+                y.prepare_untar_cmd(pkg, '.'),
+                'echo 42 > ' + mpkg,
+            ],
         },
         'deps': [],
     }

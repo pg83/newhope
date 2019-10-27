@@ -1,7 +1,3 @@
-import os
-import sys
-import subprocess
-
 from upm_iface import y
 
 

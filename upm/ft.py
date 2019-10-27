@@ -13,11 +13,12 @@ from upm_iface import y
 
 
 def logged_wrapper(func):
+    @functools.wraps
     def wrapper(arg):
         try:
             return func(arg)
         except Exception as e:
-            y.xprint(str(wrapper), str(f), str(arg), str(e), color='yellow')
+            y.xprint_yellow(wrapper, f, arg, e)
 
             raise
 
@@ -116,6 +117,8 @@ def restore_name(f):
 
 
 def cached(key=default_key, seed=None):
+    #return cached2(key=key, seed=seed)
+
     seed = seed or int((random.random() * 10000000))
     rn_key = restore_name(key)
     restore = compose_simple(y.intern_struct, y.load_struct)
@@ -142,6 +145,32 @@ def cached(key=default_key, seed=None):
         return slave
 
     return real_cached
+
+
+@singleton
+def common_cache():
+    return dict()
+
+
+def cached2(key=default_key, seed=None):
+    k1 = y.struct_dump_byted([key.__name__, seed or random.random()])
+
+    def functor(f):
+        k2 = y.struct_dump_byted([f.__name__, k1])
+        cc = common_cache()
+
+        @functools.wraps(f)
+        def wrapper(arg):
+            k = y.struct_dump_byted([arg, k2])
+
+            if k not in cc:
+                cc[k] = f(arg)
+
+            return cc[k]
+
+        return wrapper
+
+    return functor
 
 
 def fp(f, v, *args, **kwargs):
@@ -181,34 +210,15 @@ def compose_simple(*funcs):
     return wrapper
 
 
-def compose(*funcs, **kwargs):
-    def num_args(f):
-        try:
-            f({}, [])
-        except TypeError:
-            return 1
-        except Exception:
-            return 2
+def compose_lisp(funcs):
+    def wrapper(*args, **kwargs):
+        f, ff = funcs
+        data = f(*args, **kwargs)
 
-        return 0
+        while ff:
+            f, ff = ff
+            data = f(data)
 
-    def builder():
-        for f in funcs:
-            args = num_args(f)
+        return data
 
-            if args == 1:
-                pass
-            elif args == 2:
-                ex = singleton(kwargs[f.__name__ + '_extra'])
-                f = lambda x: f(x, ex())
-            else:
-                raise Exception('shit happen')
-
-            yield f
-
-    return compose_simple(*list(builder()))
-
-
-def compose_rev(*funcs, **kwargs):
-    return compose(*reversed(list(funcs)), **kwargs)
-
+    return wrapper

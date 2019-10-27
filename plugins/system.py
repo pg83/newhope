@@ -1,7 +1,6 @@
 def system00(info):
     return to_v2({
         'code': 'echo 1 > 2',
-        'name': 'system',
         'version': '1.0.0',
         'deps': [],
         'codec': 'tr',

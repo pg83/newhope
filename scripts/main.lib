@@ -1,0 +1,73 @@
+set +x
+
+rmrf () {
+    rmdel "$1"
+}
+
+mkcd() {
+    mkdir -p "$1"
+    cd "$1"
+}
+
+rmmkcd() {
+    rmrf "$1"
+    mkcd "$1"
+}
+
+add_path() {
+    while [ $# -gt 0 ]
+    do
+        export PATH="$1":$PATH
+        shift
+    done
+}
+
+last_log() {
+    (echo "last log:"; tail -n 100 "$1") 1>&2
+}
+
+copy_log() {
+    (mkdir -p "$2") && (touch "$1" >& /dev/null) && (cp "$1" "$2")
+
+    return 0
+}
+
+copy_logs1() {
+    if [ $# == 2 ]
+    then
+        copy_log $1 $2
+
+        return 0
+    fi
+
+    f=$1
+
+    shift
+    shift
+
+    copy_logs1 $f $@
+
+    return 0
+}
+
+copy_logs() {
+    while [ $# -gt 1 ]
+    do
+       copy_logs1 $@
+       shift
+    done
+
+    return 0
+}
+
+rmdel() {
+    (rm -rf $@) || true >& /dev/null
+
+    return 0
+}
+
+fetch_url() {
+    cd $IDIR && ((wget -O $1 $2) || (curl -L -k -o $1 $2)) && ls -la
+}
+
+set -x

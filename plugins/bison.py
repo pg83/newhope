@@ -6,8 +6,7 @@ def bison0(info, deps):
         'code': """
              ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static || exit 1
              make
-             make install
-             $(MOVE_LOG) config.log
+             make install -j 2
         """,
         'url': url,
         'deps': dep_list(info, deps),

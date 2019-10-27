@@ -34,13 +34,7 @@ def visit_nodes(nodes, debug=False):
 
         yield k
 
-        def iter_node_links2():
-            node = y.restore_node(k)
-
-            for x in node['ptrs']():
-                yield x
-
-        for x in list(iter_node_links2()):
+        for x in y.restore_node(k)['ptrs']():
             for v in list(do(x)):
                 yield v
 
@@ -60,6 +54,7 @@ def restore_node(ptr):
     def iter_deps_ptr():
         return deps
 
+    @y.singleton
     def get_node():
         return load_struct(res[0])
 

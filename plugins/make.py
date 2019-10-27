@@ -19,9 +19,9 @@ def make2_run(info):
 
 @y.options(repacks=None)
 def make1_run(info):
-    return make0(info, 'make', [make2_run(info), bestbox2_run(info)])
+    return make0(info, 'make -j2', [make2_run(info), bestbox2_run(info)])
 
 
 @y.options(repacks=None)
 def make_run(info):
-    return make0(info, 'make', [make1_run(info), bestbox1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)], codec='xz')
+    return make0(info, 'make -j2', [make1_run(info), bestbox1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)], codec='xz')

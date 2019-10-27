@@ -5,7 +5,7 @@ def coreutils0(info, deps):
         'code': """
              ./configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static || exit 1
              make
-             make install
+             make install -j 2
         """,
         'url': 'https://ftp.gnu.org/gnu/coreutils/coreutils-' + version + '.tar.xz',
         'deps': dep_list(info, deps),

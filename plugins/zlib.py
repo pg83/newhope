@@ -3,7 +3,7 @@ def zlib0(info, deps):
         'src': 'http://zlib.net/zlib-1.2.11.tar.gz',
         'code': """
             which tar; which curl; which xz; which make; ./configure --disable-shared || exit 1
-            make && make install
+            make -j2 && make install
             $(MOVE_LOG)
         """,
         'prepare': '$(ADD_PATH)',

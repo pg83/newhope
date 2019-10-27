@@ -1,0 +1,3 @@
+source main.lib
+
+add_path $@

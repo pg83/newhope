@@ -5,9 +5,12 @@ def libarchive0(info, deps):
     return to_v2({
         'url': 'https://libarchive.org/downloads/' + name + '-' + version + '.tar.gz',
         'code': """
-            ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared
+             (which -a curl
+             which -a tar
+             which -a xz
+
+            ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared) 2>&1
         """,
-        'name': name,
         'version': version,
         'deps': dep_list(info, deps),
     }, info)

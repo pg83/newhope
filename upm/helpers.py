@@ -47,28 +47,28 @@ def current_host_platform():
     }
 
 
-def xprint(*args, **kwargs):
-    def fixx(x):
+def fixx(x):
+    for f in (str, lambda x: x.decode(utf-8)):
         try:
-            x = str(x)
-        except:
+            x = f(x)
+        except Exception:
             pass
 
-        try:
-            x = x.decode('utf-8')
-        except:
-            pass
+    return x
 
-        return x
 
-    color = kwargs.get('color')
-    where = kwargs.get('where', sys.stderr)
-    text = ' '.join([fixx(x) for x in args])
+class xprint(object):
+    def __init__(self, color=None, where=sys.stderr):
+        self._c = color
+        self._w = where
 
-    if color:
-        text = y.colorize(text, color)
+    def __call__(self, *args, **kwargs):
+        text = ' '.join([fixx(x) for x in args] + [fixx(k) + '=' + fixx(v) for k, v in kwargs.items()])
 
-    where.write(text + '\n')
+        if self._c:
+            text = y.colorize(text, self._c)
+
+        self._w.write(text + '\n')
 
 
 @y.singleton
@@ -96,3 +96,11 @@ def path_by_script(path):
 @y.singleton
 def docker_binary():
    return find_tool('docker')
+
+
+@y.lookup
+def lookup(xp):
+    if xp.startswith('xprint_'):
+        return xprint(color=xp[7:])
+
+    raise AttributeError()

@@ -22,7 +22,7 @@ def build_docker():
 
 def prepare_root(r):
    try:
-      data = y.prepare_data()
+      data = y.prepare_release_data() + '\n\nbootstrap(0)\n'
    except Exception as e:
       if 'unimplemented' not in str(e):
          raise
@@ -65,6 +65,7 @@ def cli_make(arg, verbose):
    parser.add_argument('-k', '--continue-on-fail', default=False, action='store_const', const=True, help='continue on fail')
    parser.add_argument('-r', '--root', default=None, action='store', help='main root for build files')
    parser.add_argument('-i', '--install-dir', default=None, action='store', help='where to install packages')
+   parser.add_argument('-d', '--do-not-remove', default=None, action='store', help='не удалять даннные')
    parser.add_argument('--production', default=False, action='store_const', const=True, help='production execution')
    parser.add_argument('targets', nargs=argparse.REMAINDER)
 
@@ -100,7 +101,11 @@ def cli_make(arg, verbose):
       if local:
          yield ('$(WDP)', '$(PREFIX)/p')
          yield ('$(UPM)', y.script_path())
-         yield ('$(RM_TMP)', 'rm -rf')
+
+         if args.do_not_remove:
+            yield ('$(RM_TMP)', '# ')
+         else:
+            yield ('$(RM_TMP)', 'rm -rf')
 
       if args.production:
          yield ('$(WDP)', '/private')
@@ -122,7 +127,7 @@ def cli_make(arg, verbose):
 
 
 def upm_root():
-   return user_home() + '/upm_root'
+   return y.user_home() + '/upm_root'
 
 
 def cli_build(arg, verbose):
@@ -231,19 +236,8 @@ def cli_makefile(arg, verbose):
       close()
 
 
-def cli_subcommand(args, verbose):
-   cmds = {}
-
-   for cmd in [y.prepare_pkg, y.get_pkg_link]:
-      cmds[cmd.__name__] = cmd
-
-   args = args[args.index('--') + 1:]
-
-   cmds[args[0]](*args[1:])
-
-
 def cli_release(args, verbose):
-   print y.prepare_release_data()
+   print y.prepare_release_data() + '\n\nbootstrap(0)\n\n'
 
 
 def check_arg(args, params):
@@ -253,25 +247,14 @@ def check_arg(args, params):
 
 
 def cli_selftest(args, verbose):
-   @y.cached(seed=1)
-   def f1(a, b):
-      return a + b
+   for f in y.iter_all_tests():
+      y.xprint_white('-------------------------------------------------------------------')
+      f()
 
-   @y.cached(seed=187564)
-   def f2(a, b):
-      return a + b
-
-   def f3(a, b):
-      return a + b
-
-   for i in range(0, 5):
-      y.xprint(f1(i, i * 13 - 17), f2(i, i * 13 - 17), f3(i, i * 13 - 17))
-
-   y.print_db()
+   y.xprint_white('-------------------------------------------------------------------')
 
 
 def run_main():
-   # y.run_from_now()
    args = sys.argv
 
    args, do_verbose = check_arg(args, ('-v', '--verbose'))
@@ -289,27 +272,25 @@ def run_main():
 
    func = y.profile(func, really=do_profile)
 
-   if do_verbose:
+   def rfunc():
       try:
          return func()
-      finally:
-         #print sys.modules['upm_plugins'].__dict__.keys()
-         #print y.MY_FUNCS.keys()
-         pass
-         #y.print_db()
+      except Exception as e:
+         if 'Broken pipe' in str(e):
+            return -1
 
+         raise
+
+   if 0:
+      if do_verbose:
+         return rfunc()
 
    try:
-      func()
+      return rfunc()
    except Exception as e:
-      if 'Broken pipe' in str(e):
-         return -1
-
       if do_verbose:
-         y.xprint(traceback.print_exception(*sys.exc_info()), color='red')
+         y.xprint_red(traceback.print_exception(*sys.exc_info()))
       else:
-         y.xprint(str(e), color='red')
+         y.xprint_red(e)
 
-      return 1
-
-   return 0
+   return 1

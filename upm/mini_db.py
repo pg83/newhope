@@ -21,7 +21,7 @@ def struct_dump_bytes_ex(p):
 
         return hashlib.md5(data).hexdigest()[:16], data
     except Exception as e:
-        y.xprint(e, p, color='yellow')
+        y.xprint_yellow(e, p)
 
         raise e
 
@@ -130,5 +130,3 @@ def is_pointer(x):
             return demangle_pointer(x)
         except TypeError:
             pass
-
-    return False

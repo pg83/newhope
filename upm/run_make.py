@@ -2,11 +2,9 @@ import os
 import sys
 import subprocess
 import random
-
+import traceback
 
 from upm_iface import y
-from upm_bad import BAD_SUBSTRINGS
-from upm_colors import RED, GREEN, RESET, YELLOW, WHITE, BLUE
 
 
 def new_cmd():
@@ -32,10 +30,11 @@ mkcd() {
 def run_makefile(data, shell_out, targets):
     lst = []
     prev = None
-    shell = '/bin/sh'
+    shell = '/bin/bash'
     flags = ['--noprofile', '--norc', '-e']
+    cprint = y.xprint_white
 
-    for l in data.split('\n'):
+    for line_no, l in enumerate(data.split('\n')):
         p = l.find('##')
 
         if p > 5:
@@ -103,129 +102,41 @@ def run_makefile(data, shell_out, targets):
 
     def run_cmd(c):
         if c in done:
-            return y.xprint(BLUE + 'already done ' + c + RESET)
+            return y.xprint_blue('already done ' + c)
 
         if shell_out:
             pass
         elif os.path.exists(c):
             done.add(c)
+            return y.xprint_blue('already made it ' + c)
 
-            return y.xprint(BLUE + 'already done ' + c + RESET)
-
-        cleanups = []
-
-        try:
-            for c in run_cmd_1(c):
-                cleanups.append(c)
-        except Exception:
-            for c in cleanups:
-                c()
-
-            raise
-
-    def run_cmd_1(c):
-        errors = []
         n = by_dep[c]
-
-        def cleanup():
-            for d in n['deps1']:
-                if d[0] == '/':
-                    errors.append('will remove trash ' + d)
-
-                    try:
-                        os.unlink(d)
-                    except Exception as e:
-                        errors.append(str(e))
-
-        yield cleanup
-
-        for d in n['deps1']:
-            done.add(d)
 
         for d in n['deps2']:
             run_cmd(d)
 
-        white_line = WHITE + '--------------------------------------------------------------------------------------------' + RESET
 
-        def iter_lines(errors):
-            yield white_line
+        y.xprint_white('-------------------------------------------------------------------------------')
+        my_name = ', '.join(n['deps1'])
 
-            if n['cmd']:
-                cmd = '\n'.join(n['cmd']) + '\n'
+        if n.get('cmd'):
+            y.xprint_red('will run ' + my_name)
 
-                yield RED + 'run ' + c + ':' + RESET
-                yield YELLOW + ' command:' + RESET
+            cmd = '\n'.join(n['cmd']) + '\n'
+            input = 'set -e; set -x; ' + cmd
+            input = input.replace('$(SHELL)', shell).replace('$(SHELL_FLAGS)', ' '.join(flags[:2]))
+            args = ['/usr/bin/env', '-i', '/bin/bash'] + flags
 
-                for l in cmd.strip().split('\n'):
-                    l = l.rstrip()
+            p = subprocess.Popen(args, stdout=sys.stdout, stderr=sys.stderr, stdin=subprocess.PIPE, shell=False)
+            p.communicate(input=input)
 
-                    if l:
-                        yield '  ' + YELLOW + l + RESET
+            if p.wait():
+                raise Exception('shit')
+        else:
+            y.xprint_blue('symlink target ' + my_name + ' ready')
 
-                yield ''
-
-                all_res = []
-
-                try:
-                    args = ['/usr/bin/env', '-i', shell] + flags
-                    input = BASH_RUNTIME + '\n' + cmd
-                    input = input.replace('$(SHELL)', shell).replace('$(SHELL_FLAGS)', ' '.join(flags[:2]))
-
-                    p = subprocess.Popen(args, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
-                    res, _ = p.communicate(input=input)
-
-                    if res:
-                        all_res.append(str(res))
-
-                    check_data = ''.join(all_res)
-
-                    for t in BAD_SUBSTRINGS:
-                        if t in check_data:
-                            raise Exception("error detected: %s" % t)
-                except subprocess.CalledProcessError as err:
-                    all_res.append(err.output)
-                    errors.append('can not build ' + c)
-                except Exception as err:
-                    errors.append(str(err))
-
-                if errors:
-                    color = RED
-                else:
-                    color = GREEN
-
-                yield color + ' log:' + RESET
-
-                for l in ('\n'.join(all_res)).strip().split('\n'):
-                    l = l.rstrip()
-
-                    if l:
-                        l = l.decode('utf-8')
-
-                        if 'last log:' in l:
-                            color = BLUE
-
-                            yield ''
-
-                            l = ' ' + color + l.strip() + RESET
-
-                            yield l
-                        else:
-                            if RED in l:
-                                errors.append(l)
-                            else:
-                                yield '  ' + color + l + RESET
-
-                if errors:
-                    yield white_line
-            else:
-                yield BLUE + 'done fake ' + c + RESET
-
-        y.xprint('\n'.join(iter_lines(errors)))
-
-        if errors:
-            data = ', '.join(errors)
-
-            raise Exception('%s' % data)
+        for d in n['deps1']:
+            done.add(d)
 
     for t in targets:
         run_cmd(t)

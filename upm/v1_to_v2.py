@@ -6,17 +6,25 @@ import itertools
 from upm_iface import y
 
 
-def fix_v2(v):
+def fix_v2(v, **kwargs):
     assert v is not None
+
+    v = y.deep_copy(v)
 
     n = v['node']
 
     if 'codec' not in n:
         n['codec'] = 'xz'
 
+    if 'naked' in kwargs:
+        n['naked'] = kwargs['naked']
+
     if 'url' in n:
         if 'pkg_full_name' not in n:
             n['pkg_full_name'] = y.calc_pkg_full_name(n['url'])
+
+    if not n.get('name', '').startswith('build_scripts'):
+        v['deps'] = [y.build_scripts()] + v['deps']
 
     return v
 
@@ -30,7 +38,10 @@ def call_v2(func, info):
     if 'compilers' in info:
         param = info
     else:
-        compilers = y.find_compilers(info)
+        if info:
+            compilers = y.find_compilers(info)
+        else:
+            compilers = []
 
         param = {
             'compilers': {

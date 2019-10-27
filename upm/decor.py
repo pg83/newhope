@@ -11,6 +11,11 @@ MY_FUNCS = {}
 CALLBACKS = {}
 
 
+@y.lookup
+def lookup(name):
+    return MY_FUNCS[name]
+
+
 def register_func_callback(func):
     CALLBACKS[func.__name__] = func
 
@@ -24,13 +29,16 @@ def main_reg(func, **kwargs):
 register_func_callback(main_reg)
 
 
-def gen_key(func, info):
-    return [func.__name__, info]
+def gen_key(func, *args):
+    return [func.__name__, args]
 
 
 @y.cached(key=gen_key)
-def gen_func(func, info):
-    return y.store_node(y.fix_v2(y.deep_copy(y.call_v2(func, info))))
+def gen_func(func, info, res):
+    def my_fix_v2(arg):
+        return y.fix_v2(arg, **res)
+
+    return y.store_node(my_fix_v2(y.deep_copy(y.call_v2(func, info))))
 
 
 def options(**kwargs):
@@ -39,7 +47,7 @@ def options(**kwargs):
     def functor(func):
         @functools.wraps(func)
         def wrapper(info):
-            return gen_func(func, info)
+            return gen_func(func, info, res)
 
         for cb in CALLBACKS.values():
             wrapper = cb(wrapper, **res)
