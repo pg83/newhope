@@ -6,8 +6,7 @@ import argparse
 import subprocess
 import shutil
 import traceback
-
-from upm_iface import y
+import urllib2
 
 
 def build_docker():
@@ -22,7 +21,7 @@ def build_docker():
 
 def prepare_root(r):
    try:
-      data = y.prepare_release_data() + '\n\nbootstrap(0)\n'
+      data = y.rm_prepare_release_data() + '\n\nbootstrap(0)\n'
    except Exception as e:
       if 'unimplemented' not in str(e):
          raise
@@ -30,7 +29,7 @@ def prepare_root(r):
       return
 
    def iter_trash():
-      for f in ('m', 'w', 'd', 'bin', 'tmp'):
+      for f in ('w', 'd', 'bin', 'tmp'):
          yield os.path.join(r, f)
 
    for f in iter_trash():
@@ -40,7 +39,7 @@ def prepare_root(r):
          if 'No such file or directory' in str(e):
             pass
          else:
-            y.xprint(f, e)
+            y.xprint_red(f, e)
 
    for f in ('bin', 'tmp'):
       try:
@@ -55,6 +54,70 @@ def prepare_root(r):
       os.system('chmod +x ' + p)
 
    #os.execl(p, *([p] + sys.argv[1:]))
+
+
+def fetch_1(url):
+   return urllib2.urlopen(url).read()
+
+
+def fetch_2(url):
+   return subprocess.check_output(['curl -o - ' + url], shell=True)
+
+
+def fetch_data(url):
+   for f in (fetch_1, fetch_2):
+      try:
+         return f(url)
+      except Exception as e:
+         print e
+
+   if e:
+      raise e
+
+
+def fetch_http(root, url):
+   name = os.path.basename(url)
+   fname = os.path.join(root, name)
+   data = fetch_data(url)
+
+   try:
+      os.makedirs(root)
+   except OSError:
+      pass
+
+   with open(fname, 'w') as f:
+      f.write(data)
+
+   subprocess.check_output(['tar -xf ' + name], cwd=root, shell=True)
+
+   return url
+
+
+def cli_fetch(arg, verbose):
+   parser = argparse.ArgumentParser()
+
+   parser.add_argument('--path', default='data', action='store', help='Where to store all')
+   parser.add_argument('targets', nargs=argparse.REMAINDER)
+
+   args = parser.parse_args(arg)
+   args.path = os.path.abspath(args.path)
+
+   def iter_urls():
+      host = y.current_host_platform()
+      target = host
+      cc = {'host': host, 'target': target}
+      params = {'info': cc, 'compilers': {'deps': [], 'cross': False}}
+
+      for t in args.targets:
+         if t.startswith('http'):
+            yield fetch_http(args.path, url)
+         else:
+            node = y.restore_node(eval('y.' + t)(y.deep_copy(params)))['node']()
+            url = node.get('src') or node.get('url')
+            yield fetch_http(args.path, url)
+
+   for url in iter_urls():
+      print 'done', url
 
 
 def cli_make(arg, verbose):
@@ -206,7 +269,7 @@ def cli_help(args, verbose):
          if k.startswith('cli_'):
             yield k[4:]
 
-   y.xprint('usage: ' + sys.argv[0] + '(-v, --verbose, --profile)* ' + '[' + ', '.join(iter_funcs()) + '] ....')
+   y.xprint_green('usage: ' + sys.argv[0] + ' (-v, --verbose, --profile --bootstrap-mode)* ' + '[' + ', '.join(iter_funcs()) + '] ....')
 
 
 def cli_makefile(arg, verbose):
@@ -237,13 +300,7 @@ def cli_makefile(arg, verbose):
 
 
 def cli_release(args, verbose):
-   print y.prepare_release_data() + '\n\nbootstrap(0)\n\n'
-
-
-def check_arg(args, params):
-   new_args = list(filter(lambda x: x not in params, args))
-
-   return new_args, len(args) != len(new_args)
+   print y.rm_prepare_release_data() + '\n\nbootstrap(0)\n\n'
 
 
 def cli_selftest(args, verbose):
@@ -254,11 +311,9 @@ def cli_selftest(args, verbose):
    y.xprint_white('-------------------------------------------------------------------')
 
 
-def run_main():
-   args = sys.argv
-
-   args, do_verbose = check_arg(args, ('-v', '--verbose'))
-   args, do_profile = check_arg(args, ('--profile',))
+def run_main(args):
+   args, do_verbose = y.check_arg(args, ('-v', '--verbose'))
+   args, do_profile = y.check_arg(args, ('--profile',))
 
    if len(args) < 2:
       args = args + ['help']
@@ -267,30 +322,9 @@ def run_main():
 
    def func():
       ff = globals().get('cli_' + mode, cli_help)
-
       ff(args[2:], do_verbose)
 
    func = y.profile(func, really=do_profile)
+   func = y.logged_wrapper(rethrow=-1, tb=True, rfunc=func)
 
-   def rfunc():
-      try:
-         return func()
-      except Exception as e:
-         if 'Broken pipe' in str(e):
-            return -1
-
-         raise
-
-   if 0:
-      if do_verbose:
-         return rfunc()
-
-   try:
-      return rfunc()
-   except Exception as e:
-      if do_verbose:
-         y.xprint_red(traceback.print_exception(*sys.exc_info()))
-      else:
-         y.xprint_red(e)
-
-   return 1
+   return func()

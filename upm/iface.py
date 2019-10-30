@@ -8,6 +8,8 @@ def my_modules():
 
         yield name, sys.modules[name]
 
+    yield '__main__', sys.modules['__main__']
+
 
 class IFace(object):
     def __init__(self):
@@ -48,6 +50,9 @@ class IFace(object):
         self.add_lookup(func)
 
         return func
+
+    def print_cache(self):
+        print self._c
 
     def find_function(self, name):
         for _, m in my_modules():

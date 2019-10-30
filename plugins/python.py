@@ -31,7 +31,7 @@ _io -I$(srcdir)/Modules/_io _io/bufferedio.c _io/bytesio.c _io/fileio.c _io/ioba
 # supported...)
 
 fcntl fcntlmodule.c    # fcntl(2) and ioctl(2)
-spwd spwdmodule.c        # spwd(3)
+#spwd spwdmodule.c        # spwd(3)
 grp grpmodule.c        # grp(3)
 select selectmodule.c    # select(2); not on ancient System V
 
@@ -45,29 +45,20 @@ binascii binascii.c
 parser parsermodule.c
 """
 
-
-def python0(info, deps, codec):
-    return to_v2({
+@ygenerator(tier=0, kind=['core', 'dev', 'tool'], cached=['deps', 'codec'])
+def python0(deps, codec):
+    return {
         'code': """
             $(APPLY_EXTRA_PLAN_0)
-            ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared || exit 1
-            make || exit 1
+            ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
+            make -j2 || exit 1
             make install
         """,
         'src': 'https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz',
-        'deps': [x(info) for x in deps],
+        'deps': deps,
         'codec': codec,
+        'version': '2.7.13',
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup.local', 'data': python_setup_local},
         ],
-    }, info)
-
-
-@y.options()
-def python1(info):
-    return python0(info, [bestbox2_run, coreutils2_run, make2_run, tar2_run, xz2_run, curl2_run], 'xz')
-
-
-@y.options()
-def python(info):
-    return python0(info, [bestbox1_run, make1_run, tar1_run, xz1_run, curl1_run], 'xz')
+    }

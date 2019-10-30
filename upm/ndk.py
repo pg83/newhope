@@ -1,6 +1,3 @@
-from upm_iface import y
-
-
 def iter_targets():
     for a in ('x86_64', 'aarch64', 'llvm'):
         for o in ('linux',):

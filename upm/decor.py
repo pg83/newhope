@@ -4,30 +4,6 @@ import importlib
 import functools
 import itertools
 
-from upm_iface import y
-
-
-MY_FUNCS = {}
-CALLBACKS = {}
-
-
-@y.lookup
-def lookup(name):
-    return MY_FUNCS[name]
-
-
-def register_func_callback(func):
-    CALLBACKS[func.__name__] = func
-
-
-def main_reg(func, **kwargs):
-    MY_FUNCS[func.__name__] = func
-
-    return func
-
-
-register_func_callback(main_reg)
-
 
 def gen_key(func, *args):
     return [func.__name__, args]
@@ -38,7 +14,7 @@ def gen_func(func, info, res):
     def my_fix_v2(arg):
         return y.fix_v2(arg, **res)
 
-    return y.store_node(my_fix_v2(y.deep_copy(y.call_v2(func, info))))
+    return y.store_node(my_fix_v2(y.call_v2(func, info)))
 
 
 def options(**kwargs):
@@ -49,7 +25,7 @@ def options(**kwargs):
         def wrapper(info):
             return gen_func(func, info, res)
 
-        for cb in CALLBACKS.values():
+        for cb in y.callbacks().values():
             wrapper = cb(wrapper, **res)
 
         return wrapper
@@ -58,5 +34,7 @@ def options(**kwargs):
 
 
 def gen_all_funcs():
-    for k in sorted(MY_FUNCS.keys()):
-        yield MY_FUNCS[k]
+    mf = y.my_funcs()
+
+    for k in sorted(mf.keys()):
+        yield mf[k]

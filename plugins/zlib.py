@@ -1,16 +1,12 @@
-def zlib0(info, deps):
-    return to_v2({
+@ygenerator(tier=-1, kind=['core', 'dev', 'library'], cached=['deps'])
+def zlib0(deps):
+    return {
         'src': 'http://zlib.net/zlib-1.2.11.tar.gz',
         'code': """
-            which tar; which curl; which xz; which make; ./configure --disable-shared || exit 1
+            ./configure --static --64 --prefix=$IDIR || exit 1
             make -j2 && make install
-            $(MOVE_LOG)
         """,
         'prepare': '$(ADD_PATH)',
         'deps': deps,
-    }, info)
-
-
-@y.options()
-def zlib2(info):
-    return zlib0(info, devtools_last(info))
+        'version': '1.2.11',
+    }

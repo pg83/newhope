@@ -1,0 +1,49 @@
+exec 5>&1
+exec 6>&2
+
+exec 1> $BDIR/runtime/stdout.log
+exec 2> $BDIR/runtime/stderr.log
+
+trap "source reset 1>&5" RETURN
+
+run_sh() {
+    source yellow; source last_log "$BDIR/runtime/run.sh"; echo '';
+}
+
+run_sh 1>&5
+
+cur_progr() {
+    source blue
+    echo ' env:'
+    source set_env
+    (/usr/bin/env | while read line; do echo "  $line"; done) || true;
+    echo ''
+}
+
+cur_progr 1>&5
+
+stdout() {
+    source green; source last_log "$BDIR/runtime/stdout.log"; echo '';
+}
+
+stderr() {
+    source red; source last_log "$BDIR/runtime/stderr.log"; echo '';
+}
+
+cleanup() {
+    source rmdel "$IDIR" "$BDIR"
+}
+
+trap "(stdout; stderr; cleanup) 1>&5" EXIT
+
+source build.lib
+
+set -e -o pipefail
+pwd
+export LC_ALL="C"
+export LANG="C"
+export HOME="/"
+export PWD="/"
+
+cd /
+/usr/bin/env

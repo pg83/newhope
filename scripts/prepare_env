@@ -1,0 +1,22 @@
+source build.lib
+source set_env
+
+export IDIR="$1"
+export BDIR="$2"
+export PKGF="$3"
+export TMPDIR="$BDIR/tmp"
+export BD="$BDIR/playground"
+
+for i in "$IDIR" "$BDIR"
+do
+    source rmmkcd "$i"
+done
+
+mkdir "$IDIR/log"
+mkdir "$BD"
+mkdir "$TMPDIR"
+
+source mkcd "$BDIR/runtime"
+
+cat > run.sh
+exec $SHELL run.sh

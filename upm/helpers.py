@@ -3,19 +3,6 @@ import sys
 import platform
 import subprocess
 
-from upm_iface import y
-
-
-def to_lines(text):
-    def iter_l():
-        for l in text.split('\n'):
-            l = l.strip()
-
-            if l:
-                yield l
-
-    return list(iter_l())
-
 
 def subst_info(info):
     info = y.deep_copy(info)

@@ -1,5 +1,6 @@
+@y.cached()
 def bestbox0(info, deps, codec):
-    return to_v2({
+    return y.to_v2({
         'code': """
             mkdir -p $(INSTALL_DIR)/bin
 
@@ -27,7 +28,7 @@ def bestbox0(info, deps, codec):
         ],
     }, info)
 
-
+/*
 @y.options(repacks=None)
 def bestbox2_run(info):
     if y.xp('/info/info/host/os') == 'darwin':
@@ -50,3 +51,16 @@ def bestbox_run(info):
         return system0(info)
 
     return bestbox0(info, [toybox_run(info), busybox_run(info), tar1_run(info), xz1_run(info)], 'xz')
+*/
+
+
+y.register_func_generator({
+    'support': ['linux'],
+    'tier': -1,
+    'kind': ['core', 'dev', 'tool'],
+    'template': """
+@y.options({options})
+def {name}{num}(info):
+    return bestbox0(info, {deps}, "{codec}")
+"""
+})

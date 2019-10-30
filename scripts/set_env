@@ -1,0 +1,9 @@
+export YSHELL="`which bash` --noprofile --norc"
+export YMAKE=`which gmake || which make`
+export YXZ=`which xz`
+export YTAR=`which tar`
+export YGZIP=`which gzip`
+export YBZIP2=`which bzip2`
+export YUNZIP=`which unzip`
+export YCURL=`which curl`
+export YWGET=`which wget`

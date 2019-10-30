@@ -1,12 +1,12 @@
-@y.options()
-def ncurses(info):
-    return to_v2({
+@ygenerator(tier=1, kind=['core', 'dev', 'library'], cached=['deps'])
+def ncurses0(deps):
+    return {
         'code': """
             sed -i s/mawk// configure
-            ./configure --prefix=$(INSTALL_DIR) --without-shared --without-debug --without-ada --enable-widec --enable-overwrite
-            make && make install
-            $(MOVE_LOG) config.log
+            ./configure --prefix=$IDIR --without-shared --without-debug --without-ada --enable-widec --enable-overwrite
+            make -j2 && make install
         """,
         'src': 'https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz',
-        'deps': devtools(info),
-    }, info)
+        'deps': deps,
+        'version': '6.1',
+    }

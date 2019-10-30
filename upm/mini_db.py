@@ -1,29 +1,32 @@
 import hashlib
 import traceback
+import json
 
 from marshal import loads, dumps
-#from json import loads, dumps
-
-from upm_iface import y
 
 
 def deep_copy(x):
     return loads(dumps(x))
 
 
+def deep_copy_json(x):
+    return json.loads(json.dumps(x))
+
+
 def struct_dump_bytes(p):
     return struct_dump_bytes_ex(p)[0]
 
 
+@y.logged_wrapper()
 def struct_dump_bytes_ex(p):
-    try:
-        data = dumps(p)
+    data = dumps(p)
 
-        return hashlib.md5(data).hexdigest()[:16], data
-    except Exception as e:
-        y.xprint_yellow(e, p)
+    return hashlib.md5(data).hexdigest()[:16], data
 
-        raise e
+
+@y.logged_wrapper()
+def struct_dump_bytes_json(p):
+    return hashlib.md5(json.dumps(p, sort_keys=True)).hexdigest()
 
 
 # intern_struct vs. deref_pointer

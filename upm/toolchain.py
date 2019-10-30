@@ -1,9 +1,3 @@
-import json
-
-
-from upm_iface import y
-
-
 @y.singleton
 def iter_all_tools():
     return list(y.iter_system_tools()) + list(y.iter_musl_cc_tools()) + list(y.iter_ndk_tools())
@@ -11,23 +5,15 @@ def iter_all_tools():
 
 @y.singleton
 def group_by_cc():
-    try:
-        group_by_cc.__res
-    except AttributeError:
-        def calc():
-            res = group_by_cc.__res
+    res = {}
 
-            for x in iter_all_tools():
-                k = y.small_repr_cons(x['node']['constraint'])
+    for x in iter_all_tools():
+        k = y.small_repr_cons(x['node']['constraint'])
 
-                if k in res:
-                    res[k].append(x)
-                else:
-                    res[k] = [x]
-
-            return res
-
-        group_by_cc.__res = calc()
+        if k in res:
+            res[k].append(x)
+        else:
+            res[k] = [x]
 
     return res
 

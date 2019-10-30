@@ -1,10 +1,11 @@
-@y.options()
-def pkg_config(info):
-    return to_v2({
+@ygenerator(tier=2, kind=['core', 'dev', 'tool'], cached=['deps'])
+def pkg_config0(deps):
+    return {
         'code': """
-            ./configure --prefix=$(INSTALL_DIR) --with-internal-glib --enable-static --disable-shared && make && make install
+            ./configure --prefix=$IDIR --with-internal-glib --enable-static --disable-shared && make && make install
         """,
         'src': 'https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz',
-        'deps': devtools(info),
+        'deps': deps,
         'prepare': '$(ADD_PATH)',
-    }, info)
+        'version': '0.29.2',
+    }

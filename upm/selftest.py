@@ -1,6 +1,3 @@
-from upm_iface import y
-
-
 def self_test1():
    @y.cached(seed=1)
    def f1(a, b):

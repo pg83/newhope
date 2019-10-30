@@ -1,23 +1,10 @@
-def xz0(info, deps, codec):
-    return to_v2({
-        'code': './configure --prefix=$(INSTALL_DIR) --disable-shared --enable-static && make -j2 && make install',
+@ygenerator(tier=0, kind=['core', 'dev', 'tool'], cached=['deps', 'codec'])
+def xz0(deps, codec):
+    return {
+        'code': './configure --prefix=$IDIR --disable-shared --enable-static && make -j2 && make install',
         'prepare': '$(ADD_PATH)',
         'src': 'https://sourceforge.net/projects/lzmautils/files/xz-5.2.4.tar.gz/download',
         'deps': deps,
         'codec': codec,
-    }, info)
-
-
-@y.options()
-def xz2(info):
-    return xz0(info, [make2_run(info), bestbox2_run(info), tar2_run(info)], 'gz')
-
-
-@y.options()
-def xz1(info):
-    return xz0(info, [make2_run(info), bestbox2_run(info), tar2_run(info), xz2_run(info)], 'xz')
-
-
-@y.options()
-def xz(info):
-    return xz0(info, [make1_run(info), bestbox1_run(info), tar1_run(info), xz1_run(info), curl2_run(info)], 'xz')
+        'version': '5.2.4',
+    }

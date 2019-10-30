@@ -1,0 +1,2 @@
+source copy_logs "$BDIR/runtime/stdout.log" "$BDIR/runtime/stderr.log" "$BD/config.log" "$IDIR/log"
+source prepare_$1_pkg "$IDIR" "$PKGF"

@@ -1,8 +1,6 @@
 import sys
 import base64
 
-from upm_iface import y
-
 
 def subst(v):
     def iter_subst():

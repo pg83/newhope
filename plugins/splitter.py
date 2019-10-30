@@ -1,3 +1,8 @@
+def split_part_key(a, b, c, d):
+    return [a, b, c.__name__, d]
+
+
+@y.cached(key=split_part_key)
 def split_part(kind, folders, func, info):
     func_name = func.__name__.upper()
     my_name = (func_name + '_' + kind).upper()
@@ -24,7 +29,7 @@ def split_part(kind, folders, func, info):
             for y in (('cp -R $(MNGR_%s_DIR)/%s $(INSTALL_DIR)/') % (func_name, x[1:]) for x in folders):
                 yield y
 
-    return to_v2({
+    return y.to_v2({
         'code': '\n'.join(iter_ops()),
         'kind': 'split_part',
         'prepare': '\n'.join(by_kind[kind]),
@@ -41,6 +46,11 @@ REPACK_FUNCS = {
 }
 
 
+def splitter_key(func, **kwargs):
+    return [func.__name__, kwargs]
+
+
+@y.cached(key=splitter_key)
 def splitter(func, **kwargs):
     repack = kwargs.get('repacks', REPACK_FUNCS)
 
@@ -55,7 +65,7 @@ def {name}_{kind}(info):
 
         def iter_templates():
             for kind, folders in repack.items():
-                    yield template.format(folders=str(folders), name=fn, kind=kind)
+                yield template.format(folders=str(folders), name=fn, kind=kind)
 
         for t in iter_templates():
             exec t in globals()
@@ -63,4 +73,4 @@ def {name}_{kind}(info):
     return func
 
 
-y.register_func_callback(splitter)
+reg_func_cb(splitter)

@@ -32,10 +32,14 @@ sys.dont_write_bytecode = True
 
 
 if __name__ == '__main__':
-    with open(__file__) as f:
-        data = f.read()
+   with open(__file__) as f:
+      data1 = f.read()
 
-    fp = os.path.dirname(__file__) + '/upm/release_me.py'
+   fp = os.path.dirname(__file__) + '/upm/release_me.py'
 
-    with open(fp, 'r') as f:
-       exec compile(f.read() + '\n\nbootstrap(0)\n', fp, 'exec') in globals()
+   with open(fp, 'r') as f:
+      data2 = f.read()
+
+   __text__ = data1 + data2
+
+   exec compile(data2 + '\n\nbootstrap(-1)\n', fp, 'exec') in globals()

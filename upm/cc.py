@@ -5,9 +5,6 @@ import os
 import marshal
 
 
-from upm_iface import y
-
-
 V = {
     'common': {
         'kind': ['c', 'c++', 'linker'],
@@ -254,11 +251,11 @@ def iter_all_nodes():
 
 @y.singleton
 def compilers_ptr():
-    return marshal.dumps([y.store_node(x) for x in iter_all_nodes()])
+    return [y.store_node(x) for x in iter_all_nodes()]
 
 
 def iter_all_compilers():
-    return marshal.loads(compilers_ptr())
+    return compilers_ptr()
 
 
 def find_compiler(info):

@@ -5,12 +5,6 @@ import binascii
 import random
 import itertools
 
-from upm_iface import y
-
-hash_key = y.hash_key
-deref_pointer = y.deref_pointer
-load_struct = y.load_struct
-
 
 def visit_nodes(nodes, debug=False):
     s = set()
@@ -18,7 +12,7 @@ def visit_nodes(nodes, debug=False):
     def check_hash(k):
         assert k
 
-        kk = hash_key(k)
+        kk = y.hash_key(k)
 
         if kk in s:
             return True
@@ -43,40 +37,35 @@ def visit_nodes(nodes, debug=False):
             yield z
 
 
+def calc_noid(v):
+    return 'i:' + y.key_struct_ptr(v)[2:]
+
+
 def restore_node(ptr):
     res = y.load_list(ptr)
     deps = y.load_list(res[1])
-
-    def iter_deps():
-        for p in deps:
-            yield restore_node(p)
 
     def iter_deps_ptr():
         return deps
 
     @y.singleton
     def get_node():
-        return load_struct(res[0])
+        return y.load_struct(res[0])
 
     def iter_keys():
-        yield hash_key(ptr)
+        yield y.hash_key(res[0])
 
         for d in deps:
-            yield hash_key(d)
-
-    x = list(iter_keys())
-    id = 'i:' + y.key_struct_ptr(x)[2:]
+            yield y.hash_key(d)
 
     return {
         'node': get_node,
-        'deps': iter_deps,
         'ptrs': iter_deps_ptr,
-        'noid': id,
+        'noid': calc_noid(list(iter_keys())),
     }
 
 
 def restore_node_simple(v):
-    u = hash_key(v)
     v = restore_node(v)
 
     return {
@@ -101,7 +90,7 @@ def store_node_plain(node):
 
 def store_node(node):
     def extra():
-        if 'url' in node['node']:
+        if 'url' in node['node'] and node.get('do_fetch_node', True):
             yield y.gen_fetch_node(node['node']['url'])
 
     return store_node_impl(node, list(extra()))

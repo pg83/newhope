@@ -1,7 +1,5 @@
 import inspect
 
-from upm_iface import y
-
 
 def apply_base(funcs, log):
     for f in funcs:

@@ -2,9 +2,6 @@ import os
 import sys
 
 
-from upm_iface import y
-
-
 def calc_pkg_full_name(url):
     if url.endswith('download'):
         url = os.path.dirname(url)
@@ -60,17 +57,15 @@ def to_visible_name_0(pkg):
         yield pkg['good_id'][:8]
         yield short_const_2(pkg.get('constraint'))
 
-        def pkg_name():
-            if 'version' in pkg:
-                return name + pkg['version']
-            elif 'url' in pkg:
-                return remove_compressor_name(calc_pkg_full_name(pkg['url']))
-            else:
-                return name
+        if 'version' in pkg:
+            yield name
+            yield pkg['version']
+        elif 'url' in pkg:
+            yield remove_compressor_name(calc_pkg_full_name(pkg['url']))
+        else:
+            yield name
 
-        yield pkg_name().replace('-', '').replace('_','').replace('.', '')
-
-    return '-'.join(iter_parts()).replace('_', '-').replace('.', '-').replace('--', '-')
+    return '-'.join(iter_parts()).replace('_', '-').replace('.', '').replace('--', '-').replace('--', '-')
 
 
 def to_visible_name_1(pkg):
@@ -90,7 +85,7 @@ def to_visible_name_2(pkg):
 
 def to_visible_name_3(pkg, good_id=None):
     res = {}
-
+    #print pkg
     for k in ('codec', 'version', 'url', 'constraint', 'name'):
         if k in pkg:
             res[k] = pkg[k]
@@ -101,19 +96,16 @@ def to_visible_name_3(pkg, good_id=None):
     return to_visible_name_2(res)
 
 
+@y.cached(key=lambda x: x['noid'])
 def to_visible_name_4(root):
-    try:
-        to_visible_name_4.__cache
-    except AttributeError:
-        to_visible_name_4.__cache = {}
+    return 'v4' + str() + to_visible_name_3(root['node'](), good_id=root['noid']).lower()[2:]
 
-    c = to_visible_name_4.__cache
     good_id = root['noid']
 
-    if good_id not in c:
-        c[good_id] = to_visible_name_3(root['node'](), good_id=good_id).lower()
+    if good_id not in root:
+        root[good_id] = 'v4' + str() + to_visible_name_3(root['node'](), good_id=good_id).lower()[2:]
 
-    return c[good_id]
+    return root[good_id]
 
 
 FUNCS = [
@@ -129,6 +121,6 @@ def cur_build_system_version():
     return len(FUNCS) - 1
 
 
-y.logged_wrapper
+@y.logged_wrapper(tb=True)
 def to_visible_name(root):
     return FUNCS[cur_build_system_version()](root)

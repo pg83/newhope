@@ -1,27 +1,26 @@
-def make0(info, do_make, deps, codec='gz'):
-    return to_v2({
-        'code': """
-            ./configure --prefix=$(INSTALL_DIR) || exit 1
-            $(M)
-            mkdir $(INSTALL_DIR)/bin && cp make $(INSTALL_DIR)/bin/ && chmod +x $(INSTALL_DIR)/bin/make
-        """.replace('$(M)', do_make),
+@ygenerator(tier=-2, kind=['core', 'dev', 'tool'], cached=['num', 'deps', 'codec'])
+def make0(num, deps, codec):
+    def it():
+        extra = []
+
+        if num >= 4:
+            func = find_build_func('libiconv', num=num - 1)
+            extra.append('--with-libiconv-prefix=$(MNGR_{N}_DIR)'.format(N=func.__name__.upper()))
+
+        yield './configure --prefix=$IDIR {extra} || exit 1'.format(extra=' '.join(extra))
+
+        if num > 1:
+            yield '$YSHELL ./build.sh'
+            yield 'mkdir $IDIR/bin && cp make $IDIR/bin/ && chmod +x $IDIR/bin/make'
+        else:
+            yield '$YMAKE -j2'
+            yield '$YMAKE install'
+
+    return {
+        'code': '\n'.join(it()),
         'src': 'http://mirror.lihnidos.org/GNU/ftp/gnu/make/make-4.2.tar.gz',
         'prepare': '$(ADD_PATH)',
         'codec': codec,
         'deps': deps,
-    }, info)
-
-
-@y.options(repacks=None)
-def make2_run(info):
-    return make0(info, 'sh ./build.sh', [bestbox2_run(info)])
-
-
-@y.options(repacks=None)
-def make1_run(info):
-    return make0(info, 'make -j2', [make2_run(info), bestbox2_run(info)])
-
-
-@y.options(repacks=None)
-def make_run(info):
-    return make0(info, 'make -j2', [make1_run(info), bestbox1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)], codec='xz')
+        'version': '4.2',
+    }

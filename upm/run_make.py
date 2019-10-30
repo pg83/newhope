@@ -4,8 +4,6 @@ import subprocess
 import random
 import traceback
 
-from upm_iface import y
-
 
 def new_cmd():
     return {
@@ -13,26 +11,23 @@ def new_cmd():
     }
 
 
-BASH_RUNTIME = """
-set -e
-set -x
+def find_file(cmd, f):
+    for l in cmd:
+        if 'export PATH=' in l:
+            l = l[l.find('/'):]
 
-rmmkcd() {
-    (rm -rf "$1" || true) && (mkdir -p "$1") && cd "$1"
-}
+            for d in l.split(':'):
+                path = d + '/' + f
 
-mkcd() {
-    mkdir -p "$1" && cd "$1"
-}
-"""
+                if os.path.isfile(path):
+                    return path
 
 
 def run_makefile(data, shell_out, targets):
     lst = []
     prev = None
-    shell = '/bin/bash'
-    flags = ['--noprofile', '--norc', '-e']
     cprint = y.xprint_white
+    bs = y.bad_substring()
 
     for line_no, l in enumerate(data.split('\n')):
         p = l.find('##')
@@ -43,18 +38,6 @@ def run_makefile(data, shell_out, targets):
         ls = l.strip()
 
         if not ls:
-            continue
-
-        if l[0] == '.':
-            if l.startswith('.SHELLFLAGS'):
-                a, b = l.split('=')
-                flags = [x.strip() for x in b.strip().split(' ')]
-
-            continue
-
-        if ls.startswith('SHELL'):
-            shell = ls[6:]
-
             continue
 
         if ls.startswith('#'):
@@ -73,7 +56,12 @@ def run_makefile(data, shell_out, targets):
                     if l:
                         yield l
 
-            a, b = ls.split(':')
+            try:
+                a, b = ls.split(':')
+            except Exception as e:
+                print ls, line_no, e
+
+                raise e
 
             prev['deps1'] = list(iter_deps(a))
             prev['deps2'] = list(iter_deps(b))
@@ -102,41 +90,80 @@ def run_makefile(data, shell_out, targets):
 
     def run_cmd(c):
         if c in done:
-            return y.xprint_blue('already done ' + c)
+            return
 
         if shell_out:
             pass
         elif os.path.exists(c):
             done.add(c)
-            return y.xprint_blue('already made it ' + c)
+
+            return
 
         n = by_dep[c]
 
         for d in n['deps2']:
             run_cmd(d)
 
+        def prn_delim():
+            y.xprint_white('-------------------------------------------------------------------------------')
 
-        y.xprint_white('-------------------------------------------------------------------------------')
+        prn_delim()
+
         my_name = ', '.join(n['deps1'])
 
         if n.get('cmd'):
             y.xprint_red('will run ' + my_name)
 
+            shell = find_file(n['cmd'], 'bash') or '/bin/bash'
             cmd = '\n'.join(n['cmd']) + '\n'
-            input = 'set -e; set -x; ' + cmd
-            input = input.replace('$(SHELL)', shell).replace('$(SHELL_FLAGS)', ' '.join(flags[:2]))
-            args = ['/usr/bin/env', '-i', '/bin/bash'] + flags
+            input = 'set -e; set +x; ' + cmd
+            input = input.replace('$(SHELL)', '$YSHELL')
+            args = ['/usr/bin/env', '-i', shell, '--noprofile', '--norc', '-s']
+            p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, shell=False)
+            res, _ = p.communicate(input=input)
 
-            p = subprocess.Popen(args, stdout=sys.stdout, stderr=sys.stderr, stdin=subprocess.PIPE, shell=False)
-            p.communicate(input=input)
+            def failed():
+                if p.wait():
+                    return True
 
-            if p.wait():
-                raise Exception('shit')
+                for x in bs:
+                    if x in res:
+                        return True
+
+            fail = failed()
+
+            def it():
+                for l in res.strip().split('\n'):
+                    if l and l[0] == '+':
+                        continue
+
+                    yield l
+
+                if fail:
+                    yield y.get_color('red')
+
+                    for l in traceback.format_stack():
+                        if 'File' in l:
+                            yield l[:-1]
+                        else:
+                            yield '  ' + l[:-1]
+
+                    yield y.get_color('reset')
+
+            print >>sys.stderr, ('\n'.join(it())).strip()
+
+            if fail:
+                prn_delim()
+                raise StopIteration()
         else:
             y.xprint_blue('symlink target ' + my_name + ' ready')
 
         for d in n['deps1']:
             done.add(d)
 
-    for t in targets:
-        run_cmd(t)
+    try:
+        for t in targets:
+            run_cmd(t)
+    except StopIteration:
+        raise Exception('can not build desired targets, some node broken')
+
