@@ -56,15 +56,13 @@ def prepare_root(r):
    #os.execl(p, *([p] + sys.argv[1:]))
 
 
-def fetch_1(url):
-   return urllib2.urlopen(url).read()
-
-
-def fetch_2(url):
-   return subprocess.check_output(['curl -o - ' + url], shell=True)
-
-
 def fetch_data(url):
+   def fetch_1(url):
+      return urllib2.urlopen(url).read()
+
+   def fetch_2(url):
+      return subprocess.check_output(['curl -o - ' + url], shell=True)
+
    for f in (fetch_1, fetch_2):
       try:
          return f(url)
@@ -91,6 +89,14 @@ def fetch_http(root, url):
    subprocess.check_output(['tar -xf ' + name], cwd=root, shell=True)
 
    return url
+
+
+def cli_callfun(args, verbose):
+   for a in args:
+      try:
+         print eval('y.' + a)()
+      except Exception as e:
+         y.xprint_red('can not run ' + a, traceback.format_exc(e))
 
 
 def cli_fetch(arg, verbose):
@@ -155,15 +161,14 @@ def cli_make(arg, verbose):
 
    def iter_replaces():
       if args.install_dir:
-         yield ('$(WDP)', args.install_dir)
+         yield ('$(P)', args.install_dir)
 
-      yield ('$(WDM)', '$(PREFIX)/m')
-      yield ('$(WDR)', '$(PREFIX)/r')
-      yield ('$(WDW)', '$(PREFIX)/w')
+      yield ('$(M)', '$(PREFIX)/m')
+      yield ('$(R)', '$(PREFIX)/r')
+      yield ('$(W)', '$(PREFIX)/w')
 
       if local:
-         yield ('$(WDP)', '$(PREFIX)/p')
-         yield ('$(UPM)', y.script_path())
+         yield ('$(P)', '$(PREFIX)/p')
 
          if args.do_not_remove:
             yield ('$(RM_TMP)', '# ')
@@ -171,8 +176,7 @@ def cli_make(arg, verbose):
             yield ('$(RM_TMP)', 'rm -rf')
 
       if args.production:
-         yield ('$(WDP)', '/private')
-         yield ('$(UPM)', 'upm')
+         yield ('$(P)', '/private')
          yield ('$(RM_TMP)', '# ')
 
       yield ('$(PREFIX)', root)

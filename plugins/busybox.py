@@ -10,8 +10,8 @@ def busybox_run(info):
 
     return y.to_v2({
         'code': """
-            make CROSS_COMPILE=$TOOL_CROSS_PREFIX defconfig
-            make CROSS_COMPILE=$TOOL_CROSS_PREFIX
+            $YMAKE CROSS_COMPILE=$TOOL_CROSS_PREFIX defconfig
+            $YMAKE CROSS_COMPILE=$TOOL_CROSS_PREFIX
             (./busybox >& $(INSTALL_DIR)/check_cross) || true
             mkdir $(INSTALL_DIR)/bin && mv ./busybox $(INSTALL_DIR)/bin/
         """,

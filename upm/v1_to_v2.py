@@ -21,9 +21,6 @@ def fix_v2(v, **kwargs):
         if 'pkg_full_name' not in n:
             n['pkg_full_name'] = y.calc_pkg_full_name(n['url'])
 
-    if not n.get('name', '').startswith('build_scripts'):
-        v['deps'] = list(y.uniq_list_0([y.build_scripts()] + v['deps']))
-
     return v
 
 
@@ -77,7 +74,7 @@ def to_v2(data, info):
 
     node['prepare'] = list(iter_prepare())
 
-    for x in ('version', 'codec', 'extra', 'name', 'do_fetch_node', 'pkg_full_name'):
+    for x in ('version', 'codec', 'extra', 'name', 'do_fetch_node', 'pkg_full_name', 'inputs', 'output'):
         if x in data:
             node[x] = data[x]
 

@@ -1,5 +1,4 @@
 source build.lib
-source set_env
 
 export IDIR="$1"
 export BDIR="$2"

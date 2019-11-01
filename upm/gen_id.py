@@ -85,7 +85,7 @@ def to_visible_name_2(pkg):
 
 def to_visible_name_3(pkg, good_id=None):
     res = {}
-    #print pkg
+
     for k in ('codec', 'version', 'url', 'constraint', 'name'):
         if k in pkg:
             res[k] = pkg[k]

@@ -1,16 +1,10 @@
 @ygenerator(tier=1, kind=['core', 'dev', 'library', 'tool'], cached=['deps', 'num', 'info'])
 def gettext0(deps, num, info):
-    func1 = find_build_func('libiconv', num=num - 1)
-
-    if num > 4:
-        func2 = find_build_func('ncurses', num=num - 1)
-    else:
-        func2 = find_build_func('ncurses', num=num)
-
     extra = []
 
-    extra.append('--with-libiconv-prefix=$(MNGR_{N}_DIR)'.format(N=func1.__name__.upper()))
-    extra.append('--with-libncurses-prefix=$(MNGR_{N}_DIR)'.format(N=func2.__name__.upper()))
+    if num > 3:
+        extra.append('--with-libiconv-prefix=$(MNGR_{N}_DIR)'.format(N='DEVTOOLS' + str(num - 1)))
+        extra.append('--with-libncurses-prefix=$(MNGR_{N}_DIR)'.format(N='DEVTOOLS' + str(num - 1)))
 
     opts = [
         '--with-included-libunistring',
@@ -26,6 +20,6 @@ def gettext0(deps, num, info):
             $YMAKE install
         """.format(extra=' '.join(extra), opts=' '.join(opts)),
         'prepare': '$(ADD_PATH)',
-        'deps': [func2(info)] + deps,
+        'deps': deps,
         'version': '0.20.1',
     }

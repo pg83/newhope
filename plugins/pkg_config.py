@@ -2,7 +2,9 @@
 def pkg_config0(deps):
     return {
         'code': """
-            ./configure --prefix=$IDIR --with-internal-glib --enable-static --disable-shared && make && make install
+            ./configure --prefix=$IDIR --with-internal-glib --enable-static --disable-shared
+            $YMAKE
+            $YMAKE install
         """,
         'src': 'https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz',
         'deps': deps,

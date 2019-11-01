@@ -51,8 +51,8 @@ def python0(deps, codec):
         'code': """
             $(APPLY_EXTRA_PLAN_0)
             ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
-            make -j2 || exit 1
-            make install
+            $YMAKE -j2 || exit 1
+            $YMAKE install
         """,
         'src': 'https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz',
         'deps': deps,

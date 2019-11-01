@@ -4,7 +4,7 @@ def zlib0(deps):
         'src': 'http://zlib.net/zlib-1.2.11.tar.gz',
         'code': """
             ./configure --static --64 --prefix=$IDIR || exit 1
-            make -j2 && make install
+            $YMAKE -j2 && $YMAKE install
         """,
         'prepare': '$(ADD_PATH)',
         'deps': deps,

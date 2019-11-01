@@ -40,9 +40,6 @@ def gen_all_texts():
 
     levels = list(sorted(by_tier.keys()))
 
-    #import json
-    #print >>sys.stderr, json.dumps(by_name, indent=4, sort_keys=True)
-
     @y.cached()
     def calc_level(n):
         res = by_tier[n]
@@ -99,13 +96,11 @@ def gen_all_texts():
         else:
             codec = 'gz'
 
-        n = x['num'] - 1
-
         args = dict(
             name=x['name'],
             num=x['num'],
-            deps='cached_deps%s(info)' % n,
-            deps_funcs='cached_types%s()' % n,
+            deps='cached_deps%s(info)' % (x['num'] - 1),
+            deps_funcs='cached_types%s()' % (x['num'] - 1),
             options='cached=True',
             codec=codec,
         )
@@ -152,16 +147,16 @@ def gen_all_texts():
     stmpl = """
 @y.singleton
 def cached_types{num}():
-    return {deps_funcs}
+    return join_funcs('devtools', {num}, {deps_funcs})
 
 
 @y.cached()
 def cached_deps{num}(info):
     return [x(info) for x in cached_types{num}()]
 """
-    for i in sorted(descr.keys()):
-        d = deps(i - 1)
+    for i in [0] + sorted(descr.keys()):
+        d = deps(i)
 
-        texts.append(stmpl.format(num=i - 1, deps_funcs=d['deps_funcs']))
+        texts.append(stmpl.format(num=i, deps_funcs=d['deps_funcs']))
 
     return '\n\n'.join(reversed(texts))

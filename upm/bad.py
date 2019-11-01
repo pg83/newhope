@@ -9,6 +9,8 @@ def bad_substring():
         'Error is not recoverable: exiting now',
         'Error opening archive: Failed to open',
         'Traceback',
+        'File format not recognized'
+        'Broken pipe',
     ]
 
     return BAD_SUBSTRINGS

@@ -44,16 +44,16 @@ def gen_fetch_node_2(url, dep, curl):
 
 @y.cached()
 def gen_unpack_node(pkg):
-    mpkg = y.mgr_pkg(pkg)
-    vars = '; '.join(sys.builtin_modules['mod']['set_env'].split('\n'))
+    mpkg = y.mgr_pkg_mark(pkg)
 
     return {
-        'inputs': [pkg],
+        'inputs': [pkg, y.build_scripts_path()],
         'output': mpkg,
         'build': [
-            'set -x; export PATH=/bin:/usr/bin:/usr/local/bin; ' + vars,
-            y.rmmkcd(os.path.dirname(mpkg)),
-            y.prepare_untar_cmd(pkg, '.'),
+            'export PATH={path}'.format(path=y.build_scripts_dir()),
+            'source set_env',
+            'source rmmkcd ' + os.path.dirname(mpkg),
+            y.prepare_untar_for_mf(pkg),
             'echo 42 > ' + mpkg,
         ],
     }
@@ -65,9 +65,6 @@ def gen_packs_1(host=None, targets=['x86_64', 'aarch64'], os=['linux', 'darwin']
     for target in y.iter_targets(host):
         for func in y.gen_all_funcs():
             yield func(y.deep_copy({'host': host, 'target': target}))
-
-    for x in y.iter_android_ndk_20():
-        yield y.deep_copy(x)
 
 
 def gen_packs(*args, **kwargs):

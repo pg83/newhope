@@ -6,8 +6,8 @@ def diffutils0(deps):
     return {
         'code': """
              ./configure --prefix=$IDIR --disable-shared --enable-static || exit 1
-             make -j2
-             make install
+             $YMAKE -j2
+             $YMAKE install
         """,
         'url': url,
         'deps': deps,

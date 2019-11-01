@@ -4,8 +4,8 @@ def libiconv0(deps):
         'code': """
             source fetch "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz" 1
             ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
-            make -j2 || exit 1
-            make install
+            $YMAKE -j2 || exit 1
+            $YMAKE install
         """,
         'prepare': '$(ADD_PATH)',
         'deps': deps,

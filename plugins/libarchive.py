@@ -8,8 +8,8 @@ def libarchive0(deps, num, info):
         'code': """
              source fetch "{url}"
              ./configure --prefix=$IDIR --enable-static --disable-shared
-             make -j2
-             make install
+             $YMAKE -j2
+             $YMAKE install
         """.replace('{url}', url),
         'version': version,
         'deps': deps,

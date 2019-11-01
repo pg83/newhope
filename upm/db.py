@@ -76,8 +76,6 @@ def restore_node_simple(v):
 
 
 def store_node_impl(node, extra_deps):
-    node = y.fix_v2(node)
-
     return y.intern_list([
         y.intern_struct(node['node']),
         y.intern_list(list(itertools.chain(node['deps'], extra_deps))),
@@ -90,7 +88,7 @@ def store_node_plain(node):
 
 def store_node(node):
     def extra():
-        if 'url' in node['node'] and node.get('do_fetch_node', True):
+        if 'node' in node and 'url' in node['node'] and node.get('do_fetch_node', True):
             yield y.gen_fetch_node(node['node']['url'])
 
     return store_node_impl(node, list(extra()))

@@ -14,6 +14,9 @@ def calc_mode(name):
         ('.zip', 'zp'),
     ]
 
+    if '-tr-' in name:
+        return 'tr'
+
     for k, v in lst:
         if name.endswith(k):
             return v
@@ -29,9 +32,6 @@ def calc_mode(name):
 
     if '-bz-' in name:
         return 'bz'
-
-    if '-tr-' in name:
-        return 'tr'
 
     raise Exception('shit happen ' + name)
 
@@ -73,16 +73,20 @@ def prepare_tar_cmd(fr, to, codec=None):
 def gen_extra_scripts():
     def do():
         for codec in known_codecs():
-            data = ''.join(prepare_tar_cmd('"$1"', '"$2"', codec))
+            data = 'source set_env\n\n' + ''.join(prepare_tar_cmd('"$1"', '"$2"', codec))
 
             yield 'prepare_' + codec + '_pkg', data
 
         for codec in list(known_codecs()) + ['zp']:
-            data = ''.join(prepare_untar_cmd('"$1"', '.', ext_mode=codec, rm_old=False, extra='--strip-components $2'))
+            data = 'source set_env\n\n' + ''.join(prepare_untar_cmd('"$1"', '.', ext_mode=codec, rm_old=False, extra='--strip-components $2'))
 
             yield 'untar_' + codec, data
 
     return list(do())
+
+
+def prepare_untar_for_mf(fr, strip=0):
+    return 'source untar_{codec} "{file}" {strip}'.format(codec=calc_mode(os.path.basename(fr)), file=fr, strip=strip)
 
 
 def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):

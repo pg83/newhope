@@ -4,11 +4,10 @@ import base64
 
 def subst(v):
     def iter_subst():
-        yield ('$(WDM)', '$(PREFIX)/m')
-        yield ('$(WDR)', '$(PREFIX)/r')
-        yield ('$(WDW)', '$(PREFIX)/w')
-        yield ('$(WDP)', '$(PREFIX)/p')
-        yield ('$(UPM)', y.script_path())
+        yield ('$(M)', '$(PREFIX)/m')
+        yield ('$(R)', '$(PREFIX)/r')
+        yield ('$(W)', '$(PREFIX)/w')
+        yield ('$(P)', '$(PREFIX)/p')
         yield ('$(RM_TMP)', '## ')
         yield ('$(PREFIX)', '$PREFIX')
         yield ('$$', '$')

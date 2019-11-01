@@ -8,8 +8,7 @@ def bash0(deps, num):
     ]
 
     if num > 4:
-        func1 = find_build_func('ncurses', num=num - 1)
-        extra.append('--with-curses=$(MNGR_{N}_DIR)'.format(N=func1.__name__.upper()))
+        extra.append('--with-curses=$(MNGR_{N}_DIR)'.format(N='DEVTOOLS' + str(num - 1)))
 
     return {
             'code': """

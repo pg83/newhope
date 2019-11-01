@@ -1,13 +1,9 @@
 import sys
+import base64
+import hashlib
 
 
-@y.singleton
-def build_scripts():
-    return build_scripts_run({})
-
-
-@y.options(repacks=None, naked=True)
-def build_scripts_run(info):
+def scripts_data():
     def iter():
         for k, v in sys.builtin_modules['mod'].items():
             yield {'kind': 'file', 'path': 'bin/' + k, 'data': v}
@@ -18,23 +14,43 @@ def build_scripts_run(info):
         for k, v in sorted(y.color_map_func().items()):
             yield {'kind': 'file', 'path': 'bin/' + k, 'data': 'echo -n "' + v.encode('utf-8') + '"'}
 
-    data = list(sorted(iter(), key=lambda x: x['path']))
+    return list(sorted(iter(), key=lambda x: x['path']))
 
-    return y.to_v2({
-        'code': """
-               set -ex -o pipefail
-               set_path /bin:/usr/bin:/usr/local/bin
-               rm -rf $(INSTALL_DIR) || true; mkdir -p $(INSTALL_DIR); cd $(INSTALL_DIR)
-               mkdir bin
-""" + '\n'.join('$(APPLY_EXTRA_PLAN_' + str(i) + ')' for i in range(0, len(data))) + """
-               export PATH=`pwd`/bin:$PATH;
-               source set_env
-               export IDIR="$(INSTALL_DIR)"; export BDIR="$(BUILD_DIR)"; export PKGF="$(PKG_FILE)"
-               source prepare_tr_pkg "$IDIR" "$PKGF" && rm -rf $IDIR $BDIR
-""",
-        'version': y.struct_dump_bytes(data)[:4],
-        'extra': data,
-        'prepare': '$(ADD_PATH)',
-        'codec': 'tr',
-        'name': 'build_scripts_run',
-    }, info)
+
+def unpack_sh():
+    def iter_items():
+        for x in scripts_data():
+            yield 'echo "{data}" | base64 -D -i - -o - > {fname}'.format(data=base64.b64encode(x['data']), fname=os.path.basename(x['path']))
+
+    return iter_items()
+
+
+@y.singleton
+def build_scripts_dir():
+    data = list(unpack_sh())
+    ver = y.struct_dump_bytes(data)[:5]
+
+    return '$(M)/noarch-build-scripts-run-' + ver
+
+
+def build_scripts_path():
+    return build_scripts_dir() + '/done'
+
+
+@y.singleton
+def build_scripts_run():
+    output = build_scripts_path()
+
+    res = {
+        'inputs': [],
+        'output': build_scripts_path(),
+        'build': [
+            'rm -rf "{output}" || true && mkdir -p "{output}" && cd "{output}"'.format(output=build_scripts_dir()),
+        ] + list(unpack_sh()) + [
+            'echo 7 > done',
+        ]
+    }
+
+    res['hash'] = y.struct_dump_bytes(res)
+
+    return res

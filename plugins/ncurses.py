@@ -4,7 +4,8 @@ def ncurses0(deps):
         'code': """
             sed -i s/mawk// configure
             ./configure --prefix=$IDIR --without-shared --without-debug --without-ada --enable-widec --enable-overwrite
-            make -j2 && make install
+            $YMAKE -j2
+            $YMAKE install
         """,
         'src': 'https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz',
         'deps': deps,

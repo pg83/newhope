@@ -4,8 +4,7 @@ def make0(num, deps, codec):
         extra = []
 
         if num >= 4:
-            func = find_build_func('libiconv', num=num - 1)
-            extra.append('--with-libiconv-prefix=$(MNGR_{N}_DIR)'.format(N=func.__name__.upper()))
+            extra.append('--with-libiconv-prefix=$(MNGR_{N}_DIR)'.format(N='DEVTOOLS' + str(num - 1)))
 
         yield './configure --prefix=$IDIR {extra} || exit 1'.format(extra=' '.join(extra))
 

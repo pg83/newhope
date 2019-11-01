@@ -47,3 +47,5 @@ export PWD="/"
 
 cd /
 /usr/bin/env
+cd $BD || true
+

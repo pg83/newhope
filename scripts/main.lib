@@ -1,3 +1,5 @@
+source set_env
+
 rmrf () {
     rmdel "$1"
 }
