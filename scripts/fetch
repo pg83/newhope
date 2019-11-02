@@ -1,2 +1,0 @@
-key=$(md5sum "$1")
-get_$key $2

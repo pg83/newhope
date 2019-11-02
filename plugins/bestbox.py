@@ -28,32 +28,6 @@ def bestbox0(info, deps, codec):
         ],
     }, info)
 
-/*
-@y.options(repacks=None)
-def bestbox2_run(info):
-    if y.xp('/info/info/host/os') == 'darwin':
-        return system0(info)
-
-    return bestbox0(info, [toybox2_run(info), busybox2_run(info)], 'gz')
-
-
-@y.options(repacks=None)
-def bestbox1_run(info):
-    if y.xp('/info/info/host/os') == 'darwin':
-        return system0(info)
-
-    return bestbox0(info, [toybox1_run(info), busybox1_run(info)], 'gz')
-
-
-@y.options(repacks=None)
-def bestbox_run(info):
-    if y.xp('/info/info/host/os') == 'darwin':
-        return system0(info)
-
-    return bestbox0(info, [toybox_run(info), busybox_run(info), tar1_run(info), xz1_run(info)], 'xz')
-*/
-
-
 y.register_func_generator({
     'support': ['linux'],
     'tier': -1,

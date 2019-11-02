@@ -13,15 +13,9 @@ def deep_copy_json(x):
     return json.loads(json.dumps(x))
 
 
-def struct_dump_bytes(p):
-    return struct_dump_bytes_ex(p)[0]
-
-
 @y.logged_wrapper()
-def struct_dump_bytes_ex(p):
-    data = dumps(p)
-
-    return hashlib.md5(data).hexdigest()[:16], data
+def struct_dump_bytes(p):
+    return hashlib.md5(dumps(p)).hexdigest()[:16]
 
 
 @y.logged_wrapper()
@@ -29,39 +23,21 @@ def struct_dump_bytes_json(p):
     return hashlib.md5(json.dumps(p, sort_keys=True)).hexdigest()
 
 
-# intern_struct vs. deref_pointer
-
-III = {}
-VVV = []
-
-
-def struct_ptr_ex(s):
-    k, v = struct_dump_bytes_ex(s)
-
-    return 's:' + k, v
-
-
 def struct_ptr(s):
-    return struct_ptr_ex(s)[0]
-
-
-def key_struct_ptr_ex(n):
-    k, v = struct_ptr_ex(n)
-
-    return 'k:' + k[2:12], v
+    return 's:' + struct_dump_bytes(s)
 
 
 def key_struct_ptr(n):
-    return key_struct_ptr_ex(n)[0]
+    return struct_ptr(n)[2:12]
 
 
 def intern_list(l):
     assert None not in l
-    return intern_data({'l': l})
+    return intern_struct({'l': l})
 
 
 def load_list(ptr):
-    return load_data(ptr)['l']
+    return load_struct(ptr)['l']
 
 
 def intern_struct(s):
@@ -72,64 +48,116 @@ def load_struct(ptr):
     return load_data(ptr)['s']
 
 
-def check_db():
-    for k, v in III.iteritems():
-        assert k == VVV[v][1]
-
-    for n, k in VVV:
-        assert key_struct_ptr(n) == k or key_struct_ptr([n[0], {}]) == k
-        assert VVV[III[k]][1] == k
-
-    return 'db ok, ncount = ' + str(len(III)) + ', size = ' + str(len(dumps_db([III, VVV])))
+# intern_struct vs. deref_pointer
 
 
-def intern_data(n):
-    k = key_struct_ptr(n)
+class A(object):
+    def __init__(self):
+        self.III = {}
+        self.VVV = []
 
-    if k in III:
-        p = III[k]
+    def intern_data(self, n):
+        k = key_struct_ptr(n)
 
-        assert VVV[p][1] == k
-    else:
-        VVV.append((n, k))
-        p = len(VVV) - 1
-        III[k] = p
+        if k in self.III:
+            p = self.III[k]
 
-    return pointer(p)
+            assert self.VVV[p][1] == k
+        else:
+            self.VVV.append((n, k))
+            p = len(self.VVV) - 1
+            self.III[k] = p
+
+        return self.pointer(p)
+
+    def load_data(self, ptr):
+        return self.deref_pointer(ptr)
+
+    def pointer(self, p):
+        return self.mangle_pointer(p)
+
+    def hash_key(self, p):
+        return self.VVV[self.demangle_pointer(p)][1]
+
+    def mangle_pointer(self, p):
+        return 'p:' + str(p)
+
+    def demangle_pointer(self, p):
+        assert p[0] == 'p'
+        return int(p[2:])
+
+    def deref_pointer(self, v):
+        return self.VVV[self.demangle_pointer(v)][0]
+
+    def is_pointer(self, x):
+        if str(x)[:2] == 'p:':
+            try:
+                return self.demangle_pointer(x)
+            except TypeError:
+                pass
+
+    def check_db(self):
+        for k, v in self.III.iteritems():
+            assert k == self.VVV[v][1]
+            assert k == key_struct_ptr(self.VVV[v][0])
+
+        return 'db ok, ncount = ' + str(len(self.III))
 
 
-def load_data(ptr):
-    return deref_pointer(ptr)
+class B(object):
+    def __init__(self):
+        self._v = {}
+
+    def func1(self, data):
+        return dumps(data)
+
+    def func2(self, data):
+        return loads(data)
+
+    def intern_data(self, n):
+        n = self.func1(n)
+        k = hashlib.md5(n).hexdigest()[:12]
+        self._v[k] = n
+        return self.pointer(k)
+
+    def load_data(self, k):
+        return self.func2(self._v[self.demangle_pointer(k)])
+
+    def pointer(self, p):
+        return self.mangle_pointer(p)
+
+    def mangle_pointer(self, p):
+        return 'p:' + p
+
+    def demangle_pointer(self, p):
+        return p[2:]
+
+    def defer_pointer(self, p):
+        return self.load_data(p)
+
+    def is_pointer(self, x):
+        if str(x)[:2] == 'p:':
+            try:
+                return self.demangle_pointer(x)
+            except TypeError:
+                pass
+
+    def hash_key(self, p):
+        return self.demangle_pointer(p)[:6]
+
+    def check_db(self):
+        for k, v in self._v.iteritems():
+            assert k == key_struct_ptr(v)
+
+        return 'all ok, count = ' + str(len(self._v))
 
 
-def pointer(p):
-    return mangle_pointer(p)
+def init():
+    v = B()
+
+    for i in dir(v):
+        if not i.startswith('__'):
+            globals()[i] = eval('v.' + i)
 
 
-def hash_key(p):
-    return VVV[demangle_pointer(p)][1]
-
-
-def mangle_pointer(p):
-    return 'p:' + str(p)
-
-
-def demangle_pointer(p):
-    assert p[0] == 'p'
-    return int(p[2:])
-
-
-def deref_pointer_x(v):
-    return VVV[demangle_pointer(v)]
-
-
-def deref_pointer(v):
-    return deref_pointer_x(v)[0]
-
-
-def is_pointer(x):
-    if str(x)[:2] == 'p:':
-        try:
-            return demangle_pointer(x)
-        except TypeError:
-            pass
+init()

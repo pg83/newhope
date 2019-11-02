@@ -1,4 +1,4 @@
-@ygenerator(tier=-1, kind=['core', 'dev', 'library'], cached=['deps'])
+@ygenerator(tier=-1, kind=['core', 'dev', 'library'])
 def zlib0(deps):
     return {
         'src': 'http://zlib.net/zlib-1.2.11.tar.gz',

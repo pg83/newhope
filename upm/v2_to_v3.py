@@ -21,9 +21,9 @@ def inc_dir(pkg):
     return install_dir(pkg) + '/include'
 
 
-@y.cached(key=lambda x: x['noid'])
+@y.cached(key=y.calc_noid)
 def get_subst_values(x):
-    n = x['node']()['name'].upper().replace('-', '_')
+    n = x['node']['name'].upper().replace('-', '_')
 
     return [
         ('$(MNGR_' + n + '_DIR)', mn(install_dir(x))),
@@ -33,10 +33,17 @@ def get_subst_values(x):
     ]
 
 
-@y.cached(key=lambda x: x['noid'])
+def iter_deps(root):
+    rn = root['trash']['restore_node']
+
+    for d in root['deps']:
+        yield rn(d)
+
+
+@y.cached(key=y.calc_noid)
 def get_subst_values_3(root):
     def do():
-        for x in itertools.chain([root], root['deps']()):
+        for x in itertools.chain([root], iter_deps(root)):
             for y in get_subst_values(x):
                 yield y
 
@@ -44,13 +51,13 @@ def get_subst_values_3(root):
 
 
 def subst_values(data, root):
-    root_node = root['node']()
+    root_node = root['node']
 
     def iter1():
         pkg_root = gen_pkg_path(root)
 
         yield ('$(INSTALL_DIR)', '$(P)/' + pkg_root[5:])
-        yield ('$(BUILD_DIR)', '$(W)/' + root['noid'][2:])
+        yield ('$(BUILD_DIR)', '$(W)/' + y.calc_noid(root)[2:])
         yield ('$(PKG_FILE)', pkg_root)
 
     def iter2():
@@ -92,9 +99,10 @@ def rmmkcd(q, suffix=''):
 
 
 def print_one_node(root, reducer):
-    root_node = root['node']()
+    rn = root['trash']['restore_node']
+    root_node = root['node']
     target = gen_pkg_path(root)
-    nodes = list(uniq_deps(root['deps']()))
+    nodes = list(uniq_deps([rn(x) for x in root['deps']]))
     naked = root_node.get('naked', False)
     inputs = [mgr_pkg_mark(x[0]) for x in nodes] + root_node.get('inputs', []) + [y.build_scripts_path()]
 
@@ -110,9 +118,9 @@ def print_one_node(root, reducer):
             yield 'source header'
 
         for pkg_path, x in nodes:
-            pdir = pkg_path.replace('$(R)', '$(M)')
+            pdir = '$(M)' + pkg_path[4:]
 
-            for p in x['node']().get('prepare', []):
+            for p in x['node'].get('prepare', []):
                 yield p.replace('$(ADD_PATH)', 'add_path $(CUR_DIR)/bin').replace('$(CUR_DIR)', pdir)
 
         if not naked:
@@ -146,16 +154,7 @@ def print_one_node(root, reducer):
         for l in lines1:
             yield l
 
-        def uniq(lst):
-            v = set()
-
-            for x in lst:
-                if x not in v:
-                    yield x
-
-                    v.add(x)
-
-        yield 'export PATH=' + ':'.join([get_path(x) for x in uniq(reversed(paths))])
+        yield 'export PATH=' + ':'.join([get_path(x) for x in y.uniq_list_0(reversed(paths))])
 
         for l in lines2:
             yield l

@@ -1,2 +1,8 @@
 def main_makefile(verbose):
-   return y.build_makefile(list(y.gen_packs()), verbose)
+   def iter():
+      host = {'os': 'darwin', 'arch': 'x86_64'}
+      cc = {'host': host, 'target': host}
+
+      yield cc
+
+   return y.build_makefile(list(y.gen_packs(iter)), verbose)

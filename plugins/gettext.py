@@ -1,4 +1,4 @@
-@ygenerator(tier=1, kind=['core', 'dev', 'library', 'tool'], cached=['deps', 'num', 'info'])
+@ygenerator(tier=1, kind=['core', 'dev', 'library', 'tool'])
 def gettext0(deps, num, info):
     extra = []
 
@@ -19,7 +19,11 @@ def gettext0(deps, num, info):
             $YMAKE -j2 || exit 1
             $YMAKE install
         """.format(extra=' '.join(extra), opts=' '.join(opts)),
-        'prepare': '$(ADD_PATH)',
+        'prepare': """
+             $(ADD_PATH)
+             export CFLAGS="-I$(CUR_DIR)/include $CFLAGS"
+             export LDLAGS="-L$(CUR_DIR)/lib $LDFLAGS"
+        """,
         'deps': deps,
         'version': '0.20.1',
     }

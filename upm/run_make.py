@@ -23,7 +23,7 @@ def find_file(cmd, f):
                     return path
 
 
-def run_makefile(data, shell_out, targets):
+def run_makefile(data, shell_out, targets, threads):
     lst = []
     prev = None
     cprint = y.xprint_white
@@ -70,6 +70,11 @@ def run_makefile(data, shell_out, targets):
 
     if prev:
         lst.append(prev)
+
+    for i, val in enumerate(lst):
+        val['n'] = i
+
+    return y.run_parallel_build(lst, targets, threads)
 
     by_dep = {}
 
@@ -148,7 +153,7 @@ def run_makefile(data, shell_out, targets):
                         else:
                             yield '  ' + l[:-1]
 
-                    yield y.get_color('reset')
+                    yield y.get_color('rsc')
 
             print >>sys.stderr, ('\n'.join(it())).strip()
 

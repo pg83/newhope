@@ -1,4 +1,4 @@
-@ygenerator(tier=2, kind=['core', 'dev', 'tool'], cached=['deps'])
+@ygenerator(tier=2, kind=['core', 'dev', 'tool'])
 def bison0(deps):
     version = '3.4.2'
     url = 'https://ftp.gnu.org/gnu/bison/bison-' + version + '.tar.xz'

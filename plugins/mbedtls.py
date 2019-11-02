@@ -1,5 +1,5 @@
-@ygenerator(tier=-1, kind=['core', 'dev', 'library'], cached=['deps', 'codec'])
-def mbedtls0(deps, codec):
+@ygenerator(tier=-1, kind=['core', 'dev', 'library'])
+def mbedtls0(deps):
     return {
         'code': """
             #pragma cc
@@ -8,6 +8,5 @@ def mbedtls0(deps, codec):
         """,
         'src': 'https://tls.mbed.org/download/mbedtls-2.16.3-apache.tgz',
         'deps': deps,
-        'codec': codec,
         'version': '2.16.3-apache',
     }

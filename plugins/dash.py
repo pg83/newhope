@@ -1,4 +1,4 @@
-@ygenerator(tier=2, kind=['core', 'dev', 'tool'], cached=['deps'])
+@ygenerator(tier=2, kind=['core', 'dev', 'tool'])
 def dash0(deps):
     return {
         'code': """

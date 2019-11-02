@@ -1,4 +1,4 @@
-def iter_targets():
+def iter_targets_x():
     for a in ('x86_64', 'aarch64', 'llvm'):
         for o in ('linux',):
             yield {
@@ -17,7 +17,7 @@ def iter_rare_targets():
 
 
 @y.singleton
-def iter_android_ndk_20():
+def _iter_android_ndk_20():
     host = {'arch': 'x86_64', 'os': 'darwin'}
 
     by_arch = {
@@ -32,7 +32,7 @@ def iter_android_ndk_20():
 
     need = []
 
-    for t in iter_targets():
+    for t in iter_targets_x():
         res = {
             'node': {
                 'build': [
@@ -45,7 +45,7 @@ def iter_android_ndk_20():
                     'export PATH=$(CUR_DIR)/darwin-x86_64/' + t['arch'] + '-linux-android/bin:$PATH'
                 ],
                 'url': 'https://dl.google.com/android/repository/android-ndk-r20-darwin-x86_64.zip',
-                'kind': 'c/c++/linker',
+                'kind': 'c-linker',
                 'name': 'google',
                 'version': 'r20',
                 'constraint': {'host': host, 'target': t},
@@ -53,13 +53,13 @@ def iter_android_ndk_20():
             'deps': [],
         }
 
-        need.append(y.store_node(res))
+        need.append(y.store_node(y.fix_v2(res)))
 
     by_arch = {}
 
     for t in need:
         res = y.restore_node(t)
-        node = res['node']()
+        node = res['node']
         arch = node['constraint']['target']['arch']
         by_arch[arch] = [res, t]
 
@@ -96,7 +96,7 @@ def iter_android_ndk_20():
     ]
 
     for t in iter_rare_targets():
-        dirname = ('$(MNGR_' + big_one[0]['node']()['name'].upper() + '_DIR)').replace('-', '_')
+        dirname = ('$(MNGR_' + big_one[0]['node']['name'].upper() + '_DIR)').replace('-', '_')
 
         res = {
             'node': {
@@ -106,7 +106,7 @@ def iter_android_ndk_20():
                     'mkdir $(INSTALL_DIR)/bin',
                     'cp -R bin/' + t['arch'] + '* $(INSTALL_DIR)/bin/',
                 ] + [('cp -R ' + x + ' $(INSTALL_DIR)/bin/')  for x in llvm],
-                'kind': 'c/c++/linker',
+                'kind': 'c-linker',
                 'name': 'google-llvm',
                 'version': 'r20',
                 'constraint': {'host': host, 'target': t},
@@ -114,20 +114,14 @@ def iter_android_ndk_20():
             'deps': [big_one[1]],
         }
 
-        need.append(y.store_node(res))
+        need.append(y.store_node(y.fix_v2(res)))
 
     return need
 
 
-def find_android_linker_by_cc(cc, cmp):
-    for n in iter_android_ndk_20():
-        if cmp(y.run_xpath_simple(n, 'node/constraint')) == cmp(cc):
-            yield n
-
-
 def iter_ndk_tools():
-    for nd in iter_android_ndk_20():
-        n = y.restore_node_simple(nd)
+    for nd in _iter_android_ndk_20():
+        n = y.restore_node(nd)
 
         if n['node']['constraint']['target']['arch'] == 'llvm':
             continue
@@ -135,7 +129,7 @@ def iter_ndk_tools():
         c = y.deep_copy(n)
         l = y.deep_copy(n)
 
-        c['node']['kind'] = 'c/c+';
+        c['node']['kind'] = 'c';
         l['node']['kind'] = 'linker';
 
         if n['node']['name'] == 'google':

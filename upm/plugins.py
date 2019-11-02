@@ -2,10 +2,11 @@ import sys
 import os
 import functools
 import hashlib
+import inspect
 
 
 def dep_name(dep):
-    return y.restore_node(dep)['node']()['name']
+    return y.restore_node(dep)['node']['name']
 
 
 def dep_list(info, iter):
@@ -48,13 +49,7 @@ def set_name(v, n):
     return v
 
 
-def get_curl(n):
-    return find_build_func(curl, n)
-
-    assert n >= 3
-
-
-def ygenerator(tier=None, kind=['user'], include=[], exclude=[], cached=[], version=1):
+def ygenerator(tier=None, kind=['user'], include=[], exclude=[], cached=True, version=1):
     def functor(func):
         assert tier is not None
 
@@ -102,24 +97,15 @@ def {name}{num}(info):
         y.register_func_generator(data)
 
         if cached:
-            if len(cached) == 1:
-                def key(**kwargs):
-                    return kwargs[cached[0]]
-
-                @y.cached(key=key)
-                @functools.wraps(func)
-                def wrapper(**kwargs):
-                    return func(key(**kwargs))
-
-                return wrapper
+            args = inspect.getargspec(func)[0]
 
             def key(**kwargs):
-                return dict((k, kwargs[k]) for k in cached)
+                return [kwargs[arg] for arg in args]
 
             @y.cached(key=key)
             @functools.wraps(func)
             def wrapper(**kwargs):
-                return func(**key(**kwargs))
+                return func(*key(**kwargs))
 
             return wrapper
 

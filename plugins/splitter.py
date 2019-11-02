@@ -14,7 +14,7 @@ def split_part(kind, folders, func, info):
         ],
         'run': [
             '$(ADD_PATH)',
-            ],
+        ],
         'doc': [],
         'log': [],
     }

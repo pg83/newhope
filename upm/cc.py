@@ -9,6 +9,7 @@ V = {
     'common': {
         'kind': ['c', 'c++', 'linker'],
         'type': 'gcc',
+        'name': 'gcc',
         'version': '9.2',
         'build': [
             '#pragma manual deps',
@@ -95,27 +96,27 @@ def is_cross(cc):
     return small_repr(cc['host']) != small_repr(cc['target'])
 
 
-def iter_comp():
+def _iter_comp():
     for v in V['barebone']:
         v = y.deep_copy(v)
         v.update(y.deep_copy(V['common']))
 
         v['constraint'] = fix_constraints_cc(v['constraint'])
 
-        yield {
+        yield y.fix_v2({
             'node': v,
             'deps': [],
-        }
+        })
 
 
 def iter_musl_cc_tools():
-    for n in iter_comp():
+    for n in _iter_comp():
         nd = y.store_node(n)
 
         c = y.deep_copy(n)
         l = y.deep_copy(n)
 
-        c['node']['kind'] = 'c/c++'
+        c['node']['kind'] = 'c'
         c['node']['type'] = 'gcc'
 
         l['node']['kind'] = 'linker'
@@ -134,6 +135,7 @@ def iter_musl_cc_tools():
             yield y.deep_copy(x)
 
 
+@y.singleton
 def iter_system_compilers():
     for t in ('gcc', 'clang'):
         tp = y.find_tool(t)
@@ -222,7 +224,7 @@ def iter_system_tools():
         c = y.deep_copy(n)
         l = y.deep_copy(n)
 
-        c['node']['kind'] = 'c/c++'
+        c['node']['kind'] = 'c'
         c['node']['type'] = 'clang'
 
         l['node']['kind'] = 'linker'
@@ -241,8 +243,8 @@ def iter_system_tools():
             yield y.deep_copy(x)
 
 
-def iter_all_nodes():
-    for node in iter_comp():
+def _iter_all_nodes():
+    for node in _iter_comp():
         yield node
 
     for node in iter_system_impl():

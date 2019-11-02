@@ -1,13 +1,17 @@
-#@ygenerator(tier=1, kind=['base', 'dev', 'library'], cached=['deps'])
-def glib0(deps):
+@ygenerator(tier=2, kind=['base', 'dev', 'library'])
+def glib0(deps, num, info):
     return {
         'code': """
-             ./configure --prefix=$IDIR --disable-shared --enable-static || exit 1
+             cp -R $(MNGR_DEVTOOLS{num}_DIR)/* $BDIR/
+             rm $BDIR/lib/*.la
+             export CFLAGS="-I$BDIR/include -I$BDIR/lib/libffi-3.2.1/include"
+             export LDFLAGS="-L$BDIR/lib"
+             source fetch "http://ftp.acc.umu.se/pub/gnome/sources/glib/2.30/glib-2.30.3.tar.xz" 1
+             ./configure --prefix=$IDIR --disable-shared --enable-static --with-pcre=internal --disable-nls || exit 1
              $YMAKE -j2
              $YMAKE install
-        """,
-        'url': 'http://ftp.gnome.org/pub/gnome/sources/glib/2.62/glib-2.62.2.tar.xz',
+        """.format(num=num - 1),
         'deps': deps,
-        'version': '2.62.2',
+        'version': '2.30.3',
         'prepare': '$(ADD_PATH)',
     }

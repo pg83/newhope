@@ -101,7 +101,7 @@ def gen_all_texts():
             num=x['num'],
             deps='cached_deps%s(info)' % (x['num'] - 1),
             deps_funcs='cached_types%s()' % (x['num'] - 1),
-            options='cached=True',
+            options='cached=True, codec="{codec}"',
             codec=codec,
         )
 
@@ -139,7 +139,7 @@ def gen_all_texts():
     for x in iter_allx_funcs():
         texts.append(x)
 
-    if 0:
+    if 1:
         for i in sorted(by_num.keys()):
             print >>sys.stderr,  i, by_num[i]
 

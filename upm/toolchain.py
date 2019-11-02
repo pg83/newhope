@@ -27,29 +27,87 @@ def group_by_cc():
         else:
             res[k] = [x]
 
+        res['cc:' + k] = x['node']['constraint']
+
     return res
 
 
 def find_toolchain_by_cc(cc):
-    return group_by_cc()[y.small_repr_cons(cc)]
+    return y.deep_copy(group_by_cc()[y.small_repr_cons(cc)])
 
 
-def find_compiler(info):
-    for d in find_toolchain_by_cc(info):
-        yield d
+@y.singleton
+def get_all_constraints():
+    res = []
+    cc = group_by_cc()
+
+    for k in sorted(cc.keys()):
+        if k.startswith('cc:'):
+            res.append(cc[k])
+
+    return res
+
+
+def score_pair(c, l):
+    return y.struct_dump_bytes([c, l])
+
+
+def join_toolchains(c, l):
+    cn = c['node']
+    ln = l['node']
+
+    return y.fix_v2({
+        'node': {
+            'build': [],
+            'prepare': cn.get('prepare', []) + ln.get('prepare', []),
+            'kind': cn['kind'] + '/' + ln['kind'],
+            'name': cn['name'] + '-' + ln['name'],
+            'version': cn['version'] + '-' + ln['version'],
+        },
+        'deps': [y.store_node(c), y.store_node(l)]
+    })
+
+
+def score_toolchains(lst):
+    def flt(kind):
+        for o in lst:
+            if kind in o['node']['kind']:
+                yield o
+
+    comp = list(flt('c'))
+    link = list(flt('linker'))
+
+    def gen_all():
+        for c in comp:
+            for l in link:
+                yield {'c': c, 'l': l, 's': score_pair(c, l)}
+
+    toolchains = list(sorted(list(gen_all()), key=lambda x: x['s']))
+
+    return [join_toolchains(x['c'], x['l']) for x in toolchains]
+
+
+def find_compiler_x(info):
+    def do():
+        for x in score_toolchains(find_toolchain_by_cc(info)):
+            x['node']['constraint'] = info
+
+            yield y.store_node(x)
+
+    return list(do())[:10]
 
 
 def join_versions(deps):
     def iter_v():
         for d in deps:
-            yield y.restore_node(d)['node']()['version']
+            yield y.restore_node_node(d)['version']
 
     return '-'.join(iter_v())
 
 
 @y.cached()
 def find_compiler_id(info):
-    for x in find_compiler(info):
+    for x in find_compiler_x(info):
         return x
 
     raise Exception('shit happen %s' % info)
@@ -65,4 +123,4 @@ def find_compilers(info):
 
         yield find_compiler_id(info)
 
-    return [y.store_node(x) for x in iter_compilers()]
+    return list(iter_compilers())

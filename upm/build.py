@@ -1,3 +1,4 @@
+
 import os
 
 
@@ -12,7 +13,7 @@ def print_v3_node(n):
 
 
 def do_apply_node(root, by_name):
-    node = root['node']()
+    node = root['node']
     nnn = node['name']
     cc = node.get('constraint', {})
     pp = y.gen_pkg_path(root)
@@ -41,70 +42,92 @@ def iter_nodes(nodes):
         yield rn(n), n
 
 
-def preprocess(cmd):
+def gen_unpack_node_for_node(r):
+    return y.gen_unpack_node(y.gen_pkg_path(r))
+
+
+def preprocess(cmd, r):
     yield cmd
+    yield gen_unpack_node_for_node(r)
+
+
+def reducer(v, by_deps):
+    return v
+
+    if len(v) < 2:
+        return v
+
+    v = list(sorted(set(v)))
+    k = 'r' + y.struct_dump_bytes(v)
+
+    s = by_deps.get(k, {})
+
+    if s:
+        s['c'] = s['c'] + 1
+    else:
+        by_deps[k] = {'c': 1, 'v': v}
+
+    return [k]
+
+
+def replacer(data):
+    def func(s):
+        return 'v5' + data[:4] + s[4:]
+
+    return func
 
 
 def build_makefile(nodes, verbose):
+    by_noid = {}
+
     def iter1():
-        by_id = {}
-
-        def gen_iter(r):
-            def dep_iter():
-                for n in r['ptrs']():
-                    yield by_id[n]
-
-            return dep_iter
-
         for r, n in iter_nodes(nodes):
-            by_id[n] = r
-            r['deps'] = gen_iter(r)
+            by_noid[y.calc_noid_base(r)] = r
 
             yield r
 
     def iter2():
+        trash = {
+            'replacer': lambda x: x,
+            'restore_node': lambda x: by_noid[y.calc_noid_base(y.restore_node(x))],
+            'extra': 1,
+        }
+
         for r in list(iter1()):
-            r['noid2'] = y.calc_noid([y.print_one_node(r, lambda x: x), r['noid']])
+            r['trash'] = trash
 
             yield r
 
     def iter3():
         for r in list(iter2()):
-            r['noid'] = r.pop('noid2')
+            yield r, y.struct_dump_bytes(y.print_one_node(r, lambda x: x))
+
+    def iter4():
+        for r, data in list(iter3()):
+            trash = {
+                'replacer': replacer(data),
+                'restore_node': lambda x: by_noid[y.calc_noid_base(y.restore_node(x))],
+                'extra': 3,
+            }
+
+            r['trash'] = trash
 
             yield r
 
-    def iter4():
+    def iter5():
         by_name = {}
         by_deps = {}
-
-        def reducer(v):
-            if len(v) < 2:
-                return v
-
-            v = list(sorted(set(v)))
-            k = 'r' + y.struct_dump_bytes(v)
-
-            s = by_deps.get(k, {})
-
-            if s:
-                s['c'] = s['c'] + 1
-            else:
-                by_deps[k] = {'c': 1, 'v': v}
-
-            return [k]
+        my_reducer = lambda v: reducer(v, by_deps)
 
         def do():
             yield y.build_scripts_run()
 
-            for r in list(iter3()):
-                res = y.print_one_node(r, reducer)
+            for r in list(iter4()):
+                res = y.print_one_node(r, my_reducer)
                 do_apply_node(r, by_name)
 
-                for l in preprocess(res):
+                for l in preprocess(res, r):
                     yield l
-
-                yield y.gen_unpack_node(y.gen_pkg_path(r))
 
         for n in do():
             yield print_v3_node(n)
@@ -118,5 +141,5 @@ def build_makefile(nodes, verbose):
             if len(res) < 500:
                 yield res
 
-    return '\n'.join(iter4()) + '\n'
+    return '\n'.join(iter5()) + '\n'
 

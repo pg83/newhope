@@ -12,17 +12,14 @@ def scripts_data():
             yield {'kind': 'file', 'path': 'bin/' + k, 'data': v}
 
         for k, v in sorted(y.color_map_func().items()):
-            yield {'kind': 'file', 'path': 'bin/' + k, 'data': 'echo -n "' + v.encode('utf-8') + '"'}
+            yield {'kind': 'file', 'path': 'bin/' + {'reset': 'rsc'}.get(k, k), 'data': 'echo -n "' + v.encode('utf-8') + '"'}
 
     return list(sorted(iter(), key=lambda x: x['path']))
 
 
 def unpack_sh():
-    def iter_items():
-        for x in scripts_data():
-            yield 'echo "{data}" | base64 -D -i - -o - > {fname}'.format(data=base64.b64encode(x['data']), fname=os.path.basename(x['path']))
-
-    return iter_items()
+    for x in scripts_data():
+        yield 'echo "{data}" | (base64 -D -i - -o - || base64 -d) > {fname}'.format(data=base64.b64encode(x['data']), fname=os.path.basename(x['path']))
 
 
 @y.singleton

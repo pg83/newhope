@@ -1,4 +1,4 @@
-@ygenerator(tier=1, kind=['core', 'dev', 'library', 'tool'], cached=['deps', 'num', 'info'])
+@ygenerator(tier=1, kind=['core', 'dev', 'library', 'tool'])
 def libarchive0(deps, num, info):
     version = '3.4.0'
     name = 'libarchive'
@@ -6,7 +6,7 @@ def libarchive0(deps, num, info):
 
     return {
         'code': """
-             source fetch "{url}"
+             source fetch "{url}" 1
              ./configure --prefix=$IDIR --enable-static --disable-shared
              $YMAKE -j2
              $YMAKE install

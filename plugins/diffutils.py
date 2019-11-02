@@ -1,4 +1,4 @@
-@ygenerator(tier=2, kind=['core', 'dev', 'tool'], cached=['deps'])
+@ygenerator(tier=2, kind=['core', 'dev', 'tool'])
 def diffutils0(deps):
     version = '3.7'
     url = 'https://ftp.gnu.org/gnu/diffutils/diffutils-' + version + '.tar.xz'

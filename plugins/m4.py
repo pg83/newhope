@@ -1,16 +1,13 @@
-@ygenerator(tier=1, kind=['core', 'dev', 'tool'], cached=['deps', 'codec'])
-def m40(deps, codec):
-    cross = ''
-
+@ygenerator(tier=1, kind=['core', 'dev', 'tool'])
+def m40(deps):
     return {
         'code': """
-               ./configure $(CROSS) --prefix=$IDIR
+               source fetch "https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz" 1
+               ./configure --prefix=$IDIR
                $YMAKE -j2
                $YMAKE install
-        """.replace('$(CROSS)', cross),
+        """,
         'prepare': '$(ADD_PATH)',
-        'src': 'https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz',
         'deps': deps,
-        'codec': codec,
         'version': '1.4.18',
     }

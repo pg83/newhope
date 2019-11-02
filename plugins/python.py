@@ -45,18 +45,25 @@ binascii binascii.c
 parser parsermodule.c
 """
 
-@ygenerator(tier=0, kind=['core', 'dev', 'tool'], cached=['deps', 'codec'])
-def python0(deps, codec):
+@ygenerator(tier=0, kind=['core', 'dev', 'tool'])
+def python0(deps, num):
+    if num >= 5:
+        extra = [] #['--with-system-ffi']
+        libs = 'export LIBS="-lintl -liconv"'
+    else:
+        extra = []
+        libs = ''
+
     return {
         'code': """
             $(APPLY_EXTRA_PLAN_0)
-            ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
+            {libs}
+            ./configure --prefix=$IDIR --disable-shared {extra} || exit1
             $YMAKE -j2 || exit 1
             $YMAKE install
-        """,
+        """.format(libs=libs, extra=' '.join(extra)),
         'src': 'https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz',
         'deps': deps,
-        'codec': codec,
         'version': '2.7.13',
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup.local', 'data': python_setup_local},

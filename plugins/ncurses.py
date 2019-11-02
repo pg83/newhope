@@ -1,4 +1,4 @@
-@ygenerator(tier=1, kind=['core', 'dev', 'library'], cached=['deps'])
+@ygenerator(tier=1, kind=['core', 'dev', 'library'])
 def ncurses0(deps):
     return {
         'code': """

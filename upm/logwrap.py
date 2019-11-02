@@ -11,7 +11,7 @@ def logged_wrapper(rethrow=None, tb=False, rfunc=None):
                 if tb:
                     y.xprint_red(traceback.format_exc(e), *args, **kwargs)
                 else:
-                    y.xprint_yellow(func, args, kwargs, e)
+                    print func, args, kwargs, e
 
                 if rethrow is None:
                     raise

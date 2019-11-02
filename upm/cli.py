@@ -99,7 +99,7 @@ def cli_callfun(args, verbose):
          y.xprint_red('can not run ' + a, traceback.format_exc(e))
 
 
-def cli_fetch(arg, verbose):
+def cli_source(arg, verbose):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('--path', default='data', action='store', help='Where to store all')
@@ -116,14 +116,15 @@ def cli_fetch(arg, verbose):
 
       for t in args.targets:
          if t.startswith('http'):
-            yield fetch_http(args.path, url)
+            yield url
          else:
-            node = y.restore_node(eval('y.' + t)(y.deep_copy(params)))['node']()
+            node = y.restore_node(eval('y.' + t)(y.deep_copy(params)))['node']
             url = node.get('src') or node.get('url')
-            yield fetch_http(args.path, url)
+
+            yield url
 
    for url in iter_urls():
-      print 'done', url
+      print 'will fetch', url, fetch_http(args.path, url)
 
 
 def cli_make(arg, verbose):
@@ -190,7 +191,7 @@ def cli_make(arg, verbose):
    else:
       data = sys.stdin.read()
 
-   y.run_makefile(y.subst_kv_base(data, iter_replaces()), [], args.targets)
+   y.run_makefile(y.subst_kv_base(data, iter_replaces()), [], args.targets, int(args.threads))
 
 
 def upm_root():
@@ -329,6 +330,6 @@ def run_main(args):
       ff(args[2:], do_verbose)
 
    func = y.profile(func, really=do_profile)
-   func = y.logged_wrapper(rethrow=-1, tb=True, rfunc=func)
+   func = y.logged_wrapper(rethrow=-1, tb=do_verbose, rfunc=func)
 
    return func()

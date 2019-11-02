@@ -28,8 +28,8 @@ def visit_nodes(nodes, debug=False):
 
         yield k
 
-        for x in y.restore_node(k)['ptrs']():
-            for v in list(do(x)):
+        for x in y.restore_node_deps(k):
+            for v in do(x):
                 yield v
 
     for x in nodes:
@@ -37,42 +37,41 @@ def visit_nodes(nodes, debug=False):
             yield z
 
 
+def calc_noid_base(v):
+    if 'noid' in v:
+        #assert v['noid'] == calc_noid_base_really(v)
+        return v['noid']
+
+    return calc_noid_base_really(v)
+
+
+def calc_noid_base_really(v):
+    return 'i:' + y.key_struct_ptr([v['node'], v['deps']])[2:]
+
+
 def calc_noid(v):
-    return 'i:' + y.key_struct_ptr(v)[2:]
+    return 'i:' + y.key_struct_ptr([calc_noid_base(v), v['trash']['extra']])[2:]
 
 
 def restore_node(ptr):
     res = y.load_list(ptr)
-    deps = y.load_list(res[1])
 
-    def iter_deps_ptr():
-        return deps
-
-    @y.singleton
-    def get_node():
-        return y.load_struct(res[0])
-
-    def iter_keys():
-        yield y.hash_key(res[0])
-
-        for d in deps:
-            yield y.hash_key(d)
-
-    return {
-        'node': get_node,
-        'ptrs': iter_deps_ptr,
-        'noid': calc_noid(list(iter_keys())),
+    v = {
+        'node': y.load_struct(res[0]),
+        'deps': y.load_list(res[1]),
     }
 
+    v['noid'] = calc_noid_base(v)
 
-def restore_node_simple(v):
-    v = restore_node(v)
+    return v
 
-    return {
-        'node': v['node'](),
-        'deps': v['ptrs'](),
-        'noid': v['noid'],
-    }
+
+def restore_node_node(ptr):
+    return y.load_struct(y.load_list(ptr)[0])
+
+
+def restore_node_deps(ptr):
+    return y.load_list(y.load_list(ptr)[1])
 
 
 def store_node_impl(node, extra_deps):

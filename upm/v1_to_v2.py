@@ -4,26 +4,6 @@ import base64
 import itertools
 
 
-def fix_v2(v, **kwargs):
-    assert v is not None
-
-    v = y.deep_copy(v)
-
-    n = v['node']
-
-    if 'codec' not in n:
-        n['codec'] = 'xz'
-
-    if 'naked' in kwargs:
-        n['naked'] = kwargs['naked']
-
-    if 'url' in n:
-        if 'pkg_full_name' not in n:
-            n['pkg_full_name'] = y.calc_pkg_full_name(n['url'])
-
-    return v
-
-
 def call_key(func, info):
     return [func.__name__, info]
 
@@ -49,7 +29,7 @@ def call_v2(func, info):
     data = func(param)
 
     if y.is_pointer(data):
-        data = y.deep_copy(y.restore_node_simple(data))
+        data = y.deep_copy(y.restore_node(data))
 
     node = data['node']
 
@@ -89,7 +69,7 @@ def to_v2(data, info):
     def iter_subst():
         for i, v in enumerate(node.get('extra', [])):
             if v['kind'] == 'file':
-                cmd = 'echo "' + base64.b64encode(v['data']) + '" | base64 -D -i - -o - > ' + v['path']
+                cmd = 'echo "' + base64.b64encode(v['data']) + '" | (base64 -D -i - -o - || base64 -d) > ' + v['path']
                 key = '$(APPLY_EXTRA_PLAN_' + str(i) + ')'
 
                 yield (key, cmd)
@@ -105,7 +85,7 @@ def to_v2(data, info):
         if './configure' not in full:
             compilers = []
 
-    return fix_v2({
+    return y.fix_v2({
         'node': node,
         'deps': list(itertools.chain(compilers, data.get('deps', [])))
     })

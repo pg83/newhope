@@ -4,7 +4,7 @@ import sys
 
 @y.cached()
 def gen_fetch_node(url):
-    res = {
+    res = y.fix_v2({
         'node': {
             'kind': 'fetch',
             'name': 'fetch_url',
@@ -16,7 +16,33 @@ def gen_fetch_node(url):
             'codec': 'tr',
         },
         'deps': [],
-    }
+    })
+
+    return y.store_node_plain(res)
+
+
+@y.cached()
+def gen_fetch_node_3(url, name, deps=[]):
+    fname = y.calc_pkg_full_name(url)
+
+    res = y.fix_v2({
+        'node': {
+            'kind': 'fetch',
+            'name': name,
+            'url': url,
+            'pkg_full_name': fname,
+            'build': [
+                'source fetch_url $(URL_BASE) $(URL) $IDIR',
+            ],
+            'prepare' : [
+                'ln $(CUR_DIR)/{fname} $BDIR/runtime/'.format(fname=fname)
+            ],
+            'codec': 'tr',
+        },
+        'deps': deps,
+    })
+
+    res['node']['file'] = '$BDIR/runtime/' + fname
 
     return y.store_node_plain(res)
 
@@ -59,12 +85,15 @@ def gen_unpack_node(pkg):
     }
 
 
-def gen_packs_1(host=None, targets=['x86_64', 'aarch64'], os=['linux', 'darwin']):
-    host = host or y.current_host_platform()
+def gen_packs_1(constraints=None):
+    constraints = constraints or y.get_all_constraints
 
-    for target in y.iter_targets(host):
+    for c in constraints():
         for func in y.gen_all_funcs():
-            yield func(y.deep_copy({'host': host, 'target': target}))
+            yield func(y.deep_copy(c))
+
+        #for t in y.find_compiler_x(y.deep_copy(c)):
+            #yield t
 
 
 def gen_packs(*args, **kwargs):

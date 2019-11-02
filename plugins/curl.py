@@ -1,5 +1,5 @@
-@ygenerator(tier=0, kind=['core', 'dev', 'tool'], cached=['info', 'deps', 'codec', 'num'])
-def curl0(info, deps, codec, num):
+@ygenerator(tier=0, kind=['core', 'dev', 'tool'])
+def curl0(info, deps, num):
     func = find_build_func('mbedtls', num=num - 1)
 
     return {
@@ -10,6 +10,5 @@ def curl0(info, deps, codec, num):
         """.replace('$(SS)', func.__name__.upper()),
         'src': 'https://curl.haxx.se/snapshots/curl-7.67.0-20191011.tar.bz2',
         'deps': [func(info)] + deps,
-        'codec': codec,
         'version': '7.67.0',
     }

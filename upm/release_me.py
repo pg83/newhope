@@ -191,7 +191,8 @@ def rm_install():
 
                if key not in used:
                   used.add(key)
-                  print data, e, mod.__name__, traceback.format_exc(e)
+                  #print data, e, mod.__name__, traceback.format_exc(e)
+                  print e, mod.__name__, traceback.format_exc(e)
 
                new_mods.append(mod)
 

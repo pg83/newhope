@@ -1,13 +1,13 @@
-@ygenerator(tier=0, kind=['base', 'dev', 'tool'])
-def grep0(deps):
+@ygenerator(tier=2, kind=['base', 'dev', 'tool'])
+def gawk0(deps):
     return {
         'code': """
-             source fetch "https://ftp.gnu.org/gnu/grep/grep-3.3.tar.xz" 1
+             source fetch "https://mirror.tochlab.net/pub/gnu/gawk/gawk-5.0.1.tar.xz" 1
              ./configure --prefix=$IDIR --disable-shared --enable-static || exit 1
              $YMAKE -j2
              $YMAKE install
         """,
         'deps': deps,
-        'version': '3.3',
+        'version': '5.0.1',
         'prepare': '$(ADD_PATH)',
     }

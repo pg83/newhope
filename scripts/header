@@ -4,7 +4,9 @@ exec 6>&2
 exec 1> $BDIR/runtime/stdout.log
 exec 2> $BDIR/runtime/stderr.log
 
-trap "source reset 1>&5" RETURN
+trap "source rsc 1>&5" RETURN
+
+(source red; echo "running $IDIR:"; source rsc) 1>&5
 
 run_sh() {
     source yellow; source last_log "$BDIR/runtime/run.sh"; echo '';
@@ -36,7 +38,7 @@ cleanup() {
 
 trap "(stdout; stderr; cleanup) 1>&5" EXIT
 
-source build.lib
+source main.lib
 
 set -e -o pipefail
 pwd
@@ -48,4 +50,3 @@ export PWD="/"
 cd /
 /usr/bin/env
 cd $BD || true
-

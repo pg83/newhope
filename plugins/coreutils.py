@@ -1,4 +1,4 @@
-@ygenerator(tier=0, kind=['core', 'dev', 'tool'], cached=['info', 'deps', 'num'])
+@ygenerator(tier=0, kind=['core', 'dev', 'tool'])
 def coreutils0(info, deps, num):
     version = '8.31'
 

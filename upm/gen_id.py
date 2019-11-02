@@ -9,7 +9,7 @@ def calc_pkg_full_name(url):
     return os.path.basename(url)
 
 
-def cons_to_name_1(c, func=lambda x: a, delim='-'):
+def cons_to_name_1(c, func=lambda x: x, delim='-'):
     if not c:
         return 'noarch'
 
@@ -22,10 +22,10 @@ def cons_to_name_1(c, func=lambda x: a, delim='-'):
 
 
 def short_const_1(c):
-    return cons_to_name_1(c, func=lambda x: x[0], delim='')
+    return cons_to_name_1(c, func=lambda x: x[:2], delim='-')
 
 
-def cons_to_name_2(c, func=lambda x: a, delim='-'):
+def cons_to_name_2(c, func=lambda x: x, delim='-'):
     if not c:
         return 'noarch'
 
@@ -35,11 +35,11 @@ def cons_to_name_2(c, func=lambda x: a, delim='-'):
     if r1 == r2:
         return r1
 
-    return r1 + r2
+    return r1 + '-' + r2
 
 
 def short_const_2(c):
-    return cons_to_name_2(c, func=lambda x: x[0], delim='')
+    return cons_to_name_2(c, func=lambda x: x[:2], delim='')
 
 
 def remove_compressor_name(x):
@@ -96,16 +96,9 @@ def to_visible_name_3(pkg, good_id=None):
     return to_visible_name_2(res)
 
 
-@y.cached(key=lambda x: x['noid'])
+@y.cached(key=y.calc_noid)
 def to_visible_name_4(root):
-    return 'v4' + str() + to_visible_name_3(root['node'](), good_id=root['noid']).lower()[2:]
-
-    good_id = root['noid']
-
-    if good_id not in root:
-        root[good_id] = 'v4' + str() + to_visible_name_3(root['node'](), good_id=good_id).lower()[2:]
-
-    return root[good_id]
+    return 'v4' + to_visible_name_3(root['node'], good_id=y.calc_noid(root)).lower()[2:]
 
 
 FUNCS = [
@@ -123,4 +116,5 @@ def cur_build_system_version():
 
 @y.logged_wrapper(tb=True)
 def to_visible_name(root):
-    return FUNCS[cur_build_system_version()](root)
+    return root['trash']['replacer'](FUNCS[cur_build_system_version()](root))
+

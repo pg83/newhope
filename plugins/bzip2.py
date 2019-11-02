@@ -1,4 +1,4 @@
-@ygenerator(tier=-1, kind=['core', 'dev', 'library'], cached=['deps'])
+@ygenerator(tier=-1, kind=['core', 'dev', 'library'])
 def bzip20(deps):
     return {
         'src': 'https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz',

@@ -73,12 +73,12 @@ def prepare_tar_cmd(fr, to, codec=None):
 def gen_extra_scripts():
     def do():
         for codec in known_codecs():
-            data = 'source set_env\n\n' + ''.join(prepare_tar_cmd('"$1"', '"$2"', codec))
+            data = ''.join(prepare_tar_cmd('"$1"', '"$2"', codec))
 
             yield 'prepare_' + codec + '_pkg', data
 
         for codec in list(known_codecs()) + ['zp']:
-            data = 'source set_env\n\n' + ''.join(prepare_untar_cmd('"$1"', '.', ext_mode=codec, rm_old=False, extra='--strip-components $2'))
+            data = ''.join(prepare_untar_cmd('"$1"', '.', ext_mode=codec, rm_old=False, extra='--strip-components $2'))
 
             yield 'untar_' + codec, data
 
