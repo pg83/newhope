@@ -91,10 +91,10 @@ def fetch_http(root, url):
    return url
 
 
-def cli_callfun(args, verbose):
+def cli_eval(args, verbose):
    for a in args:
       try:
-         print eval('y.' + a)()
+         print eval(a)
       except Exception as e:
          y.xprint_red('can not run ' + a, traceback.format_exc(e))
 
@@ -131,8 +131,7 @@ def cli_make(arg, verbose):
    parser = argparse.ArgumentParser()
 
    parser.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
-   parser.add_argument('-f', '--path', default='Makefile', action='store', help='path to Makefile')
-   parser.add_argument('-k', '--continue-on-fail', default=False, action='store_const', const=True, help='continue on fail')
+   parser.add_argument('-f', '--path', default='-', action='store', help='path to Makefile')
    parser.add_argument('-r', '--root', default=None, action='store', help='main root for build files')
    parser.add_argument('-i', '--install-dir', default=None, action='store', help='where to install packages')
    parser.add_argument('-d', '--do-not-remove', default=None, action='store', help='не удалять даннные')

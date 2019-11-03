@@ -1,5 +1,5 @@
 @ygenerator(tier=0, kind=['base', 'dev', 'tool'])
-def grep0(deps):
+def grep0():
     return {
         'code': """
              source fetch "https://ftp.gnu.org/gnu/grep/grep-3.3.tar.xz" 1
@@ -7,7 +7,6 @@ def grep0(deps):
              $YMAKE -j2
              $YMAKE install
         """,
-        'deps': deps,
         'version': '3.3',
         'prepare': '$(ADD_PATH)',
     }

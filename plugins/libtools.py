@@ -1,5 +1,5 @@
 @ygenerator(tier=0, kind=['core', 'dev', 'library'])
-def libtools0(deps):
+def libtools0():
     return {
         'code': """
             source fetch "http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz" 1
@@ -8,6 +8,5 @@ def libtools0(deps):
             $YMAKE install
         """,
         'prepare': '$(ADD_PATH)',
-        'deps': deps,
         'version': '2.4.6',
     }

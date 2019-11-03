@@ -1,5 +1,5 @@
 @ygenerator(tier=0, kind=['base', 'dev'])
-def libffi0(deps, num):
+def libffi0(num):
     return {
         'code': """
              source fetch "https://sourceware.org/ftp/libffi/libffi-3.2.1.tar.gz" 1
@@ -7,7 +7,6 @@ def libffi0(deps, num):
              $YMAKE -j2
              $YMAKE install
         """.format(num=num - 1),
-        'deps': deps,
         'version': '3.2.1',
         'prepare': '$(ADD_PATH)',
     }

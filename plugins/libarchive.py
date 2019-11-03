@@ -1,5 +1,5 @@
 @ygenerator(tier=1, kind=['core', 'dev', 'library', 'tool'])
-def libarchive0(deps, num, info):
+def libarchive0(num, info):
     version = '3.4.0'
     name = 'libarchive'
     url = 'https://libarchive.org/downloads/' + name + '-' + version + '.tar.gz'
@@ -12,5 +12,4 @@ def libarchive0(deps, num, info):
              $YMAKE install
         """.replace('{url}', url),
         'version': version,
-        'deps': deps,
     }

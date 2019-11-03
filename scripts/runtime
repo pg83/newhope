@@ -1,0 +1,12 @@
+set -e
+set +x
+
+source() {
+    s=$1
+    shift
+    . $s $@
+}
+
+export source
+
+source set_env

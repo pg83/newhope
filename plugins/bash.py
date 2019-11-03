@@ -1,9 +1,7 @@
 @ygenerator(tier=-1, kind=['core', 'dev', 'tool'])
-def bash0(deps, num):
+def bash0(num):
     def do():
         if num >= 5:
-            #yield '--disable-history'
-            #yield '--enable-readline'
             yield '--with-installed-readline=$(MNGR_{N}_DIR)'.format(N='DEVTOOLS' + str(num - 1))
 
         yield '--disable-extended-glob'
@@ -14,7 +12,6 @@ def bash0(deps, num):
             yield '--with-libintl-prefix=$(MNGR_{N}_DIR)'.format(N='DEVTOOLS' + str(num - 1))
             yield '--enable-job-control'
             yield '--with-curses=$(MNGR_{N}_DIR)'.format(N='DEVTOOLS' + str(num - 1))
-            #'--with-included-gettext'
 
     return {
         'code': """
@@ -25,6 +22,5 @@ def bash0(deps, num):
             $YMAKE install
         """.format(extra=' '.join(do())),
         'prepare': '$(ADD_PATH)',
-        'deps': deps,
         'version': '5.0'
     }

@@ -1,5 +1,5 @@
 @ygenerator(tier=0, kind=['core', 'dev', 'tool'])
-def curl0(info, deps, num):
+def curl0(info, num):
     func = find_build_func('mbedtls', num=num - 1)
 
     return {
@@ -9,6 +9,6 @@ def curl0(info, deps, num):
             $YMAKE install
         """.replace('$(SS)', func.__name__.upper()),
         'src': 'https://curl.haxx.se/snapshots/curl-7.67.0-20191011.tar.bz2',
-        'deps': [func(info)] + deps,
+        'extra_deps': [func(info)],
         'version': '7.67.0',
     }

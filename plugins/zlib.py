@@ -1,5 +1,5 @@
 @ygenerator(tier=-1, kind=['core', 'dev', 'library'])
-def zlib0(deps):
+def zlib0():
     return {
         'src': 'http://zlib.net/zlib-1.2.11.tar.gz',
         'code': """
@@ -7,6 +7,5 @@ def zlib0(deps):
             $YMAKE -j2 && $YMAKE install
         """,
         'prepare': '$(ADD_PATH)',
-        'deps': deps,
         'version': '1.2.11',
     }

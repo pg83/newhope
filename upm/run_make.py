@@ -27,7 +27,6 @@ def run_makefile(data, shell_out, targets, threads):
     lst = []
     prev = None
     cprint = y.xprint_white
-    bs = y.bad_substring()
 
     for line_no, l in enumerate(data.split('\n')):
         p = l.find('##')
@@ -74,7 +73,8 @@ def run_makefile(data, shell_out, targets, threads):
     for i, val in enumerate(lst):
         val['n'] = i
 
-    return y.run_parallel_build(lst, targets, threads)
+    if threads > 1:
+        return y.run_parallel_build(lst, targets, threads)
 
     by_dep = {}
 
@@ -117,8 +117,6 @@ def run_makefile(data, shell_out, targets, threads):
         my_name = ', '.join(n['deps1'])
 
         if n.get('cmd'):
-            y.xprint_red('will run ' + my_name)
-
             shell = find_file(n['cmd'], 'bash') or '/bin/bash'
             cmd = '\n'.join(n['cmd']) + '\n'
             input = 'set -e; set +x; ' + cmd
@@ -126,16 +124,7 @@ def run_makefile(data, shell_out, targets, threads):
             args = ['/usr/bin/env', '-i', shell, '--noprofile', '--norc', '-s']
             p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, shell=False)
             res, _ = p.communicate(input=input)
-
-            def failed():
-                if p.wait():
-                    return True
-
-                for x in bs:
-                    if x in res:
-                        return True
-
-            fail = failed()
+            fail = p.wait()
 
             def it():
                 for l in res.strip().split('\n'):
@@ -153,7 +142,7 @@ def run_makefile(data, shell_out, targets, threads):
                         else:
                             yield '  ' + l[:-1]
 
-                    yield y.get_color('rsc')
+                    yield y.get_color('rst')
 
             print >>sys.stderr, ('\n'.join(it())).strip()
 

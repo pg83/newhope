@@ -46,7 +46,7 @@ parser parsermodule.c
 """
 
 @ygenerator(tier=0, kind=['core', 'dev', 'tool'])
-def python0(deps, num):
+def python0(num):
     if num >= 5:
         extra = [] #['--with-system-ffi']
         libs = 'export LIBS="-lintl -liconv"'
@@ -63,7 +63,6 @@ def python0(deps, num):
             $YMAKE install
         """.format(libs=libs, extra=' '.join(extra)),
         'src': 'https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz',
-        'deps': deps,
         'version': '2.7.13',
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup.local', 'data': python_setup_local},

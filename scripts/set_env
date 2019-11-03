@@ -1,5 +1,6 @@
 export PATH="$PATH:/bin:/usr/bin:/usr/local/bin"
-export YSHELL="`which bash` --noprofile --norc"
+
+export YSHELL=`which dash || which $OUTER_SHELL || which bash`
 export YMAKE=`which gmake || which make`
 export YXZ=`which xz`
 export YTAR=`which bsdtar || which tar`
@@ -8,3 +9,4 @@ export YBZIP2=`which bzip2`
 export YUNZIP=`which unzip`
 export YCURL=`which curl`
 export YWGET=`which wget`
+export SHELL="$YSHELL"

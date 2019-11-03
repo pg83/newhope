@@ -60,9 +60,6 @@ def ygenerator(tier=None, kind=['user'], include=[], exclude=[], cached=True, ve
         template = """
 @y.options({options})
 def {name}{num}(info):
-    def my_tov2(x):
-        return y.to_v2(x, info)
-
     kw = [
          ('info', info),
          ('deps', {deps}),
@@ -71,7 +68,15 @@ def {name}{num}(info):
          ('codec', '{codec}'),
     ]
 
-    return {tov2}(set_name({func_name}(**dict(kw)), "{name}{num}"))
+    kw = dict(kw)
+
+    def my_tov2(x):
+        if 'deps' not in x:
+            x['deps'] = x.pop('extra_deps', []) + kw['deps']
+
+        return y.to_v2(x, info)
+
+    return {tov2}(set_name({func_name}(**kw), "{name}{num}"))
 """
         fname = 'identity'
 

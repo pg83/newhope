@@ -1,3 +1,6 @@
-source main.lib
+rmmkcd() {
+    source rmrf "$1"
+    source mkcd "$1"
+}
 
 rmmkcd "$1"

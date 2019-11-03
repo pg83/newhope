@@ -1,5 +1,5 @@
 @ygenerator(tier=0, kind=['core', 'dev', 'tool'])
-def coreutils0(info, deps, num):
+def coreutils0(info, num):
     version = '8.31'
 
     if num < 4:
@@ -14,7 +14,7 @@ def coreutils0(info, deps, num):
              $YMAKE install
         """.format(libname=func.__name__.upper()),
         'url': 'https://ftp.gnu.org/gnu/coreutils/coreutils-' + version + '.tar.xz',
-        'deps': [func(info)] + deps,
+        'extra_deps': [func(info)],
         'version': version,
         'prepare': '$(ADD_PATH)',
     }

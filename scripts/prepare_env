@@ -1,5 +1,4 @@
 source set_env
-source main.lib
 
 export IDIR="$1"
 export BDIR="$2"
@@ -18,5 +17,4 @@ mkdir "$TMPDIR"
 
 source mkcd "$BDIR/runtime"
 
-cat > run.sh
-exec $YSHELL run.sh
+#cat << EOF > run.sh; exec $YSHELL ./run.sh

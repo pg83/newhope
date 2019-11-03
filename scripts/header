@@ -1,35 +1,36 @@
 exec 5>&1
 exec 6>&2
 
+#touch $BDIR/runtime/stdout.log
+#touch $BDIR/runtime/stderr.log
+
 exec 1> $BDIR/runtime/stdout.log
 exec 2> $BDIR/runtime/stderr.log
 
-trap "source rsc 1>&5" RETURN
-
-(source red; echo "running $IDIR:"; source rsc) 1>&5
+echo "{r}running {w:cname}{}" 1>&5
 
 run_sh() {
-    source yellow; source last_log "$BDIR/runtime/run.sh"; echo '';
+    echo -n {y}; source last_log "$BDIR/runtime/run.sh"; echo '{}';
 }
 
 run_sh 1>&5
 
 cur_progr() {
-    source blue
+    echo -n {b}
     echo ' env:'
     source set_env
     (/usr/bin/env | while read line; do echo "  $line"; done) || true;
-    echo ''
+    echo '{}'
 }
 
 cur_progr 1>&5
 
 stdout() {
-    source green; source last_log "$BDIR/runtime/stdout.log"; echo '';
+    echo -n {g}; source last_log "$BDIR/runtime/stdout.log"; echo '{}';
 }
 
 stderr() {
-    source red; source last_log "$BDIR/runtime/stderr.log"; echo '';
+    echo -n {r}; source last_log "$BDIR/runtime/stderr.log"; echo -n '{}';
 }
 
 cleanup() {
@@ -37,16 +38,13 @@ cleanup() {
 }
 
 trap "(stdout; stderr; cleanup) 1>&5" EXIT
+trap "exit 5" TERM
 
-source main.lib
-
-set -e -o pipefail
 pwd
+
 export LC_ALL="C"
 export LANG="C"
 export HOME="/"
 export PWD="/"
 
-cd /
-/usr/bin/env
-cd $BD || true
+cd $BD || cd /

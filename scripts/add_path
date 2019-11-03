@@ -1,3 +1,5 @@
-source main.lib
+add_path() {
+    export PATH="$1":$PATH
+}
 
-add_path $@
+add_path $1

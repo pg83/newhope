@@ -1,5 +1,5 @@
 @ygenerator(tier=2, kind=['core', 'dev', 'tool'])
-def bison0(deps):
+def bison0():
     version = '3.4.2'
     url = 'https://ftp.gnu.org/gnu/bison/bison-' + version + '.tar.xz'
 
@@ -10,7 +10,6 @@ def bison0(deps):
              $YMAKE install
         """,
         'url': url,
-        'deps': deps,
         'version': version,
         'prepare': '$(ADD_PATH)',
     }

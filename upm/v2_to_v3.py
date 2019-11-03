@@ -114,8 +114,8 @@ def print_one_node(root, reducer):
     def iter_part1():
         if not naked:
             yield 'set_path {scripts}'.format(scripts=y.build_scripts_dir())
-            yield 'source prepare_env "$(INSTALL_DIR)" "$(BUILD_DIR)" "$(PKG_FILE)"'
-            yield 'source header'
+            yield '. runtime; source prepare_env "$(INSTALL_DIR)" "$(BUILD_DIR)" "$(PKG_FILE)"; cat << EOF > run.sh; exec $YSHELL ./run.sh;'
+            yield '. runtime; source header'
 
         for pkg_path, x in nodes:
             pdir = '$(M)' + pkg_path[4:]

@@ -1,3 +1,6 @@
-source main.lib
+last_log() {
+    name=$(basename "$1")
+    echo " $name:" && tail -n 50 "$1" | while read line; do echo "  $line"; done
+}
 
 last_log "$1" || true

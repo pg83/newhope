@@ -77,7 +77,7 @@ def gen_unpack_node(pkg):
         'output': mpkg,
         'build': [
             'export PATH={path}'.format(path=y.build_scripts_dir()),
-            'source set_env',
+            '. runtime',
             'source rmmkcd ' + os.path.dirname(mpkg),
             y.prepare_untar_for_mf(pkg),
             'echo 42 > ' + mpkg,

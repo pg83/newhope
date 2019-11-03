@@ -1,0 +1,6 @@
+copy_log() {
+    (mkdir -p "$2") && ((touch "$1") 2>/dev/null 1>/dev/null) && (cp "$1" "$2")
+}
+
+#source check_log "$1"
+copy_log "$1" "$2"

@@ -1,5 +1,5 @@
 @ygenerator(tier=2, kind=['core', 'dev', 'tool'])
-def diffutils0(deps):
+def diffutils0():
     version = '3.7'
     url = 'https://ftp.gnu.org/gnu/diffutils/diffutils-' + version + '.tar.xz'
 
@@ -10,7 +10,6 @@ def diffutils0(deps):
              $YMAKE install
         """,
         'url': url,
-        'deps': deps,
         'version': version,
         'prepare': '$(ADD_PATH)',
     }

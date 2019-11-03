@@ -1,3 +1,6 @@
-source main.lib
+mkcd() {
+    mkdir -p "$1"
+    cd "$1"
+}
 
 mkcd $1

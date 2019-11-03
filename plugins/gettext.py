@@ -1,5 +1,5 @@
 @ygenerator(tier=1, kind=['core', 'dev', 'library', 'tool'])
-def gettext0(deps, num, info):
+def gettext0(num, info):
     extra = []
 
     if num > 3:
@@ -24,6 +24,5 @@ def gettext0(deps, num, info):
              export CFLAGS="-I$(CUR_DIR)/include $CFLAGS"
              export LDLAGS="-L$(CUR_DIR)/lib $LDFLAGS"
         """,
-        'deps': deps,
         'version': '0.20.1',
     }

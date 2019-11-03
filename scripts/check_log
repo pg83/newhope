@@ -1,0 +1,14 @@
+fargs="-m 1 -C 2 -F"
+while read line; do fargs="$fargs -e \"$line\""; done << EOF
+command not found
+Error:
+C compiler cannot create executables
+No such file or directory
+Error is not recoverable: exiting now
+Error opening archive: Failed to open
+Traceback
+File format not recognized
+Broken pipe
+EOF
+
+(cat "$1" | grep -v '\+' | ($YSHELL -c "grep $fargs" || true)) 1>&2 && (echo "some shit in $1, exiting..." && kill -TERM $$) 

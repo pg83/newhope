@@ -1,5 +1,5 @@
-@ygenerator(tier=-2, kind=['core', 'dev', 'tool'])
-def make0(num, deps):
+@ygenerator(tier=-3, kind=['core', 'dev', 'tool'])
+def make0(num):
     def it():
         extra = []
 
@@ -18,6 +18,5 @@ def make0(num, deps):
     return {
         'code': '\n'.join(it()),
         'prepare': '$(ADD_PATH)',
-        'deps': deps,
         'version': '4.2',
     }

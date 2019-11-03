@@ -11,9 +11,6 @@ def scripts_data():
         for k, v in y.gen_extra_scripts():
             yield {'kind': 'file', 'path': 'bin/' + k, 'data': v}
 
-        for k, v in sorted(y.color_map_func().items()):
-            yield {'kind': 'file', 'path': 'bin/' + {'reset': 'rsc'}.get(k, k), 'data': 'echo -n "' + v.encode('utf-8') + '"'}
-
     return list(sorted(iter(), key=lambda x: x['path']))
 
 

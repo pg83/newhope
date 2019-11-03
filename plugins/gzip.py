@@ -1,5 +1,5 @@
 @ygenerator(tier=-1, kind=['base', 'dev', 'tool'])
-def gzip0(deps):
+def gzip0():
     return {
         'code': """
              source fetch "https://ftp.gnu.org/gnu/gzip/gzip-1.10.tar.gz" 1
@@ -7,7 +7,6 @@ def gzip0(deps):
              $YMAKE -j2
              $YMAKE install
         """,
-        'deps': deps,
         'version': '1.10',
         'prepare': '$(ADD_PATH)',
     }

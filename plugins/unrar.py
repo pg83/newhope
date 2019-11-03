@@ -1,5 +1,5 @@
 @ygenerator(tier=1, kind=['base', 'dev', 'tool'])
-def unrar0(deps):
+def unrar0():
     return {
         'code': """
              $YMAKE -f makefile
@@ -7,7 +7,6 @@ def unrar0(deps):
              install -v -m755 unrar $IDIR/bin
         """,
         'url': 'http://www.rarlab.com/rar/unrarsrc-5.8.3.tar.gz',
-        'deps': deps,
         'version': '5.8.3',
         'prepare': '$(ADD_PATH)',
     }

@@ -1,5 +1,5 @@
 @ygenerator(tier=3, kind=['base', 'dev', 'tool'])
-def mc0(deps, num):
+def mc0(num):
     return {
         'code': """
              source fetch "http://ftp.midnight-commander.org/mc-4.8.23.tar.xz" 1
@@ -11,8 +11,6 @@ def mc0(deps, num):
              ./configure --prefix=$IDIR --disable-shared --enable-static --with-screen=ncurses --with-libiconv-prefix=$BDIR/runtime --with-libintl-prefix=$BDIR/runtime || exit 1
              $YMAKE -j2
              $YMAKE install
-        """.format(num=num-1),
-        'deps': deps,
+        """.format(num=num - 1),
         'version': '4.8.23',
-        'prepare': '$(ADD_PATH)',
     }

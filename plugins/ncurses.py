@@ -1,5 +1,5 @@
 @ygenerator(tier=1, kind=['core', 'dev', 'library'])
-def ncurses0(deps):
+def ncurses0():
     return {
         'code': """
             sed -i s/mawk// configure
@@ -8,6 +8,5 @@ def ncurses0(deps):
             $YMAKE install
         """,
         'src': 'https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz',
-        'deps': deps,
         'version': '6.1',
     }

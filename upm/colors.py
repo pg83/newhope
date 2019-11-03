@@ -11,11 +11,19 @@ def color_map_func():
     COLOR_MAP = {
         'red': RED,
         'green': GREEN,
-        'reset': RESET,
+        'rst': RESET,
         'yellow': YELLOW,
         'white': WHITE,
         'blue': BLUE,
     }
+
+    for k in list(COLOR_MAP.keys()):
+        if k == 'rst':
+            kk = ''
+        else:
+            kk = k[0]
+
+        COLOR_MAP[kk] = COLOR_MAP[k]
 
     return COLOR_MAP
 
@@ -25,4 +33,4 @@ def get_color(n):
 
 
 def colorize(text, color):
-    return get_color(color) + text + get_color('reset')
+    return get_color(color) + text + get_color('')

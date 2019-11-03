@@ -2,6 +2,15 @@ import os
 import sys
 import platform
 import subprocess
+import itertools
+
+
+def find_tool_uncached(tool, path):
+    for p in itertools.chain(path, os.environ['PATH'].split(':')):
+        pp = os.path.join(p, tool)
+        
+        if os.path.isfile(pp):
+            return pp
 
 
 def subst_info(info):
@@ -44,20 +53,6 @@ def fixx(x):
     return x
 
 
-class xprint(object):
-    def __init__(self, color=None, where=sys.stderr):
-        self._c = color
-        self._w = where
-
-    def __call__(self, *args, **kwargs):
-        text = ' '.join([fixx(x) for x in args] + [fixx(k) + '=' + fixx(v) for k, v in kwargs.items()])
-
-        if self._c:
-            text = y.colorize(text, self._c)
-
-        self._w.write(text + '\n')
-
-
 @y.singleton
 def script_path():
    if sys.argv[0].endswith('upm'):
@@ -83,11 +78,3 @@ def path_by_script(path):
 @y.singleton
 def docker_binary():
    return find_tool('docker')
-
-
-@y.lookup
-def lookup(xp):
-    if xp.startswith('xprint_'):
-        return xprint(color=xp[7:])
-
-    raise AttributeError()

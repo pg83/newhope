@@ -1,5 +1,5 @@
-@ygenerator(tier=0, kind=['core', 'dev', 'library'])
-def libiconv0(deps):
+@ygenerator(tier=-1, kind=['core', 'dev', 'library'])
+def libiconv0():
     return {
         'code': """
             source fetch "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz" 1
@@ -8,6 +8,5 @@ def libiconv0(deps):
             $YMAKE install
         """,
         'prepare': '$(ADD_PATH)',
-        'deps': deps,
         'version': '1.16',
     }

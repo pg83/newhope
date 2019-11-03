@@ -1,5 +1,5 @@
 @ygenerator(tier=0, kind=['core', 'dev', 'tool'])
-def pkg_config0(deps, num, info):
+def pkg_config0(num, info):
     extra_flags = ''
     dep = []
 
@@ -20,7 +20,7 @@ def pkg_config0(deps, num, info):
             $YMAKE
             $YMAKE install
         """.format(extra=extra, extra_flags=extra_flags),
-        'deps': dep + deps,
+        'extra_deps': dep,
         'prepare': '$(ADD_PATH)',
         'version': '0.29.2',
     }

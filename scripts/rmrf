@@ -1,0 +1,5 @@
+rmrf () {
+    source rmdel "$1"
+}
+
+rmrf "$1"

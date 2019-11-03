@@ -1,5 +1,5 @@
 @ygenerator(tier=2, kind=['base', 'dev', 'library'])
-def glib0(deps, num, info):
+def glib0(num, info):
     return {
         'code': """
              cp -R $(MNGR_DEVTOOLS{num}_DIR)/* $BDIR/
@@ -11,7 +11,6 @@ def glib0(deps, num, info):
              $YMAKE -j2
              $YMAKE install
         """.format(num=num - 1),
-        'deps': deps,
         'version': '2.30.3',
         'prepare': '$(ADD_PATH)',
     }
