@@ -7,5 +7,4 @@ def p7zip0():
              $YMAKE make -f makefile DEST_HOME=/ DEST_MAN=/share/man DEST_SHARE_DOC=/share/doc/p7zip-16.02 install
         """,
         'version': '16.02',
-        'prepare': '$(ADD_PATH)',
     }

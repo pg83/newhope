@@ -47,7 +47,7 @@ parser parsermodule.c
 
 @ygenerator(tier=0, kind=['core', 'dev', 'tool'])
 def python0(num):
-    if num >= 5:
+    if num >= 6:
         extra = [] #['--with-system-ffi']
         libs = 'export LIBS="-lintl -liconv"'
     else:
@@ -56,13 +56,13 @@ def python0(num):
 
     return {
         'code': """
+            source fetch "https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz" 1
             $(APPLY_EXTRA_PLAN_0)
             {libs}
             ./configure --prefix=$IDIR --disable-shared {extra} || exit1
             $YMAKE -j2 || exit 1
             $YMAKE install
         """.format(libs=libs, extra=' '.join(extra)),
-        'src': 'https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz',
         'version': '2.7.13',
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup.local', 'data': python_setup_local},

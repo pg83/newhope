@@ -1,7 +1,5 @@
 rmdel() {
-    (rm -rf $@) || true >& /dev/null
-
-    return 0
+    (rm -rf $@) || true 2> /dev/null
 }
 
 rmdel $@

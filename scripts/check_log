@@ -1,5 +1,6 @@
-fargs="-m 1 -C 2 -F"
-while read line; do fargs="$fargs -e \"$line\""; done << EOF
+-m 1 -C 2 -F -n
+
+EOF
 command not found
 Error:
 C compiler cannot create executables
@@ -11,4 +12,4 @@ File format not recognized
 Broken pipe
 EOF
 
-(cat "$1" | grep -v '\+' | ($YSHELL -c "grep $fargs" || true)) 1>&2 && (echo "some shit in $1, exiting..." && kill -TERM $$) 
+(cat $@ || true) | (grep -v '\+' || true) | {grep}

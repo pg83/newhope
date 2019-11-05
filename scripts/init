@@ -1,0 +1,5 @@
+init() {
+    . runtime && source prepare_env "$(basename $1)" && source all $@ && source header
+}
+
+init $@

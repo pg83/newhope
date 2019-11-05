@@ -49,7 +49,9 @@ def to_v2(data, info):
     }
 
     def iter_prepare():
-        for l in y.to_lines(data.get('prepare', '')):
+        p = data.get('prepare', '')
+
+        for l in y.to_lines(p):
             yield l
 
     node['prepare'] = list(iter_prepare())
@@ -57,14 +59,6 @@ def to_v2(data, info):
     for x in ('version', 'codec', 'extra', 'name', 'do_fetch_node', 'pkg_full_name', 'inputs', 'output'):
         if x in data:
             node[x] = data[x]
-
-    for k in ('src', 'url'):
-        if k in data:
-            node['url'] = data[k]
-
-    def iter_extra_lines():
-        if '$(FETCH_URL' not in full and 'url' in node:
-            yield '$(FETCH_URL)'
 
     def iter_subst():
         for i, v in enumerate(node.get('extra', [])):
@@ -77,7 +71,7 @@ def to_v2(data, info):
             if v['kind'] == 'subst':
                 yield (v['from'], v['to'])
 
-    node['build'] = list(iter_extra_lines()) + y.to_lines(y.subst_kv_base(code, iter_subst()))
+    node['build'] = y.to_lines(y.subst_kv_base(code, iter_subst()))
 
     compilers = info['compilers']['deps']
 

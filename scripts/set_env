@@ -10,3 +10,5 @@ export YUNZIP=`which unzip`
 export YCURL=`which curl`
 export YWGET=`which wget`
 export SHELL="$YSHELL"
+
+export CFLAGS="-O2 -w"

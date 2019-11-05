@@ -1,6 +1,6 @@
-touch "$BD/config.log" && cat "$BD/config.log"
-
-source copy_log "$BDIR/runtime/stdout.log" "$IDIR/log" 
-source copy_log "$BDIR/runtime/stderr.log" "$IDIR/log"
+for i in "$BDIR/runtime/stdout.log" "$BDIR/runtime/stderr.log" "$BD/config.log"
+do
+    source copy_log "$i" "$IDIR/log"   
+done
 
 source prepare_$1_pkg "$IDIR" "$PKGF"

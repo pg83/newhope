@@ -1,5 +1,3 @@
-set -e
-set +x
 
 source() {
     s=$1
@@ -10,3 +8,7 @@ source() {
 export source
 
 source set_env
+
+step() { 
+    while read line; do echo "  $line"; done
+}

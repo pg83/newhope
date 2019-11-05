@@ -12,7 +12,7 @@ def calc_name(x):
     raise Exception('shit ' + x)
 
 
-def gen_all_texts():
+def gen_all_texts(only_print_layers=False):
     by_tier = {}
     by_name = {}
     all = []
@@ -103,6 +103,7 @@ def gen_all_texts():
             deps_funcs='cached_types%s()' % (x['num'] - 1),
             options='cached=True, codec="{codec}"',
             codec=codec,
+            kind=by_name[x['name']]['kind'],
         )
 
         for k, v in by_name[x['name']].get('extra_arg', {}).items():
@@ -110,7 +111,7 @@ def gen_all_texts():
 
         tmpl = by_name[x['name']]['template']
 
-        return tmpl.format(**args)
+        return tmpl.format(kw=args, **args)
 
     by_id = {}
     by_num = {}
@@ -139,10 +140,11 @@ def gen_all_texts():
     for x in iter_allx_funcs():
         texts.append(x)
 
-    if 1:
+    if only_print_layers:
         for i in sorted(by_num.keys()):
             print >>sys.stderr,  i, by_num[i]
 
+        return
 
     stmpl = """
 @y.singleton

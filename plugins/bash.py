@@ -1,4 +1,4 @@
-@ygenerator(tier=-1, kind=['core', 'dev', 'tool'])
+@ygenerator(tier=2, kind=['core', 'dev', 'tool'])
 def bash0(num):
     def do():
         if num >= 5:
@@ -21,6 +21,5 @@ def bash0(num):
             $YMAKE
             $YMAKE install
         """.format(extra=' '.join(do())),
-        'prepare': '$(ADD_PATH)',
-        'version': '5.0'
+        'version': '5.0',
     }

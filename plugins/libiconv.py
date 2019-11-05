@@ -1,4 +1,4 @@
-@ygenerator(tier=-1, kind=['core', 'dev', 'library'])
+@ygenerator(tier=-2, kind=['core', 'dev', 'library', 'tool'])
 def libiconv0():
     return {
         'code': """
@@ -7,6 +7,5 @@ def libiconv0():
             $YMAKE -j2 || exit 1
             $YMAKE install
         """,
-        'prepare': '$(ADD_PATH)',
         'version': '1.16',
     }

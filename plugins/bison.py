@@ -11,5 +11,4 @@ def bison0():
         """,
         'url': url,
         'version': version,
-        'prepare': '$(ADD_PATH)',
     }

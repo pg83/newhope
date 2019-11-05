@@ -7,6 +7,7 @@ import subprocess as sp
 import traceback
 import functools
 import itertools
+import base64
 
 
 def is_in(lst, s):
@@ -73,7 +74,7 @@ def get_white_line():
 
 
 @y.defer_wrapper
-def run_parallel_build(reg_defer, lst, targets, thrs):
+def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
     lst = get_only_our_targets(lst, targets)
     white_line = get_white_line()
 
@@ -129,19 +130,36 @@ def run_parallel_build(reg_defer, lst, targets, thrs):
 
                 return y.find_tool_uncached(tool, iter_deps())
 
-            def iter_eof():
-                if 'EOF' in c[1] or 'EOF' in c[2]:
-                    yield 'EOF'
-
-                yield ''
+            def remove_d(k):
+                if k[0] == '$':
+                    return k[1:]
+                
+                return k
 
             shell = find_tool('dash') or find_tool('bash') or find_tool('sh')
-            input = '\n'.join(itertools.chain(c, iter_eof()))
+            input = '\n'.join(c)
             cmd = [shell, '-s']
-            env = {'OUTER_SHELL': shell}
+            env = dict(itertools.chain({'OUTER_SHELL': shell}.iteritems(), [(remove_d(k), v) for k, v in shell_vars.iteritems()]))
             out = []
             retcode = None
 
+            def iter_parts():
+                yield 'set +x'
+                yield 'set -e'
+                yield 'set +v'
+
+                for k in sorted(env.keys(), key=lambda x: -len(x)):
+                    yield 'export ' + k + '=' + env[k]
+
+                yield 'export BIGI="' + base64.b64encode(input) + '"'
+                yield 'export PATH={runtime}:$PATH'.format(runtime=y.build_scripts_dir())
+                yield 'mainfun() {'
+                yield input
+                yield '}'
+                yield 'mainfun ' + ' '.join(itertools.chain(l['deps1'], l['deps2']))
+
+            input = '\n'.join(iter_parts()) + '\n'
+            
             with y.defer_context() as defer:
                 args = {
                     'stdout': sp.PIPE, 
@@ -173,7 +191,7 @@ def run_parallel_build(reg_defer, lst, targets, thrs):
                 data = '\n'.join(o.strip() for o in out)
 
                 if data:
-                    data = white_line + '\n' + data
+                    data = white_line + '\n' + data + '\n'
                     sys.stderr.write(y.xxformat(data, cname=cn))
 
                 if retcode and retcode != -9:

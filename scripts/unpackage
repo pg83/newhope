@@ -1,0 +1,8 @@
+unpack() {
+    echo "{b}unpack $RD/$2{}"
+    source rmmkcd "$MD/$2"
+    source untar_$1 "$RD/$2" 0
+    echo 42 > "$MD/$2/done"
+}
+
+unpack "$1" "$2"

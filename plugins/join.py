@@ -9,7 +9,7 @@ def join_funcs(my_name, my_num, args):
         deps = [arg(info) for arg in args]
         nodes = [y.restore_node_node(x) for x in deps]
 
-        if my_num > 2:
+        if my_num > 3:
             extra = [
                 'export PKG_CONFIG=$(CUR_DIR)/bin/pkg-config',
                 'export PKG_CONFIG_PATH=$(CUR_DIR)/lib/pkgconfig:$PKG_CONFIG_PATH',

@@ -92,9 +92,19 @@ def fetch_http(root, url):
 
 
 def cli_eval(args, verbose):
+   repl = {
+      'layers': 'y.gen_all_texts(only_print_layers=True)'
+   }
+
+   if not args:
+      for k, v in repl.items():
+         y.xxprint(k, '=', v, init='b')
+
+      return
+
    for a in args:
       try:
-         print eval(a)
+         print eval(repl.get(a, a))
       except Exception as e:
          y.xprint_red('can not run ' + a, traceback.format_exc(e))
 
@@ -121,8 +131,15 @@ def cli_source(arg, verbose):
             node = y.restore_node(eval('y.' + t)(y.deep_copy(params)))['node']
             url = node.get('src') or node.get('url')
 
-            yield url
+            if url:
+               yield url
 
+            urls = node.get('urls')
+
+            if urls:
+               for url in urls:
+                  yield url
+               
    for url in iter_urls():
       print 'will fetch', url, fetch_http(args.path, url)
 
@@ -161,26 +178,21 @@ def cli_make(arg, verbose):
 
    def iter_replaces():
       if args.install_dir:
-         yield ('$(P)', args.install_dir)
+         yield ('$PD', args.install_dir)
 
-      yield ('$(M)', '$(PREFIX)/m')
-      yield ('$(R)', '$(PREFIX)/r')
-      yield ('$(W)', '$(PREFIX)/w')
+      yield ('$MD', '$PREFIX/m')
+      yield ('$RD', '$PREFIX/r')
+      yield ('$WD', '$PREFIX/w')
 
       if local:
-         yield ('$(P)', '$(PREFIX)/p')
-
-         if args.do_not_remove:
-            yield ('$(RM_TMP)', '# ')
-         else:
-            yield ('$(RM_TMP)', 'rm -rf')
+         yield ('$PD', '$PREFIX/p')
 
       if args.production:
-         yield ('$(P)', '/private')
-         yield ('$(RM_TMP)', '# ')
+         yield ('$PD', '/private')
 
-      yield ('$(PREFIX)', root)
-      yield ('$$', '$')
+      yield ('$PREFIX', root)
+
+   shell_vars = dict(iter_replaces())
 
    if args.path == '-':
       data = sys.stdin.read()
@@ -190,11 +202,15 @@ def cli_make(arg, verbose):
    else:
       data = sys.stdin.read()
 
-   y.run_makefile(y.subst_kv_base(data, iter_replaces()), [], args.targets, int(args.threads))
+   y.run_makefile(data, shell_vars, [], args.targets, int(args.threads))
 
 
 def upm_root():
    return y.user_home() + '/upm_root'
+
+
+def cli_cleanup(arg, verbose):
+   os.system("cd {sd} && (find . | grep '~' | xargs rm)".format(sd=y.script_dir()))
 
 
 def cli_build(arg, verbose):
@@ -294,7 +310,7 @@ def cli_makefile(arg, verbose):
 
    try:
       if args.shell:
-         f.write(y.build_sh_script(args.shell), verbose)
+         f.write(y.build_sh_script(args.shell, verbose))
       else:
          f.write(y.main_makefile(verbose))
 

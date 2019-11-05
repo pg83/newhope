@@ -7,6 +7,5 @@ def m40():
                $YMAKE -j2
                $YMAKE install
         """,
-        'prepare': '$(ADD_PATH)',
         'version': '1.4.18',
     }

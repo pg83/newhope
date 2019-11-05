@@ -13,16 +13,11 @@ def gettext0(num, info):
     ]
 
     return {
-        'src': 'https://ftp.gnu.org/gnu/gettext/gettext-0.20.1.tar.gz',
         'code': """
+            source fetch "https://ftp.gnu.org/gnu/gettext/gettext-0.20.1.tar.gz" 1
             ./configure --prefix=$IDIR --enable-static --disable-shared {opts} {extra} || exit 1
             $YMAKE -j2 || exit 1
             $YMAKE install
         """.format(extra=' '.join(extra), opts=' '.join(opts)),
-        'prepare': """
-             $(ADD_PATH)
-             export CFLAGS="-I$(CUR_DIR)/include $CFLAGS"
-             export LDLAGS="-L$(CUR_DIR)/lib $LDFLAGS"
-        """,
         'version': '0.20.1',
     }

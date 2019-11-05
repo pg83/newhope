@@ -4,31 +4,29 @@ import base64
 
 def subst(v):
     def iter_subst():
-        yield ('$(M)', '$(PREFIX)/m')
-        yield ('$(R)', '$(PREFIX)/r')
-        yield ('$(W)', '$(PREFIX)/w')
-        yield ('$(P)', '$(PREFIX)/p')
-        yield ('$(RM_TMP)', '## ')
-        yield ('$(PREFIX)', '$PREFIX')
-        yield ('$$', '$')
+        yield ('$MD', '$PREFIX/m')
+        yield ('$RD', '$PREFIX/r')
+        yield ('$WD', '$PREFIX/w')
+        yield ('$PD', '$PREFIX/p')
 
     return y.subst_kv_base(v, iter_subst())
 
 
 def build_sh_script(targets, verbose):
     res = [1]
-    y.run_makefile(y.main_makefile(verbose), res, targets)
+    y.run_makefile(y.main_makefile(verbose), res, targets, 1)
     res = res[1:]
 
     def iter_cmd():
-        yield '#!/bin/sh'
-
         for cmd in res:
             try:
-                cmd = list(*cmd['args'])[6]
+                input = subst(cmd['input'])
 
-                yield '(echo "' + base64.b64encode(subst(cmd)) + '" | base64 -D -i - -o - | /usr/bin/env -i PREFIX=$1 /bin/sh -s) || exit 1'
+                if 'EOF' in input:
+                    input = input + 'EOF\n'
+
+                yield '(echo "export PREFIX=$1"; (echo "' + base64.b64encode(input) + '" | base64 -D -i - -o -)) > data; (cat data | /usr/bin/env -i /usr/local/bin/dash -s) || exit 1'
             except Exception as e:
-                y.xprint('------------------------------------------\n', cmd, e)
+                y.xxprint('------------------------------------------\n', cmd, e)
 
     return '\n\n'.join(iter_cmd()) + '\n'

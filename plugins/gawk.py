@@ -8,5 +8,4 @@ def gawk0():
              $YMAKE install
         """,
         'version': '5.0.1',
-        'prepare': '$(ADD_PATH)',
     }

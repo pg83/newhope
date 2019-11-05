@@ -1,8 +1,7 @@
-source set_env
+export IDIR="$PD/$1"
+export BDIR="$WD/$(echo -n $1 | md5)"
+export PKGF="$RD/$1"
 
-export IDIR="$1"
-export BDIR="$2"
-export PKGF="$3"
 export TMPDIR="$BDIR/tmp"
 export BD="$BDIR/playground"
 
@@ -16,5 +15,3 @@ mkdir "$BD"
 mkdir "$TMPDIR"
 
 source mkcd "$BDIR/runtime"
-
-#cat << EOF > run.sh; exec $YSHELL ./run.sh

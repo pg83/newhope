@@ -49,7 +49,33 @@ def set_name(v, n):
     return v
 
 
-def ygenerator(tier=None, kind=['user'], include=[], exclude=[], cached=True, version=1):
+def join_n(p):
+    return '\n'.join(p) + '\n'
+
+
+def better_tov2(x, info, kw):
+    if 'deps' not in x:
+        x['deps'] = x.pop('extra_deps', []) + eval('y.' + kw['deps'])
+
+    if 'prepare' not in x:
+        p = []
+        kind = kw['kind']
+
+        if 'tool' in kind:
+            p.append('$(ADD_PATH)')
+
+        if 'library' in kind:
+            p.append('$(ADD_CFLAGS)')
+            p.append('$(ADD_LDFLAGS)')
+            p.append('$(ADD_LIBS)')
+            p.append('$(ADD_PKG_CONFIG)')
+          
+        x['prepare'] = join_n(p)
+
+    return y.to_v2(x, info)
+
+
+def ygenerator(tier=None, kind=[], include=[], exclude=[], cached=True, version=1):
     def functor(func):
         assert tier is not None
 
@@ -60,23 +86,10 @@ def ygenerator(tier=None, kind=['user'], include=[], exclude=[], cached=True, ve
         template = """
 @y.options({options})
 def {name}{num}(info):
-    kw = [
-         ('info', info),
-         ('deps', {deps}),
-         ('num', {num}),
-         ('func_name', '{func_name}'),
-         ('codec', '{codec}'),
-    ]
-
-    kw = dict(kw)
-
     def my_tov2(x):
-        if 'deps' not in x:
-            x['deps'] = x.pop('extra_deps', []) + kw['deps']
+        return better_tov2(x, info, {kw})
 
-        return y.to_v2(x, info)
-
-    return {tov2}(set_name({func_name}(**kw), "{name}{num}"))
+    return {tov2}(set_name({func_name}(info=info, **{kw}), "{name}{num}"))
 """
         fname = 'identity'
 

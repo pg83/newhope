@@ -9,9 +9,10 @@ def apply_fetch(lines, v):
             assert len(parts) == 3
 
             url = parts[1]
-            id = y.gen_fetch_node_3(url, hashlib.md5(url).hexdigest(), v['deps'])
+            id = y.gen_fetch_node_3(url, hashlib.md5(url).hexdigest(), v['deps'], v)
             v['deps'] = v['deps'] + [id]
             n = y.restore_node_node(id)
+            v['node']['urls'] = [url] + v['node'].get('urls', [])
 
             yield y.prepare_untar_for_mf(n['file'], strip=int(parts[2].strip()))
         else:

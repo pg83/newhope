@@ -1,0 +1,9 @@
+source_all() {
+    shift
+
+    for i in $@; do
+        source "$(dirname $i)/build"
+    done
+}
+
+source_all $@

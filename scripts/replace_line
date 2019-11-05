@@ -1,0 +1,9 @@
+replace_line() {
+    head -n $(($1 - 1)) "$2" > "$3"
+    echo "$4" >> "$3"  
+    lc=$(cat "$2" | wc -l)
+    tc=$(($lc - $1))
+    tail -n $tc "$2" >> "$3"
+}
+
+replace_line "$1" "$2" "$2.tmp" "$3" && mv "$2.tmp" "$2"

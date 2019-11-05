@@ -74,13 +74,13 @@ def process_color(text, init, kwargs):
             pp = nc.split(':')
 
             if len(pp) == 2 and pp[0] in cm:
-                add = '{' + pp[0] + '}' + kwargs[pp[1]] + '{rst}'
+                add = '{' + pp[0] + '}' + kwargs[pp[1]] + '{}'
             else:
                 yield ('c', s[-1])
                 yield ('t', text[:pos + 1])
                 yield rst
         else:
-            if nc in ('rst', 'reset'):
+            if nc in ('rst', 'reset', ''):
                 s = s[:-1]
             else:
                 s.append(nc)

@@ -1,8 +1,7 @@
+source set_env
+
 exec 5>&1
 exec 6>&2
-
-#touch $BDIR/runtime/stdout.log
-#touch $BDIR/runtime/stderr.log
 
 exec 1> $BDIR/runtime/stdout.log
 exec 2> $BDIR/runtime/stderr.log
@@ -10,16 +9,17 @@ exec 2> $BDIR/runtime/stderr.log
 echo "{r}running {w:cname}{}" 1>&5
 
 run_sh() {
+    echo "$BIGI" | source base64_decode > "$BDIR/runtime/run.sh"
     echo -n {y}; source last_log "$BDIR/runtime/run.sh"; echo '{}';
 }
 
-run_sh 1>&5
+run_sh 1>&5 || true
 
 cur_progr() {
     echo -n {b}
     echo ' env:'
     source set_env
-    (/usr/bin/env | while read line; do echo "  $line"; done) || true;
+    (/usr/bin/env | step) || true;
     echo '{}'
 }
 
@@ -30,14 +30,35 @@ stdout() {
 }
 
 stderr() {
-    echo -n {r}; source last_log "$BDIR/runtime/stderr.log"; echo -n '{}';
+    echo -n {r}; source last_log "$BDIR/runtime/stderr.log"; echo '{}';
 }
 
 cleanup() {
     source rmdel "$IDIR" "$BDIR"
 }
 
-trap "(stdout; stderr; cleanup) 1>&5" EXIT
+do_check_logs() {
+    source check_log "$BDIR/runtime/stdout.log" "$BDIR/runtime/stderr.log"
+}
+
+check_logs() {
+    echo " checks: "
+    val=$(do_check_logs | while read line; do ((echo "  $line") 1>&5); echo $$; done | uniq)
+
+    if [ $val ]
+    then
+        echo '  will kill ourselves'
+        kill -TERM $$
+    else
+        echo '  all logs OK'
+    fi
+}
+
+check_logs_5() {
+    (echo -n {w}; check_logs; echo '{}') 1>&5
+}
+
+trap "(stdout; stderr; check_logs_5; cleanup) 1>&5" EXIT
 trap "exit 5" TERM
 
 pwd

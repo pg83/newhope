@@ -22,7 +22,7 @@ def gen_fetch_node(url):
 
 
 @y.cached()
-def gen_fetch_node_3(url, name, deps=[]):
+def gen_fetch_node_3(url, name, deps, v):
     fname = y.calc_pkg_full_name(url)
 
     res = y.fix_v2({
@@ -32,7 +32,7 @@ def gen_fetch_node_3(url, name, deps=[]):
             'url': url,
             'pkg_full_name': fname,
             'build': [
-                'source fetch_url $(URL_BASE) $(URL) $IDIR',
+                'source fetch_url {ub} {u} $IDIR'.format(ub=fname, u=url),
             ],
             'prepare' : [
                 'ln $(CUR_DIR)/{fname} $BDIR/runtime/'.format(fname=fname)
@@ -48,39 +48,15 @@ def gen_fetch_node_3(url, name, deps=[]):
 
 
 @y.cached()
-def gen_fetch_node_2(url, dep, curl):
-    fname = os.path.basename(url)
-    codec = y.calc_mode(fname)
-
-    res = {
-        'node': {
-            'kind': 'fetch_2',
-            'name': 'fetch_url_2',
-            'build': [
-                'cd $IDIR && {curl} -L -k -o "{url}" "{fname}"'.format(curl=curl, url=url, fname=fname),
-            ],
-            'prepare': [],
-            'codec': 'tr',
-        },
-        'deps': [dep],
-    }
-
-    return y.store_node_plain(res)
-
-
-@y.cached()
 def gen_unpack_node(pkg):
     mpkg = y.mgr_pkg_mark(pkg)
+    vis_name = pkg[4:]
 
     return {
         'inputs': [pkg, y.build_scripts_path()],
         'output': mpkg,
         'build': [
-            'export PATH={path}'.format(path=y.build_scripts_dir()),
-            '. runtime',
-            'source rmmkcd ' + os.path.dirname(mpkg),
-            y.prepare_untar_for_mf(pkg),
-            'echo 42 > ' + mpkg,
+            '. "{path}/build" && source unpackage {codec} "{vis_name}"'.format(path=y.build_scripts_dir(), vis_name=vis_name, codec=y.calc_mode(vis_name))
         ],
     }
 

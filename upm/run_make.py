@@ -23,7 +23,7 @@ def find_file(cmd, f):
                     return path
 
 
-def run_makefile(data, shell_out, targets, threads):
+def run_makefile(data, shell_vars, shell_out, targets, threads):
     lst = []
     prev = None
     cprint = y.xprint_white
@@ -60,7 +60,7 @@ def run_makefile(data, shell_out, targets, threads):
             except Exception as e:
                 print ls, line_no, e
 
-                raise e
+                raise
 
             prev['deps1'] = list(iter_deps(a))
             prev['deps2'] = list(iter_deps(b))
@@ -74,7 +74,7 @@ def run_makefile(data, shell_out, targets, threads):
         val['n'] = i
 
     if threads > 1:
-        return y.run_parallel_build(lst, targets, threads)
+        return y.run_parallel_build(lst, shell_vars, targets, threads)
 
     by_dep = {}
 
@@ -87,9 +87,19 @@ def run_makefile(data, shell_out, targets, threads):
 
     if shell_out:
         def do_compile_1(*args, **kwargs):
-            shell_out.append(y.deep_copy({'args': args, 'kwargs': kwargs}))
+            class A(object):
+                def __init__(self):
+                    pass
 
-            return ''
+                def communicate(self, input=None):
+                    shell_out.append(y.deep_copy({'args': args, 'kwargs': kwargs, 'input': input}))
+            
+                    return '', ''
+
+                def wait(self):
+                    return 0
+
+            return A()
 
         do_compile = do_compile_1
 
@@ -117,12 +127,12 @@ def run_makefile(data, shell_out, targets, threads):
         my_name = ', '.join(n['deps1'])
 
         if n.get('cmd'):
-            shell = find_file(n['cmd'], 'bash') or '/bin/bash'
+            shell = find_file(n['cmd'], 'dash') or '/bin/sh'
             cmd = '\n'.join(n['cmd']) + '\n'
             input = 'set -e; set +x; ' + cmd
             input = input.replace('$(SHELL)', '$YSHELL')
             args = ['/usr/bin/env', '-i', shell, '--noprofile', '--norc', '-s']
-            p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, shell=False)
+            p = do_compile(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, shell=False)
             res, _ = p.communicate(input=input)
             fail = p.wait()
 

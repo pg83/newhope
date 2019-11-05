@@ -4,11 +4,11 @@ def curl0(info, num):
 
     return {
         'code': """
+            source fetch "https://curl.haxx.se/snapshots/curl-7.67.0-20191011.tar.bz2" 1
             ./configure --prefix=$IDIR --with-mbedtls=$(MNGR_$(SS)_DIR) --enable-static --disable-shared
             $YMAKE -j2
             $YMAKE install
         """.replace('$(SS)', func.__name__.upper()),
-        'src': 'https://curl.haxx.se/snapshots/curl-7.67.0-20191011.tar.bz2',
         'extra_deps': [func(info)],
         'version': '7.67.0',
     }

@@ -1,8 +1,8 @@
 @ygenerator(tier=-2, kind=['core', 'dev'])
-def libffi0(num):
+def libsigsegv0(num):
     return {
         'code': """
-             source fetch "https://sourceware.org/ftp/libffi/libffi-3.2.1.tar.gz" 1
+             source fetch "https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-2.12.tar.gz" 1
              ./configure --prefix=$IDIR --disable-shared --enable-static || exit 1
              $YMAKE -j2
              $YMAKE install
