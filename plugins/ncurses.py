@@ -4,7 +4,7 @@ def ncurses0():
         'code': """
             source fetch "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz" 1
             sed -i s/mawk// configure
-            ./configure --prefix=$IDIR --without-shared --without-debug --without-ada --enable-widec --enable-overwrite --enable-ext-colors --enable-termcap
+            $YSHELL ./configure --prefix=$IDIR --without-shared --without-debug --without-ada --enable-widec --enable-overwrite --enable-ext-colors --enable-termcap --with-pkg-config
             $YMAKE -j2
             $YMAKE install
         """,

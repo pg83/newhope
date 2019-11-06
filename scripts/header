@@ -10,13 +10,13 @@ echo "{r}running {w:cname}{}" 1>&5
 
 run_sh() {
     echo "$BIGI" | source base64_decode > "$BDIR/runtime/run.sh"
-    echo -n {y}; source last_log "$BDIR/runtime/run.sh"; echo '{}';
+    source echon {y}; source last_log "$BDIR/runtime/run.sh"; echo '{}';
 }
 
 run_sh 1>&5 || true
 
 cur_progr() {
-    echo -n {b}
+    source echon {b}
     echo ' env:'
     source set_env
     (/usr/bin/env | step) || true;
@@ -26,11 +26,11 @@ cur_progr() {
 cur_progr 1>&5
 
 stdout() {
-    echo -n {g}; source last_log "$BDIR/runtime/stdout.log"; echo '{}';
+    source echon {g}; source last_log "$BDIR/runtime/stdout.log"; echo '{}';
 }
 
 stderr() {
-    echo -n {r}; source last_log "$BDIR/runtime/stderr.log"; echo '{}';
+    source echon {r}; source last_log "$BDIR/runtime/stderr.log"; echo '{}';
 }
 
 cleanup() {
@@ -55,7 +55,7 @@ check_logs() {
 }
 
 check_logs_5() {
-    (echo -n {w}; check_logs; echo '{}') 1>&5
+    (source echon {w}; check_logs; echo '{}') 1>&5
 }
 
 trap "(stdout; stderr; check_logs_5; cleanup) 1>&5" EXIT

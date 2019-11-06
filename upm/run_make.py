@@ -23,7 +23,7 @@ def find_file(cmd, f):
                     return path
 
 
-def run_makefile(data, shell_vars, shell_out, targets, threads):
+def parse_makefile(data):
     lst = []
     prev = None
     cprint = y.xprint_white
@@ -69,12 +69,21 @@ def run_makefile(data, shell_vars, shell_out, targets, threads):
 
     if prev:
         lst.append(prev)
+        
+    return lst
 
-    for i, val in enumerate(lst):
-        val['n'] = i
+
+def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, verbose):
+    lst = data
+
+    if not parsed:
+        lst = parse_makefile(lst)
 
     if threads > 1:
-        return y.run_parallel_build(lst, shell_vars, targets, threads)
+        for i, val in enumerate(lst):
+            val['n'] = i
+
+        return y.run_parallel_build(lst, shell_vars, targets, threads, verbose)
 
     by_dep = {}
 

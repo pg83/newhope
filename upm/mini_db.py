@@ -147,17 +147,21 @@ class B(object):
 
     def check_db(self):
         for k, v in self._v.iteritems():
-            assert k == key_struct_ptr(v)
+            assert k == hashlib.md5(v).hexdigest()[:12]
 
         return 'all ok, count = ' + str(len(self._v))
 
 
+@y.defer_constructor
 def init():
-    v = B()
+    if '/adb' in y.verbose:
+        v = A()
+    else:
+        v = B()
 
     for i in dir(v):
         if not i.startswith('__'):
             globals()[i] = eval('v.' + i)
 
-
-init()
+    if '/check_db' in y.verbose:
+        y.atexit.register(v.check_db)

@@ -57,7 +57,7 @@ def rm_load_program_modules():
    res = {}
 
    for path, data in rm_load_local_code('upm'):
-      res[path] = ('upm_' + os.path.basename(path)[:-3], data)
+      res[path] = ('ya.' + os.path.basename(path)[:-3], data)
 
    return res
 
@@ -101,7 +101,78 @@ def rm_create_stable_order(lst):
    return dict((x, i) for i, x in enumerate(lst))
 
 
+class Mod(dict):
+   def __init__(self, name):
+      self.__dict__ = self
+      self.__name__ = name
+
+      #sys.modules[name] = self
+
+   def self_exec(self):
+      exec self.__ycode__ in self
+
+
+class Loader(object):
+   def __init__(self):
+      self._by_name = {}
+      self.create_module('ya', 'ya', '', 'ya')
+
+   def create_module(self, name, path, text, file=None):
+      l = len(os.path.dirname(os.path.dirname(path)))
+
+      m = Mod(name)
+      m.__file__ = file or m.__name__
+      m.__ypath__ = path
+      m.__ytext__ = text
+      m.__ycode__ = compile(m.__ytext__.replace('\0', ''), m.__file__, 'exec')
+      m.__pkg__ = None
+      m.__loader__ = self
+
+      def exec_c(data, **kwargs):
+         return m.__loader__.exec_code(m, data, **kwargs)
+
+      m.__yexec__ = exec_c
+
+      self._by_name[m.__name__] = m
+      self._by_name['ya'][m.__name__[3:]] = m
+
+      return m
+
+   def exec_code(self, mod, data, closure=None, module_name=None, globals=None, **kwargs):
+      if module_name:
+         mod_name = mod.__name__ + '.' + module_name
+         m = self.create_module(mod_name, mod.__ypath__, data, mod_name)
+
+         if globals:
+            m.globals = lambda: globals
+            m.locals = lambda: globals
+
+         m.y = mod.y
+
+         if closure:
+            m.update(closure)
+
+         m.self_exec()
+
+         return m
+      else:
+         exec compile(data.strip(), mod.__file__, 'exec') in mod
+
+   def get_y(self):
+      return self._by_name['ya.iface'].y
+
+   def get_source(self, name):
+      m = self._by_name[name]
+      
+      return m.__ytext__
+      
+   def iter_modules(self):
+      return self._by_name.itervalues()
+
+
 def rm_install():
+   sys.modules['ya'] = -1
+
    def bm():
       return sys.builtin_modules
 
@@ -129,6 +200,8 @@ def rm_install():
       plugins = sorted(list(v.items()), key=lambda x: keys.get(x[0], len(x[1])))
 
       return '\n'.join(x[1] for x in plugins)
+   
+   loader = Loader()
 
    sys.builtin_modules = builtin_modules
    mods = []
@@ -136,27 +209,23 @@ def rm_install():
    for path in sorted(bm()['upm'].keys()):
       name, value = bm()['upm'][path]
 
-      if name == 'upm_plugins':
+      if name == 'ya.plugins':
          value += get_plugins_code()
 
-      if name not in sys.modules:
-         mod = sys.modules.setdefault(name, imp.new_module(name))
-         mod.__path__ = path
-         mod.__file__ = path
-         mod.__name__ = name
-         mod.__pkg__ = name.rstrip('.')[-1]
-         mod.__text__ = value
-         mods.append(mod)
+      assert name not in sys.modules
+
+      mod = loader.create_module(name, path, value)
+      mods.append(mod)
 
    fix_order = {
-      'upm_iface': -100,
-      'upm_algo': -95,
-      'upm_single': -90,
-      'upm_caches': -80,
-      'upm_logwrap': -75,
-      'upm_mini_db': -70,
-      'upm_manager': -60,
-      'upm_plugins': 1000000,
+      'ya.iface': -100,
+      'ya.algo': -95,
+      'ya.single': -90,
+      'ya.manager': -85,
+      'ya.caches': -80,
+      'ya.logwrap': -75,
+      'ya.mini_db': -70,
+      'ya.plugins': 1000000,
    }
 
    def get_order(porder):
@@ -167,31 +236,26 @@ def rm_install():
 
    old_order = dict(rm_create_stable_order(mod_names(mods)).items() + bm()['ord'].items())
    mods = list(sorted(mods, key=get_order(old_order)))
-   copy = list(mods)
+   iface = mods[0]
    used = set()
    order = []
-   code = compile('from upm_iface import y', '<god>', 'exec')
 
    while mods:
       new_mods = []
 
       for mod in mods:
-         path = mod.__path__
-         data = mod.__text__
-
-         if mod.__name__ != 'upm_iface':
-            exec code in mod.__dict__
+         if mod.__name__ != iface.__name__:
+            mod.y = iface.y
 
          try:
             try:
-               exec compile(data, path, 'exec') in mod.__dict__
+               mod.self_exec()
                order.append(mod.__name__)
             except Exception as e:
                key = str(e) + str(path)
 
                if key not in used:
                   used.add(key)
-                  #print data, e, mod.__name__, traceback.format_exc(e)
                   print e, mod.__name__, traceback.format_exc(e)
 
                new_mods.append(mod)
@@ -205,20 +269,10 @@ def rm_install():
       random_order = rm_create_random_order(mod_names(new_mods))
       mods = list(sorted(new_mods, key=get_order(random_order)))
 
-   y = sys.modules['upm_iface'].y
-
-   @y.lookup
-   def find_something(name):
-      for m in copy:
-         res = getattr(m, name, None)
-
-         if res:
-            return res
-
-      raise AttributeError()
-
    bm()['ord'] = dict(((x, i) for i, x in enumerate(order)))
    bm()['txt'] = rm_get_main_text().replace("__main__':", "__newmain__':")
+   
+   return iface.y
 
 
 def rm_get_main_text():
@@ -318,10 +372,9 @@ def bootstrap_impl(mode):
       else:
          mode = 0
 
-   rm_install()
+   y = rm_install()
 
    if mode == 0:
-      from upm_iface import y
       y.exec_plugin_code(y.gen_all_texts())
 
       return y.run_main(args)

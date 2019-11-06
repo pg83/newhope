@@ -1,7 +1,3 @@
-import sys
-import itertools
-
-                        
 def xxformat(*args, **kwargs):
     def iter_t():
         for x in args:
@@ -12,11 +8,11 @@ def xxformat(*args, **kwargs):
 
     text = ' '.join(y.fixx(x) for x in iter_t())
 
-    return process_color(text, kwargs.pop('init', 'rst'), kwargs)
+    return process_color(text, kwargs.pop('init', ''), kwargs)
                 
 
 def xxprint(*args, **kwargs):
-    kwargs.pop('where', sys.stderr).write(xxformat(*args, **kwargs) + '\n')
+    kwargs.pop('where', y.sys.stderr).write(xxformat(*args, **kwargs) + '\n')
 
 
 def next_part(part, *parts):
@@ -24,8 +20,9 @@ def next_part(part, *parts):
 
 
 def process_color(text, init, kwargs):
+    verbose = kwargs.get('verbose', '')
     cm = y.color_map_func()
-    rst = ('c', 'rst')
+    rst = ('c', '')
 
     def process_part(s, *parts):
         text, parts = next_part(*parts)
@@ -89,14 +86,16 @@ def process_color(text, init, kwargs):
             yield x            
 
     def combine():
-        s = [init or 'rst']
+        s = [init or '']
         last = []
 
         def join(l):
             if l[0][0] == 'c':
                 c = l[-1][1]
+                
+                if '/rc' in verbose:
+                    return '[' + c + ']'
 
-                #return '[' + c + ']'
                 return cm[c]
             else:
                 return ''.join([x[1] for x in last])
@@ -126,7 +125,7 @@ def lookup(xp):
         color=xp[7:]
 
         def func(*args, **kwargs):
-            print >>sys.stderr, xxformat(*args, init=color, **kwargs)
+            print >>y.sys.stderr, xxformat(*args, init=color, **kwargs)
         
         func.__name__ = xp
 

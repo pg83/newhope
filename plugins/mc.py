@@ -1,16 +1,14 @@
-@ygenerator(tier=3, kind=['base', 'dev', 'tool'])
-def mc0(num):
+@ygenerator(tier=3, kind=['base', 'program'])
+def mc0():
     return {
         'code': """
              source fetch "http://ftp.midnight-commander.org/mc-4.8.23.tar.xz" 1
-             cp -R $(MNGR_DEVTOOLS{num}_DIR)/* $BDIR/runtime/
-             rm $BDIR/runtime/lib/*.la
-             export CFLAGS="-I$BDIR/runtime/include/glib-2.0 -I$BDIR/runtime/lib/glib-2.0/include $CFLAGS"
-             export LDFLAGS="-L$BDIR/runtime/lib $LDFLAGS"
-             export LIBS="-framework CoreServices -framework CoreFoundation -lglib-2.0 -lintl -liconv"
-             ./configure --prefix=$IDIR --disable-shared --enable-static --with-screen=ncurses --with-libiconv-prefix=$BDIR/runtime --with-libintl-prefix=$BDIR/runtime || exit 1
+             $YSHELL ./configure --prefix=$IDIR --disable-shared --enable-static --with-screen=ncurses  || exit 1
              $YMAKE -j2
              $YMAKE install
-        """.format(num=num - 1),
+        """,
         'version': '4.8.23',
+        'meta': {
+            'depends': ['intl', 'iconv', 'glib-2.0', 'ncurses', 'slang'],
+        }
     }

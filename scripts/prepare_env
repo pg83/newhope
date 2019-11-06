@@ -1,5 +1,5 @@
 export IDIR="$PD/$1"
-export BDIR="$WD/$(echo -n $1 | md5)"
+export BDIR="$WD/$(source echon $1 | md5)"
 export PKGF="$RD/$1"
 
 export TMPDIR="$BDIR/tmp"

@@ -1,14 +1,6 @@
 import sys
 import imp
-
-
-def my_modules():
-    for path in sorted(sys.builtin_modules['upm'].keys()):
-        name, _ = sys.builtin_modules['upm'][path]
-
-        yield name, sys.modules[name]
-
-    yield '__main__', sys.modules['__main__']
+import itertools
 
 
 class IFace(object):
@@ -16,9 +8,9 @@ class IFace(object):
         self._c = {}
         self._l = []
 
-        self.add_lookup(lambda x: sys.modules['upm_' + x])
         self.add_lookup(lambda x: sys.modules[x])
         self.add_lookup(self.find_function)
+        self.add_lookup(lambda x: __import__(x))
 
     def find(self, name):
         subst = {
@@ -33,6 +25,8 @@ class IFace(object):
             except AttributeError:
                 pass
             except KeyError:
+                pass
+            except ImportError:
                 pass
 
         raise AttributeError(name)
@@ -55,9 +49,14 @@ class IFace(object):
         print self._c
 
     def find_function(self, name):
-        for _, m in my_modules():
-            if name in m.__dict__:
+        for m in itertools.chain(__loader__.iter_modules(), [sys.modules['__main__']]):
+            if m.__name__ == name:
+                return m
+
+            try:
                 return m.__dict__[name]
+            except:
+                pass
 
         raise AttributeError(name)
 

@@ -56,7 +56,7 @@ def to_v2(data, info):
 
     node['prepare'] = list(iter_prepare())
 
-    for x in ('version', 'codec', 'extra', 'name', 'do_fetch_node', 'pkg_full_name', 'inputs', 'output'):
+    for x in ('version', 'codec', 'extra', 'name', 'do_fetch_node', 'pkg_full_name', 'inputs', 'output', 'meta'):
         if x in data:
             node[x] = data[x]
 

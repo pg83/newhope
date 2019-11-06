@@ -1,4 +1,4 @@
-@ygenerator(tier=-1, kind=['core', 'dev', 'tool', 'library'])
+@ygenerator(tier=-1, kind=['core', 'tool', 'library', 'compression'])
 def bzip20():
     return {
         'code': """
@@ -6,4 +6,9 @@ def bzip20():
             $YMAKE -j2 PREFIX=$IDIR install
         """,
         'version': '1.0.8',
+        'meta': {
+            'provide': [
+                {'lib': 'bz2'},
+            ],
+        },
     }

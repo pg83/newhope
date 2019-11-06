@@ -1,6 +1,10 @@
-export PATH="$PATH:/bin:/usr/bin:/usr/local/bin"
+export PATH="$PATH:/bin:/sbin:/usr/bin:/usr/local/bin"
+export CFLAGS="-O2 -w -fno-builtin $CFLAGS"
 
-export YSHELL=`which dash || which $OUTER_SHELL || which bash`
+export PATH="`source fix_uniq ':' $PATH`"
+export CFLAGS="`source fix_uniq_space $CFLAGS`"
+
+export YSHELL=`(which $YSHELL || which dash || which $OUTER_SHELL || which bash) 2> /dev/null`
 export YMAKE=`which gmake || which make`
 export YXZ=`which xz`
 export YTAR=`which bsdtar || which tar`
@@ -10,5 +14,3 @@ export YUNZIP=`which unzip`
 export YCURL=`which curl`
 export YWGET=`which wget`
 export SHELL="$YSHELL"
-
-export CFLAGS="-O2 -w"

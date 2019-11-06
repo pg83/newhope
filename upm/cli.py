@@ -1,20 +1,9 @@
-import os
-import imp
-import sys
-import traceback
-import argparse
-import subprocess
-import shutil
-import traceback
-import urllib2
-
-
 def build_docker():
-   data = subprocess.check_output(['docker build .'], shell=True, env=os.environ)
+   data = y.subprocess.check_output(['docker build .'], shell=True, env=y.os.environ)
    lines = data.split('\n')
    line = lines[len(lines) - 2]
 
-   y.xprint(data.strip(), where=sys.stdout)
+   y.xprint(data.strip(), where=y.sys.stdout)
 
    return line.split(' ')[2]
 
@@ -30,11 +19,11 @@ def prepare_root(r):
 
    def iter_trash():
       for f in ('w', 'd', 'bin', 'tmp'):
-         yield os.path.join(r, f)
+         yield y.os.path.join(r, f)
 
    for f in iter_trash():
       try:
-         shutil.rmtree(f)
+         y.shutil.rmtree(f)
       except Exception as e:
          if 'No such file or directory' in str(e):
             pass
@@ -43,54 +32,18 @@ def prepare_root(r):
 
    for f in ('bin', 'tmp'):
       try:
-         os.makedirs(os.path.join(r, f))
+         y.os.makedirs(y.os.path.join(r, f))
       except OSError:
          pass
 
-   p = os.path.join(r, 'bin', 'upm')
+   p = y.os.path.join(r, 'bin', 'upm')
 
    with open(p, 'w') as f:
       f.write(data)
-      os.system('chmod +x ' + p)
-
-   #os.execl(p, *([p] + sys.argv[1:]))
+      y.os.system('chmod +x ' + p)
 
 
-def fetch_data(url):
-   def fetch_1(url):
-      return urllib2.urlopen(url).read()
-
-   def fetch_2(url):
-      return subprocess.check_output(['curl -o - ' + url], shell=True)
-
-   for f in (fetch_1, fetch_2):
-      try:
-         return f(url)
-      except Exception as e:
-         print e
-
-   if e:
-      raise e
-
-
-def fetch_http(root, url):
-   name = os.path.basename(url)
-   fname = os.path.join(root, name)
-   data = fetch_data(url)
-
-   try:
-      os.makedirs(root)
-   except OSError:
-      pass
-
-   with open(fname, 'w') as f:
-      f.write(data)
-
-   subprocess.check_output(['tar -xf ' + name], cwd=root, shell=True)
-
-   return url
-
-
+@y.main_entry_point
 def cli_eval(args, verbose):
    repl = {
       'layers': 'y.gen_all_texts(only_print_layers=True)'
@@ -106,157 +59,22 @@ def cli_eval(args, verbose):
       try:
          print eval(repl.get(a, a))
       except Exception as e:
-         y.xprint_red('can not run ' + a, traceback.format_exc(e))
+         y.xprint_red('can not run ' + a, y.traceback.format_exc(e))
 
 
-def cli_source(arg, verbose):
-   parser = argparse.ArgumentParser()
-
-   parser.add_argument('--path', default='data', action='store', help='Where to store all')
-   parser.add_argument('targets', nargs=argparse.REMAINDER)
-
-   args = parser.parse_args(arg)
-   args.path = os.path.abspath(args.path)
-
-   def iter_urls():
-      host = y.current_host_platform()
-      target = host
-      cc = {'host': host, 'target': target}
-      params = {'info': cc, 'compilers': {'deps': [], 'cross': False}}
-
-      for t in args.targets:
-         if t.startswith('http'):
-            yield url
-         else:
-            node = y.restore_node(eval('y.' + t)(y.deep_copy(params)))['node']
-            url = node.get('src') or node.get('url')
-
-            if url:
-               yield url
-
-            urls = node.get('urls')
-
-            if urls:
-               for url in urls:
-                  yield url
-               
-   for url in iter_urls():
-      print 'will fetch', url, fetch_http(args.path, url)
-
-
-def cli_make(arg, verbose):
-   parser = argparse.ArgumentParser()
-
-   parser.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
-   parser.add_argument('-f', '--path', default='-', action='store', help='path to Makefile')
-   parser.add_argument('-r', '--root', default=None, action='store', help='main root for build files')
-   parser.add_argument('-i', '--install-dir', default=None, action='store', help='where to install packages')
-   parser.add_argument('-d', '--do-not-remove', default=None, action='store', help='не удалять даннные')
-   parser.add_argument('--production', default=False, action='store_const', const=True, help='production execution')
-   parser.add_argument('targets', nargs=argparse.REMAINDER)
-
-   args = parser.parse_args(arg)
-   local = not args.production
-
-   if local and args.install_dir:
-      raise Exception('do not do this, kids, at home')
-
-   def calc_root():
-      if args.root:
-         return args.root
-
-      if local:
-         return upm_root()
-
-      if args.production:
-         return '/d'
-
-      raise Exception('can not determine root')
-
-   root = calc_root()
-   prepare_root(root)
-
-   def iter_replaces():
-      if args.install_dir:
-         yield ('$PD', args.install_dir)
-
-      yield ('$MD', '$PREFIX/m')
-      yield ('$RD', '$PREFIX/r')
-      yield ('$WD', '$PREFIX/w')
-
-      if local:
-         yield ('$PD', '$PREFIX/p')
-
-      if args.production:
-         yield ('$PD', '/private')
-
-      yield ('$PREFIX', root)
-
-   shell_vars = dict(iter_replaces())
-
-   if args.path == '-':
-      data = sys.stdin.read()
-   elif args.path:
-      with open(args.path, 'r') as f:
-         data = f.read()
-   else:
-      data = sys.stdin.read()
-
-   y.run_makefile(data, shell_vars, [], args.targets, int(args.threads))
-
-
-def upm_root():
-   return y.user_home() + '/upm_root'
-
-
+@y.main_entry_point
 def cli_cleanup(arg, verbose):
-   os.system("cd {sd} && (find . | grep '~' | xargs rm)".format(sd=y.script_dir()))
+   y.os.system("cd {sd} && (find . | grep '~' | xargs rm)".format(sd=y.script_dir()))
 
 
-def cli_build(arg, verbose):
-   parser = argparse.ArgumentParser()
-
-   parser.add_argument('-t', '--target', default=[], action='append', help='add target')
-   parser.add_argument('-i', '--image', default='busybox', action='store', help='choose docker image')
-   parser.add_argument('-r', '--root', default=None, action='store', help='root for all our data')
-
-   args = parser.parse_args(arg)
-
-   root = args.root
-
-   if not root:
-      root = upm_root()
-
-   prepare_root(root)
-
-   image = args.image
-
-   if image == "now":
-      image = build_docker()
-
-   def iter_args():
-      yield 'docker'
-      yield 'run'
-      yield '-ti'
-      yield '--mount'
-      yield 'type=bind,src=' + root + ',dst=/d'
-
-      for n, v in enumerate(args.target):
-         yield '--env'
-         yield 'TARGET' + str(n + 1) + '=' + v
-
-      yield image
-
-   subprocess.Popen(list(iter_args()), shell=False).wait()
-
-
+@y.main_entry_point
 def cli_run(args, verbose):
    try:
       ids = args.index('--root')
       root = args[ids + 1]
       args = args[:ids] + args[2:]
    except Exception as e:
-      root = upm_root()
+      root = y.upm_root()
 
    prepare_root(root)
 
@@ -269,9 +87,10 @@ def cli_run(args, verbose):
       for x in args:
          yield x
 
-   os.execl(docker_binary(), *list(iter_args()))
+   y.os.execl(docker_binary(), *list(iter_args()))
 
 
+@y.main_entry_point
 def cli_tag(args, verbose):
    code = """
        docker tag $1 antonsamokhvalov/newhope:$2
@@ -280,60 +99,38 @@ def cli_tag(args, verbose):
        docker push antonsamokhvalov/newhope:latest
    """.replace('$1', args[0]).replace('$2', args[1])
 
-   os.execl('/bin/sh', '/bin/sh', '-c', code)
+   y.os.execl('/bin/sh', '/bin/sh', '-c', code)
 
 
+@y.main_entry_point
 def cli_help(args, verbose):
    def iter_funcs():
-      for k in sorted(globals().keys()):
-         if k.startswith('cli_'):
-            yield k[4:]
-
-   y.xprint_green('usage: ' + sys.argv[0] + ' (-v, --verbose, --profile --bootstrap-mode)* ' + '[' + ', '.join(iter_funcs()) + '] ....')
-
-
-def cli_makefile(arg, verbose):
-   parser = argparse.ArgumentParser()
-
-   parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
-   parser.add_argument('-S', '--shell', default=[], action='append', help='out build.sh script')
-   parser.add_argument('-P', '--plugins', default=[], action='append', help='where to find build rules')
-
-   args = parser.parse_args(arg)
-
-   if args.output:
-      f = open(args.output, 'w')
-      close = f.close
-   else:
-      f = sys.stdout
-      close = lambda: 0
-
-   try:
-      if args.shell:
-         f.write(y.build_sh_script(args.shell, verbose))
-      else:
-         f.write(y.main_makefile(verbose))
-
-      f.flush()
-   finally:
-      close()
+      for f in y.main_entry_points():
+         yield f.__name__[4:]
+         
+   y.xprint_green('usage: ' + y.sys.argv[0] + ' (-v, --verbose, --profile --bootstrap-mode)* ' + '[' + ', '.join(sorted(set(iter_funcs()))) + '] ....')
 
 
+@y.main_entry_point
 def cli_release(args, verbose):
    print y.rm_prepare_release_data() + '\n\nbootstrap(0)\n\n'
 
 
-def cli_selftest(args, verbose):
-   for f in y.iter_all_tests():
-      y.xprint_white('-------------------------------------------------------------------')
-      f()
-
-   y.xprint_white('-------------------------------------------------------------------')
-
-
 def run_main(args):
-   args, do_verbose = y.check_arg(args, ('-v', '--verbose'))
-   args, do_profile = y.check_arg(args, ('--profile',))
+   args, verbose = y.check_arg(args, ('-v', '--verbose'))
+   args, profile = y.check_arg(args, ('--profile',))
+   args, verbose_mode = y.rm_check_arg_2(args, '-vm', True)
+
+   if verbose_mode is None:
+      args, verbose_mode = y.rm_check_arg_2(args, '--verbose-mode', True)
+
+   if verbose_mode: 
+      verbose = verbose_mode
+   else:
+      if verbose:
+         verbose = '1'
+      else:
+         verbose = ''
 
    if len(args) < 2:
       args = args + ['help']
@@ -341,10 +138,23 @@ def run_main(args):
    mode = args[1]
 
    def func():
-      ff = globals().get('cli_' + mode, cli_help)
-      ff(args[2:], do_verbose)
+      def select():
+         d = dict((f.__name__, f) for f in y.main_entry_points())
 
-   func = y.profile(func, really=do_profile)
-   func = y.logged_wrapper(rethrow=-1, tb=do_verbose, rfunc=func)
+         return d['cli_' + mode]
+
+      ff = select()
+      ff(args[2:], verbose)
+
+   func = y.profile(func, really=profile)
+   func = y.logged_wrapper(rethrow=-1, tb=verbose, rfunc=func, important=True)
+   
+   l = locals()
+
+   @y.lookup
+   def find(name):
+      return l[name]
+
+   y.run_all_defer_constructors()
 
    return func()

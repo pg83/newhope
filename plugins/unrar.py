@@ -1,4 +1,4 @@
-@ygenerator(tier=1, kind=['base', 'dev', 'tool'])
+@ygenerator(tier=1, kind=['core', 'tool', 'compression'])
 def unrar0():
     return {
         'code': """
@@ -8,4 +8,5 @@ def unrar0():
              install -v -m755 unrar $IDIR/bin
         """,
         'version': '5.8.3',
+        'meta': {},
     }

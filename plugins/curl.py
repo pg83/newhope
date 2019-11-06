@@ -1,14 +1,17 @@
-@ygenerator(tier=0, kind=['core', 'dev', 'tool'])
-def curl0(info, num):
-    func = find_build_func('mbedtls', num=num - 1)
-
+@ygenerator(tier=0, kind=['core', 'box', 'tool'])
+def curl0():
     return {
         'code': """
             source fetch "https://curl.haxx.se/snapshots/curl-7.67.0-20191011.tar.bz2" 1
-            ./configure --prefix=$IDIR --with-mbedtls=$(MNGR_$(SS)_DIR) --enable-static --disable-shared
+            $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared
             $YMAKE -j2
             $YMAKE install
-        """.replace('$(SS)', func.__name__.upper()),
-        'extra_deps': [func(info)],
+        """,
         'version': '7.67.0',
+        'meta': {
+            'depends': ['mdedtls', 'libidn2'],
+            'configure': [
+                {'opt': '--with-secure-transport', 'os': 'darwin'},
+            ]
+        },
     }

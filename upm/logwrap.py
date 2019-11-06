@@ -2,8 +2,11 @@ import functools
 import traceback
 
 
-def logged_wrapper(rethrow=None, tb=False, rfunc=None):
+def logged_wrapper(rethrow=None, tb=False, rfunc=None, important=False):
     def decorator(func):
+        if not important:
+            return func 
+
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)

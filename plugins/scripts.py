@@ -70,7 +70,7 @@ def build_scripts_run():
         'inputs': [],
         'output': build_scripts_path(),
         'build': [
-            'rm -rf "{output}" || true && mkdir -p "{output}" && cd "{output}"'.format(output=build_scripts_dir()),
+            'export PATH=$PATH:/bin:/usr/bin:/usr/local/bin; rm -rf "{output}" || true && mkdir -p "{output}" && cd "{output}"'.format(output=build_scripts_dir()),
         ] + list(unpack_sh()) + [
             'echo 7 > done',
         ]

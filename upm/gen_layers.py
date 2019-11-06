@@ -1,33 +1,9 @@
-import sys
-
-
-def calc_name(x):
-    for l in x['template'].split('\n'):
-        if 'return ' in l:
-            l = l.split('(')[0]
-            l = l.split( )[-1]
-
-            return l.strip()[:-1]
-
-    raise Exception('shit ' + x)
-
-
 def gen_all_texts(only_print_layers=False):
     by_tier = {}
     by_name = {}
     all = []
 
-    for f in y.all_my_funcs():
-        f = y.deep_copy(f)
-
-        ss = f.get('support', [])
-
-        if ss and 'darwin' not in ss:
-            continue
-
-        if 'name' not in f:
-            f['name'] = calc_name(f)
-
+    for f in y.iter_all_user_templates():
         t = f['tier']
         by_name[f['name']] = f
 
@@ -77,7 +53,7 @@ def gen_all_texts(only_print_layers=False):
         if l == 0:
             return {'deps': '[]', 'deps_funcs': '[]'}
 
-        res = [gen_name(x) for x in descr[l]]
+        res = ['y.' + gen_name(x) for x in descr[l]]
 
         by_val = '[' + ', '.join([x + '(info)' for x in res]) + ']'
         by_typ = '[' + ', '.join(res) + ']'
@@ -142,14 +118,14 @@ def gen_all_texts(only_print_layers=False):
 
     if only_print_layers:
         for i in sorted(by_num.keys()):
-            print >>sys.stderr,  i, by_num[i]
+            print >>y.sys.stderr,  i, by_num[i]
 
         return
 
     stmpl = """
 @y.singleton
 def cached_types{num}():
-    return join_funcs('devtools', {num}, {deps_funcs})
+    return y.join_funcs('devtools', {num}, {deps_funcs})
 
 
 @y.cached()

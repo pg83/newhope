@@ -1,9 +1,3 @@
-import atexit
-import random
-import functools
-import itertools
-
-
 def default_key(*args, **kwargs):
     return y.struct_dump_bytes([args, kwargs])
 
@@ -33,33 +27,45 @@ def get_copy_func(copy=False):
 
     return dc
 
+tmpl = """
+def {name}(*args, **kwargs):
+    k = sdb([key(*args, **kwargs), k2])
+
+    if k not in cc:
+        cc[k] = f(*args, **kwargs)
+
+    return cf(cc[k])
+
+wrapper = {name}
+"""
 
 def cached(key=default_key, seed=None, copy=False):
     sdb = y.struct_dump_bytes
-    k1 = sdb([key.__name__, seed or random.random()])
+    k1 = sdb([key.__name__, seed or y.random.random()])
 
     def functor(f):
         k2 = sdb([f.__name__, k1])
         cc = common_cache()
         cf = get_copy_func(copy=copy)
+        tm = tmpl.format(name='cached_' + f.__name__)
 
-        @functools.wraps(f)
-        def wrapper(*args, **kwargs):
-            k = sdb([key(*args, **kwargs), k2])
-
-            if k not in cc:
-                cc[k] = f(*args, **kwargs)
-
-            return cf(cc[k])
-
-        return wrapper
+        closure = {
+            'sdb': sdb,
+            'key': key,
+            'k2': k2,
+            'cc': cc,
+            'f': f,
+            'cf': cf,
+        }
+        
+        return __yexec__(tm, module_name=f.__name__, closure=closure)['wrapper']
 
     return functor
 
 
 def compose_simple(*funcs):
     def wrapper(*args, **kwargs):
-        it = itertools.chain(list(funcs))
+        it = y.itertools.chain(list(funcs))
 
         for f in it:
             data = f(*args, **kwargs)

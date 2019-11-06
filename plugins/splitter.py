@@ -49,7 +49,8 @@ REPACK_FUNCS = {
 def splitter_key(func, **kwargs):
     return [func.__name__, kwargs]
 
-
+c = {'res': 0}
+        
 @y.cached(key=splitter_key)
 def splitter(func, **kwargs):
     repack = kwargs.get('repacks', REPACK_FUNCS)
@@ -68,7 +69,7 @@ def {name}_{kind}(info):
                 yield template.format(folders=str(folders), name=fn, kind=kind)
 
         for t in iter_templates():
-            exec t in globals()
+            __yexec__(t)
 
     return func
 

@@ -3,4 +3,5 @@ do
     source copy_log "$i" "$IDIR/log"   
 done
 
+source rmdel "$IDIR/lib/"*.la
 source prepare_$1_pkg "$IDIR" "$PKGF"

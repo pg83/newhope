@@ -1,17 +1,23 @@
-@ygenerator(tier=0, kind=['core', 'dev', 'tool'])
-def pkg_config0(num, info):
-    if num <= 6:
-        extra = '--with-internal-glib'
-    else:
-        extra = ''
-
+def pkg_config_base(opts, deps):
     return {
         'code': """
             source fetch "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz" 1
-            export LIBS="-liconv -lcharset"
-            ./configure --prefix=$IDIR {extra} --enable-static --disable-shared
+            $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared {opts}
             $YMAKE
             $YMAKE install
-        """.format(extra=extra),
+        """.format(opts=' '.join(opts)),
         'version': '0.29.2',
+        'meta': {
+            'depends': deps,
+        },
     }
+
+
+@ygenerator(tier=0, kind=['core', 'tool', 'box'])
+def pkg_config0():
+    return pkg_config_base([], ['iconv', 'glib-2.0'])
+
+
+@ygenerator(tier=0, kind=['core', 'tool'])
+def pkg_config_int0():
+    return pkg_config_base(['--with-internal-glib'], ['iconv'])

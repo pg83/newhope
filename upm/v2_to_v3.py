@@ -104,7 +104,7 @@ def to_bash(x):
     return '$' +  x[2] + 'D' + x[4:]
 
 
-def print_one_node(root, reducer):
+def print_one_node(root):
     rn = root['trash']['restore_node']
     root_node = root['node']
     target = gen_pkg_path(root)

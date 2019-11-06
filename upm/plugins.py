@@ -6,7 +6,7 @@ import inspect
 
 
 def dep_name(dep):
-    return y.restore_node(dep)['node']['name']
+    return y.restore_node_node(dep)['name']
 
 
 def dep_list(info, iter):
@@ -18,7 +18,7 @@ def reg_func_cb(x):
 
 
 def exec_plugin_code(code):
-    exec compile(code, __file__, 'exec') in globals()
+    __yexec__(code, module_name='functions')
 
 
 def find_build_func(name, num='', split=''):
@@ -28,7 +28,7 @@ def find_build_func(name, num='', split=''):
     if split:
         name = name + '_' + split
 
-    return globals()[name]
+    return eval('y.' + name)
 
 
 def identity(x):
@@ -87,11 +87,11 @@ def ygenerator(tier=None, kind=[], include=[], exclude=[], cached=True, version=
 @y.options({options})
 def {name}{num}(info):
     def my_tov2(x):
-        return better_tov2(x, info, {kw})
+        return y.better_tov2(x, info, {kw})
 
-    return {tov2}(set_name({func_name}(info=info, **{kw}), "{name}{num}"))
+    return {tov2}(y.set_name(y.{func_name}(info=info, **{kw}), "{name}{num}"))
 """
-        fname = 'identity'
+        fname = 'y.identity'
 
         if version == 1:
             fname = 'my_tov2'

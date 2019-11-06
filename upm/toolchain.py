@@ -1,12 +1,9 @@
-import itertools
-
-
 @y.singleton
 def iter_all_tools():
     ff = y.fix_v2
 
     def do():
-        for x in itertools.chain(y.iter_system_tools(), y.iter_musl_cc_tools(), y.iter_ndk_tools()):
+        for x in y.itertools.chain(y.iter_system_tools(), y.iter_musl_cc_tools(), y.iter_ndk_tools()):
             yield ff(x)
 
     return list(do())

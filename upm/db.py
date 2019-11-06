@@ -1,11 +1,3 @@
-import sys
-import json
-import time
-import binascii
-import random
-import itertools
-
-
 def visit_nodes(nodes, debug=False):
     s = set()
 
@@ -53,6 +45,7 @@ def calc_noid(v):
     return 'i:' + y.key_struct_ptr([calc_noid_base(v), v['trash']['extra']])[2:]
 
 
+@y.cached()
 def restore_node(ptr):
     res = y.load_list(ptr)
 
@@ -77,7 +70,7 @@ def restore_node_deps(ptr):
 def store_node_impl(node, extra_deps):
     return y.intern_list([
         y.intern_struct(node['node']),
-        y.intern_list(list(itertools.chain(node['deps'], extra_deps))),
+        y.intern_list(list(y.itertools.chain(node['deps'], extra_deps))),
     ])
 
 

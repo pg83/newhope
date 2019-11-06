@@ -25,8 +25,11 @@ def options(**kwargs):
         def wrapper(info):
             return gen_func(func, info, res)
 
+        assert wrapper
+
         for cb in y.callbacks().values():
             wrapper = cb(wrapper, **res)
+            assert wrapper
 
         return wrapper
 

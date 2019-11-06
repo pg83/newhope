@@ -74,7 +74,7 @@ def get_white_line():
 
 
 @y.defer_wrapper
-def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
+def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs, verbose):
     lst = get_only_our_targets(lst, targets)
     white_line = get_white_line()
 
@@ -123,20 +123,35 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
             if os.path.exists(output):
                 return lambda: y.xxprint('target {g:task} complete', init='b', task=cn)
 
-            def find_tool(tool):
-                def iter_deps():
-                    for d in l['deps2']:
-                        yield os.path.join(os.path.dirname(d), 'bin')
+            def iter_deps():
+                for d in l['deps2']:
+                    yield os.path.join(os.path.dirname(y.subst_kv_base(d, shell_vars.iteritems())), 'bin')
 
-                return y.find_tool_uncached(tool, iter_deps())
+            srch_lst = list(iter_deps())
+
+            def find_tool(tool):
+                if tool[0] == '/':
+                    return tool
+
+                return y.find_tool_uncached(tool, srch_lst)
 
             def remove_d(k):
                 if k[0] == '$':
                     return k[1:]
                 
                 return k
+            
+            if '$YSHELL' in shell_vars:
+                shell = find_tool(shell_vars['$YSHELL'])
 
-            shell = find_tool('dash') or find_tool('bash') or find_tool('sh')
+                if not shell:
+                    raise Exception('can not find ' + shell_vars['$YSHELL'])
+            else:
+                shell = find_tool('dash') or find_tool('yash') or find_tool('sh') or find_tool('bash')
+
+            if '/sh' in verbose:
+                y.xxprint('use', shell)
+
             input = '\n'.join(c)
             cmd = [shell, '-s']
             env = dict(itertools.chain({'OUTER_SHELL': shell}.iteritems(), [(remove_d(k), v) for k, v in shell_vars.iteritems()]))
@@ -144,9 +159,17 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
             retcode = None
 
             def iter_parts():
-                yield 'set +x'
+                if '/-x' in verbose:
+                    yield 'set -x'
+                else:
+                    yield 'set +x'
+                    
+                if '/-v' in verbose:
+                    yield 'set -v'
+                else:
+                    yield 'set +v'
+
                 yield 'set -e'
-                yield 'set +v'
 
                 for k in sorted(env.keys(), key=lambda x: -len(x)):
                     yield 'export ' + k + '=' + env[k]
@@ -192,7 +215,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
 
                 if data:
                     data = white_line + '\n' + data + '\n'
-                    sys.stderr.write(y.xxformat(data, cname=cn))
+                    sys.stderr.write(y.xxformat(data, cname=cn, verbose=verbose))
 
                 if retcode and retcode != -9:
                     oldfun = methods['get_reason']

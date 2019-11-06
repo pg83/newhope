@@ -1,10 +1,3 @@
-import sys
-import subprocess
-import platform
-import os
-import marshal
-
-
 V = {
     'common': {
         'kind': ['c', 'c++', 'linker'],
@@ -143,9 +136,9 @@ def iter_system_compilers():
         yield {
             'kind': 'c/c++/linker',
             'type': 'clang',
-            'name': os.path.basename(tp),
+            'name': y.os.path.basename(tp),
             'path': tp,
-            'data': subprocess.check_output([tp, '--version'], stderr=subprocess.STDOUT, shell=False),
+            'data': y.subprocess.check_output([tp, '--version'], stderr=y.subprocess.STDOUT, shell=False),
         }
 
 
@@ -188,7 +181,7 @@ def iter_system_impl():
 
             host = {
                 'arch': a,
-                'os': {'apple': 'darwin'}.get(b, platform.system().lower()),
+                'os': {'apple': 'darwin'}.get(b, y.platform.system().lower()),
             }
 
             for t in iter_targets(host):

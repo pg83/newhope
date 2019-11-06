@@ -1,7 +1,3 @@
-
-import os
-
-
 def print_v3_node(n):
     def iter_lines():
         yield n['output'] + ': ' + ' '.join(n['inputs'])
@@ -9,7 +5,7 @@ def print_v3_node(n):
         for l in n['build']:
             yield '\t' + l
 
-    return '\n'.join(iter_lines()) + '\n\n'
+    return '\n'.join(iter_lines())
 
 
 def do_apply_node(root, by_name):
@@ -77,7 +73,7 @@ def replacer(data):
     return func
 
 
-def build_makefile(nodes, verbose):
+def build_makefile(nodes, verbose=False, internal=False):
     by_noid = {}
 
     def iter1():
@@ -91,6 +87,7 @@ def build_makefile(nodes, verbose):
             'replacer': lambda x: x,
             'restore_node': lambda x: by_noid[y.calc_noid_base(y.restore_node(x))],
             'extra': 1,
+            'reducer': lambda x: x,
         }
 
         for r in list(iter1()):
@@ -100,14 +97,18 @@ def build_makefile(nodes, verbose):
 
     def iter3():
         for r in list(iter2()):
-            yield r, y.struct_dump_bytes(y.print_one_node(r, lambda x: x))
+            yield r, y.struct_dump_bytes(y.print_one_node(r))
 
     def iter4():
+        by_deps = {}
+        my_reducer = lambda v: reducer(v, by_deps)
+
         for r, data in list(iter3()):
             trash = {
                 'replacer': replacer(data),
                 'restore_node': lambda x: by_noid[y.calc_noid_base(y.restore_node(x))],
                 'extra': 3,
+                'reducer': my_reducer,
             }
 
             r['trash'] = trash
@@ -116,30 +117,40 @@ def build_makefile(nodes, verbose):
 
     def iter5():
         by_name = {}
-        by_deps = {}
-        my_reducer = lambda v: reducer(v, by_deps)
 
-        def do():
-            yield y.build_scripts_run()
+        yield y.build_scripts_run(), '\n\n'
 
-            for r in list(iter4()):
-                res = y.print_one_node(r, my_reducer)
-                do_apply_node(r, by_name)
+        for r in list(iter4()):
+            res = y.print_one_node(r)
+            do_apply_node(r, by_name)
 
-                for l in preprocess(res, r):
-                    yield l
-
-        for n in do():
-            yield print_v3_node(n)
-
-        for k in sorted(by_deps.keys()):
-            yield k + ': ' + ' '.join(by_deps[k]['v'])
+            for l in preprocess(res, r):
+                yield l, '\n\n'
 
         for name in sorted(by_name.keys()):
-            res = name + ': ' + ' '.join(sorted(set(by_name[name])))
+            yield {
+                'output': name,
+                'inputs': sorted(set(by_name[name])),
+                'build': [],
+            }, ''
 
-            if len(res) < 500:
-                yield res
+    if internal:
+        def iter6():
+            for cmd, _ in iter5():
+                yield {
+                    'deps2': cmd['inputs'],
+                    'deps1': [cmd['output']],
+                    'cmd': cmd['build'],
+                }
+                
+        return y.zlib.compress(y.marshal.dumps(list(iter6())))
 
-    return '\n'.join(iter5()) + '\n'
+    def iter6():
+        for cmd, space in iter5():
+            yield print_v3_node(cmd) + space
 
+    return '\n'.join(iter6()) + '\n'
+
+
+def decode_internal_format(data):
+    return y.marshal.loads(y.zlib.decompress(data))

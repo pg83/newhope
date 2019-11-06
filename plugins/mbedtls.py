@@ -8,4 +8,10 @@ def mbedtls0():
             CC=gcc $YMAKE -j2 programs lib && $YMAKE DESTDIR=$IDIR install
         """,
         'version': '2.16.3',
+        'meta': {
+            'depends': [],
+            'provides': [
+                {'lib': 'mdedtls', 'configure': {'opt': '--with-mbedtls={pkg_root}'}},
+            ],
+        },
     }
