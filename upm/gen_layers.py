@@ -1,3 +1,7 @@
+def layers_channel():
+    return y.write_channel("new functions", "layers")
+
+
 def gen_all_texts(only_print_layers=False):
     by_tier = {}
     by_name = {}
@@ -77,7 +81,7 @@ def gen_all_texts(only_print_layers=False):
             num=x['num'],
             deps='cached_deps%s(info)' % (x['num'] - 1),
             deps_funcs='cached_types%s()' % (x['num'] - 1),
-            options='cached=True, codec="{codec}"',
+            options='cached=True, codec="{codec}", channel="y.layers_channel()"',
             codec=codec,
             kind=by_name[x['name']]['kind'],
         )
@@ -134,7 +138,6 @@ def cached_deps{num}(info):
 """
     for i in [0] + sorted(descr.keys()):
         d = deps(i)
-
         texts.append(stmpl.format(num=i, deps_funcs=d['deps_funcs']))
 
     return '\n\n'.join(reversed(texts))

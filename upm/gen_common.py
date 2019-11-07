@@ -24,5 +24,12 @@ def fix_user_data(iter):
         yield f
 
 
+@y.singleton
 def iter_all_user_templates():
-    return fix_user_data(y.all_my_funcs())
+    res = []
+
+    @y.read_callback('new functions templates', 'iter_all')
+    def cb(data):
+        res.extend(fix_user_data([data]))
+
+    return res

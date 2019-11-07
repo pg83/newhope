@@ -106,8 +106,6 @@ class Mod(dict):
       self.__dict__ = self
       self.__name__ = name
 
-      #sys.modules[name] = self
-
    def self_exec(self):
       exec self.__ycode__ in self
 
@@ -118,9 +116,14 @@ class Loader(object):
       self.create_module('ya', 'ya', '', 'ya')
 
    def create_module(self, name, path, text, file=None):
-      l = len(os.path.dirname(os.path.dirname(path)))
+      if name in self._by_name:
+         raise Exception('module already loaded')
 
+      l = len(os.path.dirname(os.path.dirname(path)))
       m = Mod(name)
+
+      self._by_name[m.__name__] = m
+
       m.__file__ = file or m.__name__
       m.__ypath__ = path
       m.__ytext__ = text
@@ -133,20 +136,12 @@ class Loader(object):
 
       m.__yexec__ = exec_c
 
-      self._by_name[m.__name__] = m
-      self._by_name['ya'][m.__name__[3:]] = m
-
       return m
 
-   def exec_code(self, mod, data, closure=None, module_name=None, globals=None, **kwargs):
+   def exec_code(self, mod, data, closure=None, module_name=None, **kwargs):
       if module_name:
          mod_name = mod.__name__ + '.' + module_name
          m = self.create_module(mod_name, mod.__ypath__, data, mod_name)
-
-         if globals:
-            m.globals = lambda: globals
-            m.locals = lambda: globals
-
          m.y = mod.y
 
          if closure:
@@ -202,7 +197,6 @@ def rm_install():
       return '\n'.join(x[1] for x in plugins)
    
    loader = Loader()
-
    sys.builtin_modules = builtin_modules
    mods = []
 
@@ -221,6 +215,7 @@ def rm_install():
       'ya.iface': -100,
       'ya.algo': -95,
       'ya.single': -90,
+      'ya.pub_sub': -87,
       'ya.manager': -85,
       'ya.caches': -80,
       'ya.logwrap': -75,
@@ -375,8 +370,10 @@ def bootstrap_impl(mode):
    y = rm_install()
 
    if mode == 0:
-      y.exec_plugin_code(y.gen_all_texts())
-
+      @y.defer_constructor
+      def init():
+         y.exec_plugin_code(y.gen_all_texts())
+      
       return y.run_main(args)
    elif mode == 2:
       rm_run_with_new_python(args)

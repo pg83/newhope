@@ -49,29 +49,31 @@ REPACK_FUNCS = {
 def splitter_key(func, **kwargs):
     return [func.__name__, kwargs]
 
-c = {'res': 0}
-        
+
+def channel():
+    return y.subscribe_cb('new functions', lambda x: splitter(**x), 'spl')
+
+
 @y.cached(key=splitter_key)
-def splitter(func, **kwargs):
+def splitter(func, kind=[], channel=channel(), **kwargs):
     repack = kwargs.get('repacks', REPACK_FUNCS)
 
     if repack:
         template = """
 @y.options(repacks=None)
 def {name}_{kind}(info):
-    return split_part("{kind}", {folders}, y.{name}, info)
+    return y.split_part("{kind}", {folders}, y.{name}, info)
 
 """
         fn = func.__name__
 
         def iter_templates():
             for kind, folders in repack.items():
-                yield template.format(folders=str(folders), name=fn, kind=kind)
+                yield template.format(folders=str(folders), name=fn, kind=kind), kind
 
-        for t in iter_templates():
+        for i, (t, knd) in enumerate(iter_templates()):
             __yexec__(t)
-
+            new_func = eval('y.{name}_{kind}'.format(name=fn, kind=knd))
+            channel({'func': new_func, 'kind': kind + [knd], 'fn': fn})
+            
     return func
-
-
-reg_func_cb(splitter)

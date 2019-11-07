@@ -47,7 +47,6 @@ def gen_fetch_node_3(url, name, deps, v):
     return y.store_node_plain(res)
 
 
-@y.cached()
 def gen_unpack_node(pkg):
     mpkg = y.mgr_pkg_mark(pkg)
     vis_name = pkg[4:]

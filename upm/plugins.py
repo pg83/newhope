@@ -76,8 +76,13 @@ def better_tov2(x, info, kw):
 
 
 def ygenerator(tier=None, kind=[], include=[], exclude=[], cached=True, version=1):
+    func_channel = y.write_channel('orig functions', 'yg')
+    tmpl_channel = y.write_channel('new functions templates', 'yg')
+
     def functor(func):
         assert tier is not None
+
+        func_channel({'func': func, 'kind': kind, 'original': True})
 
         rfn = func.__name__
         fn = rfn[:-1]
@@ -112,7 +117,7 @@ def {name}{num}(info):
         if fn.startswith('lib'):
             kind.append('library')
 
-        y.register_func_generator(data)
+        tmpl_channel(data)
 
         if cached:
             args = inspect.getargspec(func)[0]

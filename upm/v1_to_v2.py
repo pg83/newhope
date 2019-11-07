@@ -4,11 +4,6 @@ import base64
 import itertools
 
 
-def call_key(func, info):
-    return [func.__name__, info]
-
-
-@y.cached(key=call_key)
 def call_v2(func, info):
     if 'compilers' in info:
         param = info

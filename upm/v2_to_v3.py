@@ -42,14 +42,10 @@ def iter_deps(root):
         yield rn(d)
 
 
-@y.cached(key=y.calc_noid)
 def get_subst_values_3(root):
-    def do():
-        for x in itertools.chain([root], iter_deps(root)):
-            for y in get_subst_values(x):
-                yield y
-
-    return list(do())
+    for x in itertools.chain([root], iter_deps(root)):
+        for y in get_subst_values(x):
+            yield y
 
 
 def subst_values(data, root):

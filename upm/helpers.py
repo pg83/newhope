@@ -6,6 +6,14 @@ def find_tool_uncached(tool, path):
             return pp
 
 
+def prompt(l):
+   if l in y.verbose:
+      frame = y.inspect.currentframe()
+      frame = frame.f_back
+
+      y.code.interact(local=frame.f_globals)
+
+
 def subst_info(info):
     info = y.deep_copy(info)
 

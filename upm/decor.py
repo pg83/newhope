@@ -20,24 +20,19 @@ def gen_func(func, info, res):
 def options(**kwargs):
     res = y.deep_copy(kwargs)
 
+    channel = res.pop('channel', None)
+    
+    if channel:
+        channel = eval(channel)
+
     def functor(func):
         @functools.wraps(func)
         def wrapper(info):
             return gen_func(func, info, res)
 
-        assert wrapper
-
-        for cb in y.callbacks().values():
-            wrapper = cb(wrapper, **res)
-            assert wrapper
+        if channel:
+            channel({'func': wrapper, 'rfunc': str(func), 'kind': ['options']})
 
         return wrapper
 
     return functor
-
-
-def gen_all_funcs():
-    mf = y.my_funcs()
-
-    for k in sorted(mf.keys()):
-        yield mf[k]

@@ -27,14 +27,3 @@ def bestbox0(info, deps, codec):
             {'kind': 'subst', 'from': '$(BB)', 'to': y.xp('/deps/1/node/name').upper()},
         ],
     }, info)
-
-y.register_func_generator({
-    'support': ['linux'],
-    'tier': -1,
-    'kind': ['core', 'dev', 'tool'],
-    'template': """
-@y.options({options})
-def {name}{num}(info):
-    return bestbox0(info, {deps}, "{codec}")
-"""
-})

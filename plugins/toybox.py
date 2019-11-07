@@ -10,15 +10,3 @@ def toybox0(info, deps, codec):
         'deps': deps,
         'codec': codec,
     }, info)
-
-
-y.register_func_generator({
-    'support': ['linux'],
-    'tier': -1,
-    'kind': ['core', 'dev', 'tool'],
-    'template': """
-@y.options({options})
-def {name}{num}(info):
-    return toybox0(info, {deps}, '{codec}')
-""",
-})

@@ -132,6 +132,12 @@ def run_main(args):
       else:
          verbose = ''
 
+   l = locals()
+
+   @y.lookup
+   def loopup(name):
+      return l[name]
+
    if len(args) < 2:
       args = args + ['help']
 
@@ -148,13 +154,7 @@ def run_main(args):
 
    func = y.profile(func, really=profile)
    func = y.logged_wrapper(rethrow=-1, tb=verbose, rfunc=func, important=True)
-   
-   l = locals()
-
-   @y.lookup
-   def find(name):
-      return l[name]
-
    y.run_all_defer_constructors()
+   y.prompt('/p1')
 
    return func()

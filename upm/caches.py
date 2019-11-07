@@ -27,19 +27,23 @@ def get_copy_func(copy=False):
 
     return dc
 
+
 tmpl = """
 def {name}(*args, **kwargs):
     k = sdb([key(*args, **kwargs), k2])
 
     if k not in cc:
-        cc[k] = f(*args, **kwargs)
+        stats['m'] +=1
+        cc[k] = f(*args, **kwargs) 
+    else:
+        stats['h'] += 1
 
     return cf(cc[k])
 
 wrapper = {name}
 """
 
-def cached(key=default_key, seed=None, copy=False):
+def cached(key=default_key, seed=None, copy=False, enable_stats=False):
     sdb = y.struct_dump_bytes
     k1 = sdb([key.__name__, seed or y.random.random()])
 
@@ -49,6 +53,14 @@ def cached(key=default_key, seed=None, copy=False):
         cf = get_copy_func(copy=copy)
         tm = tmpl.format(name='cached_' + f.__name__)
 
+        stats = {'h': 0, 'm': 0}
+
+        if enable_stats:
+            def at_exit():
+                print f.__name__, stats
+
+            y.atexit.register(at_exit)
+            
         closure = {
             'sdb': sdb,
             'key': key,
@@ -56,9 +68,10 @@ def cached(key=default_key, seed=None, copy=False):
             'cc': cc,
             'f': f,
             'cf': cf,
+            'stats': stats,
         }
         
-        return __yexec__(tm, module_name=f.__name__, closure=closure)['wrapper']
+        return __yexec__(tm, module_name=f.__name__ + k2[:-2], closure=closure)['wrapper']
 
     return functor
 
