@@ -1,6 +1,3 @@
-import os
-
-
 def calc_mode(name):
     lst = [
         ('.xz', 'xz'),
@@ -49,7 +46,7 @@ def prepare_tar_cmd(fr, to, codec=None):
     }
 
     if not codec:
-        codec = calc_mode(os.path.basename(to))
+        codec = calc_mode(y.os.path.basename(to))
 
     if codec == 'zp':
         return
@@ -58,7 +55,7 @@ def prepare_tar_cmd(fr, to, codec=None):
         if fr == '"$1"':
             dr = '$(dirname "$2")'
         else:
-            dr = os.path.dirname(to)
+            dr = y.os.path.dirname(to)
 
         assert dr
 
@@ -86,7 +83,7 @@ def gen_extra_scripts():
 
 
 def prepare_untar_for_mf(fr, strip=0):
-    return 'source untar_{codec} "{file}" {strip}'.format(codec=calc_mode(os.path.basename(fr)), file=fr, strip=strip)
+    return 'source untar_{codec} "{file}" {strip}'.format(codec=calc_mode(y.os.path.basename(fr)), file=fr, strip=strip)
 
 
 def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
@@ -110,7 +107,7 @@ def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
         'tr': '|',
     }
 
-    mode = ext_mode or calc_mode(os.path.basename(fr))
+    mode = ext_mode or cay.lc_mode(os.path.basename(fr))
     core = 'cat {fr} {uncompress} $YTAR {extra} -xf -'.format(fr=fr, uncompress=tbl[mode], extra=extra)
 
     if to in ' .':

@@ -1,3 +1,4 @@
+
 @y.singleton
 def defer_constructors():
     return []
@@ -12,6 +13,13 @@ def defer_constructor(func):
 
     return func
 
+
+@defer_constructor
+def main():
+    if '/psy' in y.verbose:
+        import atexit
+        atexit.register(y.print_stats)
+        
 
 def run_all_defer_constructors():
     for f in defer_constructors():
@@ -31,3 +39,4 @@ def main_entry_point(f):
     register_entry_point(f)
 
     return f
+

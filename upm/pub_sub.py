@@ -3,6 +3,13 @@ def all_pub_sub():
     return {}
 
 
+#@y.atexit.register
+def print_pub_sub_data():
+    for k, v in  all_pub_sub().items():
+        v['prev'] = len(v['prev'])
+        print k, v
+
+
 class AllDone(Exception):
     pass
 
@@ -15,7 +22,7 @@ def new_pub_sub(name):
     res = {
         'name': name,
         'subs': [],
-        'prev': y.collections.deque(),
+        'prev': [],
     }
 
     all_pub_sub()[name] = res
@@ -38,16 +45,13 @@ def real_cb(cb, endpoint, msg):
         
         if endpoint['hid'] != msg['hid']:
             res = msg['data']()
-            
-            try:
-                res['hid'] = msg['hid']
-            except TypeError:
-                pass
 
             cb(res)
     except AllDone as e:
         del_pub_sub(endpoint['name'])
-
+    except Exception as e:
+        print >>sys.stderr, 'shit happen', e
+        
 
 def subscribe_cb(name, cb, hid):
     return subscribe_cb_raw(name, lambda x, y: real_cb(cb, x, y), hid)
@@ -62,6 +66,8 @@ def subscribe_cb_raw(name, cb, hid):
 
     if 'subs' in ps:
         ps['subs'].append(endpoint)
+
+        assert len(ps['subs']) < 1000
 
         return endpoint['wq']
 

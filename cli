@@ -1,45 +1,42 @@
 #!/usr/bin/python
 
 import sys
+
+sys.dont_write_bytecode = True
+
 import os
 import signal
-import traceback
+import Queue
 
 
-def script_path_ex():
-   def iter_f():
-      yield __file__
-      yield sys.modules['__main__'].__file__
-      yield os.path.abspath(sys.argv[0])
-      yield os.getenv('Y_SCRIPT_PATH')
-
-   for f in iter_f():
-      if f:
-         f = os.path.abspath(f)
-
-         if os.path.isfile(f):
-            return f
-
-   return '<unknown>'
-
-
-__file__ = script_path_ex()
-
-os.environ['Y_SCRIPT_PATH]'] = __file__
-
+__file__ = os.path.abspath(__file__)
 signal.signal(signal.SIGPIPE, signal.SIG_IGN)
-sys.dont_write_bytecode = True
+
+
+def real_main():
+   file_data = None
+   data = None
+   #REPLACEME
+
+   if not data:
+      with open(os.path.dirname(__file__) + '/upm/stagea.py') as f:
+         data = f.read()
+
+   qq = Queue.Queue()      
+
+   args = {'qq': qq, 'where': __file__, 'data': file_data}
+   ctx = {'args': args}
+   exec compile(data +'\nmain(args, **args)\n', '__main__', 'exec') in ctx
+   ctx.clear()
+
+   while True:
+      try:
+         qq.get()()
+      except StopIteration:
+         break
+
+   raise SystemExit(0)
 
 
 if __name__ == '__main__':
-   with open(__file__) as f:
-      data1 = f.read()
-
-   fp = os.path.dirname(__file__) + '/upm/release_me.py'
-
-   with open(fp, 'r') as f:
-      data2 = f.read()
-
-   __text__ = data1 + data2
-
-   exec compile(data2 + '\n\nbootstrap(-1)\n', fp, 'exec') in globals()
+    real_main()

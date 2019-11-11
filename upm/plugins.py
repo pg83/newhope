@@ -1,10 +1,3 @@
-import sys
-import os
-import functools
-import hashlib
-import inspect
-
-
 def dep_name(dep):
     return y.restore_node_node(dep)['name']
 
@@ -13,14 +6,12 @@ def dep_list(info, iter):
     return [x(info) for x in iter]
 
 
-def reg_func_cb(x):
-    y.register_func_callback(x)
-
-
+@y.read_callback('new plugin', 'p')
 def exec_plugin_code(code):
     __yexec__(code, module_name='functions')
 
 
+@y.cached
 def find_build_func(name, num='', split=''):
     if num:
         name = name + str(num)
@@ -120,13 +111,13 @@ def {name}{num}(info):
         tmpl_channel(data)
 
         if cached:
-            args = inspect.getargspec(func)[0]
+            args = y.inspect.getargspec(func)[0]
 
             def key(**kwargs):
                 return [kwargs[arg] for arg in args]
 
             @y.cached(key=key)
-            @functools.wraps(func)
+            @y.functools.wraps(func)
             def wrapper(**kwargs):
                 return func(*key(**kwargs))
 

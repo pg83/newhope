@@ -1,6 +1,9 @@
 @ygenerator(tier=-3, kind=['core', 'box', 'tool'])
 def make0():
     def it():
+        if '/test1' in y.verbose:
+            raise Exception('test')
+
         yield 'source fetch "http://mirror.lihnidos.org/GNU/ftp/gnu/make/make-4.2.tar.gz" 1'
 
         yield '$YSHELL ./configure --prefix=$IDIR || exit 1'

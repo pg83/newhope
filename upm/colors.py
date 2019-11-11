@@ -6,7 +6,7 @@ def color_map_func():
     YELLOW = u'\u001b[33;1m'
     WHITE = u'\u001b[37;1m'
     BLUE = u'\u001b[34;1m'
-
+    DGRAY = u'\u001b[1;30m'
 
     COLOR_MAP = {
         'red': RED,
@@ -15,11 +15,14 @@ def color_map_func():
         'yellow': YELLOW,
         'white': WHITE,
         'blue': BLUE,
+        'darkgray': DGRAY,
     }
 
     for k in list(COLOR_MAP.keys()):
         if k == 'rst':
             kk = ''
+        elif k.startswith('dark'):
+            kk = 'd' + k[4]
         else:
             kk = k[0]
 

@@ -4,5 +4,18 @@ def main_makefile(verbose, internal=False):
       cc = {'host': host, 'target': host}
 
       yield cc
+      
+   data = ''
+   prev = set()
 
-   return y.build_makefile(list(y.gen_packs(iter)), verbose, internal=internal)
+   while True:
+      portion = set(y.gen_packs(iter))
+      
+      len_b = len(prev)
+      prev = prev | portion
+      len_a = len(prev)
+
+      if len_b == len_a and prev:
+         return data
+
+      data = y.build_makefile(sorted(prev), verbose, internal=internal)

@@ -27,7 +27,14 @@ def gen_check_log(data):
 
 def scripts_data(no_last=False):
     def iter():
-        for k, v in sys.builtin_modules['mod'].items():
+        for x in y.file_data:
+            k = x['name']
+            
+            if not k.startswith('sc/'):
+                continue
+
+            k = k[3:]
+            v = x['data']
             func = {'check_log': gen_check_log}.get(k, lambda x: x)
 
             yield {'kind': 'file', 'path': 'bin/' + k, 'data': func(v)}
@@ -47,7 +54,7 @@ def scripts_data(no_last=False):
 
 def unpack_sh(no_last=False):
     for x in scripts_data(no_last=no_last):
-        yield 'echo "{data}" | (base64 -D -i - -o - || base64 -d) > {fname}'.format(data=base64.b64encode(x['data']), fname=os.path.basename(x['path']))
+        yield 'echo "{data}" | (base64 -D -i - -o - || base64 -d) > {fname}'.format(data=base64.b64encode(x['data']), fname=y.os.path.basename(x['path']))
 
 
 @y.singleton

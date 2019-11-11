@@ -2,7 +2,6 @@ import os
 import sys
 import subprocess
 import random
-import traceback
 
 
 def new_cmd():
@@ -145,25 +144,7 @@ def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, verbose)
             res, _ = p.communicate(input=input)
             fail = p.wait()
 
-            def it():
-                for l in res.strip().split('\n'):
-                    if l and l[0] == '+':
-                        continue
-
-                    yield l
-
-                if fail:
-                    yield y.get_color('red')
-
-                    for l in traceback.format_stack():
-                        if 'File' in l:
-                            yield l[:-1]
-                        else:
-                            yield '  ' + l[:-1]
-
-                    yield y.get_color('rst')
-
-            print >>sys.stderr, ('\n'.join(it())).strip()
+            print >>sys.stderr, res
 
             if fail:
                 prn_delim()

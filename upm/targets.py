@@ -21,7 +21,6 @@ def gen_fetch_node(url):
     return y.store_node_plain(res)
 
 
-@y.cached()
 def gen_fetch_node_3(url, name, deps, v):
     fname = y.calc_pkg_full_name(url)
 
@@ -65,7 +64,12 @@ def gen_packs_1(constraints=None):
 
     for c in constraints():
         for func in y.gen_all_funcs():
-            yield func(y.deep_copy(c))
+            try:
+                yield func(y.deep_copy(c))
+            except Exception as e:
+                print func, c, e
+                
+                raise
 
         #for t in y.find_compiler_x(y.deep_copy(c)):
             #yield t

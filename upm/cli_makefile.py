@@ -9,19 +9,17 @@ def cli_makefile(arg, verbose):
 
    args = parser.parse_args(arg)
 
-   if args.output:
-      f = open(args.output, 'w')
-      close = f.close
-   else:
-      f = y.sys.stdout
-      close = lambda: 0
+   with y.defer_context() as defer:
+      if args.output:
+         f = open(args.output, 'w')
+         defer(f.close)
+      else:
+         f = y.sys.stdout
 
-   try:
       if args.shell:
          f.write(y.build_sh_script(args.shell, verbose))
       else:
          f.write(y.main_makefile(verbose, internal=args.internal))
-
+            
       f.flush()
-   finally:
-      close()
+

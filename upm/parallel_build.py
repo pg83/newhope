@@ -1,13 +1,11 @@
 import os
 import sys
 import Queue
-import signal
 import threading
 import subprocess as sp
-import traceback
-import functools
 import itertools
 import base64
+import time
 
 
 def is_in(lst, s):
@@ -69,6 +67,7 @@ def get_el(qu):
             pass
 
 
+@y.singleton
 def get_white_line():
     return y.xxformat('---------------------------------------------------------------------', init='white')
 
@@ -95,6 +94,12 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs, verbose):
     q = Queue.Queue()
     w = Queue.Queue()
     running = set()
+
+    def ff():
+        time.sleep(1)
+        q.put(ff)
+
+    q.put(ff)
 
     def kill_all_running(*args):
         os.system('pkill -KILL -g {pgid}'.format(pgid=os.getpgid(os.getpid())))
@@ -206,8 +211,8 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs, verbose):
                 except sp.CalledProcessError as e:
                     out.append(e.output)
                     retcode = e.returncode
-                except Exception as e:
-                    out.append(y.colorize(traceback.format_exc(e), 'r'))
+                except Exception:
+                    out.append(y.format_tbx())
                     retcode = -1
 
             def func():
@@ -272,11 +277,10 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs, verbose):
         for k in methods.keys():
             if k not in ['get_reason']:
                 methods[k] = stop_iter
-
-    def restore_sigint():
-        signal.signal(signal.SIGINT, signal.SIG_DFL)
     
     def print_status():
+        read_queue()
+
         def iter():
             yield white_line
 
@@ -295,31 +299,30 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs, verbose):
                 pass
             except Queue.Empty:
                 return
-            except Exception as e:
-                y.xprint_red(traceback.format_exc(e))
+            except Exception:
+                y.print_tbx()
 
     reg_defer(lambda: white_line)
     reg_defer(prepare_finish)
     reg_defer(kill_all_running)
-    reg_defer(wait_all_threads)
-    reg_defer(restore_sigint)
     reg_defer(print_status)
-    
+
     msg = y.get_color('') + '\n'
 
+    @y.read_callback('SIGINT', 'pb')
     def sigint(*args):
         def func():
             methods['get_reason'] = lambda: ['SIGINT happens']
-
+            
             raise StopIteration()
 
         sys.stderr.write(msg)
         w.put(func)
 
-    signal.signal(signal.SIGINT, sigint)
-
     for t in threads:
         t.start()
+
+    reg_defer(wait_all_threads)
 
     while unready:
         for l in find_complete():

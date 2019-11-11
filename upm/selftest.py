@@ -22,12 +22,29 @@ def self_test2():
 def iter_all_tests():
     yield self_test1
     yield self_test2
+    yield self_test3
 
 
 @y.main_entry_point
 def cli_selftest(args, verbose):
    for f in iter_all_tests():
       y.xprint_white('-------------------------------------------------------------------')
-      f()
+      try:
+         f()
+      except Exception as e:
+         print e
+      y.xprint_white('-------------------------------------------------------------------')
 
-   y.xprint_white('-------------------------------------------------------------------')
+
+
+def self_test3():
+   @y.run_by_timer(0.3)
+   def f1():
+      print 'f1'
+
+
+   @y.run_by_timer(1.0)
+   def f2():
+      print 'f2'
+
+   y.time.sleep(5)

@@ -102,12 +102,9 @@ def xp(path):
 
     if path.startswith('/'):
         name, path = path[1:].split('/', 1)
-        frame = inspect.currentframe()
 
-        while True:
+        for frame in y.iter_frames():
             if name in frame.f_locals:
                 return run_xpath_simple(frame.f_locals[name], path)
-
-            frame = frame.f_back
 
     raise Exception('shit happen')

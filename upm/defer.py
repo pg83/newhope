@@ -17,8 +17,8 @@ def defer_context(verbose=False):
                     
                 if res:
                     outs.append(str(res))
-            except Exception as e:
-                outs.append(xxf('in defer:', y.traceback.format_exc(e), init='red'))
+            except Exception:
+                outs.append(xxf('{r}in defer{}:', y.format_tbx()))
         
         if verbose:
             y.sys.stderr.write('\n'.join(outs) + '\n')

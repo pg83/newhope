@@ -6,14 +6,6 @@ def find_tool_uncached(tool, path):
             return pp
 
 
-def prompt(l):
-   if l in y.verbose:
-      frame = y.inspect.currentframe()
-      frame = frame.f_back
-
-      y.code.interact(local=frame.f_globals)
-
-
 def subst_info(info):
     info = y.deep_copy(info)
 
@@ -59,21 +51,13 @@ def fixx(x):
 
 
 @y.singleton
-def script_path():
-   if y.sys.argv[0].endswith('upm'):
-      return y.os.path.abspath(y.sys.argv[0])
-
-   return y.sys.modules['__main__'].__file__
-
-
-@y.singleton
 def script_dir():
-    return y.os.path.dirname(script_path())
+    return y.os.path.dirname(y.script_path)
 
 
 @y.cached()
 def find_tool(name):
-    return y.subprocess.check_output(['which ' + name], shell=True).strip()
+    return find_tool_uncached(name, [])
 
 
 def path_by_script(path):

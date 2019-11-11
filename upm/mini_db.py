@@ -1,5 +1,4 @@
 import hashlib
-import traceback
 import json
 
 from marshal import loads, dumps

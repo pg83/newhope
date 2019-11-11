@@ -9,13 +9,7 @@ def build_docker():
 
 
 def prepare_root(r):
-   try:
-      data = y.rm_prepare_release_data() + '\n\nbootstrap(0)\n'
-   except Exception as e:
-      if 'unimplemented' not in str(e):
-         raise
-
-      return
+   return
 
    def iter_trash():
       for f in ('w', 'd', 'bin', 'tmp'):
@@ -58,36 +52,13 @@ def cli_eval(args, verbose):
    for a in args:
       try:
          print eval(repl.get(a, a))
-      except Exception as e:
-         y.xprint_red('can not run ' + a, y.traceback.format_exc(e))
+      except Exception:
+         y.print_tbx(tb_line='can not run ' + a)
 
 
 @y.main_entry_point
 def cli_cleanup(arg, verbose):
    y.os.system("cd {sd} && (find . | grep '~' | xargs rm)".format(sd=y.script_dir()))
-
-
-@y.main_entry_point
-def cli_run(args, verbose):
-   try:
-      ids = args.index('--root')
-      root = args[ids + 1]
-      args = args[:ids] + args[2:]
-   except Exception as e:
-      root = y.upm_root()
-
-   prepare_root(root)
-
-   def iter_args():
-      yield 'docker'
-      yield 'run'
-      yield '--mount'
-      yield 'type=bind,src=' + root + ',dst=/d'
-
-      for x in args:
-         yield x
-
-   y.os.execl(docker_binary(), *list(iter_args()))
 
 
 @y.main_entry_point
@@ -113,18 +84,30 @@ def cli_help(args, verbose):
 
 @y.main_entry_point
 def cli_release(args, verbose):
-   print y.rm_prepare_release_data() + '\n\nbootstrap(0)\n\n'
+   data = {'file_data': y.file_data, 'data': y.stagea.__ytext__}
+   data = y.marshal.dumps(data)
+   data = y.zlib.compress(data)
+   data = y.base64.b64encode(data)
 
+   code = 'import marshal; import zlib; import base64; fd = marshal.loads(zlib.decompress(base64.b64decode("{data}"))); file_data = fd["file_data"]; data = fd["data"]'
+   code = code.replace('{data}', data)
+
+   for x in y.file_data:
+      if x['path'] == 'cli':
+         break
+
+   print x['data'].replace('#REPLACEME', code)
+   
 
 def run_main(args):
    args, verbose = y.check_arg(args, ('-v', '--verbose'))
    args, profile = y.check_arg(args, ('--profile',))
-   args, verbose_mode = y.rm_check_arg_2(args, '-vm', True)
+   args, verbose_mode = y.check_arg_2(args, '-vm', True)
 
    if verbose_mode is None:
-      args, verbose_mode = y.rm_check_arg_2(args, '--verbose-mode', True)
+      args, verbose_mode = y.check_arg_2(args, '--verbose-mode', True)
 
-   if verbose_mode: 
+   if verbose_mode:
       verbose = verbose_mode
    else:
       if verbose:
@@ -146,15 +129,20 @@ def run_main(args):
    def func():
       def select():
          d = dict((f.__name__, f) for f in y.main_entry_points())
+         func = 'cli_' + mode
 
-         return d['cli_' + mode]
-
+         if func in d:
+            return d[func]
+         
+         raise Exception('{mode} unsupported'.format(mode))
+         
       ff = select()
       ff(args[2:], verbose)
 
    func = y.profile(func, really=profile)
-   func = y.logged_wrapper(rethrow=-1, tb=verbose, rfunc=func, important=True)
+   func = y.logged_wrapper(rethrow=-1, rfunc=func, important=True)
+
    y.run_all_defer_constructors()
    y.prompt('/p1')
-
-   return func()
+   
+   func()

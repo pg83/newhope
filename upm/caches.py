@@ -29,18 +29,19 @@ def get_copy_func(copy=False):
 
 
 tmpl = """
-def {name}(*args, **kwargs):
-    k = sdb([key(*args, **kwargs), k2])
+def {holder}({vars}):
+    def {name}(*args, **kwargs):
+        k = sdb([key(*args, **kwargs), k2])
 
-    if k not in cc:
-        stats['m'] +=1
-        cc[k] = f(*args, **kwargs) 
-    else:
-        stats['h'] += 1
+        if k not in cc:
+            stats['m'] +=1
+            cc[k] = f(*args, **kwargs) 
+        else:
+            stats['h'] += 1
 
-    return cf(cc[k])
+        return cf(cc[k])
 
-wrapper = {name}
+    return {name}
 """
 
 def cached(key=default_key, seed=None, copy=False, enable_stats=False):
@@ -51,13 +52,14 @@ def cached(key=default_key, seed=None, copy=False, enable_stats=False):
         k2 = sdb([f.__name__, k1])
         cc = common_cache()
         cf = get_copy_func(copy=copy)
-        tm = tmpl.format(name='cached_' + f.__name__)
+        hold_name = (f.__module__ + '.' + f.__name__).replace('.', '_')
+        new_name = f.__name__.upper()
 
         stats = {'h': 0, 'm': 0}
 
         if enable_stats:
             def at_exit():
-                print f.__name__, stats
+                print f.__module__ + '.' + f.__name__, stats
 
             y.atexit.register(at_exit)
             
@@ -70,8 +72,14 @@ def cached(key=default_key, seed=None, copy=False, enable_stats=False):
             'cf': cf,
             'stats': stats,
         }
-        
-        return __yexec__(tm, module_name=f.__name__ + k2[:-2], closure=closure)['wrapper']
+
+        tm = tmpl.format(name=new_name, vars=', '.join(closure.keys()), holder=hold_name)
+        m = __yexec__(tm, module_name='cache')
+        res = m[hold_name](**closure)
+
+        y.prompt('/test2')
+
+        return res
 
     return functor
 

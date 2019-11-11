@@ -1,10 +1,3 @@
-import sys
-import imp
-import importlib
-import functools
-import itertools
-
-
 def gen_key(func, *args):
     return [func.__name__, args]
 
@@ -19,14 +12,13 @@ def gen_func(func, info, res):
 
 def options(**kwargs):
     res = y.deep_copy(kwargs)
-
     channel = res.pop('channel', None)
     
     if channel:
         channel = eval(channel)
 
     def functor(func):
-        @functools.wraps(func)
+        @y.functools.wraps(func)
         def wrapper(info):
             return gen_func(func, info, res)
 

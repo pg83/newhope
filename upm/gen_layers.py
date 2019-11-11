@@ -2,7 +2,11 @@ def layers_channel():
     return y.write_channel("new functions", "layers")
 
 
-def gen_all_texts(only_print_layers=False):
+def layers_channel_2():
+    return y.write_channel("new plugin", "layers")
+
+
+def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
     by_tier = {}
     by_name = {}
     all = []
@@ -67,7 +71,6 @@ def gen_all_texts(only_print_layers=False):
             'deps_funcs': by_typ,
         }
 
-    @y.cached()
     def gen_func(x):
         d = deps(x['num'] - 1)
 
@@ -140,4 +143,9 @@ def cached_deps{num}(info):
         d = deps(i)
         texts.append(stmpl.format(num=i, deps_funcs=d['deps_funcs']))
 
-    return '\n\n'.join(reversed(texts))
+    #channel('\n\n'.join(reversed(texts)))
+
+    if 1:
+        for i in reversed(texts):
+            channel(i)
+        

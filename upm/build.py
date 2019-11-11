@@ -1,11 +1,25 @@
 def print_v3_node(n):
-    def iter_lines():
-        yield n['output'] + ': ' + ' '.join(n['inputs'])
+    yield n['output'] + ': ' + ' '.join(n['inputs'])
 
-        for l in n['build']:
-            yield '\t' + l
+    for l in n['build']:
+        yield '\t' + l
 
-    return '\n'.join(iter_lines())
+
+def print_v3_node_2(n):
+    yield n['output']
+
+    yield ': '
+
+    for i in n['inputs']:
+        yield i
+        yield ' '
+
+    yield '\n'
+
+    for l in n['build']:
+        yield '\t'
+        yield l
+        yield '\n'
 
 
 def do_apply_node(root, by_name):
@@ -73,6 +87,18 @@ def replacer(data):
     return func
 
 
+def send_all_plugins_to_queue():
+    ch = y.write_channel('new plugin', 'file_data')
+    ch('ygenerator = y.ygenerator')
+
+    for el in y.file_data:
+        if el['name'].startswith('pl/'):
+            ch(el['data'])
+
+    #TODO
+    y.gen_all_texts()
+
+
 def build_makefile(nodes, verbose=False, internal=False):
     by_noid = {}
 
@@ -118,25 +144,30 @@ def build_makefile(nodes, verbose=False, internal=False):
     def iter5():
         by_name = {}
 
-        yield y.build_scripts_run(), '\n\n'
+        try:
+            yield y.build_scripts_run()
+        except AttributeError:
+            send_all_plugins_to_queue()
+
+            yield y.build_scripts_run()
 
         for r in list(iter4()):
             res = y.print_one_node(r)
             do_apply_node(r, by_name)
 
             for l in preprocess(res, r):
-                yield l, '\n\n'
+                yield l
 
         for name in sorted(by_name.keys()):
             yield {
                 'output': name,
                 'inputs': sorted(set(by_name[name])),
                 'build': [],
-            }, ''
+            }
 
     if internal:
         def iter6():
-            for cmd, _ in iter5():
+            for cmd in iter5():
                 yield {
                     'deps2': cmd['inputs'],
                     'deps1': [cmd['output']],
@@ -146,11 +177,17 @@ def build_makefile(nodes, verbose=False, internal=False):
         return y.zlib.compress(y.marshal.dumps(list(iter6())))
 
     def iter6():
-        for cmd, space in iter5():
-            yield print_v3_node(cmd) + space
+        for cmd in iter5():
+            for l in print_v3_node_2(cmd):
+                yield l
 
-    return '\n'.join(iter6()) + '\n'
+            if cmd['build']:
+                yield '\n\n'
+
+    with y.without_gc() as gc:
+        return ''.join(iter6())
 
 
 def decode_internal_format(data):
     return y.marshal.loads(y.zlib.decompress(data))
+

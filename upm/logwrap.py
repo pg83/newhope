@@ -1,23 +1,17 @@
-import functools
-import traceback
-
-
-def logged_wrapper(rethrow=None, tb=False, rfunc=None, important=False):
+def logged_wrapper(rethrow=None, rfunc=None, important=False):
     def decorator(func):
         if not important:
             return func 
-
+        
+        @y.functools.wraps(func)
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                if tb:
-                    y.xprint_red(traceback.format_exc(e), *args, **kwargs)
-                else:
-                    print func, args, kwargs, e
+                y.print_tbx()
 
                 if rethrow is None:
-                    raise
+                    raise e
 
             return rethrow
 

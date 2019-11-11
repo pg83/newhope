@@ -34,7 +34,8 @@ def join_funcs(my_name, my_num, args, channel=y.write_channel('new functions', '
         return res
 
     wrapper.__name__ = my_name + str(my_num)
+    wrapper = y.options()(wrapper)
 
     channel({'kind': [], 'func': wrapper, 'args': [str(x) for x in args]})
 
-    return [y.options()(wrapper)]
+    return [wrapper]

@@ -114,7 +114,6 @@ def cur_build_system_version():
     return len(FUNCS) - 1
 
 
-@y.logged_wrapper(tb=True)
+@y.logged_wrapper()
 def to_visible_name(root):
     return root['trash']['replacer'](FUNCS[cur_build_system_version()](root))
-

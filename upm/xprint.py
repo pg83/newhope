@@ -20,7 +20,7 @@ def next_part(part, *parts):
 
 
 def process_color(text, init, kwargs):
-    verbose = kwargs.get('verbose', '')
+    verbose = kwargs.get('verbose', y.verbose)
     cm = y.color_map_func()
     rst = ('c', '')
 
@@ -93,7 +93,7 @@ def process_color(text, init, kwargs):
             if l[0][0] == 'c':
                 c = l[-1][1]
                 
-                if '/rc' in verbose:
+                if verbose and '/rc' in verbose:
                     return '[' + c + ']'
 
                 return cm[c]

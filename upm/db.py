@@ -29,22 +29,6 @@ def visit_nodes(nodes, debug=False):
             yield z
 
 
-def calc_noid_base(v):
-    if 'noid' in v:
-        #assert v['noid'] == calc_noid_base_really(v)
-        return v['noid']
-
-    return calc_noid_base_really(v)
-
-
-def calc_noid_base_really(v):
-    return 'i:' + y.key_struct_ptr([v['node'], v['deps']])[2:]
-
-
-def calc_noid(v):
-    return 'i:' + y.key_struct_ptr([calc_noid_base(v), v['trash']['extra']])[2:]
-
-
 @y.cached()
 def restore_node(ptr):
     res = y.load_list(ptr)
@@ -54,7 +38,7 @@ def restore_node(ptr):
         'deps': y.load_list(res[1]),
     }
 
-    v['noid'] = calc_noid_base(v)
+    v['noid'] = y.calc_noid_base(v)
 
     return v
 

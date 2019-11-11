@@ -96,10 +96,6 @@ def prepare_prepare(data, target):
     return y.subst_kv_base('\n'.join(data), common_prepare_repl()).replace('$(CUR_DIR)', '$MD/' + target[4:])
 
 
-def to_bash(x):
-    return '$' +  x[2] + 'D' + x[4:]
-
-
 def print_one_node(root):
     rn = root['trash']['restore_node']
     root_node = root['node']
