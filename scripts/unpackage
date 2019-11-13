@@ -5,4 +5,5 @@ unpack() {
     echo 42 > "$MD/$2/done"
 }
 
-unpack "$1" "$2"
+ext=$(source file_ext "$1")
+unpack "$ext" "$1"

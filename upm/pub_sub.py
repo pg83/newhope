@@ -3,7 +3,6 @@ def all_pub_sub():
     return {}
 
 
-#@y.atexit.register
 def print_pub_sub_data():
     for k, v in  all_pub_sub().items():
         v['prev'] = len(v['prev'])
@@ -21,7 +20,7 @@ def raise_done():
 def new_pub_sub(name):
     res = {
         'name': name,
-        'subs': [],
+        'subs': {},
         'prev': [],
     }
 
@@ -39,6 +38,11 @@ def del_pub_sub(name):
         ps.pop('subs')
     
 
+@y.singleton
+def debug_pubsub():
+    return '/pubsub' in y.verbose
+
+
 def real_cb(cb, endpoint, msg):
     try:
         msg = msg()
@@ -46,30 +50,43 @@ def real_cb(cb, endpoint, msg):
         if endpoint['hid'] != msg['hid']:
             res = msg['data']()
 
+            if debug_pubsub():
+                print res
+
             cb(res)
     except AllDone as e:
         del_pub_sub(endpoint['name'])
     except Exception as e:
-        print >>sys.stderr, 'shit happen', e
+        y.print_tbx()
         
 
 def subscribe_cb(name, cb, hid):
-    return subscribe_cb_raw(name, lambda x, y: real_cb(cb, x, y), hid)
+    f = lambda x, y: real_cb(cb, x, y)
+    f.__name__ = 'wrap_realcb_' + str(cb.__module__) + '_' + str(cb.__name__)
+    
+    return subscribe_cb_raw(name, f, hid)
+
+
+def ep_key(cb, hid, name):
+    return y.struct_dump_bytes([cb.__name__, hid, name])[:16]
 
 
 def subscribe_cb_raw(name, cb, hid):
     ps = get_queue(name)
-    endpoint = {'cb': cb, 'hid': hid, 'wq': write_channel(name, hid), 'name': name}
+    key = ep_key(cb, hid, name)
+    subs = ps['subs']
+
+    if key in subs:
+        return subs[key]['wq']
+    else:
+        subs[key] = {'cb': cb, 'hid': hid, 'wq': write_channel(name, hid), 'name': name}
+
+    endpoint = subs[key]
 
     for msg in ps['prev']:
         cb(endpoint, msg)
 
-    if 'subs' in ps:
-        ps['subs'].append(endpoint)
-
-        assert len(ps['subs']) < 1000
-
-        return endpoint['wq']
+    return endpoint['wq']
 
 
 def subscribe_queue(name, hid):
@@ -114,8 +131,10 @@ def send_int_event(queue, fev):
 
 def queue_event(res, fev):
     res['prev'].append(fev)
+    subs = res['subs']
 
-    for endpoint in res['subs']:
+    for k in sorted(subs.keys()):
+        endpoint = subs[k]
         endpoint['cb'](endpoint, fev)
         
 
@@ -129,6 +148,10 @@ def write_channel(name, hid):
     return res
 
 
+def uniq_write_channel(hid):
+    return write_channel(str(y.random.random()), hid)
+
+
 def read_from_write(channel):
     return subscribe_queue(channel.__name__, channel.__hid__)
 
@@ -140,3 +163,7 @@ def read_callback(name, hid):
         return func
 
     return functor
+
+
+def read_callback_from_channel(channel, hid):
+    return read_callback(channel.__name__, hid)

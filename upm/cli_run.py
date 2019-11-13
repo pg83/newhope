@@ -7,8 +7,6 @@ def cli_run(args, verbose):
    except Exception as e:
       root = y.upm_root()
 
-   prepare_root(root)
-
    def iter_args():
       yield 'docker'
       yield 'run'

@@ -1,4 +1,4 @@
-@ygenerator(tier=0, kind=['core', 'box', 'tool'])
+@y.ygenerator(tier=0, kind=['core', 'box', 'tool'])
 def coreutils0():
     version = '8.31'
 

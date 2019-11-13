@@ -25,30 +25,62 @@ def iter_frames(frame=None):
         frame = frame.f_back
 
 
-def main_thread_dead():
-    for t in y.threading.enumerate():
-        if 'Main' in t.getName() and not t.isAlive():
-            return True
-
-            
-def iter_all_frames(frame):
-    return iter_all_frames_1(iter_frames(frame))
+@y.cached()
+def text_from_file(path):
+    open(path).read().split('\n')
 
 
-def iter_all_frames_1(frames):
+def mod_key(f):
+    try:
+        a = len(f.f_globals['__ytext__'])
+    except:
+        a = 0
+
+    return (a, f.f_code.co_filename, f.f_code.co_name)
+
+
+@y.cached(key=mod_key)
+def text_from_module(f):
+    return f.f_globals['__ytext__'].split('\n')
+
+
+def calc_text(f, fname):
+    for i in (lambda: text_from_module(f), lambda: text_from_file(fname), lambda: []):
+        try:
+            return i()
+        except:
+            pass
+
+    return []
+
+
+def iter_tb_info(tb):
+    while tb:
+        f = tb.tb_frame
+        co = f.f_code
+        lineno = tb.tb_lineno - 1
+        filename = co.co_filename
+        name = co.co_name
+        tb = tb.tb_next
+
+        yield filename, lineno, name, f
+
+
+def iter_frame_info(frames):
     for f in frames:
         fname = f.f_code.co_filename or f.f_globals['__file__']
         ln = f.f_lineno - 1
         func_name = f.f_code.co_name
 
-        def calc_text():
-            for i in (lambda: f.f_globals['__ytext__'], lambda: open(fname).read(), lambda: ''):
-                try:
-                    return i()
-                except Exception as e:
-                    pass
+        yield fname, ln, func_name, f
 
-        lines = calc_text().split('\n')
+
+def iter_full_info(iter):
+    for fname, ln, func_name, f in iter:
+        lines = calc_text(f, fname)
+
+        if not lines:
+            lines = []
 
         if len(lines) < ln:
             text = []
@@ -96,7 +128,7 @@ def format_trace_list(lst):
         max_len = len(str(l2))
 
         for lnn, t in text:
-            yield (6 - len(str(l1))) * ' ' + '{b}' + str(lnn) + ': ' + {ln: '{r}'}.get(lnn, '{w}') + t[len(ss):] + '{}{}'
+            yield (6 - len(str(lnn))) * ' ' + '{b}' + str(lnn) + ': ' + {ln: '{r}'}.get(lnn, '{w}') + t[len(ss):] + '{}{}'
 
 
 def format_tbv(tb_line=''):
@@ -107,7 +139,7 @@ def format_tbv(tb_line=''):
         tb_line = ', ' + tb_line
 
     return '{r}Exception of type {type}: {exc}{tb_line}:{}'.replace('{type}', str(type)).replace('{exc}', str(value)).replace('{tb_line}', tb_line)
-
+        
 
 def format_tbx(tb_line=''):
     if not y.verbose:
@@ -115,15 +147,13 @@ def format_tbx(tb_line=''):
 
     tb = y.sys.exc_info()[2]
 
-    if tb:
-        tb_next = tb
+    def iter1():
+        x = list(iter_full_info(list(iter_frame_info(iter_frames(y.sys._getframe())))))
 
-        while tb_next.tb_next:
-            tb_next = tb_next.tb_next
-
-        frame = tb_next.tb_frame
-    else:
-        frame = y.sys._getframe()
+        if tb:
+            return list(iter_full_info(reversed(list(iter_tb_info(tb)))))
+        else:
+            return x
 
     def iter():
         if tb:
@@ -131,11 +161,14 @@ def format_tbx(tb_line=''):
         else:
             yield '{g}Traceback: {line}{}'.replace('{line}', tb_line)
 
-        for l in format_trace_list(iter_all_frames(frame)):
+        for l in format_trace_list(iter1()):
             yield l
 
     return '\n'.join(iter())
 
 
 def print_tbx(*args, **kwargs):
-    y.xxprint(format_tbx(*args, **kwargs))
+    try:
+        y.xxprint(format_tbx(*args, **kwargs))
+    except Exception as e:
+        y.traceback.print_exc(e)

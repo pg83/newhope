@@ -119,12 +119,12 @@ def print_one_node(root):
         prepare = prepare_prepare(root_node.get('prepare', []), target)
         
         if prepare:
-            yield 'echo "' + base64.b64encode(prepare) + '" | source base64_decode > "$IDIR/build"'
+            yield 'source write_build_file "' + base64.b64encode(prepare) + '"'
         else:
             yield 'touch "$IDIR/build"'
 
         if not naked:
-            yield 'source footer {codec}'.format(codec=root_node['codec'])
+            yield 'source footer'
 
     int_node['build'] = subst_values('\n'.join(iter_part1()), root).split('\n')
 

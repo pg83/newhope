@@ -1,4 +1,4 @@
-@ygenerator(tier=2, kind=['core', 'box', 'tool'])
+@y.ygenerator(tier=2, kind=['core', 'box', 'tool'])
 def diffutils0():
     version = '3.7'
 

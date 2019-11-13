@@ -1,4 +1,4 @@
-def main_makefile(verbose, internal=False):
+def main_makefile(internal=False):
    def iter():
       host = {'os': 'darwin', 'arch': 'x86_64'}
       cc = {'host': host, 'target': host}
@@ -18,4 +18,4 @@ def main_makefile(verbose, internal=False):
       if len_b == len_a and prev:
          return data
 
-      data = y.build_makefile(sorted(prev), verbose, internal=internal)
+      data = y.build_makefile(sorted(prev), internal=internal)

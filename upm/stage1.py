@@ -4,6 +4,7 @@ import sys
 def create_main(args, data, qq):
    sys.modules['ya'] = -1
    sys.modules['gn'] = -1
+   sys.modules['pl'] = -1
 
    def re_exec(args, qq, **kwargs):
       code = """

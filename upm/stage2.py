@@ -9,10 +9,10 @@ def load_builtin_modules(data, builtin):
       'ya.args_parse',
       'ya.algo',
       'ya.single',
+      'ya.defer',
+      'ya.caches',
       'ya.pub_sub',
       'ya.manager',
-      'ya.caches',
-      'ya.logwrap',
       'ya.mini_db',
       'ya.noid_calcer',
    )
@@ -33,23 +33,30 @@ def send_module_back():
    mod = __loader__.create_module('ya.__main__')
    mod.y = y
    mod.exec_text_part(""" 
-def vault():
+def vault1():
     qq = y.homeland_queue
+    pp = y.print_tbx
 
     while True:
         try:
            qq.get()()
-        except StopIteration:
-           def func():
-               raise StopIteration()
-
-           qq.get = func
-
-           return
         except SystemExit as e:
            raise e
-        except Exception as e:
-           print >>y.sys.stderr, e 
+        except:
+           try:
+               pp()
+           except:
+               pass
+
+           raise SystemExit(1)
+
+def vault():
+    channel = y.write_channel('die soon', 'vault')
+
+    try:
+        return vault1()
+    finally:
+        channel({'die': 'soon'})
    """)
 
    y.homeland_queue.put(mod.vault)
@@ -79,24 +86,22 @@ def run_stage2(args, builtin, data, qq, **kwargs):
       send_module_back()
       qq.put(set_sigint)
       y.run_main(sys.argv)
+      y.prompt('/theend')
 
    def thr_func_wrapper():
       try:
-         try:
-            return thr_func()
-         except:
-            err = sys.exc_info()
+         thr_func()
 
-            def reraise():
-               t.join()
-               raise err[0], err[1], err[2]
+         raise SystemExit(0)
+      except:
+         err = sys.exc_info()
 
-            qq.put(reraise)
-      finally:
-         def raise_stop():
-            raise StopIteration
+         def reraise():
+            t.join()
 
-         qq.put(raise_stop)
+            raise err[0], err[1], err[2]
+
+         qq.put(reraise)
    
    t = threading.Thread(target=thr_func_wrapper)
    t.start()

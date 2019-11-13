@@ -1,4 +1,4 @@
-@ygenerator(tier=-2, kind=['core', 'library'])
+@y.ygenerator(tier=-2, kind=['core', 'library'])
 def libsigsegv0():
     return {
         'code': """

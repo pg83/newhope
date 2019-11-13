@@ -1,4 +1,4 @@
-@ygenerator(tier=2, kind=['core', 'library', 'tool'])
+@y.ygenerator(tier=2, kind=['core', 'library', 'tool'])
 def glib0():
     return {
         'code': """

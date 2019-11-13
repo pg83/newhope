@@ -1,4 +1,4 @@
-@ygenerator(tier=0, kind=['core', 'tool', 'compression'])
+@y.ygenerator(tier=0, kind=['core', 'tool', 'compression'])
 def tar0():
     return {
         'code': """

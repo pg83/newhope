@@ -1,4 +1,4 @@
-@ygenerator(tier=-1, kind=['core', 'library'])
+@y.ygenerator(tier=-1, kind=['core', 'library'])
 def pth0():
     return {
         'code': """

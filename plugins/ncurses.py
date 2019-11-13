@@ -1,4 +1,4 @@
-@ygenerator(tier=1, kind=['core', 'dev', 'library'])
+@y.ygenerator(tier=1, kind=['core', 'dev', 'library'])
 def ncurses0():
     return {
         'code': """

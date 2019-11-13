@@ -1,5 +1,6 @@
 import types
 import sys
+import random
 
 
 def ycompile(a, b, c, **kwargs):
@@ -27,6 +28,7 @@ Mod1 = klass('Mod1')
 class Mod(dict):
    def __init__(self, name, loader):
       self.__dict__ = self
+      self.__yid__ = str(int(random.random() * 10000))
       self.__name__ = name
       self.__loader__ = loader
       self.__loader__._by_name[self.__name__] = self
@@ -43,6 +45,8 @@ class Mod(dict):
       except:
          pass
 
+      self.exec_text_part(self.builtin_data())
+
    def self_exec(self):
       self.exec_text_part(self.pop('__ynext_part__', ''))
 
@@ -57,11 +61,13 @@ class Mod(dict):
       if not part.strip():
          return 
 
-      code = ycompile(part, self.__name__.replace('.', '/') + '.py', 'exec', firstlineno=self.line_count() + 1)
+      code = ycompile(part, self.__file__.replace('.', '/') + '.py', 'exec', firstlineno=self.line_count())
       
       exec code in self.__dict__
 
-      self.__ytext__ += '\n'
+      if self.__ytext__:
+         self.__ytext__ += '\n'
+
       self.__ytext__ += part
       self.__ytext__ += '\n'
       self.__ylineco__ = self.__ytext__.count('\n')
@@ -92,31 +98,43 @@ class Mod(dict):
    def line_count_part(self, text):
       return text.count('\n')
 
+   def builtin_data(self):
+      return self.__loader__.builtin_data(self)
+
 
 class Loader(object):
    def __init__(self, builtin={}):
       self._by_name = {}
       self._builtin = builtin
       self._order = []
+      self.create_module('ya')
+      self.create_module('gn')
+      self.create_module('pl')
 
-   def create_module(self, name, data=''):
+   def create_module(self, name):
       if name in self._by_name:
          return self._by_name[name]
 
       res = Mod(name, self)
-      res.exec_text_part(self._builtin.get(name, {}).get('data', '') + data)
       self._order.append(name)
 
       return res
 
+   def builtin_data(self, mod):
+      return self._builtin.get(mod.__name__, {}).get('data', '')
+
    def exec_code(self, mod, data, module_name=None, **kwargs):
       if module_name:
-         m = self.create_module('gn.' + module_name)
-         m.exec_text_part(data)
+         m = self.create_module(module_name)
+
+         if data != m.builtin_data():
+            m.exec_text_part(data)
 
          return m
 
       mod.exec_text_part(data)
+
+      return mod
 
    def get_y(self):
       return self._by_name['ya.iface'].y

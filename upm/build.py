@@ -82,24 +82,12 @@ def reducer(v, by_deps):
 
 def replacer(data):
     def func(s):
-        return 'v5' + data[:4] + s[4:]
+        return s.replace('-v4', '-v5')
 
     return func
 
 
-def send_all_plugins_to_queue():
-    ch = y.write_channel('new plugin', 'file_data')
-    ch('ygenerator = y.ygenerator')
-
-    for el in y.file_data:
-        if el['name'].startswith('pl/'):
-            ch(el['data'])
-
-    #TODO
-    y.gen_all_texts()
-
-
-def build_makefile(nodes, verbose=False, internal=False):
+def build_makefile(nodes, internal=False):
     by_noid = {}
 
     def iter1():
@@ -147,7 +135,7 @@ def build_makefile(nodes, verbose=False, internal=False):
         try:
             yield y.build_scripts_run()
         except AttributeError:
-            send_all_plugins_to_queue()
+            y.send_all_plugins_to_queue()
 
             yield y.build_scripts_run()
 
@@ -185,7 +173,12 @@ def build_makefile(nodes, verbose=False, internal=False):
                 yield '\n\n'
 
     with y.without_gc() as gc:
-        return ''.join(iter6())
+        res = ''
+        
+        for v in iter6():
+            res += v
+
+        return res
 
 
 def decode_internal_format(data):

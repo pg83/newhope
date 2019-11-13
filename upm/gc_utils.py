@@ -10,5 +10,3 @@ def without_gc(print_stats=False):
         
         if print_stats:
             print ygc.garbage
-
-        

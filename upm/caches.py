@@ -52,7 +52,7 @@ def cached(key=default_key, seed=None, copy=False, enable_stats=False):
         k2 = sdb([f.__name__, k1])
         cc = common_cache()
         cf = get_copy_func(copy=copy)
-        hold_name = (f.__module__ + '.' + f.__name__).replace('.', '_')
+        hold_name = f.__name__.replace('.', '_')
         new_name = f.__name__.upper()
 
         stats = {'h': 0, 'm': 0}
@@ -74,7 +74,7 @@ def cached(key=default_key, seed=None, copy=False, enable_stats=False):
         }
 
         tm = tmpl.format(name=new_name, vars=', '.join(closure.keys()), holder=hold_name)
-        m = __yexec__(tm, module_name='cache')
+        m = __yexec__(tm, module_name=f.__module__ + '.ca')
         res = m[hold_name](**closure)
 
         y.prompt('/test2')

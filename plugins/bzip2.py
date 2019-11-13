@@ -1,4 +1,4 @@
-@ygenerator(tier=-1, kind=['core', 'tool', 'library', 'compression'])
+@y.ygenerator(tier=-1, kind=['core', 'tool', 'library', 'compression'])
 def bzip20():
     return {
         'code': """

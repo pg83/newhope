@@ -1,5 +1,9 @@
 def split_part(kind, folders, func, info):
-    func_name = func.__name__.upper()
+    try:
+        func_name = func.__base_name__.upper()
+    except:
+        func_name = func.__name__.upper()
+
     my_name = (func_name + '_' + kind).upper()
 
     by_kind = {
@@ -28,8 +32,9 @@ def split_part(kind, folders, func, info):
         'code': '\n'.join(iter_ops()),
         'kind': 'split_part',
         'prepare': '\n'.join(by_kind[kind]),
-        'deps': [func(info)], # + [y.xz2_run(info), y.tar2_run(info)],
+        'deps': [func(info)],
         'codec': 'xz',
+        'name': my_name.lower(),
     }, info)
 
 
@@ -41,34 +46,32 @@ REPACK_FUNCS = {
 }
 
 
-def channel():
-    return y.subscribe_cb('new functions', lambda x: splitter(**x), 'spl')
+@y.singleton
+def w_channel():
+    return y.write_channel('new functions', 'spl')
 
 
-def splitter(func, kind=[], channel=channel(), **kwargs):
-    repack = kwargs.get('repacks', REPACK_FUNCS)
+@y.read_callback('new functions', 'spl')
+def splitter(arg):
+    repack = arg.get('repacks', REPACK_FUNCS)
 
-    if repack:
-        template = """
-@y.options(repacks=None)
-def {name}_{kind}(info):
-    return y.split_part("{kind}", {folders}, y.{name}, info)
+    if not repack:
+        return
 
-"""
-        fn = func.__name__
+    wc = w_channel()
+    func = arg['func']
+    kind = arg['kind']
+    fn = func.__name__
 
-        def iter_templates():
-            for kind, folders in repack.items():
-                yield template.format(folders=str(folders), name=fn, kind=kind), kind
+    def do(k, folders):
+        f1 = lambda info: split_part(k, folders, func, info)
+        f1.__name__ = 'f1_' + fn + '_' + k
+        f2 = lambda info: y.gen_func(f1, info, {})        
+        f2.__name__ = fn + '_' + k
 
-        def iter_t():
-            for i, (t, knd) in enumerate(iter_templates()):
-                yield t
+        return f2
 
-        __yexec__('\n'.join(iter_t()))
+    for k, folders in repack.items():
+        f = do(k, folders)
 
-        for knd, folders in repack.items():
-            new_func = eval('y.{name}_{kind}'.format(name=fn, kind=knd))
-            channel({'func': new_func, 'kind': kind + [knd], 'fn': fn})
-            
-    return func
+        wc({'func': f, 'kind': kind + [k], 'fn': f.__name__, 'rfunc': func, 'repacks': None})

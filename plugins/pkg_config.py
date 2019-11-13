@@ -13,11 +13,11 @@ def pkg_config_base(opts, deps):
     }
 
 
-@ygenerator(tier=0, kind=['core', 'tool', 'box'])
+@y.ygenerator(tier=0, kind=['core', 'tool', 'box'])
 def pkg_config0():
-    return pkg_config_base([], ['iconv', 'glib-2.0'])
+    return pkg_config_base([], ['iconv', 'glib'])
 
 
-@ygenerator(tier=0, kind=['core', 'tool'])
+@y.ygenerator(tier=0, kind=['core', 'tool'])
 def pkg_config_int0():
     return pkg_config_base(['--with-internal-glib'], ['iconv'])

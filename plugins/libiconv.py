@@ -1,4 +1,4 @@
-@ygenerator(tier=-2, kind=['core', 'box', 'library', 'tool'])
+@y.ygenerator(tier=-2, kind=['core', 'box', 'library', 'tool'])
 def libiconv0():
     return {
         'code': """

@@ -3,5 +3,7 @@ do
     source copy_log "$i" "$IDIR/log"   
 done
 
+ext=$(source file_ext "$PKGF")
+
 source rmdel "$IDIR/lib/"*.la
-source prepare_$1_pkg "$IDIR" "$PKGF"
+source prepare_"$ext"_pkg "$IDIR" "$PKGF"

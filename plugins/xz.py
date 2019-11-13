@@ -1,4 +1,4 @@
-@ygenerator(tier=0, kind=['core', 'tool', 'library'])
+@y.ygenerator(tier=0, kind=['core', 'tool', 'library'])
 def xz0():
     return {
         'code': """

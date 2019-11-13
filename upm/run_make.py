@@ -1,9 +1,3 @@
-import os
-import sys
-import subprocess
-import random
-
-
 def new_cmd():
     return {
         'cmd': [],
@@ -18,11 +12,12 @@ def find_file(cmd, f):
             for d in l.split(':'):
                 path = d + '/' + f
 
-                if os.path.isfile(path):
+                if y.os.path.isfile(path):
                     return path
 
 
 def parse_makefile(data):
+    sp = y.subprocess
     lst = []
     prev = None
     cprint = y.xprint_white
@@ -72,7 +67,7 @@ def parse_makefile(data):
     return lst
 
 
-def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, verbose):
+def run_makefile(data, shell_vars, shell_out, targets, threads, parsed):
     lst = data
 
     if not parsed:
@@ -82,7 +77,7 @@ def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, verbose)
         for i, val in enumerate(lst):
             val['n'] = i
 
-        return y.run_parallel_build(lst, shell_vars, targets, threads, verbose)
+        return y.run_parallel_build(lst, shell_vars, targets, threads)
 
     by_dep = {}
 
@@ -91,7 +86,7 @@ def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, verbose)
             by_dep[d] = x
 
     done = set()
-    do_compile = subprocess.check_output
+    do_compile = sp.check_output
 
     if shell_out:
         def do_compile_1(*args, **kwargs):
@@ -117,7 +112,7 @@ def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, verbose)
 
         if shell_out:
             pass
-        elif os.path.exists(c):
+        elif y.os.path.exists(c):
             done.add(c)
 
             return
@@ -140,11 +135,11 @@ def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, verbose)
             input = 'set -e; set +x; ' + cmd
             input = input.replace('$(SHELL)', '$YSHELL')
             args = ['/usr/bin/env', '-i', shell, '--noprofile', '--norc', '-s']
-            p = do_compile(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, shell=False)
+            p = do_compile(args, stdout=sp.PIPE, stderr=sp.STDOUT, stdin=sp.PIPE, shell=False)
             res, _ = p.communicate(input=input)
             fail = p.wait()
 
-            print >>sys.stderr, res
+            y.xxprint(res)
 
             if fail:
                 prn_delim()

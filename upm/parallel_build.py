@@ -73,7 +73,8 @@ def get_white_line():
 
 
 @y.defer_wrapper
-def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs, verbose):
+def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
+    verbose = y.verbose
     lst = get_only_our_targets(lst, targets)
     white_line = get_white_line()
 
@@ -279,7 +280,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs, verbose):
                 methods[k] = stop_iter
     
     def print_status():
-        read_queue()
+        #read_queue()
 
         def iter():
             yield white_line
@@ -305,7 +306,6 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs, verbose):
     reg_defer(lambda: white_line)
     reg_defer(prepare_finish)
     reg_defer(kill_all_running)
-    reg_defer(print_status)
 
     msg = y.get_color('') + '\n'
 
@@ -323,6 +323,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs, verbose):
         t.start()
 
     reg_defer(wait_all_threads)
+    reg_defer(print_status)
 
     while unready:
         for l in find_complete():

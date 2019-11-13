@@ -1,4 +1,4 @@
-@ygenerator(tier=0, kind=['core', 'box', 'tool'])
+@y.ygenerator(tier=0, kind=['core', 'box', 'tool'])
 def curl0():
     return {
         'code': """
@@ -9,7 +9,7 @@ def curl0():
         """,
         'version': '7.67.0',
         'meta': {
-            'depends': ['mdedtls', 'libidn2'],
+            'depends': ['mbedtls', 'libidn2'],
             'configure': [
                 {'opt': '--with-secure-transport', 'os': 'darwin'},
             ]

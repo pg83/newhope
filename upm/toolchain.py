@@ -84,9 +84,15 @@ def score_toolchains(lst):
     return [join_toolchains(x['c'], x['l']) for x in toolchains]
 
 
+@y.cached()
+def iterate_best_compilers(info):
+    return score_toolchains(find_toolchain_by_cc(info))
+
+
 def find_compiler_x(info):
     def do():
-        for x in score_toolchains(find_toolchain_by_cc(info)):
+        for x in iterate_best_compilers(info):
+            x = y.deep_copy(x)
             x['node']['constraint'] = info
 
             yield y.store_node(x)

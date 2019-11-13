@@ -1,4 +1,4 @@
-@ygenerator(tier=0, kind=['core', 'library', 'tool', 'box'])
+@y.ygenerator(tier=0, kind=['core', 'library', 'tool', 'box'])
 def readline0():
     return {
         'code': """

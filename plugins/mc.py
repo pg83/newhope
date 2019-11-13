@@ -1,4 +1,4 @@
-@ygenerator(tier=3, kind=['base', 'program'])
+@y.ygenerator(tier=3, kind=['base', 'program'])
 def mc0():
     return {
         'code': """
@@ -9,6 +9,6 @@ def mc0():
         """,
         'version': '4.8.23',
         'meta': {
-            'depends': ['intl', 'iconv', 'glib-2.0', 'ncurses', 'slang'],
+            'depends': ['intl', 'iconv', 'glib', 'ncurses', 'slang'],
         }
     }

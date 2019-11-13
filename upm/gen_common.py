@@ -1,3 +1,13 @@
+@y.defer_constructor
+@y.singleton
+def original_funcs():
+    res = []
+
+    y.read_callback('orig functions', 'gt')(res.append)
+
+    return res
+
+
 def calc_name(x):
     for l in x['template'].split('\n'):
         if 'return ' in l:
@@ -33,3 +43,25 @@ def iter_all_user_templates():
         res.extend(fix_user_data([data]))
 
     return res
+
+
+@y.singleton
+def build_env_channel():
+    return y.write_channel('build env', 'common')
+
+        
+@y.singleton
+def send_all_plugins_to_queue():
+    ch = y.write_channel('new plugin', 'file_data')
+
+    for el in y.file_data:
+        if el['name'].startswith('pl/'):
+            el = y.deep_copy(el)
+            
+            el['shit'] = 1
+            
+            ch(el)
+
+    #TODO
+    y.gen_all_texts()
+    y.make_perm()

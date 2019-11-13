@@ -1,4 +1,4 @@
-@ygenerator(tier=2, kind=['core', 'box', 'tool'])
+@y.ygenerator(tier=2, kind=['core', 'box', 'tool'])
 def bash0():
     def do():
         yield '--with-installed-readline'
@@ -21,3 +21,4 @@ def bash0():
             'depends': ['readline', 'ncurses', 'intl', 'iconv']
         }
     }
+

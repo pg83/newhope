@@ -1,7 +1,9 @@
+@y.singleton
 def layers_channel():
     return y.write_channel("new functions", "layers")
 
 
+@y.singleton
 def layers_channel_2():
     return y.write_channel("new plugin", "layers")
 
@@ -12,6 +14,10 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
     all = []
 
     for f in y.iter_all_user_templates():
+        f = y.deep_copy(f)
+
+        f['name'] = 'lay_' + f['name']
+        
         t = f['tier']
         by_name[f['name']] = f
 
@@ -61,7 +67,7 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
         if l == 0:
             return {'deps': '[]', 'deps_funcs': '[]'}
 
-        res = ['y.' + gen_name(x) for x in descr[l]]
+        res = [('y.' + gen_name(x)) for x in descr[l]]
 
         by_val = '[' + ', '.join([x + '(info)' for x in res]) + ']'
         by_typ = '[' + ', '.join(res) + ']'
@@ -84,7 +90,7 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
             num=x['num'],
             deps='cached_deps%s(info)' % (x['num'] - 1),
             deps_funcs='cached_types%s()' % (x['num'] - 1),
-            options='cached=True, codec="{codec}", channel="y.layers_channel()"',
+            options='cached=True, codec="{codec}", channel="y.layers_channel()"'.replace('{codec}', codec),
             codec=codec,
             kind=by_name[x['name']]['kind'],
         )
@@ -116,7 +122,7 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
                     res = gen_func(x)
                     by_id[id] = res
 
-                    yield res
+                    yield res, xnn
 
     texts = []
 
@@ -141,11 +147,23 @@ def cached_deps{num}(info):
 """
     for i in [0] + sorted(descr.keys()):
         d = deps(i)
-        texts.append(stmpl.format(num=i, deps_funcs=d['deps_funcs']))
+        texts.append((stmpl.format(num=i, deps_funcs=d['deps_funcs']), 'runtime'))
 
     #channel('\n\n'.join(reversed(texts)))
 
     if 1:
-        for i in reversed(texts):
-            channel(i)
-        
+        for i, where in reversed(texts):
+            channel({'data': i, 'name': 'pl.' + where + '.layers'})
+
+
+@y.defer_constructor
+def init():
+    @y.read_callback('build env', 'layers')
+    def solver(arg):
+        def func(name, info):
+            send_all_plugins_to_queue()
+
+            return eval(name)(info)
+
+        arg['back_channel']({'func': lambda info: func('y.cached_deps4', info), 'descr': ['system', 'coreutils', 'gnu']})
+        arg['back_channel']({'func': lambda info: func('y.cached_deps5', info), 'descr': ['system', 'coreutils', 'gnu']})

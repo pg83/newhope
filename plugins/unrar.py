@@ -1,4 +1,4 @@
-@ygenerator(tier=1, kind=['core', 'tool', 'compression'])
+@y.ygenerator(tier=1, kind=['core', 'tool', 'compression'])
 def unrar0():
     return {
         'code': """

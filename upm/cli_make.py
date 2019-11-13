@@ -1,5 +1,5 @@
 @y.main_entry_point
-def cli_make(arg, verbose):
+def cli_make(arg):
    parser = y.argparse.ArgumentParser()
 
    parser.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
@@ -31,7 +31,6 @@ def cli_make(arg, verbose):
       raise Exception('can not determine root')
 
    root = calc_root()
-   y.prepare_root(root)
 
    def iter_replaces():
       if args.install_dir:
@@ -56,7 +55,7 @@ def cli_make(arg, verbose):
    parsed = False
    
    if args.gen_makefile:
-      data = y.decode_internal_format(y.main_makefile(verbose, internal=True))
+      data = y.decode_internal_format(y.main_makefile(internal=True))
       parsed = True
    elif args.path == '-':
       data = y.sys.stdin.read()
@@ -69,4 +68,4 @@ def cli_make(arg, verbose):
    threads = int(args.threads)
 
    if threads:
-      y.run_makefile(data, shell_vars, [], args.targets, threads, parsed, verbose)
+      y.run_makefile(data, shell_vars, [], args.targets, threads, parsed)

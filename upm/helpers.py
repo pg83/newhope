@@ -50,18 +50,9 @@ def fixx(x):
     return x
 
 
-@y.singleton
-def script_dir():
-    return y.os.path.dirname(y.script_path)
-
-
 @y.cached()
 def find_tool(name):
     return find_tool_uncached(name, [])
-
-
-def path_by_script(path):
-   return script_dir() + '/' + path
 
 
 @y.singleton

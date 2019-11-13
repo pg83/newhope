@@ -1,4 +1,4 @@
-@ygenerator(tier=0, kind=['core', 'tool', 'box'])
+@y.ygenerator(tier=0, kind=['core', 'tool', 'box'])
 def sed0():
     return {
         'code': """

@@ -1,4 +1,4 @@
-@ygenerator(tier=1, kind=['core', 'box', 'library', 'tool'])
+@y.ygenerator(tier=1, kind=['core', 'box', 'library', 'tool'])
 def libarchive0():
     return {
         'code': """

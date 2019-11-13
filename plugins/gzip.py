@@ -1,4 +1,4 @@
-@ygenerator(tier=-1, kind=['core', 'tool', 'compression'])
+@y.ygenerator(tier=-1, kind=['core', 'tool', 'compression'])
 def gzip0():
     return {
         'code': """

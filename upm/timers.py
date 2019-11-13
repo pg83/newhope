@@ -8,10 +8,19 @@ import sys
 @y.singleton
 def queue():
     store = {}
+    q = Queue.Queue()
+
+    def raise_exit():
+        raise SystemExit(0)
 
     def step():
         def iter_new():
             while True:
+                try:
+                    yield q.get(True, 0.1)()
+                except Queue.Empty:
+                    break
+
                 try:
                     yield q.get_nowait()()
                 except Queue.Empty:
@@ -30,15 +39,17 @@ def queue():
                 
         for k in ready:
             store.pop(k)['f']()
-            
+
+    @y.read_callback('die soon', 'timers')
+    def done(arg):
+        q.put(raise_exit)
+
     def read():
-        while not y.main_thread_dead():
-            time.sleep(0.1)
+        while True:
             step()
 
     t = threading.Thread(target=read)
     t.start()
-    q = Queue.Queue()
 
     return q
 

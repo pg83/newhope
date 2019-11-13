@@ -1,4 +1,4 @@
-@ygenerator(tier=3, kind=['core', 'library'])
+@y.ygenerator(tier=3, kind=['core', 'library'])
 def openssl0():
     return {
         'code': """

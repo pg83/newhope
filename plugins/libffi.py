@@ -1,4 +1,4 @@
-@ygenerator(tier=-2, kind=['core', 'library'])
+@y.ygenerator(tier=-2, kind=['core', 'library'])
 def libffi0():
     return {
         'code': """

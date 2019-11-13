@@ -36,7 +36,6 @@ def cli_selftest(args, verbose):
       y.xprint_white('-------------------------------------------------------------------')
 
 
-
 def self_test3():
    @y.run_by_timer(0.3)
    def f1():

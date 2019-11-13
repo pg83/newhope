@@ -1,6 +1,7 @@
 @y.defer_constructor
 @y.singleton
 def my_funcs():
+    all = []
     res = {}
 
     @y.lookup
@@ -10,13 +11,11 @@ def my_funcs():
     @y.read_callback('new functions', 'collection')
     def cb(data):
         func = data['func']
+        all.append(func)
         res[func.__name__] = data
 
-    return res
+    return all
 
 
 def gen_all_funcs():
-    mf = my_funcs()
-
-    for k in sorted(mf.keys()):
-        yield mf[k]['func']
+    return my_funcs()

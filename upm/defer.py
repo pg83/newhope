@@ -31,3 +31,9 @@ def defer_wrapper(func):
             return func(defer, *args, **kwargs)
 
     return wrapper
+
+
+def defer_constructor(func):
+    y.write_channel('deferc', 'common')({'func': func})
+
+    return func

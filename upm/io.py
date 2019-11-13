@@ -9,6 +9,11 @@ def calc_mode(name):
         ('.tbz2', 'bz'),
         ('.tbz', 'bz'),
         ('.zip', 'zp'),
+        ('-xz', 'xz'),
+        ('-gz', 'gz'),
+        ('-bz', 'bz'),
+        ('-zp', 'zp'),
+        ('-tr', 'tr'),
     ]
 
     if '-tr-' in name:

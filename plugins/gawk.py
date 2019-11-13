@@ -1,4 +1,4 @@
-@ygenerator(tier=2, kind=['base', 'box', 'tool'])
+@y.ygenerator(tier=2, kind=['base', 'box', 'tool'])
 def gawk0():
     return {
         'code': """

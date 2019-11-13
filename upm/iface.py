@@ -1,7 +1,42 @@
 import sys
 import imp
-import itertools
 import weakref
+
+
+class IFaceSlave(object):
+    def __init__(self, mod, parent, c):
+        self._mod = mod
+        self._pa = parent
+        self._c = {}
+
+    def __getattr__(self, name):
+        key = self._mod.__name__ + '.' + name
+
+        try:
+            return self._c[key]
+        except KeyError:
+            self._c[key] = self.find(name)
+
+        return self._c[key]
+
+    def find(self, name):
+        for f in (self.find_module, self.find_function):
+            try:
+                return f(name)
+            except AttributeError:
+                pass
+            except KeyError:
+                pass
+            except ImportError:
+                pass
+            
+        raise AttributeError(name)
+        
+    def find_module(self, name):
+        return self._pa.create_slave(__loader__._by_name[self._mod.__name__ + '.' + name])
+
+    def find_function(self, name):
+        return self._mod[name]
 
 
 class IFace(object):
@@ -11,10 +46,11 @@ class IFace(object):
         self._a = {}
         self._cc = {}
         self._hit = 0
-        self.add_lookup(lambda x: sys.modules[x])
         self.add_lookup(lambda x: self.find_module(x))
         self.add_lookup(lambda x: self.find_module('ya.' + x))
         self.add_lookup(lambda x: self.find_module('gn.' + x))
+        self.add_lookup(lambda x: self.find_module('pl.' + x))
+        self.add_lookup(lambda x: sys.modules[x])
         self.add_lookup(self.fast_search)
         self.add_lookup(self.find_function)
         self.add_lookup(lambda x: __import__(x))
@@ -25,8 +61,18 @@ class IFace(object):
 
         print 'hit = ', self._hit, 'miss = ', len(self._c)
 
+    def create_slave(self, mod):
+        key = 's:' + mod.__name__
+
+        try:
+            return self._c[key]
+        except KeyError:
+            self._c[key] = IFaceSlave(mod, self, self._c)
+
+        return self._c[key]
+
     def find_module(self, x):
-        return __loader__._by_name[x]
+        return self.create_slave(__loader__._by_name[x])
 
     def fast_search(self, name):
         return __loader__._by_name[self._a[name]][name]
@@ -110,6 +156,3 @@ def prompt(l):
          y.code.interact(local=frame.f_globals)
    except Exception as e:
       pass
-
-
-script_path = sys.modules['__main__'].__file__

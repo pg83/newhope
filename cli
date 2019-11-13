@@ -7,13 +7,14 @@ sys.dont_write_bytecode = True
 import os
 import signal
 import Queue
+import traceback
 
 
 __file__ = os.path.abspath(__file__)
-signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 
 
 def real_main():
+   signal.signal(signal.SIGPIPE, signal.SIG_IGN)
    file_data = None
    data = None
    #REPLACEME
@@ -32,10 +33,11 @@ def real_main():
    while True:
       try:
          qq.get()()
-      except StopIteration:
-         break
-
-   raise SystemExit(0)
+      except SystemExit:
+         raise
+      except Exception as e:
+         traceback.print_exc(e)
+         os._exit(4)
 
 
 if __name__ == '__main__':

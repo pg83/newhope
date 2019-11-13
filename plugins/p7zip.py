@@ -1,4 +1,4 @@
-@ygenerator(tier=2, kind=['core', 'tool', 'compression'])
+@y.ygenerator(tier=2, kind=['core', 'tool', 'compression'])
 def p7zip0():
     return {
         'code': """

@@ -1,4 +1,4 @@
-@ygenerator(tier=1, kind=['core', 'box', 'tool'])
+@y.ygenerator(tier=1, kind=['core', 'box', 'tool'])
 def m40():
     return {
         'code': """

@@ -7,7 +7,9 @@ def gen_func(func, info, res):
     def my_fix_v2(arg):
         return y.fix_v2(arg, **res)
 
-    return y.store_node(my_fix_v2(y.call_v2(func, info)))
+    c = y.compose_simple(y.call_v2, my_fix_v2, y.store_node)
+
+    return c(func, info)
 
 
 def options(**kwargs):

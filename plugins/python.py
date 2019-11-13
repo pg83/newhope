@@ -45,7 +45,7 @@ binascii binascii.c
 parser parsermodule.c
 """
 
-@ygenerator(tier=0, kind=['core', 'tool'])
+@y.ygenerator(tier=0, kind=['core', 'tool'])
 def python0():
     return {
         'code': """

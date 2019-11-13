@@ -12,18 +12,8 @@ def deep_copy_json(x):
     return json.loads(json.dumps(x))
 
 
-@y.logged_wrapper()
-def struct_dump_bytes(p):
-    return hashlib.md5(dumps(p)).hexdigest()[:16]
-
-
-@y.logged_wrapper()
-def struct_dump_bytes_json(p):
-    return hashlib.md5(json.dumps(p, sort_keys=True)).hexdigest()
-
-
 def struct_ptr(s):
-    return 's:' + struct_dump_bytes(s)
+    return 's:' + y.struct_dump_bytes(s)
 
 
 def key_struct_ptr(n):

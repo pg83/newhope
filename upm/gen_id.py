@@ -37,6 +37,28 @@ def cons_to_name_2(c, func=lambda x: x, delim='-'):
 
     return r1 + '-' + r2
 
+def cons_to_name_x(c):
+    if not c:
+        return 'nop'
+
+    c = c['target']
+
+    def func1(x):
+        return x[:1]
+
+    def func2(x):
+        return x[:1]
+
+    def func3(x):
+        return x[:2]
+
+    def iter_parts():
+        for k, f in (('os', func1), ('libc', func2), ('arch', func3)):
+            if k in c:
+                yield f(c[k])
+
+    return ''.join(iter_parts())
+
 
 def short_const_2(c):
     return cons_to_name_2(c, func=lambda x: x[:2], delim='')
@@ -52,18 +74,9 @@ def remove_compressor_name(x):
 
 def to_visible_name_0(pkg):
     def iter_parts():
-        name = pkg['name']
-
-        yield pkg['good_id'][:8]
-        yield short_const_2(pkg.get('constraint'))
-
-        if 'version' in pkg:
-            yield name
-            yield pkg['version']
-        elif 'url' in pkg:
-            yield remove_compressor_name(calc_pkg_full_name(pkg['url']))
-        else:
-            yield name
+        yield pkg['name']
+        yield cons_to_name_x(pkg.get('constraint'))
+        yield 'v4' + pkg['good_id'][:10][2:]
 
     return '-'.join(iter_parts()).replace('_', '-').replace('.', '').replace('--', '-').replace('--', '-')
 
@@ -71,10 +84,7 @@ def to_visible_name_0(pkg):
 def to_visible_name_1(pkg):
     res = to_visible_name_0(pkg)
     codec = pkg['codec']
-    res = res[:8] + '-' + codec + res[8:]
-
-    if res.endswith('//'):
-        res = res[:-1]
+    res = res + '-' + codec
 
     return res
 
@@ -98,7 +108,7 @@ def to_visible_name_3(pkg, good_id=None):
 
 @y.cached(key=y.calc_noid)
 def to_visible_name_4(root):
-    return 'v4' + to_visible_name_3(root['node'], good_id=y.calc_noid(root)).lower()[2:]
+    return to_visible_name_3(root['node'], good_id=y.calc_noid(root)).lower()
 
 
 FUNCS = [
@@ -114,6 +124,5 @@ def cur_build_system_version():
     return len(FUNCS) - 1
 
 
-@y.logged_wrapper()
 def to_visible_name(root):
     return root['trash']['replacer'](FUNCS[cur_build_system_version()](root))

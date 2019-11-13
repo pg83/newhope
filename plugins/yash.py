@@ -1,4 +1,4 @@
-@ygenerator(tier=-2, kind=['base', 'tool'])
+@y.ygenerator(tier=-2, kind=['base', 'tool'])
 def yash0():
     opts = [
         '--enable-socket',

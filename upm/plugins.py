@@ -6,12 +6,23 @@ def dep_list(info, iter):
     return [x(info) for x in iter]
 
 
-@y.read_callback('new plugin', 'p')
+@y.read_callback('new plugin', 'plugins')
 def exec_plugin_code(code):
-    __yexec__(code, module_name='functions')
+    try:
+        name = code['name']
+    except:
+        print code
+        raise
+
+    name = name.replace('/', '.')
+
+    if name.endswith('.py'):
+        name = name[:-3]
+
+    __yexec__(code['data'], module_name=name)
 
 
-@y.cached
+@y.cached()
 def find_build_func(name, num='', split=''):
     if num:
         name = name + str(num)
@@ -66,14 +77,14 @@ def better_tov2(x, info, kw):
     return y.to_v2(x, info)
 
 
-def ygenerator(tier=None, kind=[], include=[], exclude=[], cached=True, version=1):
+def ygenerator(tier=None, kind=[], include=[], exclude=[], version=1):
     func_channel = y.write_channel('orig functions', 'yg')
     tmpl_channel = y.write_channel('new functions templates', 'yg')
 
     def functor(func):
         assert tier is not None
 
-        func_channel({'func': func, 'kind': kind, 'original': True})
+        func_channel({'func': func, 'kind': kind, 'original': True, 'mod': func.__module__})
 
         rfn = func.__name__
         fn = rfn[:-1]
@@ -85,7 +96,7 @@ def {name}{num}(info):
     def my_tov2(x):
         return y.better_tov2(x, info, {kw})
 
-    return {tov2}(y.set_name(y.{func_name}(info=info, **{kw}), "{name}{num}"))
+    return {tov2}(y.set_name(y.{func_name}(), "{name}{num}"))
 """
         fname = 'y.identity'
 
@@ -109,19 +120,6 @@ def {name}{num}(info):
             kind.append('library')
 
         tmpl_channel(data)
-
-        if cached:
-            args = y.inspect.getargspec(func)[0]
-
-            def key(**kwargs):
-                return [kwargs[arg] for arg in args]
-
-            @y.cached(key=key)
-            @y.functools.wraps(func)
-            def wrapper(**kwargs):
-                return func(*key(**kwargs))
-
-            return wrapper
 
         return func
 

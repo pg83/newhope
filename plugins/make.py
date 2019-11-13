@@ -1,4 +1,4 @@
-@ygenerator(tier=-3, kind=['core', 'box', 'tool'])
+@y.ygenerator(tier=-3, kind=['core', 'box', 'tool'])
 def make0():
     def it():
         if '/test1' in y.verbose:
@@ -23,3 +23,4 @@ def make0():
             'soft': ['iconv', 'intl'],
         },
     }
+

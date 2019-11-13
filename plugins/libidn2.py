@@ -1,4 +1,4 @@
-@ygenerator(tier=-2, kind=['core', 'library'])
+@y.ygenerator(tier=-2, kind=['core', 'library'])
 def libidn20():
     return {
         'code': """
@@ -9,7 +9,7 @@ def libidn20():
         """,
         'version': '2.2.0',
         'meta': {
-            'depends': ['intl', 'incov', 'unistring', 'pkg_config'],
+            'depends': ['intl', 'iconv', 'libunistring', 'pkg_config'],
             'provides': [
                 {'lib': 'idn2', 'configure': {'opt': '-with-libidn2={pkg_prefix}'}},
             ],

@@ -1,3 +1,9 @@
+import hashlib
+import json
+
+from marshal import loads, dumps
+
+
 def uniq_list_2(iter, key):
     visited = set()
 
@@ -29,3 +35,10 @@ def to_lines(text):
 
     return list(iter_l())
 
+
+def struct_dump_bytes(p):
+    return hashlib.md5(dumps(p)).hexdigest()[:16]
+
+
+def struct_dump_bytes_json(p):
+    return hashlib.md5(json.dumps(p, sort_keys=True)).hexdigest()

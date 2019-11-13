@@ -15,17 +15,13 @@ def xxprint(*args, **kwargs):
     kwargs.pop('where', y.sys.stderr).write(xxformat(*args, **kwargs) + '\n')
 
 
-def next_part(part, *parts):
-    return (part, parts)
-
-
 def process_color(text, init, kwargs):
     verbose = kwargs.get('verbose', y.verbose)
     cm = y.color_map_func()
     rst = ('c', '')
 
-    def process_part(s, *parts):
-        text, parts = next_part(*parts)
+    def process_part1(s, parts):
+        text = parts.pop()
 
         while True:
             pos = text.find('{')
@@ -36,7 +32,7 @@ def process_color(text, init, kwargs):
             if not parts:
                 break
 
-            part, parts = next_part(*parts)
+            part = parts.pop()
             text = text + part
 
         if pos < 0:
@@ -82,8 +78,20 @@ def process_color(text, init, kwargs):
             else:
                 s.append(nc)
 
-        for x in process_part(s, add, next, *parts):
-            yield x            
+        parts.append(next)
+        
+        if add:
+            parts.append(add)
+
+    def process_part(s, parts):
+        while parts:
+            #print sum([len(x) for x in c[1]], 0), c[1]
+
+            for x in process_part1(s, parts):
+                yield x
+
+            while parts and not parts[-1]:
+                parts.pop()
 
     def combine():
         s = [init or '']
@@ -100,7 +108,7 @@ def process_color(text, init, kwargs):
             else:
                 return ''.join([x[1] for x in last])
 
-        for p in process_part(s, text):
+        for p in process_part(s, [text]):
             if p[0] == 't' and not p[1]:
                 continue
 

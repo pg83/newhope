@@ -54,7 +54,7 @@ def gen_unpack_node(pkg):
         'inputs': [pkg, y.build_scripts_path()],
         'output': mpkg,
         'build': [
-            '. "{path}/build" && source unpackage {codec} "{vis_name}"'.format(path=y.build_scripts_dir(), vis_name=vis_name, codec=y.calc_mode(vis_name))
+            '. "{path}/build" && source unpackage "{vis_name}"'.format(path=y.build_scripts_dir(), vis_name=vis_name)
         ],
     }
 
@@ -64,12 +64,7 @@ def gen_packs_1(constraints=None):
 
     for c in constraints():
         for func in y.gen_all_funcs():
-            try:
-                yield func(y.deep_copy(c))
-            except Exception as e:
-                print func, c, e
-                
-                raise
+            yield func(y.deep_copy(c))
 
         #for t in y.find_compiler_x(y.deep_copy(c)):
             #yield t
