@@ -33,10 +33,6 @@ def find_build_func(name, num='', split=''):
     return eval('y.' + name)
 
 
-def identity(x):
-    return x
-
-
 def parse_line(l):
     if l.startswith('source fetch '):
         return l.split('"')[1]
@@ -44,82 +40,60 @@ def parse_line(l):
     return False
 
 
-def set_name(v, n):
-    v = y.deep_copy(v)
-    v['name'] = n
-
-    return v
-
-
-def join_n(p):
-    return '\n'.join(p) + '\n'
-
-
-def better_tov2(x, info, kw):
-    if 'deps' not in x:
-        x['deps'] = x.pop('extra_deps', []) + eval('y.' + kw['deps'])
-
-    if 'prepare' not in x:
-        p = []
-        kind = kw['kind']
-
-        if 'tool' in kind:
-            p.append('$(ADD_PATH)')
-
-        if 'library' in kind:
-            p.append('$(ADD_CFLAGS)')
-            p.append('$(ADD_LDFLAGS)')
-            p.append('$(ADD_LIBS)')
-            p.append('$(ADD_PKG_CONFIG)')
-          
-        x['prepare'] = join_n(p)
-
-    return y.to_v2(x, info)
-
-
 def ygenerator(tier=None, kind=[], include=[], exclude=[], version=1):
     func_channel = y.write_channel('orig functions', 'yg')
-    tmpl_channel = y.write_channel('new functions templates', 'yg')
-
+    gen_channel = y.write_channel('new functions generator', 'yg')
+    kind = y.deep_copy(kind)
+        
     def functor(func):
         assert tier is not None
+        
+        orig_func = func
+        base_name = orig_func.__name__[:-1]
+
+        if base_name.startswith('lib'):
+            kind.append('library')
+        else:
+            kind.append('tool')
+
+        if 'box' in kind:
+            kind.append('tool')
 
         func_channel({'func': func, 'kind': kind, 'original': True, 'mod': func.__module__})
+        
+        def generator(deps_types, num, fname, codec):
+            def func(info):
+                res = y.deep_copy(orig_func())
 
-        rfn = func.__name__
-        fn = rfn[:-1]
-        func.__name__ = rfn
+                res['codec'] = codec
+                res['name'] = fname
+                res['deps'] = res.pop('extra_deps', []) + [f(info) for f in deps_types()]
 
-        template = """
-@y.options({options})
-def {name}{num}(info):
-    def my_tov2(x):
-        return y.better_tov2(x, info, {kw})
+                if 'meta' not in res:
+                    res['meta'] = {}
 
-    return {tov2}(y.set_name(y.{func_name}(), "{name}{num}"))
-"""
-        fname = 'y.identity'
+                if 'kind' not in res['meta']:
+                    res['meta']['kind'] = kind
 
-        if version == 1:
-            fname = 'my_tov2'
+                if version == 1:
+                    return y.to_v2(res, info)
+
+                return res
+            
+            func.__name__ = fname
+
+            return func
 
         data = {
             'tier': tier,
-            'name': fn,
             'kind': kind,
+            'name': base_name,
             'include': include,
             'exclude': exclude,
-            'template': template,
-            'extra_arg': {
-                'func_name': func.__name__,
-                'tov2': fname,
-            }
+            'generator': generator,
         }
 
-        if fn.startswith('lib'):
-            kind.append('library')
-
-        tmpl_channel(data)
+        gen_channel(data)
 
         return func
 

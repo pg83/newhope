@@ -51,9 +51,17 @@ def to_v2(data, info):
 
     node['prepare'] = list(iter_prepare())
 
-    for x in ('version', 'codec', 'extra', 'name', 'do_fetch_node', 'pkg_full_name', 'inputs', 'output', 'meta'):
+    for x in ('version', 'codec', 'extra', 'name', 'do_fetch_node', 'pkg_full_name', 'inputs', 'output', 'meta', 'num', 'kind'):
         if x in data:
             node[x] = data[x]
+
+    if 'meta' not in node:
+        node['meta'] = {}
+        
+    meta = node['meta']
+
+    if 'kind' not in meta:
+        meta['kind'] = node.pop('kind', [])
 
     def iter_subst():
         for i, v in enumerate(node.get('extra', [])):

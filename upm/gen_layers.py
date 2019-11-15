@@ -12,10 +12,10 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
     by_tier = {}
     by_name = {}
     all = []
+    channel = layers_channel()
 
-    for f in y.iter_all_user_templates():
-        f = y.deep_copy(f)
-
+    for j in y.iter_all_user_generators():
+        f = y.deep_copy(j)
         f['name'] = 'lay_' + f['name']
         
         t = f['tier']
@@ -61,50 +61,47 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
 
     def gen_name(x):
         return x['name'] + str(x['num'])
+    
+    all_funcs = []
 
     @y.cached()
     def deps(l):
-        if l == 0:
-            return {'deps': '[]', 'deps_funcs': '[]'}
+        @y.singleton
+        def cached_types():
+            if l == 0:
+                return []
 
-        res = [('y.' + gen_name(x)) for x in descr[l]]
+            return y.join_funcs('devtools', l, [all_funcs[x['i']] for x in descr[l]])
 
-        by_val = '[' + ', '.join([x + '(info)' for x in res]) + ']'
-        by_typ = '[' + ', '.join(res) + ']'
-
-        return {
-            'deps': by_val,
-            'deps_funcs': by_typ,
-        }
+        return cached_types
 
     def gen_func(x):
-        d = deps(x['num'] - 1)
+        n = x['num']
+        nn = n - 1
 
-        if x['num'] >= 4:
+        if n >= 4:
             codec = 'xz'
         else:
             codec = 'gz'
 
-        args = dict(
-            name=x['name'],
-            num=x['num'],
-            deps='cached_deps%s(info)' % (x['num'] - 1),
-            deps_funcs='cached_types%s()' % (x['num'] - 1),
-            options='cached=True, codec="{codec}", channel="y.layers_channel()"'.replace('{codec}', codec),
-            codec=codec,
-            kind=by_name[x['name']]['kind'],
-        )
+        ygf = y.gen_func
+        name = x['name']
+        fname = name + str(n)
+        generator = by_name[name]['generator']
+        f1 = generator(lambda: deps(nn)(), n, fname, codec)
+        f1.__name__ = 'f1_' + fname
+        f2 = lambda info: ygf(f1, info)
+        f2.__name__ = 'f2_' + fname
+        f3 = y.cached()(f2)
+        f3.__name__ = fname
 
-        for k, v in by_name[x['name']].get('extra_arg', {}).items():
-            args[k] = v
+        channel({'func': f3, 'kind': ['layers']})
 
-        tmpl = by_name[x['name']]['template']
-
-        return tmpl.format(kw=args, **args)
+        return f3
 
     by_id = {}
     by_num = {}
-
+    
     def iter_allx_funcs():
         for i in sorted(descr.keys()):
             for x in descr[i]:
@@ -121,39 +118,16 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
                 if id not in by_id:
                     res = gen_func(x)
                     by_id[id] = res
+                    all_funcs.append(res)
+                    x['i'] = len(all_funcs) - 1
 
                     yield res, xnn
 
-    texts = []
-
-    for x in iter_allx_funcs():
-        texts.append(x)
+    list(iter_allx_funcs())
 
     if only_print_layers:
         for i in sorted(by_num.keys()):
             print >>y.sys.stderr,  i, by_num[i]
-
-        return
-
-    stmpl = """
-@y.singleton
-def cached_types{num}():
-    return y.join_funcs('devtools', {num}, {deps_funcs})
-
-
-@y.cached()
-def cached_deps{num}(info):
-    return [x(info) for x in cached_types{num}()]
-"""
-    for i in [0] + sorted(descr.keys()):
-        d = deps(i)
-        texts.append((stmpl.format(num=i, deps_funcs=d['deps_funcs']), 'runtime'))
-
-    #channel('\n\n'.join(reversed(texts)))
-
-    if 1:
-        for i, where in reversed(texts):
-            channel({'data': i, 'name': 'pl.' + where + '.layers'})
 
 
 @y.defer_constructor

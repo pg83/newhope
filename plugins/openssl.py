@@ -1,9 +1,9 @@
-@y.ygenerator(tier=3, kind=['core', 'library'])
+@y.ygenerator(tier=3, kind=['library'])
 def openssl0():
     return {
         'code': """
             source fetch "https://www.openssl.org/source/old/1.1.1/openssl-1.1.1c.tar.gz" 1
-            $YSHELL ./configure --prefix=$IDIR
+            $YSHELL ./configure $COFLAGS --prefix=$IDIR
             $YMAKE -j2
             $YMAKE install
         """,

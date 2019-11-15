@@ -76,6 +76,18 @@ def get_white_line():
 def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
     verbose = y.verbose
     lst = get_only_our_targets(lst, targets)
+    left = len(lst)
+
+    rq, wq = y.make_engine(lst, lambda x: x['deps1'][0], dep_list=lambda x: x['deps2'])
+
+    @y.cached()
+    def resolve_path(d):
+        while '$' in d:
+            for k, v in shell_vars.iteritems():
+                d = d.replace(k, v)
+
+        return d
+
     white_line = get_white_line()
 
     def stop_iter(*args, **kwargs):
@@ -90,35 +102,31 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
     for i, l in enumerate(lst):
         l['n'] = i
 
-    complete = set()
-    unready = set([l['n'] for l in lst])
     q = Queue.Queue()
     w = Queue.Queue()
-    running = set()
-
+    
+    @y.run_by_timer(1.0)
     def ff():
-        time.sleep(1)
-        q.put(ff)
+        def f():
+            pass
+        
+        q.put(f)
 
-    q.put(ff)
+    ff()
 
     def kill_all_running(*args):
         os.system('pkill -KILL -g {pgid}'.format(pgid=os.getpgid(os.getpid())))
 
     def find_complete():
-        for n in list(unready):
-            l = lst[n]
+        for x in rq():
+            yield x
 
-            if is_in(l['deps2'], complete):
-                unready.remove(n)
-
-                yield l
-
-    def gen_working_func(l):
+    def gen_working_func(ll):
         def set_result(a):
             raise SetResult(a)
 
         def process():
+            l = ll['x']
             c = l.get('cmd')
             cn = cmd_name(l)
             output = l['deps1'][0]
@@ -126,12 +134,12 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
             if not c:
                 return lambda: y.xxprint('symlink {g:task} complete', init='b', task=cn)
 
-            if os.path.exists(output):
+            if os.path.exists(resolve_path(output)):
                 return lambda: y.xxprint('target {g:task} complete', init='b', task=cn)
 
             def iter_deps():
                 for d in l['deps2']:
-                    yield os.path.join(os.path.dirname(y.subst_kv_base(d, shell_vars.iteritems())), 'bin')
+                    yield os.path.join(os.path.dirname(resolve_path(d)), 'bin')
 
             srch_lst = list(iter_deps())
 
@@ -202,8 +210,6 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
                 }
 
                 p = methods['popen'](cmd, **args)
-                running.add(p)
-                defer(lambda: running.remove(p))
 
                 try:
                     res, _ = p.communicate(input=input)
@@ -245,7 +251,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
                 def func():
                     e.func()
 
-                    return l
+                    return ll
 
                 w.put(func)
 
@@ -285,7 +291,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
         def iter():
             yield white_line
 
-            if unready:
+            if left:
                 yield y.xxformat('build not finished - ' + ', '.join(methods['get_reason']()), init='r')
             else:
                 yield y.xxformat('all ok', init='g')
@@ -303,10 +309,6 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
             except Exception:
                 y.print_tbx()
 
-    reg_defer(lambda: white_line)
-    reg_defer(prepare_finish)
-    reg_defer(kill_all_running)
-
     msg = y.get_color('') + '\n'
 
     @y.read_callback('SIGINT', 'pb')
@@ -322,17 +324,20 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
     for t in threads:
         t.start()
 
+    reg_defer(lambda: white_line)
+    reg_defer(prepare_finish)
+    reg_defer(kill_all_running)
     reg_defer(wait_all_threads)
     reg_defer(print_status)
 
-    while unready:
-        for l in find_complete():
-            q.put(gen_working_func(l))
+    while left:
+        for ll in find_complete():
+            q.put(gen_working_func(ll))
 
         try:
-            l = methods['get_el'](w)()
+            ll = methods['get_el'](w)()
         except StopIteration:
             break
 
-        for d in l['deps1']:
-            complete.add(d)
+        wq(ll['i'])
+        left -= 1

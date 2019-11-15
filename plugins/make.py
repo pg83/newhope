@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-3, kind=['core', 'box', 'tool'])
+@y.ygenerator(tier=-3, kind=['box'])
 def make0():
     def it():
         if '/test1' in y.verbose:
@@ -12,7 +12,7 @@ def make0():
 
         yield 'export YMAKE=$IDIR/bin/make'
 
-        yield '$YSHELL ./configure --prefix=$IDIR || exit 1'
+        yield '$YSHELL ./configure $COFLAGS --prefix=$IDIR || exit 1'
         yield '$YMAKE -j2'
         yield '$YMAKE install'
 

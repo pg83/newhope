@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-1, kind=['core', 'dev', 'library'])
+@y.ygenerator(tier=-1, kind=['library'])
 def mbedtls0():
     return {
         'code': """
@@ -11,7 +11,7 @@ def mbedtls0():
         'meta': {
             'depends': [],
             'provides': [
-                {'lib': 'mbedtls', 'configure': {'opt': '--with-mbedtls={pkg_root}'}},
+                {'lib': 'mbedtls', 'configure': {'opt': '--with-mbedtls={pkgroot}'}},
             ],
         },
     }

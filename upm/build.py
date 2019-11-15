@@ -82,7 +82,7 @@ def reducer(v, by_deps):
 
 def replacer(data):
     def func(s):
-        return s.replace('-v4', '-v5')
+        return s.replace('-v4', '-v5' + data[4:7])
 
     return func
 

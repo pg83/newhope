@@ -45,13 +45,14 @@ binascii binascii.c
 parser parsermodule.c
 """
 
-@y.ygenerator(tier=0, kind=['core', 'tool'])
-def python0():
+def python_base():
     return {
         'code': """
             source fetch "https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz" 1
             $(APPLY_EXTRA_PLAN_0)
-            $YSHELL ./configure --prefix=$IDIR --disable-shared || exit1
+            $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared || exit1
+            ##echo "#define HAVE_PTH 1" >> pyconfig.h
+            ##echo "#undef HAVE_PTHREAD_H" >> pyconfig.h             
             $YMAKE -j2 || exit 1
             $YMAKE install
         """,
@@ -64,7 +65,25 @@ def python0():
             'soft': ['openssl'],
             'provides': [
                 {'lib': 'python2.7'},
-                {'env': 'PYTHON', 'value': '{pkg_root}/bin/python'},
+                {'env': 'PYTHON', 'value': '{pkgroot}/bin/python'},
             ],
         },
     }
+
+
+@y.ygenerator(tier=0, kind=['box'])
+def python0():
+    return python_base()
+
+
+@y.ygenerator(tier=0, kind=[])
+def python_pth0():
+    r = y.deep_copy(python_base())
+
+    r['code'] = r['code'].replace('./configure', './configure --with-pth').replace('##', '')
+    r['meta']['depends'].append('pth')
+    r['meta']['env'] = [
+        ('PTH', '--with-pth'),
+    ]
+
+    return r

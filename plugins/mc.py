@@ -1,9 +1,9 @@
-@y.ygenerator(tier=3, kind=['base', 'program'])
+@y.ygenerator(tier=3, kind=['program'])
 def mc0():
     return {
         'code': """
              source fetch "http://ftp.midnight-commander.org/mc-4.8.23.tar.xz" 1
-             $YSHELL ./configure --prefix=$IDIR --disable-shared --enable-static --with-screen=ncurses  || exit 1
+             $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static --with-screen=ncurses  || exit 1
              $YMAKE -j2
              $YMAKE install
         """,

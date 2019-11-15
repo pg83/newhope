@@ -7,18 +7,6 @@ def original_funcs():
 
     return res
 
-
-def calc_name(x):
-    for l in x['template'].split('\n'):
-        if 'return ' in l:
-            l = l.split('(')[0]
-            l = l.split( )[-1]
-
-            return l.strip()[:-1]
-
-    raise Exception('shit ' + x)
-
-
 def fix_user_data(iter):
     for f in iter:
         f = y.deep_copy(f)
@@ -28,17 +16,14 @@ def fix_user_data(iter):
         if ss and 'darwin' not in ss:
             continue
 
-        if 'name' not in f:
-            f['name'] = calc_name(f)
-
         yield f
 
 
 @y.singleton
-def iter_all_user_templates():
+def iter_all_user_generators():
     res = []
 
-    @y.read_callback('new functions templates', 'iter_all')
+    @y.read_callback('new functions generator', 'iter_all')
     def cb(data):
         res.extend(fix_user_data([data]))
 
@@ -58,10 +43,8 @@ def send_all_plugins_to_queue():
         if el['name'].startswith('pl/'):
             el = y.deep_copy(el)
             
-            el['shit'] = 1
-            
             ch(el)
 
     #TODO
-    y.gen_all_texts()
+    #y.gen_all_texts()
     y.make_perm()

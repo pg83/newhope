@@ -4,10 +4,6 @@ import json
 from marshal import loads, dumps
 
 
-def deep_copy(x):
-    return loads(dumps(x))
-
-
 def deep_copy_json(x):
     return json.loads(json.dumps(x))
 

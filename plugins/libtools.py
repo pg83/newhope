@@ -1,9 +1,9 @@
-@y.ygenerator(tier=-1, kind=['core', 'library', 'tool', 'box'])
+@y.ygenerator(tier=-1, kind=['library', 'tool', 'box'])
 def libtools0():
     return {
         'code': """
             source fetch "http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz" 1
-            $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared --enable-ltdl-install || exit 1
+            $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared --enable-ltdl-install || exit 1
             $YMAKE -j2 || exit 1
             $YMAKE install
         """,

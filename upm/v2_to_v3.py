@@ -7,45 +7,11 @@ def mn(x):
     return '$MD' + x[3:]
 
 
-def install_dir(pkg):
-    return '$PD/' + y.to_visible_name(pkg)
-
-
-def bin_dir(pkg):
-    return install_dir(pkg) + '/bin'
-
-
-def lib_dir(pkg):
-    return install_dir(pkg) + '/lib'
-
-
-def inc_dir(pkg):
-    return install_dir(pkg) + '/include'
-
-
-@y.cached(key=y.calc_noid)
-def get_subst_values(x):
-    n = x['node']['name'].upper().replace('-', '_')
-
-    return [
-        ('$(MNGR_' + n + '_DIR)', mn(install_dir(x))),
-        ('$(MNGR_' + n + '_BIN_DIR)', mn(bin_dir(x))),
-        ('$(MNGR_' + n + '_LIB_DIR)', mn(lib_dir(x))),
-        ('$(MNGR_' + n + '_INC_DIR)', mn(inc_dir(x))),
-    ]
-
-
 def iter_deps(root):
     rn = root['trash']['restore_node']
 
     for d in root['deps']:
         yield rn(d)
-
-
-def get_subst_values_3(root):
-    for x in itertools.chain([root], iter_deps(root)):
-        for y in get_subst_values(x):
-            yield y
 
 
 def subst_values(data, root):
@@ -58,8 +24,8 @@ def subst_values(data, root):
         yield ('$(BUILD_DIR)', '$WD/' + hashlib.md5(pkg_root).hexdigest())
         yield ('$(PKG_FILE)', '$RD/' + pkg_root)
 
-    return y.subst_kv_base(data, iter1(), get_subst_values_3(root))
-
+    return y.subst_kv_base(data, iter1())
+                               
 
 def mgr_pkg(x):
     return '$MD' + x[3:]
@@ -81,19 +47,8 @@ def rmmkcd(q, suffix=''):
     return 'rm -rf {q} || true; mkdir -p {q}{s}; cd {q}{s}'.format(q=q, s=suffix)
 
 
-@y.singleton
-def common_prepare_repl():
-    return [
-        ('$(ADD_PATH)', 'export PATH="$(CUR_DIR)/bin:$PATH"'),
-        ('$(ADD_CFLAGS)', 'export CFLAGS="-I$(CUR_DIR)/include $CFLAGS"'),
-        ('$(ADD_LDFLAGS)', 'export LDFLAGS="-L$(CUR_DIR)/lib $LDFLAGS"'),
-        ('$(ADD_PKG_CONFIG)', 'export PKG_CONFIG_PATH="$(CUR_DIR)/lib/pkgconfig:$PKG_CONFIG_PATH"'),
-        ('$(ADD_LIBS)', 'export LIBS="$LIBS "'),
-    ]
-
-
 def prepare_prepare(data, target):
-    return y.subst_kv_base('\n'.join(data), common_prepare_repl()).replace('$(CUR_DIR)', '$MD/' + target[4:])
+    return '\n'.join(data).replace('$(CUR_DIR)', '$MD/' + target[4:])
 
 
 def print_one_node(root):
@@ -117,12 +72,16 @@ def print_one_node(root):
             yield x
 
         prepare = prepare_prepare(root_node.get('prepare', []), target)
-        
-        if prepare:
-            yield 'source write_build_file "' + base64.b64encode(prepare) + '"'
+        meta = y.meta_to_build(root_node.get('meta', {}), None, target)
+        data = '\n'.join([prepare, meta])
+
+        if data:
+            data = data.replace('{pkgroot}', mn(target)) + '\n'
+
+            yield 'source write_build_file "' + base64.b64encode(data) + '"'
         else:
             yield 'touch "$IDIR/build"'
-
+                
         if not naked:
             yield 'source footer'
 

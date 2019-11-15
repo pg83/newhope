@@ -1,39 +1,24 @@
 def split_part(kind, folders, func, info):
-    try:
-        func_name = func.__base_name__.upper()
-    except:
-        func_name = func.__name__.upper()
-
-    my_name = (func_name + '_' + kind).upper()
-
-    by_kind = {
-        'dev': [
-            'export CFLAGS="-I$(MNGR_%s_INC_DIR) $CFLAGS"' % my_name,
-            'export LDFLAGS="-L$(MNGR_%s_LIB_DIR) $LDFLAGS"' % my_name,
-        ],
-        'run': [
-            '$(ADD_PATH)',
-        ],
-        'doc': [],
-        'log': [],
-    }
+    deps = [func(info)]
+    my_name = (y.restore_node_node(deps[0])['name'] + '_' + kind).upper()
 
     def iter_ops():
-        if kind == 'run':
-            yield 'mkdir -p $(INSTALL_DIR)/bin'
+        yield 'MDIR=$(dirname $3)'
 
-            for x in [('(cp -R $(MNGR_%s_DIR)/%s/* $(INSTALL_DIR)/bin/ >& /dev/null) || true') % (func_name, x[1:]) for x in folders]:
+        if kind == 'run':
+            yield 'mkdir -p $IDIR/bin'
+
+            for x in [('(cp -R $MDIR/%s/* $IDIR/bin/ 2> /dev/null) || true') % x[1:] for x in folders]:
                 yield x
         else:
-            for y in (('cp -R $(MNGR_%s_DIR)/%s $(INSTALL_DIR)/') % (func_name, x[1:]) for x in folders):
+            for y in (('cp -R $MDIR/%s $IDIR/') % x[1:] for x in folders):
                 yield y
 
     return y.to_v2({
         'code': '\n'.join(iter_ops()),
-        'kind': 'split_part',
-        'prepare': '\n'.join(by_kind[kind]),
-        'deps': [func(info)],
+        'kind': [{'dev': 'library', 'run': 'tool'}.get(kind, 'unknown_role')],
         'codec': 'xz',
+        'deps': deps, 
         'name': my_name.lower(),
     }, info)
 
@@ -62,12 +47,15 @@ def splitter(arg):
     func = arg['func']
     kind = arg['kind']
     fn = func.__name__
+    gf = y.gen_func
 
     def do(k, folders):
         f1 = lambda info: split_part(k, folders, func, info)
         f1.__name__ = 'f1_' + fn + '_' + k
-        f2 = lambda info: y.gen_func(f1, info, {})        
+        f2 = lambda info: gf(f1, info)        
         f2.__name__ = fn + '_' + k
+        #f3 = y.cached()(f2)
+        #f3.__name__ = fn + '_' + k
 
         return f2
 

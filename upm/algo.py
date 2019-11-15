@@ -42,3 +42,13 @@ def struct_dump_bytes(p):
 
 def struct_dump_bytes_json(p):
     return hashlib.md5(json.dumps(p, sort_keys=True)).hexdigest()
+
+
+def deep_copy(x):
+    try:
+        return loads(dumps(x))
+    except Exception as e:
+        if 'unmarshal' in str(e):
+            return y.copy.deepcopy(x)
+
+        raise e

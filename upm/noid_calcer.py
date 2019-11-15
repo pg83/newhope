@@ -12,4 +12,3 @@ def calc_noid_base_really(v):
 
 def calc_noid(v):
     return 'i:' + y.key_struct_ptr([calc_noid_base(v), v['trash']['extra']])[2:]
-

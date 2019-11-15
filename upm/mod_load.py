@@ -1,4 +1,3 @@
-import types
 import sys
 import random
 
@@ -6,24 +5,6 @@ import random
 def ycompile(a, b, c, **kwargs):
    return compile('\n' * kwargs.get('firstlineno', 0) + a, b, c)
 
-
-def klass(a):
-    l = {}
-
-    def wrap(f):
-        return lambda y, *args: f(y)(*args)
-
-    l['__setitem__'] = wrap(lambda y: l.__setitem__)
-    l['__getitem__'] = wrap(lambda y: l.__getitem__)
-
-    l['__setattr__'] = l['__setitem__']
-    l['__getattr__'] = l['__getitem__']
-
-    return type(a, (object,), l)
-
-
-Mod1 = klass('Mod1')
-   
 
 class Mod(dict):
    def __init__(self, name, loader):

@@ -67,11 +67,37 @@ def parse_makefile(data):
     return lst
 
 
+def cheet(lst):
+    @y.singleton
+    def placeholder():
+        bsp = lst[0]['deps1'][0]
+            
+        def build_scripts_path():
+            return bsp
+
+        def build_scripts_dir():
+            return y.os.path.dirname(bsp)
+
+        l = locals()
+        
+        @y.lookup
+        def look(name):
+            return l[name]
+
+    try:
+        y.build_scripts_dir()
+    except AttributeError:
+        placeholder()
+        y.build_scripts_dir()
+
+
 def run_makefile(data, shell_vars, shell_out, targets, threads, parsed):
     lst = data
 
     if not parsed:
         lst = parse_makefile(lst)
+
+    cheet(lst)
 
     if threads > 1:
         for i, val in enumerate(lst):

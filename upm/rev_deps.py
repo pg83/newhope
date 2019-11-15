@@ -1,4 +1,4 @@
-def make_engine(data, ntn=lambda x: x['name'], dep_list=None, random=False):
+def make_engine(data, ntn=lambda x: x['name'], dep_list=None, random=False, seed=''):
     data = [{'x': x, 'i': i} for i, x in enumerate(data)]
     name_to_num = dict((ntn(x['x']), x['i']) for x in data)
 
@@ -25,16 +25,21 @@ def make_engine(data, ntn=lambda x: x['name'], dep_list=None, random=False):
         for k, v in list(tbl.iteritems()):
             if one in v:
                 v.remove(one)
+
+    md5 = y.hashlib.md5
+    in_use = set()
         
     def build_tbl():
-        in_use = set()
-                       
+        seed_c = seed
+
         while len(in_use) < len(data):
-            ready = list(set(collect_ready()) - in_use)
-            assert ready 
-  
             if random:
-                y.random.shuffle(ready)
+                seed_c = str(y.random.random())
+
+            ready = sorted(list(set(collect_ready()) - in_use), key=lambda x: md5(str(x) + seed_c).hexdigest())
+
+            if not ready:
+                break
 
             for one in ready:                       
                 in_use.add(one)

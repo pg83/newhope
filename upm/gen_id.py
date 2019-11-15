@@ -37,27 +37,19 @@ def cons_to_name_2(c, func=lambda x: x, delim='-'):
 
     return r1 + '-' + r2
 
+
 def cons_to_name_x(c):
     if not c:
         return 'nop'
 
     c = c['target']
+    res = ''
 
-    def func1(x):
-        return x[:1]
-
-    def func2(x):
-        return x[:1]
-
-    def func3(x):
-        return x[:2]
-
-    def iter_parts():
-        for k, f in (('os', func1), ('libc', func2), ('arch', func3)):
-            if k in c:
-                yield f(c[k])
-
-    return ''.join(iter_parts())
+    for k, f in (('os', 1), ('libc', 1), ('arch', 2)):
+        if k in c:
+            res += c[k][:f]
+            
+    return res
 
 
 def short_const_2(c):
@@ -78,7 +70,7 @@ def to_visible_name_0(pkg):
         yield cons_to_name_x(pkg.get('constraint'))
         yield 'v4' + pkg['good_id'][:10][2:]
 
-    return '-'.join(iter_parts()).replace('_', '-').replace('.', '').replace('--', '-').replace('--', '-')
+    return '-'.join(iter_parts()).replace('_', '-')
 
 
 def to_visible_name_1(pkg):
@@ -96,7 +88,7 @@ def to_visible_name_2(pkg):
 def to_visible_name_3(pkg, good_id=None):
     res = {}
 
-    for k in ('codec', 'version', 'url', 'constraint', 'name'):
+    for k in ('codec', 'constraint', 'name'):
         if k in pkg:
             res[k] = pkg[k]
 
@@ -106,9 +98,15 @@ def to_visible_name_3(pkg, good_id=None):
     return to_visible_name_2(res)
 
 
-@y.cached(key=y.calc_noid)
 def to_visible_name_4(root):
-    return to_visible_name_3(root['node'], good_id=y.calc_noid(root)).lower()
+    key = y.calc_noid(root)
+
+    try:
+        return root[key]
+    except KeyError:
+        root[key] = to_visible_name_3(root['node'], good_id=key).lower()
+
+    return root[key]
 
 
 FUNCS = [
