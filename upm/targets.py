@@ -51,10 +51,10 @@ def gen_unpack_node(pkg):
     vis_name = pkg[4:]
 
     return {
-        'inputs': [pkg, y.build_scripts_path()],
+        'inputs': [y.build_scripts_path(), pkg],
         'output': mpkg,
         'build': [
-            '. "{path}/build" && source unpackage "{vis_name}"'.format(path=y.build_scripts_dir(), vis_name=vis_name)
+            '. "$2" && source unpackage $(basename "$3")'
         ],
     }
 

@@ -1,8 +1,8 @@
-@y.ygenerator(tier=1, kind=['library'])
+@y.ygenerator(tier=1)
 def ncurses0():
     return {
         'code': """
-            source fetch "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz" 1
+            source fetch "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-{version}.tar.gz" 1
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --without-shared --without-debug --without-ada --enable-widec --enable-pc-files --enable-overwrite --enable-ext-colors --enable-termcap --with-pkg-config --with-termlib
             $YMAKE -j2
             $YMAKE install
@@ -10,6 +10,7 @@ def ncurses0():
         """,
         'version': '6.1',
         'meta': {
+            'kind': ['library'],
             'provides': [
                 {'lib': 'ncurses', 'configure': {'opts': ['--with-curses={pkgroot}', '--with-ncurses={pkgroot}']}},
             ],

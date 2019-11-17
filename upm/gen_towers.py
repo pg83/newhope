@@ -1,187 +1,276 @@
 @y.defer_constructor
 def init():
-    @y.read_callback('build env', 'towers')
+    @y.read_callback('build env', 'tow')
     def solver(arg):
         arg['back_channel']({'func': lambda info: {}, 'descr': ['system', 'fast']})
-    
+
 
 @y.singleton
 def func_channel(): 
     return y.write_channel('orig functions', 'ygg')
 
 
-func_channel()({'name': 'box', 'kind': ['special', 'tool']})
-func_channel()({'name': 'compression', 'kind': ['special', 'tool']})
+ic = y.inc_counter()
+
+
+class DictProxy(object):
+    def __init__(self, x):
+        self._x = x
+
+    def __getitem__(self, n):
+        return self._x.__getitem__(n)
+
+    def get(self, k, v=None):
+        return self._x.get(k, v)
+
+
+@y.cached(key=lambda x, z: z)
+def run_cached(f, key):
+    return f()
+
+
+class Func(object):
+    def __init__(self, x, data):
+        self.x = x
+        self.inc_count = ic()
+        self.data = data
+        self.i = 0
+            
+    def out_deps(self):
+        print self.base, self.i, self.deps
+
+    def fun(self, i):
+        return self.data.func_by_num[i].f
+
+    def func_apply(self, i, x):
+        return self.data.func_by_num[i].f(x)
+
+    @property
+    def code(self):
+        return self.x['code']
+
+    @property
+    def base(self):
+        return self.x['base']
+
+    def depends(self):
+        return self.code().get('meta', {}).get('depends', [])
+
+    def dep_list(self):
+        return run_cached(self.dep_list_base, [self.inc_count, 'self.dep_list_base'])
+
+    def dep_list_base(self):
+        subst = {
+            'intl': 'gettext',
+            'iconv': 'libiconv',
+        }
+
+        def iter1():
+            yield 'make'
+                
+            for y in self.depends():
+                yield subst.get(y, y)
+
+        def iter2():
+            for y in iter1():
+                if y != self.base:
+                    yield y
+
+        return list(iter2())
+
+    def run_func(self, info):
+        def func():
+            data = y.deep_copy(self.c(info))
+
+                #if not data.get('deps'):
+            data['deps'] += [self.func_apply(d, info) for d in self.deps]
+
+            return y.fix_pkg_name(data, self.z)
+            
+        return run_cached(func, [self.inc_count, 'self.run_func', info])
+
+    def c(self, info):
+        def func():
+            return y.to_v2(self.code(), info)
+
+        return run_cached(func, [self.inc_count, 'self.c', info])
+
+    def f(self, info):
+        def func():
+            return y.gen_func(self.run_func, info)
+
+        return run_cached(func, [self.inc_count, 'self.f', info])
+
+    @property
+    def z(self):
+        def func():
+            return {
+                'code': self.f,
+                'base': self.base,
+                'gen': 'tow',
+                'kind': ['tow'],
+            }
+
+        return run_cached(func, [self.inc_count, 'self.z', 'func'])
+
+    def clone(self):
+        return Func(self.x, self.data)
+
+    def calc_deps(self):
+        return self.data.select_deps(self.base) + self.data.last_elements(self.data.special, must_have=False)
+
+
+class SpecialFunc(Func):
+    def __init__(self, x, data):
+        Func.__init__(self, x, data)
+
+    def depends(self):
+        return self.data.by_kind[self.base]
+
+    def gen_c(self):
+        def join():
+            return y.join_funcs([self.fun(d) for d in self.deps])
+
+        return run_cached(join, [self.inc_count, 'self.gen_cx', 'join'])
+
+    def c(self, info):
+        def call_c():
+            return y.restore_node(self.gen_c()(info))
+
+        return run_cached(call_c, [self.inc_count, 'self.cx', 'call_c'])
+
+    def clone(self):
+        return SpecialFunc(self.x, self.data)
+
+    def calc_deps(self):
+        return self.data.last_elements(self.depends())
+
+
+class Solver(object):
+    def __init__(self, data, seed=1):
+        self._data = data
+        self._seed = seed
+        self._r, self._w = y.make_engine(self._data, ntn=lambda x: x.base, dep_list=lambda x: x.dep_list(), seed=self._seed)
+        self.inc_count = ic()
+
+    def next_solver(self):
+        return Solver(self._data, self._seed * 13 + 17)
+
+    def iter_items(self):
+        for el in self._r():
+            self._w(el['i'])
+            yield el['x']
+                
+    def iter_solvers(self):
+        cur = self
+
+        while True:
+            yield cur
+            cur = cur.next_solver()
+
+    def iter_infinity(self):
+        for s in self.iter_solvers():
+            for i in s.iter_items():
+                yield i.clone()
+
+
+class Data(object):
+    def __init__(self, data):
+        self.by_kind = y.collections.defaultdict(list)
+        
+        for x in data:
+            for k in x['func']['kind']:
+                self.by_kind[k].append(x['func']['base'])
+
+        self.dd = y.collections.defaultdict(list)
+        self.func_by_num = []
+        self.wc = y.write_channel('new functions', 'tow')
+        self.inc_count = ic()
+        self.data = [self.create_object(x['func']) for x in data]
+        self.by_name = dict((x.base, x) for x in self.data)
+
+    def create_object(self, x):
+        if x['base'] in self.special:
+            return SpecialFunc(x, self)
+
+        return Func(x, self)
+
+    @property
+    def special(self):
+        return self.by_kind['special']
+
+    def last_elements(self, lst, must_have=True):
+        def iter():
+            for k in lst:
+                if k in self.dd or must_have:
+                    yield self.dd[k][-1]
+                    
+        return list(iter())
+
+    def prepare_funcs(self, num):
+        solver = Solver(self.data)
+
+        for func in solver.iter_infinity():
+            func.i = len(self.func_by_num)
+            self.func_by_num.append(func) 
+            func.deps = func.calc_deps()
+            self.dd[func.base].append(func.i)
+
+            if func.i > num:
+                break
+
+    def register(self):
+        for v in self.func_by_num:
+            self.wc({'func': v.z})
+
+    def out(self):
+        for x in self.func_by_num:
+            x.out_deps()
+
+    def full_deps(self, name):
+        def func():
+            my_deps = self.by_name[name].dep_list()
+
+            if not my_deps:
+                return []
+
+            def iter_lst():
+                yield my_deps
+
+                for y in my_deps:
+                    yield self.full_deps(y)
+
+            return sorted(frozenset(sum(iter_lst(), [])))
+
+        return run_cached(func, [self.inc_count, 'self.full_deps', name])
+            
+    def select_deps(self, name):
+        return self.last_elements(self.full_deps(name))
 
 
 def make_proper_permutation(data):
-    v = set()
+    dt = Data(data)
+    dt.prepare_funcs(150)
+    dt.register()
+    #dt.out()
 
-    def flt():
-        for z in data:
-            x = y.deep_copy(z)
 
-            if 'name' not in x:
-                x['name'] = x['func'].__name__[:-1]
-
-            assert x['name'] not in v
-
-            v.add(x['name'])
-            x['name'] = 'tow_' + x['name']
-
-            yield x
-
-    data = list(flt())
-    by_name = dict((x['name'], x) for x in data)
-    by_kind = y.collections.defaultdict(list)
-
-    for x in data:
-        for k in x['kind']:
-            by_kind[k].append(x['name'])
-
-    special = by_kind['special']
-
-    for k in sorted(by_kind.keys()):
-        print k, sorted(set(by_kind[k]))
-
-    subst = {
-        'intl': 'gettext',
-        'iconv': 'libiconv',
+@y.ygenerator(tier=0)
+def box0():
+    return {
+        'meta': {
+            'kind': ['special', 'tool'],
+        },
     }
-                       
-    def dep_list(x):
-        if 'func' not in x:
-            return []
 
-        r = x['func']()
 
-        if x['name'] == 'tow_make':
-            extra = []
-        else:
-            extra = ['tow_make']
-
-        return extra + ['tow_' + subst.get(x, x) for x in r.get('meta', {}).get('depends', [])]
-
-    def iter_items():
-        r, w = y.make_engine(data, dep_list=dep_list)
-            
-        for el in r():
-            w(el['i'])
-            yield el['x']
-                
-    def iter_infinity():
-        while True:
-            for i in iter_items():
-                yield i
-        
-    @y.cached()
-    def full_deps(n):
-        my_deps = dep_list(by_name[n])
-
-        if not my_deps:
-            return []
-
-        def iter_lst():
-            yield my_deps
-
-            for y in my_deps:
-                yield full_deps(y)
-
-        return list(frozenset(sum(iter_lst(), [])))
-
-    d = y.collections.defaultdict(list)
-    func_by_num = {}
-
-    def last_elements(lst):
-        def iter():
-            for k in lst:
-                if k in d:
-                    yield d[k][-1]
-
-        return list(iter())
-
-    @y.cached()
-    def select_deps(name):
-        def do():
-            for k in full_deps(name):
-                v = d[k]
-
-                if not v:
-                    continue
-                else:
-                    yield v[-1]
-
-        return list(do())
-
-    last = {}
-    spec = {}
-
-    for i, x in enumerate(iter_infinity()):
-        name = {'i': i, 'x': x}
-
-        if x['name'] in special:
-            my_lst = by_kind[x['name'][4:]]
-            name['d'] = last_elements(my_lst)
-            last[x['name']] = i
-            spec[i] = name
-        else:
-            name['d'] = select_deps(name['x']['name']) + sorted(last.values())
-
-        d[x['name']].append(i)
-        func_by_num[i] = name
-
-        if i > 150:
-            break
-
-    res = {}
-
-    @y.cached()
-    def run_func_1(info, i):
-        v = spec[i]
-
-        try:
-            v['x']['func']
-        except:
-            print v
-            v['x']['func'] = y.join_funcs(v['x']['name'], v['i'], [res[d] for d in v['d']])[0]
-        
-        return v['x']['func'](info)
-
-    @y.cached()
-    def run_func(info, i):
-        if i in spec:
-            return run_func_1(info, i)
-
-        v = func_by_num[i]
-        data = y.deep_copy(v['x']['func']())
-        data['deps'] = [res[j](info) for j in v['d']]
-        data['name'] = res[i].__base_name__
-        
-        n = y.to_v2(data, info)
-        n['node']['num'] = i
-
-        return n
-
-    def gen_f(i, v):
-        name = v['x']['name']
-
-        f1 = lambda info: run_func(info, i)
-        f1.__name__ = 'f1_' + name + '_' + str(i)
-        f2 = lambda info: y.gen_func(f1, info)
-        f2.__name__ = 'f2_' + name + '_' + str(i)
-        f3 = y.cached()(f2)
-        f3.__name__ = v['x']['name'] + str(i)
-        f3.__base_name__ = v['x']['name']
-
-        return f3
-
-    for i, v in func_by_num.items():
-        res[i] = gen_f(i, v)
-
-    wc = y.write_channel('new functions', 'towers')
-
-    for i, f in res.items():
-        wc({'func': f, 'rfunc': func_by_num[i]['x']['name'], 'kind': ['tower']})
+@y.ygenerator(tier=0)
+def compression0():
+    return {
+        'meta': {
+            'kind': ['special', 'tool'],
+        },
+    }
 
 
 def make_perm():

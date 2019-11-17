@@ -1,15 +1,24 @@
-@y.ygenerator(tier=-2, kind=[])
+@y.ygenerator(tier=-2)
 def libffi0():
     return {
         'code': """
-             source fetch "https://sourceware.org/ftp/libffi/libffi-3.2.1.tar.gz" 1
+             source fetch "https://sourceware.org/ftp/libffi/libffi-{version}.tar.gz" 1
+
+             sed -e '/^includesdir/ s/$(libdir).*$/$(includedir)/' \
+                 -i include/Makefile.in
+
+             sed -e '/^includedir/ s/=.*$/=@includedir@/' \
+                 -e 's/^Cflags: -I${includedir}/Cflags:/' \
+                 -i libffi.pc.in
+
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static || exit 1
              $YMAKE -j2
              $YMAKE install
         """,
         'version': '3.2.1',
         'meta': {
-            'depends': [],
+            'kind': [],
+            'depends': ['sed'],
             'provides': [
                 {'lib': 'ffi'},
             ],

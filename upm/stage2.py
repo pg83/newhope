@@ -6,6 +6,7 @@ import signal
 
 def load_builtin_modules(data, builtin):
    initial = (
+      'ya.int_counter',
       'ya.args_parse',
       'ya.algo',
       'ya.single',

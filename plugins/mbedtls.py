@@ -1,14 +1,15 @@
-@y.ygenerator(tier=-1, kind=['library'])
+@y.ygenerator(tier=-1)
 def mbedtls0():
     return {
         'code': """
-            source fetch "https://tls.mbed.org/download/mbedtls-2.16.3-apache.tgz" 1
+            source fetch "https://tls.mbed.org/download/mbedtls-{version}-apache.tgz" 1
             #pragma cc
             cat Makefile | grep -v 'DESTDIR=' > M && mv M Makefile
             CC=gcc $YMAKE -j2 programs lib && $YMAKE DESTDIR=$IDIR install
         """,
         'version': '2.16.3',
         'meta': {
+            'kind': ['library'],
             'depends': [],
             'provides': [
                 {'lib': 'mbedtls', 'configure': {'opt': '--with-mbedtls={pkgroot}'}},

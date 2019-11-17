@@ -14,25 +14,12 @@ def iter_deps(root):
         yield rn(d)
 
 
-def subst_values(data, root):
-    root_node = root['node']
-
-    def iter1():
-        pkg_root = gen_pkg_path(root)[4:]
-        
-        yield ('$(INSTALL_DIR)', '$PD/' + pkg_root)
-        yield ('$(BUILD_DIR)', '$WD/' + hashlib.md5(pkg_root).hexdigest())
-        yield ('$(PKG_FILE)', '$RD/' + pkg_root)
-
-    return y.subst_kv_base(data, iter1())
-                               
-
 def mgr_pkg(x):
     return '$MD' + x[3:]
 
 
 def mgr_pkg_mark(x):
-    return mgr_pkg(x) + '/done'
+    return mgr_pkg(x) + '/build'
 
 
 def gen_pkg_path(v):
@@ -74,17 +61,14 @@ def print_one_node(root):
         prepare = prepare_prepare(root_node.get('prepare', []), target)
         meta = y.meta_to_build(root_node.get('meta', {}), None, target)
         data = '\n'.join([prepare, meta])
+        data = data.replace('{pkgroot}', mn(target)) + '\n'
+        data = base64.b64encode(data)
 
-        if data:
-            data = data.replace('{pkgroot}', mn(target)) + '\n'
-
-            yield 'source write_build_file "' + base64.b64encode(data) + '"'
+        if naked:
+            yield 'source write_build_file "' + data + '"'
         else:
-            yield 'touch "$IDIR/build"'
-                
-        if not naked:
-            yield 'source footer'
+            yield 'source fini "' + data + '"'
 
-    int_node['build'] = subst_values('\n'.join(iter_part1()), root).split('\n')
+    int_node['build'] = list(iter_part1())
 
     return int_node

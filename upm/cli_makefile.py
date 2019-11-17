@@ -7,6 +7,7 @@ def cli_makefile(arg):
    parser.add_argument('-P', '--plugins', default=[], action='append', help='where to find build rules')
    parser.add_argument('-I', '--internal', default=False, action='store_const', const=True, help='generte internal format')
    parser.add_argument('-D', '--built-set', default=[], action='append', help='build set for build, like distro')
+   parser.add_argument('-T', '--dot', default=False, action='store_const', const=True, help='output dot graph')
 
    args = parser.parse_args(arg)
 
@@ -23,7 +24,9 @@ def cli_makefile(arg):
       else:
          f = y.sys.stdout
 
-      if args.shell:
+      if args.dot:
+         f.write(y.build_dot_script())
+      elif args.shell:
          f.write(y.build_sh_script(args.shell))
       else:
          f.write(y.main_makefile(internal=args.internal))

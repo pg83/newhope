@@ -1,13 +1,14 @@
-def pkg_config_base(opts, deps):
+def pkg_config_base(opts, deps, kind):
     return {
         'code': """
-            source fetch "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz" 1
+            source fetch "https://pkg-config.freedesktop.org/releases/pkg-config-{version}.tar.gz" 1
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared {opts}
             $YMAKE
             $YMAKE install
-        """.format(opts=' '.join(opts)),
+        """.replace('{opts}', ' '.join(opts)),
         'version': '0.29.2',
         'meta': {
+            'kind': kind,
             'depends': deps,
             'provides': [
                 {'env': 'PKG_CONFIG', 'value': '{pkgroot}/bin/pkg-config'}
@@ -16,11 +17,11 @@ def pkg_config_base(opts, deps):
     }
 
 
-@y.ygenerator(tier=0, kind=['box'])
+@y.ygenerator(tier=0)
 def pkg_config0():
-    return pkg_config_base([], ['iconv', 'glib'])
+    return pkg_config_base([], ['iconv', 'glib'], ['box'])
 
 
-@y.ygenerator(tier=0, kind=[])
+@y.ygenerator(tier=0)
 def pkg_config_int0():
-    return pkg_config_base(['--with-internal-glib'], ['iconv'])
+    return pkg_config_base(['--with-internal-glib'], ['iconv'], [])

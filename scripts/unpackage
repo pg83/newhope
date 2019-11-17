@@ -1,8 +1,9 @@
 unpack() {
     echo "{b}unpack $RD/$2{}"
-    source rmmkcd "$MD/$2"
+    source rmmkcd "$MD/$2_tmp"
     source untar_$1 "$RD/$2" 0
-    echo 42 > "$MD/$2/done"
+	source rmrf "$MD/$2"
+	mv "$MD/$2_tmp" "$MD/$2"
 }
 
 ext=$(source file_ext "$1")

@@ -226,7 +226,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
                 data = '\n'.join(o.strip() for o in out)
 
                 if data:
-                    data = white_line + '\n' + data + '\n'
+                    data = white_line + '\n' + data.decode('utf-8') + '\n'
                     sys.stderr.write(y.xxformat(data, cname=cn, verbose=verbose))
 
                 if retcode and retcode != -9:

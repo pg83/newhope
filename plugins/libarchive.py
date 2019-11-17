@@ -1,18 +1,18 @@
-@y.ygenerator(tier=1, kind=['library', 'tool', 'compression'])
+@y.ygenerator(tier=1)
 def libarchive0():
     return {
         'code': """
-             source fetch "https://libarchive.org/downloads/{name}-{version}.tar.gz" 1
+             source fetch "https://libarchive.org/downloads/libarchive-{version}.tar.gz" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared
              $YMAKE -j2
              $YMAKE install
-        """.format(name='libarchive', version='2.4.0'),
+        """,
         'version': '2.4.0',
-        'name': 'libarchive',
         'meta': {
+            'kind': ['library', 'tool', 'compression'],
             'depends': ['zlib', 'bzip2', 'xz', 'curl'],
             'provides': [
-                {'lib': 'libarchive'}
+                {'lib': 'archive'}
             ],
         },
     }

@@ -27,16 +27,16 @@ def iter_frames(frame=None):
 
 @y.cached()
 def text_from_file(path):
-    open(path).read().split('\n')
+    return open(path).read().split('\n')
 
 
 def mod_key(f):
     try:
-        a = len(f.f_globals['__ytext__'])
+        return len(f.f_globals['__ytext__'])
     except:
-        a = 0
+        pass
 
-    return (a, f.f_code.co_filename, f.f_code.co_name)
+    return -1
 
 
 @y.cached(key=mod_key)
@@ -111,24 +111,23 @@ def max_substr(lines):
     return calc('')
 
 
-def format_trace_list(lst):
-    for l in lst:
-        fname, ln, func_name, text = l
+def format_trace(l):
+    fname, ln, func_name, text = l
 
-        yield ' {w}In {dg}' + fname + '{}, in {g}' + func_name + '{}:{}'
+    yield ' {w}In {dg}' + fname + '{}, in {g}' + func_name + '{}:{}'
 
-        if not text:
-            continue
+    if not text:
+        return
         
-        ss = max_substr(text)
+    ss = max_substr(text)
         
-        l1 = text[0][0]
-        l2 = text[-1][0]
+    l1 = text[0][0]
+    l2 = text[-1][0]
 
-        max_len = len(str(l2))
+    max_len = len(str(l2))
 
-        for lnn, t in text:
-            yield (6 - len(str(lnn))) * ' ' + '{b}' + str(lnn) + ': ' + {ln: '{r}'}.get(lnn, '{w}') + t[len(ss):] + '{}{}'
+    for lnn, t in text:
+        yield (6 - len(str(lnn))) * ' ' + '{b}' + str(lnn) + ': ' + {ln: '{r}'}.get(lnn, '{w}') + t[len(ss):] + '{}{}'
 
 
 def format_tbv(tb_line=''):
@@ -139,7 +138,14 @@ def format_tbv(tb_line=''):
         tb_line = ', ' + tb_line
 
     return '{r}Exception of type {type}: {exc}{tb_line}:{}'.replace('{type}', str(type)).replace('{exc}', str(value)).replace('{tb_line}', tb_line)
-        
+
+
+def current_frame():
+    try:
+        raise ZeroDivisionError
+    except ZeroDivisionError:
+        return sys.exc_info()[2].tb_frame.f_back
+
 
 def format_tbx(tb_line=''):
     if not y.verbose:
@@ -147,24 +153,21 @@ def format_tbx(tb_line=''):
 
     tb = y.sys.exc_info()[2]
 
-    def iter1():
-        x = list(iter_full_info(list(iter_frame_info(iter_frames(y.sys._getframe())))))
+    def iter_exc():
+        yield format_tbv(tb_line=tb_line)
 
-        if tb:
-            return list(iter_full_info(reversed(list(iter_tb_info(tb)))))
-        else:
-            return x
+        for x in iter_full_info(reversed(list(iter_tb_info(tb)))):
+            for l in format_trace(x):
+                yield l
 
-    def iter():
-        if tb:
-            yield format_tbv(tb_line=tb_line)
-        else:
-            yield '{g}Traceback: {line}{}'.replace('{line}', tb_line)
+    def iter_fr():
+        yield '{g}Traceback: {line}{}'.replace('{line}', tb_line)
+            
+        for x in iter_full_info(list(iter_frame_info(iter_frames(current_frame())))):
+            for l in format_trace(x):
+                yield l
 
-        for l in format_trace_list(iter1()):
-            yield l
-
-    return '\n'.join(iter())
+    return '\n'.join((tb and iter_exc or iter_fr)())
 
 
 def print_tbx(*args, **kwargs):

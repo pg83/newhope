@@ -7,6 +7,7 @@ def original_funcs():
 
     return res
 
+
 def fix_user_data(iter):
     for f in iter:
         f = y.deep_copy(f)
@@ -41,9 +42,7 @@ def send_all_plugins_to_queue():
 
     for el in y.file_data:
         if el['name'].startswith('pl/'):
-            el = y.deep_copy(el)
-            
-            ch(el)
+            ch(y.deep_copy(el))
 
     #TODO
     #y.gen_all_texts()

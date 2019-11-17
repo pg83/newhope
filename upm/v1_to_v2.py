@@ -26,34 +26,20 @@ def call_v2(func, info):
     if y.is_pointer(data):
         data = y.deep_copy(y.restore_node(data))
 
-    node = data['node']
-
-    if 'name' not in node:
-        node['name'] = func.__name__
-
     return data
 
 
 @y.cached()
 def to_v2(data, info):
-    code = data.get('code', '')
-    full = code + '\n' + data.get('prepare', '')
+    node = y.copy.copy(data)
+    node.pop('deps', None)
 
-    node = {
-        "constraint": info['info'],
-    }
+    code = node.pop('code', '')
+    prepare = node.pop('prepare', '')
+    full = '\n'.join((code, prepare))
 
-    def iter_prepare():
-        p = data.get('prepare', '')
-
-        for l in y.to_lines(p):
-            yield l
-
-    node['prepare'] = list(iter_prepare())
-
-    for x in ('version', 'codec', 'extra', 'name', 'do_fetch_node', 'pkg_full_name', 'inputs', 'output', 'meta', 'num', 'kind'):
-        if x in data:
-            node[x] = data[x]
+    node['constraint'] = info['info']
+    node['prepare'] = y.to_lines(prepare)
 
     if 'meta' not in node:
         node['meta'] = {}

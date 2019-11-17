@@ -1,0 +1,2 @@
+source write_build_file "$1"
+source footer

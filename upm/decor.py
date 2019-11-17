@@ -1,5 +1,5 @@
 def gen_key(func, *args):
-    return [func.__module__, func.__name__, args]
+    return [func.__module__, str(func), args]
 
 
 @y.cached(key=gen_key)

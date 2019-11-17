@@ -43,25 +43,93 @@ binascii binascii.c
 
 # Fred Drake's interface to the Python parser
 parser parsermodule.c
+
+cStringIO cStringIO.c
+cPickle cPickle.c
+
+#_curses _cursesmodule.c -lcurses -ltermcap
+#_curses_panel _curses_panel.c -lpanel -lncurses
+
+_md5 md5module.c md5.c
+_sha shamodule.c
+_sha256 sha256module.c
+_sha512 sha512module.c
+
+readline readline.c -lreadline -ltermcap
 """
 
-def python_base():
+find_modules = """
+import os
+import sys
+
+
+def find_modules():
+    pr = sys.argv[1]
+    assert os.path.isdir(pr)
+    no = ['idlelib.idle', 'this', '_abcoll']
+
+    for a, b, c in os.walk(pr):
+        for d in b + c:
+            if d.endswith('.py'):
+                d = d[:-3]
+                p = a + '/' + d
+                p = p[len(pr) + 1:]
+                m = p.replace('/', '.')
+
+                if m in no:
+                    continue
+
+                if m.startswith('test.'):
+                    continue
+
+                cmd = \"""
+try:
+    print >>sys.stderr, "{m}"
+    import {m}
+except:
+    pass
+\"""
+                print cmd.format(m=m).replace('-', '_')
+
+find_modules()
+"""
+
+
+def python_base(kind):
     return {
         'code': """
-            source fetch "https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz" 1
+            source fetch "https://www.python.org/ftp/python/{version}/Python-{version}.tgz" 1
             $(APPLY_EXTRA_PLAN_0)
-            $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared || exit1
+            $YSHELL ./configure $COFLAGS --prefix=$IDIR/python --enable-static --disable-shared --with-signal-module --with-system-ffi || exit1
             ##echo "#define HAVE_PTH 1" >> pyconfig.h
             ##echo "#undef HAVE_PTHREAD_H" >> pyconfig.h             
             $YMAKE -j2 || exit 1
             $YMAKE install
+
+            env
+            PYTHON=$IDIR/python/bin/python2.7
+            mkdir good && cd good 
+            $(APPLY_EXTRA_PLAN_1)
+            $PYTHON ./find_modules.py $IDIR/python/lib/python2.7 > all_modules.py
+            cat ./all_modules.py
+            $PYTHON ../Tools/freeze/freeze.py ./all_modules.py
+            echo '#define Py_FrozenMain Py_Main' >> frozen
+            cat frozen.c >> frozen
+            cat ../Modules/main.c >> frozen
+            mv frozen frozen.c
+            $YMAKE OPT="$CFLAGS" -j4
+            mv all_modules python
+            mkdir -p $IDIR/bin
+            install -v -m755 python $IDIR/bin
         """,
         'version': '2.7.13',
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup.local', 'data': python_setup_local},
+            {'kind': 'file', 'path': 'find_modules.py', 'data': find_modules},
         ],
         'meta': {
-            'depends': ['ncurses', 'iconv', 'intl', 'zlib'],
+            'kind': kind,
+            'depends': ['ncurses', 'iconv', 'intl', 'zlib', 'pkg_config', 'libffi', 'readline', 'termcap'],
             'soft': ['openssl'],
             'provides': [
                 {'lib': 'python2.7'},
@@ -71,14 +139,14 @@ def python_base():
     }
 
 
-@y.ygenerator(tier=0, kind=['box'])
+@y.ygenerator(tier=0)
 def python0():
-    return python_base()
+    return python_base(['box'])
 
 
-@y.ygenerator(tier=0, kind=[])
+@y.ygenerator(tier=0)
 def python_pth0():
-    r = y.deep_copy(python_base())
+    r = y.deep_copy(python_base([]))
 
     r['code'] = r['code'].replace('./configure', './configure --with-pth').replace('##', '')
     r['meta']['depends'].append('pth')

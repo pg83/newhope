@@ -15,17 +15,7 @@ def get_copy_func(copy=False):
     if not copy:
         return lambda x: x
 
-    def dc(x):
-        try:
-            return y.deep_copy(x)
-        except ValueError:
-            pass
-        except TypeError:
-            pass
-
-        return x
-
-    return dc
+    return lambda x: y.deep_copy(x)
 
 
 tmpl = """
@@ -44,16 +34,20 @@ def {holder}({vars}):
     return {name}
 """
 
-def cached(key=default_key, seed=None, copy=False, enable_stats=False):
+def cached(key=default_key, seed=None, copy=False, enable_stats=False, ic=y.inc_counter()):
     sdb = y.struct_dump_bytes
     k1 = sdb([key.__name__, seed or y.random.random()])
 
     def functor(f):
-        k2 = sdb([f.__name__, k1])
+        if '<lambda>' in f.__name__:
+            hold_name = 'lambda_' + str(ic())
+        else:
+            hold_name = f.__name__
+
+        new_name = hold_name.upper()
+        k2 = sdb([hold_name, k1])
         cc = common_cache()
         cf = get_copy_func(copy=copy)
-        hold_name = f.__name__.replace('.', '_')
-        new_name = f.__name__.upper()
 
         stats = {'h': 0, 'm': 0}
 

@@ -6,7 +6,7 @@ def apply_fetch(lines, v):
             assert len(parts) == 3
 
             url = parts[1]
-            id = y.gen_fetch_node_3(url, y.hashlib.md5(url).hexdigest(), v['deps'], v)
+            id = y.gen_fetch_node_3(url, y.hashlib.md5(url).hexdigest()[:8], v['deps'], v)
             v['deps'] = v['deps'] + [id]
             n = y.restore_node_node(id)
             v['node']['urls'] = [url] + v['node'].get('urls', [])

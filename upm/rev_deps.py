@@ -30,7 +30,7 @@ def make_engine(data, ntn=lambda x: x['name'], dep_list=None, random=False, seed
     in_use = set()
         
     def build_tbl():
-        seed_c = seed
+        seed_c = str(seed)
 
         while len(in_use) < len(data):
             if random:

@@ -3,12 +3,7 @@ def layers_channel():
     return y.write_channel("new functions", "layers")
 
 
-@y.singleton
-def layers_channel_2():
-    return y.write_channel("new plugin", "layers")
-
-
-def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
+def gen_all_texts(only_print_layers=False):
     by_tier = {}
     by_name = {}
     all = []
@@ -16,10 +11,10 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
 
     for j in y.iter_all_user_generators():
         f = y.deep_copy(j)
-        f['name'] = 'lay_' + f['name']
+        f['gen'] = 'lay'
         
         t = f['tier']
-        by_name[f['name']] = f
+        by_name[f['base']] = f
 
         if t in by_tier:
             by_tier[t].append(f)
@@ -41,7 +36,7 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
 
     def calc_levels():
         for i in levels:
-            yield i, [x['name'] for x in calc_level(i)]
+            yield i, [x['base'] for x in calc_level(i)]
 
     by_level = dict(calc_levels())
 
@@ -55,13 +50,9 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
 
     def iter():
         for i, l in enumerate(to_build):
-            yield i + 1, [{'name': x, 'num': i + 1} for x in by_level[l]]
+            yield i + 1, [{'base': x, 'num': i + 1} for x in by_level[l]]
 
-    descr = dict(iter())
-
-    def gen_name(x):
-        return x['name'] + str(x['num'])
-    
+    descr = dict(iter())    
     all_funcs = []
 
     @y.cached()
@@ -71,7 +62,7 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
             if l == 0:
                 return []
 
-            return y.join_funcs('devtools', l, [all_funcs[x['i']] for x in descr[l]])
+            return y.join_funcs([all_funcs[x['i']] for x in descr[l]])
 
         return cached_types
 
@@ -85,49 +76,39 @@ def gen_all_texts(only_print_layers=False, channel=layers_channel_2()):
             codec = 'gz'
 
         ygf = y.gen_func
-        name = x['name']
-        fname = name + str(n)
+        name = x['base']
         generator = by_name[name]['generator']
-        f1 = generator(lambda: deps(nn)(), n, fname, codec)
-        f1.__name__ = 'f1_' + fname
+
+        f1 = lambda info: generator(info, lambda: deps(nn)(), n, codec)
         f2 = lambda info: ygf(f1, info)
-        f2.__name__ = 'f2_' + fname
         f3 = y.cached()(f2)
-        f3.__name__ = fname
 
-        channel({'func': f3, 'kind': ['layers']})
+        descr = {
+            'gen': 'lay',
+            'base': x['base'],
+            'layer': num,
+            'kind': ['lay'],
+            'code': f3,
+            'prev': x,
+        }
 
-        return f3
+        return descr
 
     by_id = {}
-    by_num = {}
     
-    def iter_allx_funcs():
-        for i in sorted(descr.keys()):
-            for x in descr[i]:
-                xn = x['num']
-                xnn = x['name']
+    for i in sorted(descr.keys()):
+        for x in descr[i]:
+            id = x['base'] + '_' + x['num']
 
-                if xn not in by_num:
-                    by_num[xn] = [xnn]
-                else:
-                    by_num[xn].append(xnn)
+            if id in by_id:
+                continue
 
-                id = xnn + '_' + str(xn)
+            res = gen_func(x)
+            by_id[id] = res
+            all_funcs.append(res)
+            x['i'] = len(all_funcs) - 1
 
-                if id not in by_id:
-                    res = gen_func(x)
-                    by_id[id] = res
-                    all_funcs.append(res)
-                    x['i'] = len(all_funcs) - 1
-
-                    yield res, xnn
-
-    list(iter_allx_funcs())
-
-    if only_print_layers:
-        for i in sorted(by_num.keys()):
-            print >>y.sys.stderr,  i, by_num[i]
+            channel({'func': res})
 
 
 @y.defer_constructor

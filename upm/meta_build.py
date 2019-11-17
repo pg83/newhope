@@ -33,7 +33,11 @@ def meta_to_build(meta, platform, target):
             if 'extra' in p:
                 for e in p['extra']:
                     if is_compat(e, platform):
-                        yield 'export LIBS="$LIBS {extra}"'.format(extra=e['libs'])
+                        if 'libs' in e:
+                            yield 'export LIBS="$LIBS {extra}"'.format(extra=e['libs'])
+
+                        if 'ipath' in e:
+                            yield 'export CFLAGS="-I{ipath} $CFLAGS"'.format(ipath=e['ipath'])
 
             if 'configure' in p:
                 cfg = p['configure']

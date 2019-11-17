@@ -66,7 +66,7 @@ def build_scripts_dir():
 
 
 def build_scripts_path():
-    return build_scripts_dir() + '/done'
+    return build_scripts_dir() + '/build'
 
 
 @y.singleton
@@ -78,9 +78,7 @@ def build_scripts_run():
         'output': build_scripts_path(),
         'build': [
             'export PATH=$PATH:/bin:/usr/bin:/usr/local/bin; rm -rf "{output}" || true && mkdir -p "{output}" && cd "{output}"'.format(output=build_scripts_dir()),
-        ] + list(unpack_sh()) + [
-            'echo 7 > done',
-        ]
+        ] + list(unpack_sh()),
     }
 
     res['hash'] = y.struct_dump_bytes(res)
