@@ -20,8 +20,19 @@ def get_copy_func(copy=False):
 
 tmpl = """
 def {holder}({vars}):
+    sdb = y.struct_dump_bytes
+    cc = y.common_cache()
+    stats = dict(h=0, m=0)
+    uniq = (y.random.random() * 10000000000000)
+
+    def at_exit():
+        if '/cache_stats' in y.verbose:
+            y.xprint_w('{{y}}' + f.__module__ + '.' + f.__name__, '{{w}}->', '{{b}}' + str(stats))
+
+    y.atexit.register(at_exit)
+
     def {name}(*args, **kwargs):
-        k = sdb([key(*args, **kwargs), k2])
+        k = sdb([key(*args, **kwargs), uniq])
 
         if k not in cc:
             stats['m'] +=1
@@ -34,47 +45,53 @@ def {holder}({vars}):
     return {name}
 """
 
-def cached(key=default_key, seed=None, copy=False, enable_stats=False, ic=y.inc_counter()):
-    sdb = y.struct_dump_bytes
-    k1 = sdb([key.__name__, seed or y.random.random()])
+
+def simple_cache(f):
+    c = {}
+
+    def wrapper(*args):
+        key = y.burn(args)
+        
+        try:
+            return c[key]
+        except KeyError:
+            c[key] = f(*args)
+
+        return c[key]
+
+    return wrapper
+
+
+@simple_cache
+def get_cache_holder_module(template, name):
+    return __yexec__(template, module_name='gn.cachers.' + name)
+
+
+def get_cache_holder(f, ic=y.inc_counter()):
+    if '<lambda>' in f.__name__:
+        f.__name__ = '[' + y.inspect.getsource(f).strip() + ']'
+        name = 'lambda_' + str(ic())
+    else:
+        name = f.__name__
+
+    hold_name = 'cache_holder_' + name
+    vars = ', '.join(['key', 'f', 'cf'])
+    
+    return get_cache_holder_module(tmpl.format(name=name.upper(), vars=vars, holder=hold_name), name)[hold_name]
+    
+
+def cached(f=None, key=default_key, copy=False):
+    cf = get_copy_func(copy=copy)
 
     def functor(f):
-        if '<lambda>' in f.__name__:
-            hold_name = 'lambda_' + str(ic())
-        else:
-            hold_name = f.__name__
+        try:
+            return get_cache_holder(f)(key, f, cf)
+        finally:
+            y.prompt('/test2')
 
-        new_name = hold_name.upper()
-        k2 = sdb([hold_name, k1])
-        cc = common_cache()
-        cf = get_copy_func(copy=copy)
-
-        stats = {'h': 0, 'm': 0}
-
-        if enable_stats:
-            def at_exit():
-                print f.__module__ + '.' + f.__name__, stats
-
-            y.atexit.register(at_exit)
-            
-        closure = {
-            'sdb': sdb,
-            'key': key,
-            'k2': k2,
-            'cc': cc,
-            'f': f,
-            'cf': cf,
-            'stats': stats,
-        }
-
-        tm = tmpl.format(name=new_name, vars=', '.join(closure.keys()), holder=hold_name)
-        m = __yexec__(tm, module_name=f.__module__ + '.ca')
-        res = m[hold_name](**closure)
-
-        y.prompt('/test2')
-
-        return res
-
+    if f:
+        return functor(f)
+    
     return functor
 
 
@@ -105,3 +122,25 @@ def compose_lisp(funcs):
         return data
 
     return wrapper
+
+
+def cached_method1(meth):
+    def wrapper(self, *args, **kwargs):
+        key = y.burn([meth.__name__, args, kwargs])[2:10]
+        d = self.__dict__
+        
+        try:
+            return d[key]
+        except KeyError:
+            d[key] = meth(self, *args, **kwargs)
+
+        return d[key]
+
+    return wrapper
+
+
+def cached_method2(meth):
+    return y.cached(key=lambda self, *args: (id(self), args))(meth)
+
+
+cached_method = cached_method2

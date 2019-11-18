@@ -21,7 +21,6 @@ def busybox_run(info):
     }, info)
 */
 
-@y.cached()
 def busybox0(info, deps, codec):
     if y.xp('/info/info/host/os') == 'darwin':
         return system00(info)

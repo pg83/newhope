@@ -57,9 +57,9 @@ class IFace(object):
 
     def print_stats(self):
         for i, f in enumerate(self._l):
-            print i, self._cc[i]
+            y.xprint_w(i, self._cc[i])
 
-        print 'hit = ', self._hit, 'miss = ', len(self._c)
+        y.xprint_w('hit =', self._hit, 'miss =', len(self._c))
 
     def create_slave(self, mod):
         key = 's:' + mod.__name__

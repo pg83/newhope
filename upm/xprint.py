@@ -85,8 +85,6 @@ def process_color(text, init, kwargs):
 
     def process_part(s, parts):
         while parts:
-            #print sum([len(x) for x in c[1]], 0), c[1]
-
             for x in process_part1(s, parts):
                 yield x
 
@@ -133,7 +131,7 @@ def lookup(xp):
         color=xp[7:]
 
         def func(*args, **kwargs):
-            print >>y.sys.stderr, xxformat(*args, init=color, **kwargs)
+            xxprint(*args, init=color, **kwargs)
         
         func.__name__ = xp
 

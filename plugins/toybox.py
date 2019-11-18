@@ -1,4 +1,3 @@
-@y.cached()
 def toybox0(info, deps, codec):
     name = 'toybox-' + info['info']['host']['arch']
     ver = '0.8.1'

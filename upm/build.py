@@ -1,3 +1,27 @@
+workspace = """
+workspace: $RD/x $WD/x $PD/x $MD/x
+
+
+$RD/x:
+    rm -rf "$RD" 2> /dev/null || true
+    mkdir -p "$RD"
+
+
+$WD/x:
+    rm -rf "$WD" 2> /dev/null || true
+    mkdir -p "$WD"
+
+
+$PD/x:
+    mkdir -p "$PD"
+
+    
+$MD/x:
+    mkdir -p "$MD"
+
+
+""".replace('    ', '\t')
+
 def print_v3_node(n):
     yield n['output'] + ': ' + ' '.join(n['inputs'])
 
@@ -161,7 +185,7 @@ def build_makefile(nodes, internal=False):
                     'deps1': [cmd['output']],
                     'cmd': cmd['build'],
                 }
-                
+
         return y.zlib.compress(y.marshal.dumps(list(iter6())))
 
     def iter6():
@@ -173,14 +197,12 @@ def build_makefile(nodes, internal=False):
                 yield '\n\n'
 
     with y.without_gc() as gc:
-        res = ''
-        
+        res = workspace
+
         for v in iter6():
             res += v
 
         return res
 
-
 def decode_internal_format(data):
     return y.marshal.loads(y.zlib.decompress(data))
-

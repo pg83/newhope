@@ -27,6 +27,6 @@ def build_sh_script(targets):
 
                 yield '(echo "export PREFIX=$1"; (echo "' + base64.b64encode(input) + '" | base64 -D -i - -o -)) > data; (cat data | /usr/bin/env -i /usr/local/bin/dash -s) || exit 1'
             except Exception as e:
-                y.xxprint('------------------------------------------\n', cmd, e)
+                y.xprint_red('------------------------------------------\n', cmd, e)
 
     return '\n\n'.join(iter_cmd()) + '\n'

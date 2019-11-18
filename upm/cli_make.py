@@ -1,18 +1,17 @@
 @y.main_entry_point
 def cli_make(arg):
-   parser = y.argparse.ArgumentParser()
+   p = y.argparse.ArgumentParser()
 
-   parser.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
-   parser.add_argument('-f', '--path', default='-', action='store', help='path to Makefile')
-   parser.add_argument('-r', '--root', default=None, action='store', help='main root for build files')
-   parser.add_argument('-i', '--install-dir', default=None, action='store', help='where to install packages')
-   parser.add_argument('-d', '--do-not-remove', default=None, action='store', help='не удалять даннные')
-   parser.add_argument('-g', '--gen-makefile', default=False, action='store_const', const=True, help='сразу готовить себе Makefile')
-   parser.add_argument('-s', '--shell', default=None, action='store', help='указать шелл для сборки')
-   parser.add_argument('--production', default=False, action='store_const', const=True, help='production execution')
-   parser.add_argument('targets', nargs=y.argparse.REMAINDER)
+   p.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
+   p.add_argument('-f', '--path', default='gen', action='store', help='path to Makefile, "-" - read from stdin, "gen" - generate on the fly')
+   p.add_argument('-r', '--root', default=None, action='store', help='main root for build files')
+   p.add_argument('-i', '--install-dir', default=None, action='store', help='where to install packages')
+   p.add_argument('-d', '--do-not-remove', default=None, action='store', help='не удалять даннные')
+   p.add_argument('-s', '--shell', default=None, action='store', help='указать шелл для сборки')
+   p.add_argument('--production', default=False, action='store_const', const=True, help='production execution')
+   p.add_argument('targets', nargs=y.argparse.REMAINDER)
 
-   args = parser.parse_args(arg)
+   args = p.parse_args(arg)
    local = not args.production
 
    if local and args.install_dir:
@@ -54,7 +53,7 @@ def cli_make(arg):
    shell_vars = dict(iter_replaces())
    parsed = False
    
-   if args.gen_makefile:
+   if args.path == 'gen':
       data = y.decode_internal_format(y.main_makefile(internal=True))
       parsed = True
    elif args.path == '-':
@@ -68,4 +67,4 @@ def cli_make(arg):
    threads = int(args.threads)
 
    if threads:
-      y.run_makefile(data, shell_vars, [], args.targets, threads, parsed)
+      y.run_makefile(data, shell_vars, [], args.targets, threads, parsed, pre_run=['workspace'])

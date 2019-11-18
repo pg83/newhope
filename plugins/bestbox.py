@@ -1,4 +1,3 @@
-@y.cached()
 def bestbox0(info, deps, codec):
     return y.to_v2({
         'code': """

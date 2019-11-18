@@ -22,7 +22,7 @@ def meta_to_build(meta, platform, target):
             yield 'export CFLAGS="-I{pkgroot}/include $CFLAGS"'
             yield 'export LDFLAGS="-L{pkgroot}/lib $LDFLAGS"'
             yield 'export PKG_CONFIG_PATH="{pkgroot}/lib/pkgconfig:$PKG_CONFIG_PATH"'
-            
+
         if 'tool' in kind:
             yield 'export PATH="{pkgroot}/bin:$PATH"'
 
@@ -41,7 +41,7 @@ def meta_to_build(meta, platform, target):
 
             if 'configure' in p:
                 cfg = p['configure']
-                
+
                 if 'opt' in cfg:
                     yield 'export COFLAGS="$COFLAGS {opt}"'.format(opt=cfg['opt'])
 

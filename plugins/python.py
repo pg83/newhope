@@ -1,4 +1,9 @@
 python_setup_local = """
+# Fred Drake's interface to the Python parser
+parser parsermodule.c
+
+zlib zlibmodule.c
+
 array arraymodule.c    # array objects
 cmath cmathmodule.c _math.c # -lm # complex math library functions
 math mathmodule.c _math.c # -lm # math library functions, e.g. sin()
@@ -47,15 +52,15 @@ parser parsermodule.c
 cStringIO cStringIO.c
 cPickle cPickle.c
 
-#_curses _cursesmodule.c -lcurses -ltermcap
-#_curses_panel _curses_panel.c -lpanel -lncurses
+_curses _cursesmodule.c
+_curses_panel _curses_panel.c
 
 _md5 md5module.c md5.c
 _sha shamodule.c
 _sha256 sha256module.c
 _sha512 sha512module.c
 
-readline readline.c -lreadline -ltermcap
+readline readline.c
 """
 
 find_modules = """

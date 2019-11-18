@@ -1,4 +1,3 @@
-#@y.cached()
 def tool_test0():
     return {
         'code': """

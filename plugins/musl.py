@@ -1,4 +1,3 @@
-@y.cached()
 def musl0(info, codec, deps):
     return y.to_v2({
         'code': """

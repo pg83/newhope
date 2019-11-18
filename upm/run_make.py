@@ -52,7 +52,7 @@ def parse_makefile(data):
             try:
                 a, b = ls.split(':')
             except Exception as e:
-                print ls, line_no, e
+                y.xprint_r(ls, line_no, e)
 
                 raise
 
@@ -91,7 +91,7 @@ def cheet(lst):
         y.build_scripts_dir()
 
 
-def run_makefile(data, shell_vars, shell_out, targets, threads, parsed):
+def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, pre_run=[]):
     lst = data
 
     if not parsed:
@@ -99,12 +99,16 @@ def run_makefile(data, shell_vars, shell_out, targets, threads, parsed):
 
     cheet(lst)
 
+    if pre_run:
+        run_seq_build(lst, shell_vars, pre_run)
+    
     if threads > 1:
-        for i, val in enumerate(lst):
-            val['n'] = i
-
         return y.run_parallel_build(lst, shell_vars, targets, threads)
 
+    return run_seq_build(lst, shell_vars, targets)
+
+
+def run_seq_build(lst, shell_vars, targets):
     by_dep = {}
 
     for x in lst:

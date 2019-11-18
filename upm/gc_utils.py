@@ -9,4 +9,4 @@ def without_gc(print_stats=False):
         ygc.enable()
         
         if print_stats:
-            print ygc.garbage
+            y.xprint_r(ygc.garbage)

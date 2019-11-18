@@ -1,10 +1,40 @@
+def monkey_patch():
+    i = y.inspect
+    getmodule = i.getmodule
+
+    def my_get_module(name, _filename=None):
+        if _filename:
+            try:
+                return __loader__._by_name[_filename[:-3].replace('/', '.')]
+            except Exception:
+                y.print_tbx()
+
+        return getmodule(name, _filename=_filename)
+
+    i.getmodule = my_get_module
+
+
+monkey_patch()
+    
+
 def my_eh(typ, val, tb):
     print typ, val, tb
 
 
 def my_trace(frame, event, arg):
-    print frame, event, arg
-    
+    if arg:
+        lineno = frame.f_lineno
+        path = frame.f_code.co_filename
+        lines = calc_text(frame, path)
+        data ='\n'.join(lines[lineno-2:lineno + 1])
+        
+        try:
+            arg = str(arg)
+        except Exception as e:
+            arg = e
+            
+        print frame, event, arg, data
+        
     return my_trace
 
 
@@ -16,7 +46,10 @@ def my_exept_hook(type, value, traceback):
 def init():
     y.sys.excepthook = my_exept_hook
 
+    if '/trace' in y.verbose:
+        y.sys.settrace(my_trace)
 
+    
 def iter_frames(frame=None):
     frame = frame or y.inspect.currentframe()
 
@@ -147,11 +180,14 @@ def current_frame():
         return sys.exc_info()[2].tb_frame.f_back
 
 
-def format_tbx(tb_line=''):
+def format_tbx(tb_line='', frame=None):
     if not y.verbose:
         return format_tbv(tb_line=tb_line)
 
-    tb = y.sys.exc_info()[2]
+    if frame:
+        tb = None
+    else:
+        tb = y.sys.exc_info()[2]
 
     def iter_exc():
         yield format_tbv(tb_line=tb_line)
@@ -163,7 +199,7 @@ def format_tbx(tb_line=''):
     def iter_fr():
         yield '{g}Traceback: {line}{}'.replace('{line}', tb_line)
             
-        for x in iter_full_info(list(iter_frame_info(iter_frames(current_frame())))):
+        for x in iter_full_info(list(iter_frame_info(iter_frames(frame or current_frame())))):
             for l in format_trace(x):
                 yield l
 
@@ -175,3 +211,12 @@ def print_tbx(*args, **kwargs):
         y.xxprint(format_tbx(*args, **kwargs))
     except Exception as e:
         y.traceback.print_exc(e)
+
+
+def print_all_stacks():
+    try:
+        for k, v in list(y.sys._current_frames().items()):
+            print_tbx(tb_line=str(k), frame=v)
+    except:
+        print_tbx()
+        

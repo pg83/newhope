@@ -68,6 +68,26 @@ def set_sigint():
       sig.__c({'value': 'SIGINT', 'args': args})
 
    sig.__c = y.write_channel('SIGINT', 'sh')
+   
+   @y.read_callback('SIGINT', 'caret handler')
+   def on_sigint_caret(arg):
+      y.sys.stderr.write('\n')
+
+   @y.read_callback('SIGINT', 'death handler')
+   def on_sigint(arg):
+      t = y.time.time()
+
+      @y.run_by_timer(0.1)
+      def death_handler():
+         if y.time.time() > t + 1:
+            try:
+               y.print_all_stacks()
+               y.xprint_red('DEATH handler')
+            finally:
+               y.os._exit(6)
+
+      death_handler()
+            
    signal.signal(signal.SIGINT, sig)
 
 

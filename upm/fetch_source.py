@@ -9,7 +9,7 @@ def fetch_data(url):
       try:
          return f(url)
       except Exception as e:
-         print e
+         y.xprint_r(e)
 
    if e:
       raise e

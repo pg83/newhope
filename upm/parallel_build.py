@@ -132,10 +132,10 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
             output = l['deps1'][0]
 
             if not c:
-                return lambda: y.xxprint('symlink {g:task} complete', init='b', task=cn)
+                return lambda: y.xprint_b('symlink {g:task} complete', task=cn)
 
             if os.path.exists(resolve_path(output)):
-                return lambda: y.xxprint('target {g:task} complete', init='b', task=cn)
+                return lambda: y.xprint_b('target {g:task} complete', task=cn)
 
             def iter_deps():
                 for d in l['deps2']:
@@ -164,7 +164,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
                 shell = find_tool('dash') or find_tool('yash') or find_tool('sh') or find_tool('bash')
 
             if '/sh' in verbose:
-                y.xxprint('use', shell)
+                y.xprint_dg('use', shell)
 
             input = '\n'.join(c)
             cmd = [shell, '-s']
@@ -309,8 +309,6 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
             except Exception:
                 y.print_tbx()
 
-    msg = y.get_color('') + '\n'
-
     @y.read_callback('SIGINT', 'pb')
     def sigint(*args):
         def func():
@@ -318,7 +316,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
             
             raise StopIteration()
 
-        sys.stderr.write(msg)
+        y.sys.stderr.write(y.get_color(''))
         w.put(func)
 
     for t in threads:

@@ -11,61 +11,65 @@ def init_2():
 
 
 def select_handler(mode):
-   d = dict((f.__name__, f) for f in y.main_entry_points())
-   func = 'cli_' + mode
+    d = dict((f.__name__, f) for f in y.main_entry_points())
+    func = 'cli_' + mode
 
-   if func in d:
-       f = d[func]
+    if func in d:
+        f = d[func]
+       
+        def wrap(a, b):
+            try:
+                return f(a, b)
+            except TypeError:
+                return f(a)
 
-       def wrap(a, b):
-           try:
-               return f(a, b)
-           except TypeError:
-               return f(a)
+        return wrap
 
-       return wrap
-
-   raise Exception('{mode} unsupported'.format(mode))
+    raise Exception('{mode} unsupported'.format(mode))
 
 
 def parse_args(args):
-   args, verbose = y.check_arg(args, ('-v', '--verbose'))
-   args, profile = y.check_arg(args, ('--profile',))
-   args, verbose_mode = y.check_arg_2(args, '-vm', True)
+    args, verbose = y.check_arg(args, ('-v', '--verbose'))
+    args, profile = y.check_arg(args, ('--profile',))
+    args, verbose_mode = y.check_arg_2(args, '-vm', True)
 
-   if verbose_mode is None:
-      args, verbose_mode = y.check_arg_2(args, '--verbose-mode', True)
+    if verbose_mode is None:
+        args, verbose_mode = y.check_arg_2(args, '--verbose-mode', True)
 
-   if verbose_mode:
-      verbose = verbose_mode
-   else:
-      if verbose:
-         verbose = '1'
-      else:
-         verbose = ''
+    if verbose_mode:
+        verbose = verbose_mode
+    else:
+        if verbose:
+            verbose = '1'
+        else:
+            verbose = ''
 
-   if len(args) < 2:
-      args = args + ['help']
+    if len(args) < 2:
+        args = args + ['help']
 
-   return args, verbose, profile
+    return args, verbose, profile
 
 
 def run_main(args):
-   args, verbose, profile = parse_args(args)
+    args, verbose, profile = parse_args(args)
 
-   l = locals()
+    l = locals()
 
-   @y.lookup
-   def loopup(name):
-      return l[name]
+    @y.lookup
+    def loopup(name):
+        return l[name]
 
-   for f in y.subscribe_queue('deferc', 'main')[0]():
-       f['func']()
+    for i in range(0, 2):
+        for f in y.subscribe_queue('deferc', 'main')[0]():
+            if y.verbose:
+                y.xprint_dg('run constructor', f, i)
+                
+            f['func']()
 
-   func1 = select_handler(args[1])
-   func2 = lambda: func1(args[2:], verbose)
-   func3 = y.profile(func2, really=profile)
+    func1 = select_handler(args[1])
+    func2 = lambda: func1(args[2:], verbose)
+    func3 = y.profile(func2, really=profile)
 
-   y.prompt('/p1')
+    y.prompt('/p1')
    
-   func3()
+    func3()

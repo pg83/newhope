@@ -27,6 +27,9 @@ def color_map_func():
             kk = k[0]
 
         COLOR_MAP[kk] = COLOR_MAP[k]
+        
+    for k in list(COLOR_MAP.keys()):
+        COLOR_MAP['{' + k + '}'] = COLOR_MAP[k]
 
     return COLOR_MAP
 

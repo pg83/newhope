@@ -6,27 +6,11 @@ def init():
 
 
 @y.singleton
-def func_channel(): 
+def func_channel():
     return y.write_channel('orig functions', 'ygg')
 
 
 ic = y.inc_counter()
-
-
-class DictProxy(object):
-    def __init__(self, x):
-        self._x = x
-
-    def __getitem__(self, n):
-        return self._x.__getitem__(n)
-
-    def get(self, k, v=None):
-        return self._x.get(k, v)
-
-
-@y.cached(key=lambda x, z: z)
-def run_cached(f, key):
-    return f()
 
 
 class Func(object):
@@ -35,15 +19,21 @@ class Func(object):
         self.inc_count = ic()
         self.data = data
         self.i = 0
-            
+
     def out_deps(self):
-        print self.base, self.i, self.deps
+        y.xprint_dg(self.base, self.i, self.deps)
 
-    def fun(self, i):
-        return self.data.func_by_num[i].f
+    @property
+    def is_library(self):
+        return 'library' in self.kind
 
-    def func_apply(self, i, x):
-        return self.data.func_by_num[i].f(x)
+    @property
+    def is_tool(self):
+        return 'tool' in self.kind
+
+    @property
+    def kind(self):
+        return self.x['kind']
 
     @property
     def code(self):
@@ -56,10 +46,24 @@ class Func(object):
     def depends(self):
         return self.code().get('meta', {}).get('depends', [])
 
-    def dep_list(self):
-        return run_cached(self.dep_list_base, [self.inc_count, 'self.dep_list_base'])
+    def dep_lib_list(self):
+        def iter():
+            for x in self.dep_list():
+                if self.data.by_name[x].is_library:
+                    yield x
 
-    def dep_list_base(self):
+        return list(iter())
+
+    def dep_tool_list(self):
+        def iter():
+            for x in self.dep_list():
+                if self.data.by_name[x].is_tool:
+                    yield x
+
+        return list(iter())
+
+    @y.cached_method
+    def dep_list(self):
         subst = {
             'intl': 'gettext',
             'iconv': 'libiconv',
@@ -67,7 +71,7 @@ class Func(object):
 
         def iter1():
             yield 'make'
-                
+
             for y in self.depends():
                 yield subst.get(y, y)
 
@@ -78,40 +82,30 @@ class Func(object):
 
         return list(iter2())
 
+    @y.cached_method
     def run_func(self, info):
-        def func():
-            data = y.deep_copy(self.c(info))
+        data = y.deep_copy(self.c(info))
+        data['deps'] = list(y.uniq_list_0(data['deps'] + self.data.calc(self.deps, info)))
 
-                #if not data.get('deps'):
-            data['deps'] += [self.func_apply(d, info) for d in self.deps]
+        return y.fix_pkg_name(data, self.z)
 
-            return y.fix_pkg_name(data, self.z)
-            
-        return run_cached(func, [self.inc_count, 'self.run_func', info])
-
+    @y.cached_method
     def c(self, info):
-        def func():
-            return y.to_v2(self.code(), info)
+        return y.to_v2(self.code(), info)
 
-        return run_cached(func, [self.inc_count, 'self.c', info])
-
+    @y.cached_method
     def f(self, info):
-        def func():
-            return y.gen_func(self.run_func, info)
-
-        return run_cached(func, [self.inc_count, 'self.f', info])
+        return y.gen_func(self.run_func, info)
 
     @property
+    @y.cached_method
     def z(self):
-        def func():
-            return {
-                'code': self.f,
-                'base': self.base,
-                'gen': 'tow',
-                'kind': ['tow'],
-            }
-
-        return run_cached(func, [self.inc_count, 'self.z', 'func'])
+        return {
+            'code': self.f,
+            'base': self.base,
+            'gen': 'tow',
+            'kind': self.kind,
+        }
 
     def clone(self):
         return Func(self.x, self.data)
@@ -127,17 +121,13 @@ class SpecialFunc(Func):
     def depends(self):
         return self.data.by_kind[self.base]
 
+    @y.cached_method
     def gen_c(self):
-        def join():
-            return y.join_funcs([self.fun(d) for d in self.deps])
+        return y.join_funcs(lambda info: self.data.calc(self.deps, info))
 
-        return run_cached(join, [self.inc_count, 'self.gen_cx', 'join'])
-
+    @y.cached_method
     def c(self, info):
-        def call_c():
-            return y.restore_node(self.gen_c()(info))
-
-        return run_cached(call_c, [self.inc_count, 'self.cx', 'call_c'])
+        return y.restore_node(self.gen_c()(info))
 
     def clone(self):
         return SpecialFunc(self.x, self.data)
@@ -160,7 +150,7 @@ class Solver(object):
         for el in self._r():
             self._w(el['i'])
             yield el['x']
-                
+
     def iter_solvers(self):
         cur = self
 
@@ -177,7 +167,7 @@ class Solver(object):
 class Data(object):
     def __init__(self, data):
         self.by_kind = y.collections.defaultdict(list)
-        
+
         for x in data:
             for k in x['func']['kind']:
                 self.by_kind[k].append(x['func']['base'])
@@ -204,7 +194,7 @@ class Data(object):
             for k in lst:
                 if k in self.dd or must_have:
                     yield self.dd[k][-1]
-                    
+
         return list(iter())
 
     def prepare_funcs(self, num):
@@ -212,7 +202,7 @@ class Data(object):
 
         for func in solver.iter_infinity():
             func.i = len(self.func_by_num)
-            self.func_by_num.append(func) 
+            self.func_by_num.append(func)
             func.deps = func.calc_deps()
             self.dd[func.base].append(func.i)
 
@@ -228,24 +218,29 @@ class Data(object):
             x.out_deps()
 
     def full_deps(self, name):
-        def func():
-            my_deps = self.by_name[name].dep_list()
+        return self.full_lib_deps(name) | self.full_tool_deps(name)
 
-            if not my_deps:
-                return []
+    @y.cached_method
+    def full_lib_deps(self, name):
+        my_deps = self.by_name[name].dep_lib_list()
 
-            def iter_lst():
-                yield my_deps
+        def iter_lst():
+            yield my_deps
 
-                for y in my_deps:
-                    yield self.full_deps(y)
+            for y in my_deps:
+                yield self.full_lib_deps(y)
 
-            return sorted(frozenset(sum(iter_lst(), [])))
+        return frozenset().union(*list(iter_lst()))
 
-        return run_cached(func, [self.inc_count, 'self.full_deps', name])
-            
+    def full_tool_deps(self, name):
+        return frozenset(self.by_name[name].dep_tool_list())
+
     def select_deps(self, name):
         return self.last_elements(self.full_deps(name))
+
+    @y.cached_method
+    def calc(self, deps, arg):
+        return [self.func_by_num[d].f(arg) for d in deps]
 
 
 def make_proper_permutation(data):

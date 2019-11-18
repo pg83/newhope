@@ -8,12 +8,7 @@ def dep_list(info, iter):
 
 @y.read_callback('new plugin', 'plugins')
 def exec_plugin_code(code):
-    try:
-        name = code['name']
-    except:
-        print code
-        raise
-
+    name = code['name']
     name = name.replace('/', '.')
 
     if name.endswith('.py'):

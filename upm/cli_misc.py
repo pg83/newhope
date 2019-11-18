@@ -9,6 +9,7 @@ def cli_help(args, verbose):
       for f in y.main_entry_points():
          yield f.__name__[4:]
 
+   arg = y.sys.argv[0]
    funcs = sorted(set(iter_funcs()))
 
-   y.xxprint('{g}usage: ' + y.sys.argv[0] + ' (-v, --verbose, --profile --bootstrap-mode)* [' + ', '.join(funcs) + '] ..{}')
+   y.xprint_g('usage: ' + arg + ' (-v, --verbose, --profile --bootstrap-mode)* [' + ', '.join(funcs) + ']')

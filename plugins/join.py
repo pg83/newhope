@@ -11,21 +11,19 @@ copy_many() {
 copy_many $@
 """
 
-def join_funcs(args, fixer=lambda x: x):
+def join_funcs(args_calcer, fixer=lambda x: x):
     def wrapper(info):
         res = {
             'node': {
                 'build': list(copy_many.strip().split('\n')),
                 'constraint': info['info'],
             },
-            'deps': [arg(info) for arg in args],
+            'deps': args_calcer(info),
         }
 
         return fixer(res)
 
-    f1 = lambda info: y.gen_func(wrapper, info)
-
-    return y.cached()(f1)
+    return y.cached(f=lambda info: y.gen_func(wrapper, info))
 
 
 def big_join_func(base, gen, args):

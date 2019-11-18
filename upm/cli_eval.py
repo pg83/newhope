@@ -10,7 +10,7 @@ def run_eval(args):
 
    if not args:
       for k, v in repl.items():
-         y.xxprint(k, '=', v, init='b')
+         y.xprint_b(k, '=', v)
 
       return
 

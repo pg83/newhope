@@ -36,6 +36,10 @@ def to_lines(text):
     return list(iter_l())
 
 
+def burn(p):
+    return struct_dump_bytes(p)
+
+
 def struct_dump_bytes(p):
     return hashlib.md5(dumps(p)).hexdigest()[:16]
 
@@ -52,3 +56,13 @@ def deep_copy(x):
             return y.copy.deepcopy(x)
 
         raise e
+
+
+def inc_counter():
+    c = [int(y.random.random() * 10000)]
+
+    def func():
+        c[0] += 1
+        return c[0]
+
+    return func

@@ -5,8 +5,9 @@ def all_pub_sub():
 
 def print_pub_sub_data():
     for k, v in  all_pub_sub().items():
+        v = y.deep_copy(v)
         v['prev'] = len(v['prev'])
-        print k, v
+        y.xprint_w('k =', k, 'v =', v)
 
 
 class AllDone(Exception):

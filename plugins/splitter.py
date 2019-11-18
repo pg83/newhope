@@ -1,61 +1,88 @@
-def split_part(kind, folders, deps):
-    def iter_ops():
-        yield 'MDIR=$(dirname $3)'
-
-        if kind == 'run':
-            yield 'mkdir -p $IDIR/bin'
-
-            for x in [('(cp -R $MDIR/%s/* $IDIR/bin/ 2> /dev/null) || true') % x[1:] for x in folders]:
-                yield x
-        else:
-            for y in (('cp -R $MDIR/%s $IDIR/') % x[1:] for x in folders):
-                yield y
-
-    return {
-        'code': '\n'.join(iter_ops()),
-        'kind': [{'dev': 'library', 'run': 'tool'}.get(kind, 'unknown_role')],
-        'codec': 'xz',
-        'deps': deps,
-    }
-
-
-REPACK_FUNCS = {
-    'dev': ['/lib', '/include'],
-    'run': ['/bin', '/sbin'],
-    'doc': ['/share'],
-    'log': ['/log'],
-}
-
-
 @y.singleton
 def w_channel():
     return y.write_channel('new functions', 'spl')
 
 
-def do_gen(k, folders, arg):
-    descr = {
-        'gen': arg['gen'],
-        'base': arg['base'] + '-' + k,
-        'kind': ['split', k],
+def gen_code(kind, folders):
+    yield 'MDIR=$(dirname $3)'
+
+    if kind == 'run':
+        yield 'mkdir -p $IDIR/bin'
+
+        for x in [('(cp -R $MDIR/%s/* $IDIR/bin/ 2> /dev/null) || true') % x[1:] for x in folders]:
+            yield x
+    else:
+        for y in (('cp -R $MDIR/%s $IDIR/') % x[1:] for x in folders):
+            yield y
+
+            
+@y.singleton
+def repacks():
+    by_kind = {
+        'dev': ['/lib', '/include'],
+        'run': ['/bin', '/sbin'],
+        'doc': ['/share'],
+        'log': ['/log'],
     }
 
-    f1 = lambda info: y.fix_pkg_name(y.to_v2(split_part(k, folders, [arg['code'](info)]), info), descr)
-    f2 = lambda info: y.gen_func(f1, info)
+    def iter():
+        for k, v in by_kind.iteritems():
+            yield (k, {'folders': v, 'code': '\n'.join(gen_code(k, v))})
 
-    descr['code'] = y.cached()(f2)
-
-    return descr
+    return dict(iter())
 
 
+class SplitKind(object):
+    def __init__(self, parent, kind):
+        self.p = parent
+        self.k = kind
+        
+        self.d = {
+            'gen': self.p.arg['gen'],
+            'base': self.p.arg['base'] + '-' + self.k,
+            'kind': ['split', self.k],
+            'code': self.run,
+        }
+
+    @y.cached_method
+    def run(self, info):
+        return y.gen_func(self.code, info)
+        
+    def split_part(self, info):
+        return {
+            'code': self.p.repacks[self.k]['code'],
+            'kind': {'dev': ['library'], 'run': ['tool']}.get(self.k, []),
+            'codec': 'xz',
+            'deps': self.p.deps(info),
+        }
+    
+    def code(self, info):
+        return y.fix_pkg_name(y.to_v2(self.split_part(info), info), self.d)
+    
+        
+class Splitter(object):
+    def __init__(self, arg, repacks):
+        self.arg = arg
+        self.repacks = repacks
+
+    @y.cached_method
+    def deps(self, info):
+        return [self.arg['code'](info)]
+
+    def gen(self, kind):
+        return SplitKind(self, kind).d
+
+    
 @y.read_callback('new functions', 'spl')
 def splitter(arg):
     arg = arg['func']
-    repack = arg.get('repacks', REPACK_FUNCS)
+    repack = arg.get('repacks', repacks())
 
     if not repack:
         return
 
     wc = w_channel()
-
-    for k, folders in repack.items():
-        wc({'func': do_gen(k, folders, arg)})
+    s = Splitter(arg, repack)
+    
+    for k in repack:
+        wc({'func': s.gen(k)})

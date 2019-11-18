@@ -29,10 +29,12 @@ def iter_all_tests():
 def cli_selftest(args, verbose):
    for f in iter_all_tests():
       y.xprint_white('-------------------------------------------------------------------')
+
       try:
          f()
       except Exception as e:
-         print e
+         y.xxprint(e, init='{r}')
+         
       y.xprint_white('-------------------------------------------------------------------')
 
 

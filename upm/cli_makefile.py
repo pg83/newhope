@@ -1,7 +1,7 @@
 @y.main_entry_point
 def cli_makefile(arg):
    parser = y.argparse.ArgumentParser()
-
+   
    parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
    parser.add_argument('-S', '--shell', default=[], action='append', help='out build.sh script')
    parser.add_argument('-P', '--plugins', default=[], action='append', help='where to find build rules')
