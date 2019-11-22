@@ -1,27 +1,15 @@
 @y.contextlib.contextmanager
 def defer_context(verbose=False):
     defer = []
-    xxf = y.xxformat
-
+    
     try:
         yield defer.append
     finally:
-        outs = []
-
         for d in defer:
-            if d.__name__ != '<lambda>':
-                outs.append(xxf(d.__name__.replace('_', ' '), init='white'))
-
             try:
-                res = d()
-                    
-                if res:
-                    outs.append(str(res))
+                d()
             except Exception:
-                outs.append(xxf('{r}in defer{}:', y.format_tbx()))
-        
-        if verbose:
-            y.sys.stderr.write('\n'.join(outs) + '\n')
+                pass
         
 
 def defer_wrapper(func):
@@ -33,7 +21,31 @@ def defer_wrapper(func):
     return wrapper
 
 
-def defer_constructor(func):
-    y.write_channel('deferc', 'common')({'func': func})
+@y.singleton
+def defer_channel():
+    return y.MAIN_LOOP.write_channel('DEFERC', 'common')
+    
 
+def defer_constructor(func):
+    defer_channel()({'func': func})
+    
     return func
+
+
+@y.abort_on_error
+def run_defer_constructors():
+    @defer_constructor
+    def sentinel():
+        return 'shit'
+    
+    rq, wq = y.MAIN_LOOP.subscribe_queue('DEFERC', 'main')
+
+    while True:
+        for f in rq():
+            if '/show_defer' in y.verbose:
+                y.xprint_dg('run constructor', f)
+
+            res = str(f['func']())
+            
+            if res == 'shit':
+                return

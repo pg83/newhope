@@ -1,4 +1,4 @@
-def profile(func, really=True):
+def run_profile(func, really=True):
     if not really:
         return func
 
@@ -9,7 +9,7 @@ def profile(func, really=True):
         try:
             return p.runcall(func, *args, **kwargs)
         finally:
-            ps = y.pstats.Stats(p, stream=y.sys.stderr)
+            ps = y.pstats.Stats(p, stream=y.stderr)
 
             ps.sort_stats('cumtime')
             ps.print_stats()

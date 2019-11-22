@@ -1,13 +1,13 @@
 @y.defer_constructor
 def init():
-    @y.read_callback('build env', 'tow')
+    @y.gd_callback('build env')
     def solver(arg):
         arg['back_channel']({'func': lambda info: {}, 'descr': ['system', 'fast']})
 
 
 @y.singleton
 def func_channel():
-    return y.write_channel('orig functions', 'ygg')
+    return y.GEN_DATA_LOOP.write_channel('orig functions', 'ygg')
 
 
 ic = y.inc_counter()
@@ -57,9 +57,11 @@ class Func(object):
     def dep_tool_list(self):
         def iter():
             for x in self.dep_list():
-                if self.data.by_name[x].is_tool:
+                y = self.data.by_name[x]
+                
+                if y.is_tool or not y.is_library:
                     yield x
-
+                    
         return list(iter())
 
     @y.cached_method
@@ -95,13 +97,22 @@ class Func(object):
 
     @y.cached_method
     def f(self, info):
+        return self.ff(info)
+    
+    @property
+    @y.cached_method
+    def z(self):
+        return self.zz
+    
+    @y.cached_method
+    def ff(self, info):
         return y.gen_func(self.run_func, info)
 
     @property
     @y.cached_method
-    def z(self):
+    def zz(self):
         return {
-            'code': self.f,
+            'code': self.ff,
             'base': self.base,
             'gen': 'tow',
             'kind': self.kind,
@@ -120,6 +131,20 @@ class SpecialFunc(Func):
 
     def depends(self):
         return self.data.by_kind[self.base]
+
+    @y.cached_method
+    def f(self, info):
+        return self.z['code'](info)
+    
+    @property
+    @y.cached_method
+    def z(self):
+        return {
+            'code': y.pkg_splitter(self.zz, 'run'),
+            'base': self.base,
+            'gen': 'tow',
+            'kind': self.kind + ['split', 'run'],
+        }
 
     @y.cached_method
     def gen_c(self):
@@ -174,7 +199,7 @@ class Data(object):
 
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
-        self.wc = y.write_channel('new functions', 'tow')
+        self.wc = y.GEN_DATA_LOOP.write_channel('new functions', 'tow')
         self.inc_count = ic()
         self.data = [self.create_object(x['func']) for x in data]
         self.by_name = dict((x.base, x) for x in self.data)
@@ -225,12 +250,14 @@ class Data(object):
         my_deps = self.by_name[name].dep_lib_list()
 
         def iter_lst():
-            yield my_deps
+            for x in my_deps:
+                yield x
 
             for y in my_deps:
-                yield self.full_lib_deps(y)
+                for x in self.full_lib_deps(y):
+                    yield x
 
-        return frozenset().union(*list(iter_lst()))
+        return frozenset(iter_lst())
 
     def full_tool_deps(self, name):
         return frozenset(self.by_name[name].dep_tool_list())

@@ -17,7 +17,7 @@ def libffi0():
         """,
         'version': '3.2.1',
         'meta': {
-            'kind': [],
+            'kind': ['library'],
             'depends': ['sed'],
             'provides': [
                 {'lib': 'ffi'},

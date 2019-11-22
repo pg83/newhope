@@ -9,7 +9,7 @@ def sed0():
         """,
         'version': '4.7',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['iconv', 'intl'],
         }
     }

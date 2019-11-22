@@ -20,7 +20,7 @@ def make0():
         'code': '\n'.join(it()),
         'version': '4.2',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'soft': ['iconv', 'intl'],
         },
     }

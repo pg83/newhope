@@ -19,7 +19,7 @@ def yash0():
          """.replace('{opts}', ' '.join(opts)),
         'version': '2.49',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['intl', 'ncurses'],
         },
     }

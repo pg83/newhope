@@ -9,7 +9,7 @@ def dash0():
          """,
         'version': '0.5.10.2',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['libedit'],
         },
     }

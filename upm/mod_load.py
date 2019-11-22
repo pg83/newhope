@@ -146,5 +146,6 @@ class Loader(object):
 def bootstrap(mod, args, builtin, **kwargs):
    loader = Loader(builtin)
    mod1 = loader.create_module('ya.iface')
+   mod1 = loader.create_module('ya.args_parse')
    mod2 = loader.create_module('ya.mod_load')
    mod2.__loader__.create_module('ya.stage2').run_stage2(args, **args)

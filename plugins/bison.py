@@ -9,7 +9,7 @@ def bison0():
         """,
         'version': '3.4.2',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['m4', 'iconv', 'intl']
         },
     }

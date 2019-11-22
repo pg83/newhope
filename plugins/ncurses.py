@@ -13,6 +13,7 @@ def ncurses0():
             'kind': ['library'],
             'provides': [
                 {'lib': 'ncurses', 'configure': {'opts': ['--with-curses={pkgroot}', '--with-ncurses={pkgroot}']}},
+                {'env': 'LIBS', 'value': 'export LIBS="$LIBS -lncurses -ltinfo -lpanel -lmenu -lform"'},
             ],
         },
     }

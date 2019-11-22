@@ -9,7 +9,7 @@ def gzip0():
         """,
         'version': '1.10',
         'meta': {
-            'kind': ['compression'],
+            'kind': ['compression', 'tool'],
             'depends': []
         },
     }

@@ -16,15 +16,6 @@ def is_in(lst, s):
     return True
 
 
-def cmd_name(cmd):
-    assert len(cmd['deps1']) == 1
-    
-    v = cmd['deps1'][0]
-    v = v[v.find('/v5') + 1:]
-
-    return v
-
-
 class SetResult(Exception):
     def __init__(self, func):
         self.func = func
@@ -67,14 +58,32 @@ def get_el(qu):
             pass
 
 
-@y.singleton
-def get_white_line():
-    return y.xxformat('---------------------------------------------------------------------', init='white')
+def remove_d(k):
+    if k[0] == '$':
+        return k[1:]
+                
+    return k
 
 
-@y.defer_wrapper
-def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
+def subst_vars(d, shell_vars):
+    while '$' in d:
+        for k, v in shell_vars.iteritems():
+            d = d.replace(k, v)
+            
+    return d
+
+
+def fix_shell_vars(shell_vars):
+    return [(remove_d(k), v) for k, v in shell_vars.iteritems()]
+
+
+def run_parallel_build(lst, shell_vars, targets, thrs, bypass_streams):
+    t_begin = y.time.time()
     verbose = y.verbose
+
+    for i, l in enumerate(lst):
+        l['n'] = i
+    
     lst = get_only_our_targets(lst, targets)
     left = len(lst)
 
@@ -82,37 +91,34 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
 
     @y.cached()
     def resolve_path(d):
-        while '$' in d:
-            for k, v in shell_vars.iteritems():
-                d = d.replace(k, v)
-
-        return d
-
-    white_line = get_white_line()
-
-    def stop_iter(*args, **kwargs):
-        raise StopIteration()
+        return subst_vars(d, shell_vars)
 
     methods = {
         'get_el': get_el,
         'popen': sp.Popen,
-        'get_reason': lambda: [],
     }
 
+    def get_method_get_el():
+        return methods['get_el']
+    
     for i, l in enumerate(lst):
         l['n'] = i
 
     q = Queue.Queue()
     w = Queue.Queue()
+
+    build_results = y.build_results_channel()
+    status_bar = y.status_bar()
+    terminal_channel = y.terminal_channel()
+    console_channel = y.write_channel('yic', 'parallel build')
     
-    @y.run_by_timer(1.0)
+    @y.run_by_timer(0.5)
     def ff():
         def f():
-            pass
-        
-        q.put(f)
+            status_bar({'message': ' '})
+            terminal_channel({'command': 'redraw'})
 
-    ff()
+        w.put(f)
 
     def kill_all_running(*args):
         os.system('pkill -KILL -g {pgid}'.format(pgid=os.getpgid(os.getpid())))
@@ -128,14 +134,14 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
         def process():
             l = ll['x']
             c = l.get('cmd')
-            cn = cmd_name(l)
+            tg = l['deps1'][0]
             output = l['deps1'][0]
 
             if not c:
-                return lambda: y.xprint_b('symlink {g:task} complete', task=cn)
+                return lambda: build_results({'message': 'target {task} complete'.format(task='{g}' + tg + '{}'), 'target': tg})
 
             if os.path.exists(resolve_path(output)):
-                return lambda: y.xprint_b('target {g:task} complete', task=cn)
+                return lambda: build_results({'message': 'target {task} complete'.format(task='{g}' + tg + '{}'), 'target': tg})
 
             def iter_deps():
                 for d in l['deps2']:
@@ -149,12 +155,6 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
 
                 return y.find_tool_uncached(tool, srch_lst)
 
-            def remove_d(k):
-                if k[0] == '$':
-                    return k[1:]
-                
-                return k
-            
             if '$YSHELL' in shell_vars:
                 shell = find_tool(shell_vars['$YSHELL'])
 
@@ -163,12 +163,9 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
             else:
                 shell = find_tool('dash') or find_tool('yash') or find_tool('sh') or find_tool('bash')
 
-            if '/sh' in verbose:
-                y.xprint_dg('use', shell)
-
             input = '\n'.join(c)
             cmd = [shell, '-s']
-            env = dict(itertools.chain({'OUTER_SHELL': shell}.iteritems(), [(remove_d(k), v) for k, v in shell_vars.iteritems()]))
+            env = dict(itertools.chain({'OUTER_SHELL': shell}.iteritems(), fix_shell_vars(shell_vars)))
             out = []
             retcode = None
 
@@ -213,6 +210,10 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
 
                 try:
                     res, _ = p.communicate(input=input)
+
+                    if not res.strip():
+                        res = y.build_run_sh(l)
+                        
                     out.append(res)
                     retcode = p.wait()
                 except sp.CalledProcessError as e:
@@ -226,20 +227,20 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
                 data = '\n'.join(o.strip() for o in out)
 
                 if data:
-                    data = white_line + '\n' + data.decode('utf-8') + '\n'
-                    sys.stderr.write(y.xxformat(data, cname=cn, verbose=verbose))
+                    build_results({
+                        'text': data,
+                        'target': tg,
+                        'command': input,
+                    })
 
                 if retcode and retcode != -9:
-                    oldfun = methods['get_reason']
-
-                    def new_fun():
-                        arr = oldfun()
-                        arr.append('{y}' + cn + '{} finished with return code: ' + str(retcode))
-
-                        return arr
+                    build_results({
+                        'message': 'target {g}' + tg + '{} failed, with retcode ' + str(retcode),
+                        'status': 'failure',
+                        'target': tg,
+                        'retcode': retcode,
+                    })
                     
-                    methods['get_reason'] = new_fun
-
                     raise StopIteration()
 
             return func
@@ -260,7 +261,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
     def func():
         while True:
             try:
-                methods['get_el'](q)()
+                get_method_get_el()(q)()
             except StopIteration:
                 return
             except Exception as e:
@@ -270,7 +271,7 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
                     raise exc[0], exc[1], exc[2]
 
                 w.put(func)
-
+                
     threads = [threading.Thread(target=func) for i in range(0, thrs)]
 
     def wait_all_threads():
@@ -279,63 +280,48 @@ def run_parallel_build(reg_defer, lst, shell_vars, targets, thrs):
 
         for t in threads:
             t.join()
-
+            
     def prepare_finish():
         for k in methods.keys():
-            if k not in ['get_reason']:
-                methods[k] = stop_iter
-    
+            methods[k] = stop_iter
+
     def print_status():
-        #read_queue()
-
-        def iter():
-            yield white_line
-
-            if left:
-                yield y.xxformat('build not finished - ' + ', '.join(methods['get_reason']()), init='r')
-            else:
-                yield y.xxformat('all ok', init='g')
-
-        return '\n'.join(iter())
-
-    def read_queue():
-        while True:
-            try:
-                w.get_nowait()()
-            except StopIteration:
-                pass
-            except Queue.Empty:
-                return
-            except Exception:
-                y.print_tbx()
-
-    @y.read_callback('SIGINT', 'pb')
-    def sigint(*args):
-        def func():
-            methods['get_reason'] = lambda: ['SIGINT happens']
-            
-            raise StopIteration()
-
-        y.sys.stderr.write(y.get_color(''))
-        w.put(func)
-
+        if left:
+            build_results({'message': 'build not finished', 'status': 'failure'})
+            build_results({'key': 'Build', 'value': 'Failed'})
+        else:
+            build_results({'message': 'all ok', 'status': 'ok'})
+            build_results({'key': 'Build', 'value': 'Successful'})
+        
+    @y.signal_channel.read_callback()
+    def on_sig_int(arg):
+        if arg['signal'] == 'INT':
+            build_results({'message': 'SIGINT happens', 'status': 'failure'})
+        
     for t in threads:
         t.start()
+        
+    with y.defer_context() as reg_defer:
+        reg_defer(prepare_finish)
+        reg_defer(kill_all_running)
+        reg_defer(wait_all_threads)
+        reg_defer(print_status)
+                
+        while left:
+            status_bar({'key': 'Left', 'value': str(left)})
+            status_bar({'key': 'All', 'value': str(len(lst))})
+            status_bar({'key': 'Complete', 'value': str(len(lst) - left)})
+            status_bar({'key': 'Wall Clock', 'value': str(y.time.time())})
+            status_bar({'key': 'Duration', 'value': str(y.time.time() - t_begin)})
+        
+            for ll in find_complete():
+                q.put(gen_working_func(ll))
 
-    reg_defer(lambda: white_line)
-    reg_defer(prepare_finish)
-    reg_defer(kill_all_running)
-    reg_defer(wait_all_threads)
-    reg_defer(print_status)
-
-    while left:
-        for ll in find_complete():
-            q.put(gen_working_func(ll))
-
-        try:
-            ll = methods['get_el'](w)()
-        except StopIteration:
-            break
-
-        wq(ll['i'])
-        left -= 1
+            try:
+                ll = get_method_get_el()(w)()
+            except StopIteration:
+                break
+            
+            if ll:
+                wq(ll['i'])
+                left -= 1

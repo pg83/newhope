@@ -9,7 +9,7 @@ def diffutils0():
         """,
         'version': '3.7',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['iconv', 'intl', 'libsigsegv']
         },
     }

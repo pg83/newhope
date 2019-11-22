@@ -1,3 +1,7 @@
+def gd_callback(x):
+    return y.GEN_DATA_LOOP.read_callback(x)
+
+
 @y.defer_constructor
 @y.singleton
 def my_funcs():
@@ -8,7 +12,7 @@ def my_funcs():
     def lookup(name):
         return ids[name]['code']
     
-    @y.read_callback('new functions', 'collection')
+    @y.gd_callback('new functions')
     def cb(data):
         data = data['func']
 

@@ -86,3 +86,13 @@ def to_visible_name_4(root):
 
 def to_visible_name(root):
     return root['trash']['replacer'](to_visible_name_4(root))
+
+
+def to_pretty_name(t):
+    if len(t) < 10:
+        return t
+    
+    t = t[4:]
+    t = t[:t.find('-v5')]
+
+    return t

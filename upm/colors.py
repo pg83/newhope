@@ -8,7 +8,7 @@ def color_map_func():
     BLUE = u'\u001b[34;1m'
     DGRAY = u'\u001b[1;30m'
 
-    COLOR_MAP = {
+    color_map = {
         'red': RED,
         'green': GREEN,
         'rst': RESET,
@@ -18,7 +18,13 @@ def color_map_func():
         'darkgray': DGRAY,
     }
 
-    for k in list(COLOR_MAP.keys()):
+    add_color_aliases(color_map)
+    
+    return color_map
+
+
+def add_color_aliases(cmap):
+    for k in list(cmap.keys()):
         if k == 'rst':
             kk = ''
         elif k.startswith('dark'):
@@ -26,14 +32,12 @@ def color_map_func():
         else:
             kk = k[0]
 
-        COLOR_MAP[kk] = COLOR_MAP[k]
+        cmap[kk] = cmap[k]
         
-    for k in list(COLOR_MAP.keys()):
-        COLOR_MAP['{' + k + '}'] = COLOR_MAP[k]
+    for k in list(cmap.keys()):
+        cmap['{' + k + '}'] = cmap[k]
 
-    return COLOR_MAP
-
-
+        
 def get_color(n):
     return color_map_func()[n]
 

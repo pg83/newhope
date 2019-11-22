@@ -3,13 +3,13 @@ def build_docker():
    lines = data.split('\n')
    line = lines[len(lines) - 2]
 
-   y.xprint(data.strip(), where=y.sys.stdout)
+   y.xprint(data.strip(), where=y.stdout)
 
    return line.split(' ')[2]
 
 
 @y.main_entry_point
-def cli_build(arg, verbose):
+def cli_build(arg):
    parser = y.argparse.ArgumentParser()
 
    parser.add_argument('-t', '--target', default=[], action='append', help='add target')
@@ -45,7 +45,7 @@ def cli_build(arg, verbose):
 
 
 @y.main_entry_point
-def cli_tag(args, verbose):
+def cli_tag(args):
    code = """
        docker tag $1 antonsamokhvalov/newhope:$2
        docker tag antonsamokhvalov/newhope:$2 antonsamokhvalov/newhope:latest

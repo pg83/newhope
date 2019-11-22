@@ -3,7 +3,7 @@
 def original_funcs():
     res = []
 
-    y.read_callback('orig functions', 'gt')(res.append)
+    y.gd_callback('orig functions')(res.append)
 
     return res
 
@@ -24,7 +24,7 @@ def fix_user_data(iter):
 def iter_all_user_generators():
     res = []
 
-    @y.read_callback('new functions generator', 'iter_all')
+    @y.gd_callback('new functions generator')
     def cb(data):
         res.extend(fix_user_data([data]))
 
@@ -33,12 +33,12 @@ def iter_all_user_generators():
 
 @y.singleton
 def build_env_channel():
-    return y.write_channel('build env', 'common')
+    return y.GEN_DATA_LOOP.write_channel('build env', 'common')
 
         
 @y.singleton
 def send_all_plugins_to_queue():
-    ch = y.write_channel('new plugin', 'file_data')
+    ch = y.GEN_DATA_LOOP.write_channel('new plugin', 'file_data')
 
     for el in y.file_data:
         if el['name'].startswith('pl/'):

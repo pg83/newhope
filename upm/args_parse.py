@@ -37,3 +37,25 @@ def check_arg(args, params):
       args, _ = check_arg_2(args, p)
 
    return args, len(args) != old_len
+
+
+def parse_args(args):
+    args, verbose = check_arg(args, ('-v', '--verbose'))
+    args, profile = check_arg(args, ('--profile',))
+    args, verbose_mode = check_arg_2(args, '-vm', True)
+
+    if verbose_mode is None:
+        args, verbose_mode = check_arg_2(args, '--verbose-mode', True)
+
+    if verbose_mode:
+        verbose = verbose_mode
+    else:
+        if verbose:
+            verbose = '1'
+        else:
+            verbose = ''
+
+    if len(args) < 2:
+        args = args + ['help']
+
+    return args, verbose, profile

@@ -9,7 +9,7 @@ def tar0():
         """,
         'version': '1.32',
         'meta': {
-            'kind': ['compression'],
+            'kind': ['compression', 'tool'],
             'depends': ['iconv', 'intl', 'gzip', 'bzip2', 'xz', 'unrar'],
         },
     }

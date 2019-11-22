@@ -1,27 +1,3 @@
-workspace = """
-workspace: $RD/x $WD/x $PD/x $MD/x
-
-
-$RD/x:
-    rm -rf "$RD" 2> /dev/null || true
-    mkdir -p "$RD"
-
-
-$WD/x:
-    rm -rf "$WD" 2> /dev/null || true
-    mkdir -p "$WD"
-
-
-$PD/x:
-    mkdir -p "$PD"
-
-    
-$MD/x:
-    mkdir -p "$MD"
-
-
-""".replace('    ', '\t')
-
 def print_v3_node(n):
     yield n['output'] + ': ' + ' '.join(n['inputs'])
 
@@ -163,6 +139,9 @@ def build_makefile(nodes, internal=False):
 
             yield y.build_scripts_run()
 
+        for x in y.iter_workspace():
+            yield x
+            
         for r in list(iter4()):
             res = y.print_one_node(r)
             do_apply_node(r, by_name)
@@ -197,7 +176,7 @@ def build_makefile(nodes, internal=False):
                 yield '\n\n'
 
     with y.without_gc() as gc:
-        res = workspace
+        res = ''
 
         for v in iter6():
             res += v

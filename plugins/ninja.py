@@ -9,7 +9,7 @@ def ninja0():
         """,
         'version': '1.9.0',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['python_pth']
         },
     }

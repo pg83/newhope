@@ -9,7 +9,7 @@ def m40():
         """,
         'version': '1.4.18',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['libsigsegv'],
         },
     }

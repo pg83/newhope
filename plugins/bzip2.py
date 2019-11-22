@@ -7,7 +7,7 @@ def bzip20():
         """,
         'version': '1.0.8',
         'meta': {
-            'kind': ['library', 'compression'],
+            'kind': ['library', 'compression', 'tool'],
             'provide': [
                 {'lib': 'bz2'},
             ],

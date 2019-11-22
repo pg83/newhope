@@ -6,7 +6,7 @@ exec 6>&2
 exec 1> $BDIR/runtime/stdout.log
 exec 2> $BDIR/runtime/stderr.log
 
-echo "{r}running {w:cname}{}" 1>&5
+echo "{r}running {w}[cname]{}" 1>&5
 
 run_sh() {
     echo "$BIGI" | source base64_decode > "$BDIR/runtime/run.sh"
@@ -34,8 +34,12 @@ stderr() {
     source echon {r}; source last_log "$BDIR/runtime/stderr.log"; echo '{}';
 }
 
-cleanup() {
+cleanup1() {
     source rmdel "$IDIR" "$BDIR"
+}
+
+cleanup() {
+    echo '  cleanup OK'
 }
 
 do_check_logs() {
@@ -51,7 +55,7 @@ check_logs() {
         echo '  will kill ourselves'
         kill -TERM $$
     else
-        echo '  all logs OK'
+        echo '  all logs OK' | tr -d '\n'
     fi
 }
 
@@ -61,6 +65,7 @@ check_logs_5() {
 
 trap "(stdout; stderr; check_logs_5; cleanup) 1>&5" EXIT
 trap "exit 5" TERM
+trap "exit 6" INT
 
 pwd
 

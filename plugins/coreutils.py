@@ -9,7 +9,7 @@ def coreutils0():
         """,
         'version': '8.31',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['iconv', 'intl', 'pth'],
             'soft': ['openssl'],
         },

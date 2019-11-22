@@ -1,23 +1,23 @@
 import sys
 import imp
-import weakref
+import threading
 
 
-class IFaceSlave(object):
-    def __init__(self, mod, parent, c):
+class IFaceSlave(dict):
+    def __init__(self, mod, parent):
+        self.__dict__ = self
         self._mod = mod
         self._pa = parent
-        self._c = {}
 
     def __getattr__(self, name):
         key = self._mod.__name__ + '.' + name
 
         try:
-            return self._c[key]
+            return self[key]
         except KeyError:
-            self._c[key] = self.find(name)
+            self[key] = self.find(name)
 
-        return self._c[key]
+        return self[key]
 
     def find(self, name):
         for f in (self.find_module, self.find_function):
@@ -38,14 +38,53 @@ class IFaceSlave(object):
     def find_function(self, name):
         return self._mod[name]
 
+    
+stdio_lock = threading.Lock()
+    
 
-class IFace(object):
+class StdIO(object):
+    def __init__(self, s):
+        self.s = s
+
+    def write(self, t):
+        with stdio_lock:
+            self.s.write(t)
+        
+    def flush(self):
+        with stdio_lock:
+            self.s.flush()
+        
+        
+class ColorStdIO(object):
+    def __init__(self, s):
+        self.s = s
+
+    def write(self, t):
+        with stdio_lock:
+            try:
+                self.s.write(y.process_color(t, '{}', {}))
+            except AttributeError:
+                self.s.write(t)
+                
+    def flush(self):
+        with stdio_lock:
+            self.s.flush()
+
+    def out(self, *args):
+        pass
+        #self.write('e: ' + ' '.join([str(x) for x in args]) + '\n')
+
+        
+class IFace(dict):
     def __init__(self):
-        self._c = {}
+        self.__dict__ = self
         self._l = []
         self._a = {}
         self._cc = {}
         self._hit = 0
+
+        self.reset_stdio()
+        
         self.add_lookup(lambda x: self.find_module(x))
         self.add_lookup(lambda x: self.find_module('ya.' + x))
         self.add_lookup(lambda x: self.find_module('gn.' + x))
@@ -55,6 +94,21 @@ class IFace(object):
         self.add_lookup(self.find_function)
         self.add_lookup(lambda x: __import__(x))
 
+    @property
+    def copy(self):
+        return sys.modules['copy']
+        
+    def reset_stdio(self):
+        self.stdout = ColorStdIO(sys.stdout)
+        self.stderr = ColorStdIO(sys.stderr)        
+        
+    def set_stdio(self, stdout=None, stderr=None):
+        if stdout:
+            self.stdout = StdIO(stdout)
+
+        if stderr:
+            self.stderr = StdIO(stderr)
+        
     def print_stats(self):
         for i, f in enumerate(self._l):
             y.xprint_w(i, self._cc[i])
@@ -65,11 +119,11 @@ class IFace(object):
         key = 's:' + mod.__name__
 
         try:
-            return self._c[key]
+            return self[key]
         except KeyError:
-            self._c[key] = IFaceSlave(mod, self, self._c)
+            self[key] = IFaceSlave(mod, self)
 
-        return self._c[key]
+        return self[key]
 
     def find_module(self, x):
         return self.create_slave(__loader__._by_name[x])
@@ -113,12 +167,12 @@ class IFace(object):
     def __getattr__(self, name):
         try:
             self._hit += 1
-            return self._c[name]
+            return self[name]
         except KeyError:
             self._hit -= 1
-            self._c[name] = self.find(name)
+            self[name] = self.find(name)
 
-        return self._c[name]
+        return self[name]
 
     def add_lookup(self, func):
         self._cc[len(self._l)] = 0
@@ -128,9 +182,6 @@ class IFace(object):
         self.add_lookup(func)
 
         return func
-
-    def print_cache(self):
-        print self._c
 
     def find_function(self, name):
         for k in __loader__._order:

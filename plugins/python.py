@@ -139,6 +139,9 @@ def python_base(kind):
             'provides': [
                 {'lib': 'python2.7'},
                 {'env': 'PYTHON', 'value': '{pkgroot}/bin/python'},
+                {'env': 'CFLAGS', 'value': '"-I{pkgroot}/python/include $CFLAGS"'},
+                {'env': 'LDFLAGS', 'value': '"-L{pkgroot}/python/lib $LDFLAGS"'},
+                {'env': 'PKG_CONFIG_PATH', 'value': '"{pkgroot}/python/lib/pkgconfig:$PKG_CONFIG_PATH"'},                
             ],
         },
     }
@@ -146,12 +149,12 @@ def python_base(kind):
 
 @y.ygenerator(tier=0)
 def python0():
-    return python_base(['box'])
+    return python_base(['box', 'tool'])
 
 
 @y.ygenerator(tier=0)
 def python_pth0():
-    r = y.deep_copy(python_base([]))
+    r = y.deep_copy(python_base(['tool']))
 
     r['code'] = r['code'].replace('./configure', './configure --with-pth').replace('##', '')
     r['meta']['depends'].append('pth')

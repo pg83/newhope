@@ -143,4 +143,4 @@ def cached_method2(meth):
     return y.cached(key=lambda self, *args: (id(self), args))(meth)
 
 
-cached_method = cached_method2
+cached_method = cached_method1

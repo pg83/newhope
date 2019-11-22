@@ -8,15 +8,19 @@ def xxformat(*args, **kwargs):
 
     text = ' '.join(y.fixx(x) for x in iter_t())
 
-    return process_color(text, kwargs.pop('init', ''), kwargs)
+    if 'init' in kwargs:
+        return '{' + kwargs['init'] + '}' + text + '{}'
+    
+    return text
                 
 
 def xxprint(*args, **kwargs):
-    kwargs.pop('where', y.sys.stderr).write(xxformat(*args, **kwargs) + '\n')
+    kwargs.pop('where', y.stderr).write(xxformat(*args, **kwargs) + '\n')
 
 
 def process_color(text, init, kwargs):
     verbose = kwargs.get('verbose', y.verbose)
+    raw = kwargs.get('raw', False)
     cm = y.color_map_func()
     rst = ('c', '')
 
@@ -99,12 +103,20 @@ def process_color(text, init, kwargs):
             if l[0][0] == 'c':
                 c = l[-1][1]
                 
+                if raw:
+                    return {'color': c}
+                
                 if verbose and '/rc' in verbose:
                     return '[' + c + ']'
 
                 return cm[c]
             else:
-                return ''.join([x[1] for x in last])
+                res = ''.join([x[1] for x in last])
+
+                if raw:
+                    return {'text': res}
+
+                return res
 
         for p in process_part(s, [text]):
             if p[0] == 't' and not p[1]:
@@ -122,6 +134,9 @@ def process_color(text, init, kwargs):
         if last:
             yield join(last)
 
+    if raw:
+        return list(combine())
+            
     return ''.join(combine())
 
         
@@ -138,3 +153,72 @@ def lookup(xp):
         return func
 
     raise AttributeError()
+
+
+def gen_text():
+    return '{g}' + ('dhfkjgfsdjhfsdfhjkjdfhg' * 10 + '\n') * 10 + 'xxx{b}' + ('78653475347547' * 10 + '\n') * 5 + '{w}' + 'djfhdjkfgkjgf' * 10 + '{}' + ('73673578364583456' * 5 + '\n') * 10 + '{}'
+
+
+def reduce_by_key(iter, keyf):
+    tmp = []
+
+    for i in iter:
+        if not tmp:
+            tmp.append(i)
+        else:
+            if keyf(i) == keyf(tmp[-1]):
+                tmp.append(i)
+            else:
+                yield tmp
+                tmp = [i]
+
+    if tmp:
+        yield tmp
+
+        
+def reshard_text(text, nn):
+    def iter1():
+        cur = None
+    
+        for i in process_color(text, '{}', dict(raw=True)):
+            if 'color' in i:
+                cur = i['color']
+            else:
+                for ch in i['text']:
+                    yield (ch, cur)
+
+
+    def split1():
+        cur = []
+        
+        for ch in iter1():
+            if ch[0] == '\n':
+                yield cur
+                cur = []
+            else:
+                cur.append(ch)
+
+        if cur:
+            yield cur
+
+    def reshard_line(l, n):
+        while l:
+            yield l[:n]
+            l = l[n:]
+            
+    def do():
+        for l in split1():
+            for sl in reshard_line(l, nn):
+                yield list(reduce_by_key(sl, keyf=lambda x: x[1]))
+
+    def combine(l):
+        text = ''.join([x[0] for x in l])
+        color = l[0][1]
+
+        return {'text': text, 'color': color}
+
+    def iter2():
+        for l in do():
+            yield [combine(x) for x in l]
+
+    return list(iter2())

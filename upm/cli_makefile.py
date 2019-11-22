@@ -22,13 +22,18 @@ def cli_makefile(arg):
          f = open(args.output, 'w')
          defer(f.close)
       else:
-         f = y.sys.stdout
+         f = y.stdout
 
-      if args.dot:
-         f.write(y.build_dot_script())
-      elif args.shell:
-         f.write(y.build_sh_script(args.shell))
-      else:
-         f.write(y.main_makefile(internal=args.internal))
+      def main_func():
+         if args.dot:
+            f.write(y.build_dot_script())
+         elif args.shell:
+            f.write(y.build_sh_script(args.shell))
+         else:
+            f.write(y.main_makefile(internal=args.internal))
             
-      f.flush()
+         f.flush()
+         
+         raise StopIteration()
+      
+      y.GEN_DATA_LOOP.run_loop(init=main_func)

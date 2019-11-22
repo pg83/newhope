@@ -9,7 +9,7 @@ def libiconv0():
         """,
         'version': '1.16',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'library', 'tool'],
             'depends': [],
             'provides': [
                 {'lib': 'iconv', 'configure': {'opts': ['--with-libiconv-prefix={pkgroot}', '--with-iconv={pkgroot}']}},

@@ -9,7 +9,7 @@ def curl0():
         """,
         'version': '7.67.0-20191011',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['mbedtls', 'libidn2'],
             'configure': [
                 {'opt': '--with-secure-transport', 'os': 'darwin'},

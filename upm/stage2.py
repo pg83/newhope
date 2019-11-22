@@ -1,7 +1,5 @@
 import sys
 import threading
-import thread
-import signal
 
 
 def load_builtin_modules(data, builtin):
@@ -9,13 +7,16 @@ def load_builtin_modules(data, builtin):
       'ya.int_counter',
       'ya.args_parse',
       'ya.algo',
+      'ya.err_handle',      
       'ya.single',
-      'ya.defer',
       'ya.caches',
+      'ya.defer',
       'ya.pub_sub',
       'ya.manager',
       'ya.mini_db',
       'ya.noid_calcer',
+      'ya.gui',
+      'ya.gui_ext',
    )
 
    for m in initial:
@@ -30,84 +31,30 @@ def load_builtin_modules(data, builtin):
             initial.add(k)
 
 
-def send_module_back():
-   mod = __loader__.create_module('ya.__main__')
-   mod.y = y
-   mod.exec_text_part(""" 
-def vault1():
-    qq = y.homeland_queue
-    pp = y.print_tbx
-
-    while True:
-        try:
-           qq.get()()
-        except SystemExit as e:
-           raise e
-        except:
-           try:
-               pp()
-           except:
-               pass
-
-           raise SystemExit(1)
-
-def vault():
-    channel = y.write_channel('die soon', 'vault')
-
-    try:
-        return vault1()
-    finally:
-        channel({'die': 'soon'})
-   """)
-
-   y.homeland_queue.put(mod.vault)
-
-
-def set_sigint():
-   def sig(*args):
-      sig.__c({'value': 'SIGINT', 'args': args})
-
-   sig.__c = y.write_channel('SIGINT', 'sh')
-   
-   @y.read_callback('SIGINT', 'caret handler')
-   def on_sigint_caret(arg):
-      y.sys.stderr.write('\n')
-
-   @y.read_callback('SIGINT', 'death handler')
-   def on_sigint(arg):
-      t = y.time.time()
-
-      @y.run_by_timer(0.1)
-      def death_handler():
-         if y.time.time() > t + 1:
-            try:
-               y.print_all_stacks()
-               y.xprint_red('DEATH handler')
-            finally:
-               y.os._exit(6)
-
-      death_handler()
-            
-   signal.signal(signal.SIGINT, sig)
-
-
 def run_stage2(args, builtin, data, qq, **kwargs):
    def thr_func():
+      args, verbose, profile = y.parse_args(sys.argv)
+      
       fd = {
          'file_data': data, 
          'builtin_modules': builtin, 
          'homeland_queue': qq,
+         'verbose': verbose,
+         'need_profile': profile,
       }
-
+      
       @y.lookup
       def lookup(name):
          return fd[name]
-
+      
       load_builtin_modules(data, builtin)
-      send_module_back()
-      qq.put(set_sigint)
-      y.run_main(sys.argv)
-      y.prompt('/theend')
+      
+      fd['signal_channel'] = y.get_signal_channel()
+      fd['main_channel'] = y.get_main_channel()
+      
+      y.init_vault()
+      y.run_defer_constructors()
+      y.run_main(args)
 
    def thr_func_wrapper():
       try:

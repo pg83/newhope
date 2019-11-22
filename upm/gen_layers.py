@@ -113,7 +113,7 @@ def gen_all_texts(only_print_layers=False):
 
 @y.defer_constructor
 def init():
-    @y.read_callback('build env', 'layers')
+    @y.gd_callback('build env')
     def solver(arg):
         def func(name, info):
             send_all_plugins_to_queue()

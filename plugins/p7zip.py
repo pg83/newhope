@@ -10,6 +10,6 @@ def p7zip0():
         """,
         'version': '16.02',
         'meta': {
-            'kind': ['compression'],
+            'kind': ['compression', 'tool'],
         },
     }

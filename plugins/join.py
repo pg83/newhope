@@ -4,7 +4,7 @@ copy_many() {
     shift
     for i in $@
     do
-        cp -R $(dirname $i)/* $IDIR/ 
+        cp -R $(dirname $i)/* $IDIR/
     done
 }
 

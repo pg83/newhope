@@ -1,3 +1,5 @@
+import itertools
+
 def new_cmd():
     return {
         'cmd': [],
@@ -17,7 +19,6 @@ def find_file(cmd, f):
 
 
 def parse_makefile(data):
-    sp = y.subprocess
     lst = []
     prev = None
     cprint = y.xprint_white
@@ -91,7 +92,7 @@ def cheet(lst):
         y.build_scripts_dir()
 
 
-def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, pre_run=[]):
+def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, pre_run=[], bypass_streams=False):
     lst = data
 
     if not parsed:
@@ -100,15 +101,28 @@ def run_makefile(data, shell_vars, shell_out, targets, threads, parsed, pre_run=
     cheet(lst)
 
     if pre_run:
-        run_seq_build(lst, shell_vars, pre_run)
+        run_seq_build(lst, shell_vars, False, pre_run)
     
     if threads > 1:
-        return y.run_parallel_build(lst, shell_vars, targets, threads)
+        return y.run_parallel_build(lst, shell_vars, targets, threads, bypass_streams)
 
-    return run_seq_build(lst, shell_vars, targets)
+    return run_seq_build(lst, shell_vars, shell_out, targets)
 
 
-def run_seq_build(lst, shell_vars, targets):
+def build_run_sh(n):
+    def iter_run_sh():
+        yield '{r}running {w}[cname]'
+        yield '{y} run.sh:'
+
+        for l in n['cmd']:
+            yield '  ' + l
+
+    return '\n'.join(iter_run_sh())
+
+
+def run_seq_build(lst, shell_vars, shell_out, targets):
+    build_results = y.build_results_channel()    
+    sp = y.subprocess
     by_dep = {}
 
     for x in lst:
@@ -116,7 +130,7 @@ def run_seq_build(lst, shell_vars, targets):
             by_dep[d] = x
 
     done = set()
-    do_compile = sp.check_output
+    do_compile = sp.Popen
 
     if shell_out:
         def do_compile_1(*args, **kwargs):
@@ -152,30 +166,63 @@ def run_seq_build(lst, shell_vars, targets):
         for d in n['deps2']:
             run_cmd(d)
 
-        def prn_delim():
-            y.xprint_white('-------------------------------------------------------------------------------')
-
-        prn_delim()
-
         my_name = ', '.join(n['deps1'])
 
         if n.get('cmd'):
             shell = find_file(n['cmd'], 'dash') or '/bin/sh'
-            cmd = '\n'.join(n['cmd']) + '\n'
-            input = 'set -e; set +x; ' + cmd
+            env = dict(y.fix_shell_vars(shell_vars))
+
+            def iter_cmd():
+                yield 'set -e'
+                yield 'set +x'
+                
+                for k in sorted(env, key=lambda x: -len(x)):
+                    yield 'export {k}={v}'.format(k=k, v=env[k])
+                    
+                yield 'export PATH="{runtime}:$PATH"'.format(runtime=y.build_scripts_dir())
+                yield 'mainfun() {'
+                
+                for l in n['cmd']:
+                    yield l
+                    
+                yield '}'
+                yield 'mainfun ' + ' '.join(itertools.chain(n['deps1'], n['deps2']))
+                
+            input = '\n'.join(iter_cmd()) + '\n'
             input = input.replace('$(SHELL)', '$YSHELL')
-            args = ['/usr/bin/env', '-i', shell, '--noprofile', '--norc', '-s']
-            p = do_compile(args, stdout=sp.PIPE, stderr=sp.STDOUT, stdin=sp.PIPE, shell=False)
+
+            p = do_compile([shell, '-s'], stdout=sp.PIPE, stderr=sp.STDOUT, stdin=sp.PIPE, shell=False, env=env)
             res, _ = p.communicate(input=input)
             fail = p.wait()
 
-            y.xxprint(res)
+            if not res.strip():
+                res = build_run_sh(n)
+            
+            build_results({
+                'text': res,
+                'command': input,
+                'target': my_name,
+            })
 
             if fail:
-                prn_delim()
+                build_results({
+                    'message': 'target {g}' + my_name + '{} failed, with retcode ' + str(fail),
+                    'retcode': fail,
+                    'target': my_name,
+                    'status': 'faulure'
+                })
+                
                 raise StopIteration()
+            else:
+                build_results({
+                    'message': 'target {g}' + my_name + '{} complete',
+                    'target': my_name,
+                })
         else:
-            y.xprint_blue('symlink target ' + my_name + ' ready')
+            build_results({
+                'message': 'target {g}' + my_name + '{} complete',
+                'target': my_name,
+            })
 
         for d in n['deps1']:
             done.add(d)
@@ -183,6 +230,7 @@ def run_seq_build(lst, shell_vars, targets):
     try:
         for t in targets:
             run_cmd(t)
+            
+        build_results({'message': 'all ok', 'status': 'ok'})
     except StopIteration:
-        raise Exception('can not build desired targets, some node broken')
-
+        build_results({'message': 'build not finished', 'status': 'failure'})

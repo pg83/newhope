@@ -6,7 +6,7 @@ def dep_list(info, iter):
     return [x(info) for x in iter]
 
 
-@y.read_callback('new plugin', 'plugins')
+@y.gd_callback('new plugin')
 def exec_plugin_code(code):
     name = code['name']
     name = name.replace('/', '.')
@@ -34,9 +34,9 @@ def subst_some_values(v):
 
     return v
 
-    
+
 def ygenerator(tier=None, include=[], exclude=[], version=1):
-    func_channel = y.write_channel('orig functions', 'yg')
+    func_channel = y.GEN_DATA_LOOP.write_channel('orig functions', 'yg')
 
     def functor(func):
         assert tier is not None

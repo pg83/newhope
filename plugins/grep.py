@@ -9,7 +9,7 @@ def grep0():
         """,
         'version': '3.3',
         'meta': {
-            'kind': ['box'],
+            'kind': ['box', 'tool'],
             'depends': ['intl', 'libsigsegv', 'iconv']
         },
     }

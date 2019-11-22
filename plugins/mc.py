@@ -1,15 +1,24 @@
-@y.ygenerator(tier=3)
-def mc0():
+def mc(gui):
     return {
         'code': """
              source fetch "http://ftp.midnight-commander.org/mc-{version}.tar.xz" 1
-             $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static --with-screen=ncurses  || exit 1
+             $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static --with-screen={gui}  || exit 1
              $YMAKE -j2
              $YMAKE install
-        """,
+        """.replace('{gui}', gui),
         'version': '4.8.23',
         'meta': {
             'kind': ['program'],
-            'depends': ['intl', 'iconv', 'glib', 'ncurses', 'slang'],
+            'depends': ['intl', 'iconv', 'glib', gui],
         }
     }
+
+
+@y.ygenerator(tier=3)
+def mc_slang0():
+    return mc('slang')
+
+
+@y.ygenerator(tier=3)
+def mc_ncurses0():
+    return mc('ncurses')

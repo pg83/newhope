@@ -1,5 +1,5 @@
 @y.main_entry_point
-def cli_release(args, verbose):
+def cli_release(args):
    data = {'file_data': y.file_data, 'data': y.stagea.__ytext__}
    data = y.marshal.dumps(data)
    data = y.zlib.compress(data)

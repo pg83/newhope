@@ -7,6 +7,6 @@ def xz0():
         """,
         'version': '5.2.4',
         'meta': {
-            'kind': ['compression', 'library'],
+            'kind': ['compression', 'library', 'tool'],
         },
     }

@@ -1,5 +1,5 @@
 fetch_url() {
-    cd $3 && ((which wget && wget -O $1 $2) || (which curl && curl --retry 3 -L -k -o $1 $2) || (which curl && curl --retry 3 -L -o $1 $2)) && ls -la
+    cd $3 && ((which wget && wget -O $1 $2) || (which curl && curl -s --retry 3 -L -k -o $1 $2) || (which curl && curl -s --retry 3 -L -o $1 $2)) && ls -la
 }
 
 fetch_url $@

@@ -34,7 +34,7 @@ def solve_build_for_platform(cs, p):
 
     envs = []
 
-    y.read_callback_from_channel(arg['back_channel'], 'solver')(envs.append)    
+    y.read_callback_from_channel(arg['back_channel'])(envs.append)
     y.build_env_channel()(arg)
 
     conf['build_env'] = choose_best_build_env(envs)

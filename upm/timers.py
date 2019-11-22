@@ -10,9 +10,6 @@ def queue():
     store = {}
     q = Queue.Queue()
 
-    def raise_exit():
-        raise SystemExit(0)
-
     def step():
         def iter_new():
             while True:
@@ -34,15 +31,22 @@ def queue():
         deadline = time.time()
 
         for k, v in store.iteritems():
-            if v['d'] > deadline:
+            if v['d'] < deadline:
                 ready.append(k)
                 
         for k in ready:
             store.pop(k)['f']()
 
-    @y.read_callback('die soon', 'timers')
-    def done(arg):
-        q.put(raise_exit)
+    def raise_exit():
+        raise SystemExit(0)
+    
+    @y.signal_channel.read_callback()
+    def done_timers(arg):
+        if arg['signal'] == 'DOWN' and 'when' in arg:
+            q.put(raise_exit)
+            
+        if arg['signal'] == 'INT':
+            q.put(raise_exit)
 
     def read():
         while True:

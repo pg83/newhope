@@ -1,8 +1,3 @@
-@y.singleton
-def w_channel():
-    return y.write_channel('new functions', 'spl')
-
-
 def gen_code(kind, folders):
     yield 'MDIR=$(dirname $3)'
 
@@ -73,16 +68,19 @@ class Splitter(object):
         return SplitKind(self, kind).d
 
     
-@y.read_callback('new functions', 'spl')
-def splitter(arg):
+@y.GEN_DATA_LOOP.read_callback('new functions')
+def splitter(wq, arg):
     arg = arg['func']
     repack = arg.get('repacks', repacks())
 
     if not repack:
         return
-
-    wc = w_channel()
+    
     s = Splitter(arg, repack)
     
     for k in repack:
-        wc({'func': s.gen(k)})
+        wq({'func': s.gen(k)})
+
+        
+def pkg_splitter(arg, kind):
+    return Splitter(arg, repacks()).gen(kind)['code']

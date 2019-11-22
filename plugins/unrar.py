@@ -9,6 +9,6 @@ def unrar0():
         """,
         'version': '5.8.3',
         'meta': {
-            'kind': ['compression'],
+            'kind': ['compression', 'tool'],
         },
     }

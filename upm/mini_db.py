@@ -27,7 +27,7 @@ def load_list(ptr):
 
 def intern_struct(s):
     return intern_data({'s': s})
-
+        
 
 def load_struct(ptr):
     return load_data(ptr)['s']
@@ -147,6 +147,6 @@ def init():
     for i in dir(v):
         if not i.startswith('__'):
             globals()[i] = eval('v.' + i)
-
+            
     if '/check_db' in y.verbose:
         y.atexit.register(v.check_db)
