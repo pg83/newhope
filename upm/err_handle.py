@@ -3,10 +3,14 @@ def abort_on_error(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except:
+        except y.StopNow:
+            raise
+        except StopIteration:
+            raise
+        except Exception:
             try:
-                y.stderr.out(func.__module__, func.__name__)
-                y.print_all_stacks()
+                y.debug(func.__module__, func.__name__)
+                y.print_tbx()
             finally:
                 y.os.abort()
             
@@ -14,12 +18,13 @@ def abort_on_error(func):
 
 
 def stop_iter(*args, **kwargs):
-    raise StopIteration()
+    raise y.StopNow()
 
 
+async def async_stop_iter(*args, **kwargs):
+    raise y.StopNow()
+
+
+@y.singleton
 def run_down_once():
-    @y.singleton
-    def run_down_once_impl():
-        y.broadcast_channel('SIGNAL')({'signal': 'DOWN', 'when': 'now'})
-
-    run_down_once_impl()
+    y.broadcast_channel('SIGNAL')({'signal': 'DOWN', 'when': 'now'})

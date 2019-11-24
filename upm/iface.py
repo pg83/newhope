@@ -1,6 +1,11 @@
 import sys
 import imp
 import threading
+import asyncio
+
+
+class StopNow(Exception):
+    pass
 
 
 class IFaceSlave(dict):
@@ -60,21 +65,24 @@ class ColorStdIO(object):
         self.s = s
 
     def write(self, t):
-        with stdio_lock:
+        if len(t) < 10000:
             try:
-                self.s.write(y.process_color(t, '{}', {}))
+                t = y.process_color(t, '', {})
             except AttributeError:
-                self.s.write(t)
+                pass
+                
+        with stdio_lock:
+            self.s.write(t)
                 
     def flush(self):
         with stdio_lock:
             self.s.flush()
 
     def out(self, *args):
-        pass
-        #self.write('e: ' + ' '.join([str(x) for x in args]) + '\n')
+        #pass
+        self.write(' '.join([str(x) for x in args]) + '\n')
 
-        
+
 class IFace(dict):
     def __init__(self):
         self.__dict__ = self
@@ -93,9 +101,14 @@ class IFace(dict):
         self.add_lookup(self.fast_search)
         self.add_lookup(self.find_function)
         self.add_lookup(lambda x: __import__(x))
-
+    
     @property
     def copy(self):
+        try:
+            return sys.modules['copy']
+        except KeyError:
+            __import__('copy')
+            
         return sys.modules['copy']
         
     def reset_stdio(self):
@@ -144,7 +157,9 @@ class IFace(dict):
 
     def find(self, name):
         subst = {
-            'xpath': 'run_xpath_simple'
+            'xpath': 'run_xpath_simple',
+            'Queue': 'queue',
+            'thread': 'threading',
         }
 
         name = subst.get(name, name)
@@ -207,3 +222,68 @@ def prompt(l):
          y.code.interact(local=frame.f_globals)
    except Exception as e:
       pass
+
+  
+def load_builtin_modules(data, builtin):
+    initial = (
+        'ya.mod_load',
+        'ya.int_counter',
+        'ya.args_parse',
+        'ya.algo',
+        'ya.single',
+        'ya.err_handle',      
+        'ya.caches',
+        'ya.init_log',
+        'ya.defer',
+        'ya.pub_sub',
+        'ya.ygen',
+        'ya.manager',
+        'ya.mini_db',
+        'ya.noid_calcer',
+    )
+
+    for m in initial:
+        __loader__.create_module(m)
+
+    initial = set(initial)
+
+    for k in builtin:
+        if k not in initial:
+            if k.startswith('ya'):
+                __loader__.create_module(k)
+                initial.add(k)
+
+
+def run_stage4_1(data):
+    @y.lookup
+    def lookup(name):
+        return data[name]
+    
+    load_builtin_modules(y.file_data, y.builtin_modules)
+
+    data['signal_channel'] = y.get_signal_channel()
+
+    y.run_defer_constructors()
+    return y.run_main(data.pop('args'))
+
+
+def to_int(v):
+    if v is None:
+        return 0
+    
+    return int(v)
+
+
+def run_stage4_0(data):
+    try:
+        try:            
+            y.os._exit(to_int(run_stage4_1(data)))
+        except SystemExit as e:
+            y.os._exit(e.code)            
+        except:
+            try:
+                y.stderr.write(y.format_tbx() + '\n')
+            except:
+                y.stderr.write(y.traceback.format_exc() + '\n')
+    finally:
+        y.os.abort()

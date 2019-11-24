@@ -1,5 +1,30 @@
-fetch_url() {
-    cd $3 && ((which wget && wget -O $1 $2) || (which curl && curl -s --retry 3 -L -k -o $1 $2) || (which curl && curl -s --retry 3 -L -o $1 $2)) && ls -la
+copy_url() {
+    where=$(dirname $PKGF)
+    what=$(basename $PKGF | tr '-' '\n' | head -n 2 | tail -n 1)
+    hope=$(ls $where/ | grep $what | head -n 1 | tr -d '\n')
+    fpath="$where/$hope"
+    echo $what, $where, $hope, $fpath 1>&5
+    
+    if test -n "$hope" ; then
+        echo "copy $fpath to $3" && cd $3 && ls -la && ln "$fpath" . && $YTAR -xf *-tr && rm -rf *-tr  && ls -la && exit 0
+    fi
+
+    return 1
 }
 
-fetch_url $@
+fetch_url() {
+    cd $3
+    ((which wget && wget -O $1 $2) || (which curl && curl -s --retry 3 -L -k -o $1 $2) || (which curl && curl -s --retry 3 -L -o $1 $2)) && ls -la
+
+    if test -f "$1"; then
+        fsz=$(source file_size "$1")
+
+        if test $fsz -lt 10000; then
+	   echo 'file too small'; exit 2;
+	fi
+    else
+        echo "no file $1"; exit 1;
+    fi
+}
+
+((copy_url $@) || (fetch_url $@)) 1>&5

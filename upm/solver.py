@@ -38,5 +38,3 @@ def solve_build_for_platform(cs, p):
     y.build_env_channel()(arg)
 
     conf['build_env'] = choose_best_build_env(envs)
-
-    print conf

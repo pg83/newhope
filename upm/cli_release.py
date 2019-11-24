@@ -12,4 +12,4 @@ def cli_release(args):
       if x['path'] == 'cli':
          break
 
-   print x['data'].replace('#REPLACEME', code)
+   print(x['data'].replace('#REPLACEME', code))

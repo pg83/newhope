@@ -31,9 +31,9 @@ def cli_makefile(arg):
             f.write(y.build_sh_script(args.shell))
          else:
             f.write(y.main_makefile(internal=args.internal))
-            
+
          f.flush()
-         
-         raise StopIteration()
-      
-      y.GEN_DATA_LOOP.run_loop(init=main_func)
+
+         raise y.StopNow()
+
+      y.GEN_DATA_LOOP.run_loop(init=[main_func])

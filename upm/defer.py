@@ -23,7 +23,7 @@ def defer_wrapper(func):
 
 @y.singleton
 def defer_channel():
-    return y.MAIN_LOOP.write_channel('DEFERC', 'common')
+    return y.DEFER_LOOP.write_channel('DEFERC', 'common')
     
 
 def defer_constructor(func):
@@ -32,20 +32,21 @@ def defer_constructor(func):
     return func
 
 
-@y.abort_on_error
 def run_defer_constructors():
+    @defer_constructor
+    def init_log():
+        if '/debug' in y.verbose:
+            y.logging.basicConfig(level='DEBUG')
+        
     @defer_constructor
     def sentinel():
         return 'shit'
-    
-    rq, wq = y.MAIN_LOOP.subscribe_queue('DEFERC', 'main')
 
-    while True:
-        for f in rq():
-            if '/show_defer' in y.verbose:
-                y.xprint_dg('run constructor', f)
+    defer_callback = defer_channel().read_callback()
 
-            res = str(f['func']())
-            
-            if res == 'shit':
-                return
+    @defer_callback
+    def on_defer_constructor(arg):
+        if str(arg['func']()) == 'shit':
+            raise y.StopNow()
+
+    y.DEFER_LOOP.run_loop()

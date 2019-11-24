@@ -1,6 +1,5 @@
 import os
 import sys
-import Queue
 import threading
 import subprocess as sp
 import itertools
@@ -8,17 +7,8 @@ import base64
 import time
 
 
-def is_in(lst, s):
-    for l in lst:
-        if l not in s:
-            return False
-
-    return True
-
-
-class SetResult(Exception):
-    def __init__(self, func):
-        self.func = func
+def hash(x):
+    return y.burn([sorted(x['deps1']), sorted(x['deps2']), x['cmd']])
 
 
 def get_only_our_targets(lst, targets):
@@ -46,15 +36,15 @@ def get_only_our_targets(lst, targets):
         for t in targets:
             for x in visit(by_link[t]):
                 yield x
-
+                
     return [lst[x] for x in sorted(frozenset(iter()))]
-
+    
 
 def get_el(qu):
     while True:
         try:
             return qu.get(True, 0.1)
-        except Queue.Empty:
+        except y.queue.Empty:
             pass
 
 
@@ -65,263 +55,297 @@ def remove_d(k):
     return k
 
 
+def super_decode(s):
+    try:
+        return s.decode('utf-8')
+    except:
+        return s
+            
+
 def subst_vars(d, shell_vars):
     while '$' in d:
-        for k, v in shell_vars.iteritems():
+        for k, v in shell_vars.items():
             d = d.replace(k, v)
             
     return d
 
 
 def fix_shell_vars(shell_vars):
-    return [(remove_d(k), v) for k, v in shell_vars.iteritems()]
+    return [(remove_d(k), v) for k, v in shell_vars.items()]
+
+
+def kill_all_running(*args):
+    os.system('pkill -KILL -g {pgid}'.format(pgid=os.getpgid(os.getpid())))
+
+
+class Tasker(object):
+    def __init__(self, lst, shell_vars, targets):
+        self.lst = lst
+        self.shell_vars = shell_vars
+        self.targets = targets
+        self.t_begin = y.time.time()
+        self.build_results = y.build_results_channel()
+        
+        for i, l in enumerate(self.lst):
+            l['n'] = i
+    
+        self.lst = get_only_our_targets(self.lst, self.targets)
+        self.left = len(lst)
+
+        for i, l in enumerate(self.lst):
+            l['n'] = i
+            
+        self.rq, self.wq = y.make_engine(self.lst, lambda x: x['deps1'][0], dep_list=lambda x: sorted(frozenset(x['deps2'])))
+        self.process_ready_tasks()
+
+    @property
+    def verbose(self):
+        return y.verbose
+    
+    def find_complete(self):
+        for x in self.rq():
+            yield x
+    
+    @y.cached_method
+    def resolve_path(self, d):
+        return subst_vars(d, self.shell_vars)
+
+    def process_result(self, arg):
+        if 'll' in arg:
+            self.wq(arg['ll']['i'])
+            self.process_ready_tasks()
+
+    def process_ready_tasks(self):
+        for ll in self.find_complete():
+            self.build_results({'new_task': Task(self, ll)})
+
+
+class Task(object):
+    def __init__(self, parent, ll):
+        self.ll = ll
+        self.p = parent
+        self.srch_lst = list(self.iter_deps())
+        self.shell = self.find_shell()
+        self.env = self.prepare_env()
+
+    @property
+    def l(self):
+        return self.ll['x']
+        
+    @property
+    def verbose(self):
+        return y.verbose
+        
+    @property
+    def shell_vars(self):
+        return self.p.shell_vars
+        
+    def find_tool(self, tool):
+        if tool[0] == '/':
+            return tool
+
+        return y.find_tool_uncached(tool, self.srch_lst)
+
+    def iter_deps(self):
+        for d in self.l['deps2']:
+            yield os.path.join(os.path.dirname(self.p.resolve_path(d)), 'bin')
+
+    def find_shell(self):
+        if '$YSHELL' in self.shell_vars:
+            shell = self.find_tool(self.shell_vars['$YSHELL'])
+
+            if shell:
+                return shell
+            
+            raise Exception('can not find ' + self.shell_vars['$YSHELL'])
+            
+        return self.find_tool('dash') or self.find_tool('yash') or self.find_tool('sh') or self.find_tool('bash')
+
+    def build_input(self):
+        input = '\n'.join(self.l['cmd'])
+        
+        def iter_parts():
+            if '/-x' in self.verbose:
+                yield 'set -x'
+            else:
+                yield 'set +x'
+                    
+            if '/-v' in self.verbose:
+                yield 'set -v'
+            else:
+                yield 'set +v'
+
+            yield 'set -e'
+
+            for k in sorted(self.env.keys(), key=lambda x: -len(x)):
+                yield 'export ' + k + '=' + self.env[k]
+
+            yield 'export BIGI="' + base64.b64encode(input.encode('utf-8')).decode('utf-8') + '"'
+            yield 'export PATH={runtime}:$PATH'.format(runtime=y.build_scripts_dir())
+            yield 'mainfun() {'
+            yield input
+            yield '}'
+            yield 'mainfun ' + ' '.join(itertools.chain(self.l['deps1'], self.l['deps2']))
+
+        return '\n'.join(iter_parts()) + '\n'
+
+    def run_cmd(self):
+        args = {
+            'stdout': sp.PIPE, 
+            'stderr': sp.STDOUT,
+            'stdin': sp.PIPE,
+            'shell': False, 
+            'env': self.env, 
+            'close_fds': True, 
+            'cwd': '/', 
+            'bufsize': 1,
+        }
+
+        input = self.build_input()
+        p = sp.Popen([self.shell, '-s'], **args)
+        out = []
+        
+        try:
+            res, _ = p.communicate(input=input.encode('utf-8'))
+
+            if not res.strip():
+                res = y.build_run_sh(self.l)
+
+            out.append(res)
+            retcode = p.wait()
+
+            if not retcode:
+                self.check_results()
+        except sp.CalledProcessError as e:
+            out.append(e.output)
+            retcode = e.returncode
+        except Exception:
+            out.append(y.format_tbx())
+            retcode = -1
+
+        data = '\n'.join(super_decode(o.strip()) for o in out)
+
+        return data, retcode
+
+    def check_results(self):
+        for x in self.l['deps1']:
+            x = self.p.resolve_path(x)
+
+            try:
+                assert os.path.isfile(x)
+            except:
+                raise Exception(x + ' not exists')
+            
+    def prepare_env(self):
+        return dict(itertools.chain({'OUTER_SHELL': self.shell}.items(), fix_shell_vars(self.shell_vars)))
+    
+    def process_0(self):
+        c = self.l.get('cmd')
+        tg = self.l['deps1'][0]
+        output = self.l['deps1'][0]
+
+        if not c:
+            return {'message': 'target {task} complete'.format(task='{w}' + tg + '{}'), 'target': tg}
+
+        if os.path.exists(self.p.resolve_path(output)):
+            return {'message': 'target {task} complete'.format(task='{g}' + tg + '{}'), 'target': tg}
+
+        data, retcode = self.run_cmd()
+        msg = {}
+            
+        if data:
+            msg.update({
+                'text': data,
+                'target': tg,
+                'command': input,
+            })
+
+        if retcode and retcode != -9:
+            def shut_down():
+                y.time.sleep(10)
+                y.stderr.write('{r}bad ' + tg + '{}\n')
+                y.os.abort()
+
+            y.threading.Thread(target=shut_down).start()
+            
+            msg.update({
+                'message': 'target {g}' + tg + '{} failed, with retcode ' + str(retcode),
+                'status': 'failure',
+                'target': tg,
+                'retcode': retcode,
+            })
+
+        return msg
+
+    def process(self):
+        res = self.process_0()
+        res.update({'ll': self.ll})
+        self.p.build_results(res)
+
+
+class ThreadPool(object):
+    def __init__(self, thrs):                
+        self.q = y.queue.SimpleQueue()
+        self.threads = [threading.Thread(target=self.func) for i in range(0, thrs)]
+        self.start()
+
+    def schedule_task(self, task):
+        self.q.put(task.process)
+            
+    def func(self):
+        while True:
+            try:
+                self.q.get()()
+            except y.StopNow:
+                return
+            except Exception as e:
+                y.print_tbx()
+                y.os.abort()
+
+    def wait_all_threads(self):
+        for t in self.threads:
+            self.q.put(y.stop_iter)
+
+        for t in self.threads:
+            try:
+                t.join()
+            except:
+                pass
+            
+    def start(self):
+        for t in self.threads:
+            t.start()
+
+    def join(self):
+        kill_all_running()
+        self.wait_all_threads()
+
+    def finish(self):
+        self.join()
+
+    def process_results(self, arg):
+        if 'new_task' in arg:
+            self.schedule_task(arg['new_task'])
+        
+        if arg.get('status', '') == 'build complete':
+            self.finish()
 
 
 def run_parallel_build(lst, shell_vars, targets, thrs, bypass_streams):
-    t_begin = y.time.time()
-    verbose = y.verbose
-
-    for i, l in enumerate(lst):
-        l['n'] = i
+    tasker = Tasker(lst, shell_vars, targets)
+    tpool = ThreadPool(thrs)
     
-    lst = get_only_our_targets(lst, targets)
-    left = len(lst)
+    def on_timer():
+        build_results({'key': 'Left', 'value': str(left)})
+        build_results({'key': 'All', 'value': str(len(lst))})
+        build_results({'key': 'Complete', 'value': str(len(lst) - left)})
+        build_results({'key': 'Wall Clock', 'value': str(y.time.time())})
+        build_results({'key': 'Duration', 'value': str(y.time.time() - t_begin)})
 
-    rq, wq = y.make_engine(lst, lambda x: x['deps1'][0], dep_list=lambda x: x['deps2'])
+    @y.results_callback()
+    def tasker_on_result(arg):
+        tasker.process_result(arg)
 
-    @y.cached()
-    def resolve_path(d):
-        return subst_vars(d, shell_vars)
-
-    methods = {
-        'get_el': get_el,
-        'popen': sp.Popen,
-    }
-
-    def get_method_get_el():
-        return methods['get_el']
-    
-    for i, l in enumerate(lst):
-        l['n'] = i
-
-    q = Queue.Queue()
-    w = Queue.Queue()
-
-    build_results = y.build_results_channel()
-    status_bar = y.status_bar()
-    terminal_channel = y.terminal_channel()
-    console_channel = y.write_channel('yic', 'parallel build')
-    
-    @y.run_by_timer(0.5)
-    def ff():
-        def f():
-            status_bar({'message': ' '})
-            terminal_channel({'command': 'redraw'})
-
-        w.put(f)
-
-    def kill_all_running(*args):
-        os.system('pkill -KILL -g {pgid}'.format(pgid=os.getpgid(os.getpid())))
-
-    def find_complete():
-        for x in rq():
-            yield x
-
-    def gen_working_func(ll):
-        def set_result(a):
-            raise SetResult(a)
-
-        def process():
-            l = ll['x']
-            c = l.get('cmd')
-            tg = l['deps1'][0]
-            output = l['deps1'][0]
-
-            if not c:
-                return lambda: build_results({'message': 'target {task} complete'.format(task='{g}' + tg + '{}'), 'target': tg})
-
-            if os.path.exists(resolve_path(output)):
-                return lambda: build_results({'message': 'target {task} complete'.format(task='{g}' + tg + '{}'), 'target': tg})
-
-            def iter_deps():
-                for d in l['deps2']:
-                    yield os.path.join(os.path.dirname(resolve_path(d)), 'bin')
-
-            srch_lst = list(iter_deps())
-
-            def find_tool(tool):
-                if tool[0] == '/':
-                    return tool
-
-                return y.find_tool_uncached(tool, srch_lst)
-
-            if '$YSHELL' in shell_vars:
-                shell = find_tool(shell_vars['$YSHELL'])
-
-                if not shell:
-                    raise Exception('can not find ' + shell_vars['$YSHELL'])
-            else:
-                shell = find_tool('dash') or find_tool('yash') or find_tool('sh') or find_tool('bash')
-
-            input = '\n'.join(c)
-            cmd = [shell, '-s']
-            env = dict(itertools.chain({'OUTER_SHELL': shell}.iteritems(), fix_shell_vars(shell_vars)))
-            out = []
-            retcode = None
-
-            def iter_parts():
-                if '/-x' in verbose:
-                    yield 'set -x'
-                else:
-                    yield 'set +x'
-                    
-                if '/-v' in verbose:
-                    yield 'set -v'
-                else:
-                    yield 'set +v'
-
-                yield 'set -e'
-
-                for k in sorted(env.keys(), key=lambda x: -len(x)):
-                    yield 'export ' + k + '=' + env[k]
-
-                yield 'export BIGI="' + base64.b64encode(input) + '"'
-                yield 'export PATH={runtime}:$PATH'.format(runtime=y.build_scripts_dir())
-                yield 'mainfun() {'
-                yield input
-                yield '}'
-                yield 'mainfun ' + ' '.join(itertools.chain(l['deps1'], l['deps2']))
-
-            input = '\n'.join(iter_parts()) + '\n'
-            
-            with y.defer_context() as defer:
-                args = {
-                    'stdout': sp.PIPE, 
-                    'stderr': sp.STDOUT,
-                    'stdin': sp.PIPE,
-                    'shell': False, 
-                    'env': env, 
-                    'close_fds': True, 
-                    'cwd': '/', 
-                    'bufsize': 1,
-                }
-
-                p = methods['popen'](cmd, **args)
-
-                try:
-                    res, _ = p.communicate(input=input)
-
-                    if not res.strip():
-                        res = y.build_run_sh(l)
-                        
-                    out.append(res)
-                    retcode = p.wait()
-                except sp.CalledProcessError as e:
-                    out.append(e.output)
-                    retcode = e.returncode
-                except Exception:
-                    out.append(y.format_tbx())
-                    retcode = -1
-
-            def func():
-                data = '\n'.join(o.strip() for o in out)
-
-                if data:
-                    build_results({
-                        'text': data,
-                        'target': tg,
-                        'command': input,
-                    })
-
-                if retcode and retcode != -9:
-                    build_results({
-                        'message': 'target {g}' + tg + '{} failed, with retcode ' + str(retcode),
-                        'status': 'failure',
-                        'target': tg,
-                        'retcode': retcode,
-                    })
-                    
-                    raise StopIteration()
-
-            return func
-
-        def wrapper():
-            try:
-                set_result(process())
-            except SetResult as e:
-                def func():
-                    e.func()
-
-                    return ll
-
-                w.put(func)
-
-        return wrapper
-
-    def func():
-        while True:
-            try:
-                get_method_get_el()(q)()
-            except StopIteration:
-                return
-            except Exception as e:
-                exc = sys.exc_info()
-
-                def func():
-                    raise exc[0], exc[1], exc[2]
-
-                w.put(func)
-                
-    threads = [threading.Thread(target=func) for i in range(0, thrs)]
-
-    def wait_all_threads():
-        for t in threads:
-            q.put(stop_iter)
-
-        for t in threads:
-            t.join()
-            
-    def prepare_finish():
-        for k in methods.keys():
-            methods[k] = stop_iter
-
-    def print_status():
-        if left:
-            build_results({'message': 'build not finished', 'status': 'failure'})
-            build_results({'key': 'Build', 'value': 'Failed'})
-        else:
-            build_results({'message': 'all ok', 'status': 'ok'})
-            build_results({'key': 'Build', 'value': 'Successful'})
-        
-    @y.signal_channel.read_callback()
-    def on_sig_int(arg):
-        if arg['signal'] == 'INT':
-            build_results({'message': 'SIGINT happens', 'status': 'failure'})
-        
-    for t in threads:
-        t.start()
-        
-    with y.defer_context() as reg_defer:
-        reg_defer(prepare_finish)
-        reg_defer(kill_all_running)
-        reg_defer(wait_all_threads)
-        reg_defer(print_status)
-                
-        while left:
-            status_bar({'key': 'Left', 'value': str(left)})
-            status_bar({'key': 'All', 'value': str(len(lst))})
-            status_bar({'key': 'Complete', 'value': str(len(lst) - left)})
-            status_bar({'key': 'Wall Clock', 'value': str(y.time.time())})
-            status_bar({'key': 'Duration', 'value': str(y.time.time() - t_begin)})
-        
-            for ll in find_complete():
-                q.put(gen_working_func(ll))
-
-            try:
-                ll = get_method_get_el()(w)()
-            except StopIteration:
-                break
-            
-            if ll:
-                wq(ll['i'])
-                left -= 1
+    @y.results_callback()
+    def thread_pool_on_result(arg):
+        tpool.process_results(arg)

@@ -19,6 +19,6 @@ def run_eval(args):
 
    for a in args:
       try:
-         print eval(repl.get(a, a))
+         print(eval(repl.get(a, a)))
       except:
          y.print_tbx(tb_line='can not run ' + a)

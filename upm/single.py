@@ -1,4 +1,6 @@
 def singleton(f):
+    return singleton3(f)
+    
     code = """
 def {name2}(f):
     def {name1}():
@@ -21,3 +23,15 @@ def {name2}(f):
         return __yexec__(code, module_name=f.__module__ + '.singleton')[name2](f)
     finally:
         ctx.clear()
+
+
+def singleton3(f):
+    v = []
+
+    def wrapper(*args, **kwargs):
+        if not v:
+            v.append(f(*args, **kwargs))
+
+        return v[0]
+
+    return wrapper

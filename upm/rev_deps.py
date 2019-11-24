@@ -22,11 +22,11 @@ def make_engine(data, ntn=lambda x: x['name'], dep_list=None, random=False, seed
         except:
             pass
 
-        for k, v in list(tbl.iteritems()):
+        for k, v in list(tbl.items()):
             if one in v:
                 v.remove(one)
 
-    md5 = y.hashlib.md5
+    md5 = y.struct_dump_bytes
     in_use = set()
         
     def build_tbl():
@@ -36,13 +36,14 @@ def make_engine(data, ntn=lambda x: x['name'], dep_list=None, random=False, seed
             if random:
                 seed_c = str(y.random.random())
 
-            ready = sorted(list(set(collect_ready()) - in_use), key=lambda x: md5(str(x) + seed_c).hexdigest())
+            ready = sorted(list(set(collect_ready()) - in_use), key=lambda x: md5(str(x) + seed_c))
 
             if not ready:
                 break
 
-            for one in ready:                       
-                in_use.add(one)
-                yield data[one]
+            for one in ready:
+                if one not in in_use:
+                    in_use.add(one)
+                    yield data[one]
 
     return build_tbl, remove_one

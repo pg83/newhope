@@ -228,7 +228,7 @@ class Data(object):
         for func in solver.iter_infinity():
             func.i = len(self.func_by_num)
             self.func_by_num.append(func)
-            func.deps = func.calc_deps()
+            func.deps = sorted(func.calc_deps())
             self.dd[func.base].append(func.i)
 
             if func.i > num:

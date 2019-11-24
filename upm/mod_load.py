@@ -20,6 +20,7 @@ class Mod(dict):
       self.__ycode__ = []
       self.__yexec__ = self.exec_data
       self.__last_reindex__ = 0
+      self.__ylog__ = lambda: self.y.logging.getLogger(self.__name__)
 
       try:
          self.y = loader.get_y()
@@ -44,7 +45,7 @@ class Mod(dict):
 
       code = ycompile(part, self.__file__.replace('.', '/') + '.py', 'exec', firstlineno=self.line_count())
       
-      exec code in self.__dict__
+      exec(code, self.__dict__)
 
       if self.__ytext__:
          self.__ytext__ += '\n'
@@ -146,6 +147,7 @@ class Loader(object):
 def bootstrap(mod, args, builtin, **kwargs):
    loader = Loader(builtin)
    mod1 = loader.create_module('ya.iface')
+   mod1 = loader.create_module('ya.init_log')
    mod1 = loader.create_module('ya.args_parse')
    mod2 = loader.create_module('ya.mod_load')
    mod2.__loader__.create_module('ya.stage2').run_stage2(args, **args)

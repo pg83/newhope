@@ -16,13 +16,12 @@ def select_handler(mode):
 
 
 def run_main(args):
-    func1 = select_handler(args[1])
-    func2 = lambda: func1(args[2:])
-    func3 = y.run_profile(func2, really=y.need_profile)
+    func0 = select_handler(args[1])
+    func1 = lambda: func0(args[2:])
 
     y.prompt('/p1')
 
     try:
-        func3()
+        return func1()
     finally:
         y.run_down_once()

@@ -18,7 +18,7 @@ monkey_patch()
     
 
 def my_eh(typ, val, tb):
-    print typ, val, tb
+    print(typ, val, tb)
 
 
 def my_trace(frame, event, arg):
@@ -33,13 +33,13 @@ def my_trace(frame, event, arg):
         except Exception as e:
             arg = e
             
-        print frame, event, arg, data
+        print(frame, event, arg, data)
         
     return my_trace
 
 
 def my_exept_hook(type, value, traceback):
-    print type, value, traceback
+    print(type, value, traceback)
 
 
 @y.defer_constructor

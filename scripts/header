@@ -9,7 +9,8 @@ exec 2> $BDIR/runtime/stderr.log
 echo "{r}running {w}[cname]{}" 1>&5
 
 run_sh() {
-    echo "$BIGI" | source base64_decode > "$BDIR/runtime/run.sh"
+    env > "$BDIR/runtime/run.sh"
+    echo "$BIGI" | source base64_decode >> "$BDIR/runtime/run.sh"
     export BIGI=
     source echon {y}; source last_log "$BDIR/runtime/run.sh"; echo '{}';
 }

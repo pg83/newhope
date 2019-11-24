@@ -183,5 +183,6 @@ def build_makefile(nodes, internal=False):
 
         return res
 
+    
 def decode_internal_format(data):
     return y.marshal.loads(y.zlib.decompress(data))

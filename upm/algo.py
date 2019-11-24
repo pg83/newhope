@@ -4,6 +4,9 @@ import json
 from marshal import loads, dumps
 
 
+isf = y.inspect.iscoroutinefunction
+
+
 def uniq_list_2(iter, key):
     visited = set()
 
@@ -66,3 +69,15 @@ def inc_counter():
         return c[0]
 
     return func
+
+
+def to_async(func):
+    if isf(func):
+        return func
+    
+    y.debug('wrap to async', func)
+    
+    async def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+        
+    return wrapper

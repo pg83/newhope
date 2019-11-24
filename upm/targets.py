@@ -11,7 +11,7 @@ def gen_fetch_node(url):
             'url': url,
             'pkg_full_name': y.calc_pkg_full_name(url),
             'build': [
-                'source fetch_url $(URL_BASE) $(URL) $IDIR',
+                'source fetch_url "$(URL_BASE)" "$(URL)" "$IDIR"',
             ],
             'codec': 'tr',
         },
@@ -21,7 +21,7 @@ def gen_fetch_node(url):
     return y.store_node_plain(res)
 
 
-def gen_fetch_node_3(url, name, deps, v):
+def gen_fetch_node_3(url, name, deps):
     fname = y.calc_pkg_full_name(url)
 
     res = y.fix_v2({
@@ -31,10 +31,10 @@ def gen_fetch_node_3(url, name, deps, v):
             'url': url,
             'pkg_full_name': fname,
             'build': [
-                'source fetch_url {ub} {u} $IDIR'.format(ub=fname, u=url),
+                'source fetch_url "{ub}" "{u}" "$IDIR"'.format(ub=fname, u=url),
             ],
             'prepare' : [
-                'ln $(CUR_DIR)/{fname} $BDIR/runtime/'.format(fname=fname)
+                'ln "$(CUR_DIR)/{fname}" "$BDIR/runtime/"'.format(fname=fname)
             ],
             'codec': 'tr',
         },

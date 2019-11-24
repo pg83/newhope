@@ -62,12 +62,12 @@ def print_one_node(root):
         meta = y.meta_to_build(root_node.get('meta', {}), None, target)
         data = '\n'.join([prepare, meta])
         data = data.replace('{pkgroot}', mn(target)) + '\n'
-        data = base64.b64encode(data)
+        data = base64.b64encode(data.encode('utf-8'))
 
         if naked:
-            yield 'source write_build_file "' + data + '"'
+            yield 'source write_build_file "' + data.decode('utf-8') + '"'
         else:
-            yield 'source fini "' + data + '"'
+            yield 'source fini "' + data.decode('utf-8') + '"'
 
     int_node['build'] = list(iter_part1())
 

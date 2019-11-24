@@ -1,5 +1,4 @@
 import threading
-import Queue
 import random
 import time
 import sys
@@ -8,19 +7,19 @@ import sys
 @y.singleton
 def queue():
     store = {}
-    q = Queue.Queue()
+    q = y.queue.SimpleQueue()
 
     def step():
         def iter_new():
             while True:
                 try:
                     yield q.get(True, 0.1)()
-                except Queue.Empty:
+                except y.queue.Empty:
                     break
 
                 try:
                     yield q.get_nowait()()
-                except Queue.Empty:
+                except y.queue.Empty:
                     break
 
         for x in iter_new():
@@ -30,7 +29,7 @@ def queue():
         ready = []
         deadline = time.time()
 
-        for k, v in store.iteritems():
+        for k, v in store.items():
             if v['d'] < deadline:
                 ready.append(k)
                 
@@ -73,15 +72,3 @@ def run_by_timer(t):
         return func
 
     return wrapper
-
-
-@y.defer_constructor
-def init():
-   qq = y.homeland_queue
-
-   @y.run_by_timer(0.15)
-   def func_helper():
-       def ff():
-           pass
-
-       qq.put(ff)

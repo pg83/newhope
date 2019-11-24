@@ -5,8 +5,10 @@ LOOPS = []
 @y.cached()
 def loop_by_name(name):
     if name.endswith('_LOOP'):
-        return Loop(name[:-5])
+        y.debug('construct loop %s', name)
         
+        return Loop(name[:-5])
+
     raise AttributeError()
 
 
@@ -15,6 +17,7 @@ def thread_id():
 
             
 #######################################
+
 
 def broadcast_channel(name, hid=None):
     if not hid:
@@ -29,12 +32,7 @@ def broadcast_channel(name, hid=None):
 
 @y.singleton
 def get_signal_channel():
-    return y.MAIN_LOOP.write_channel('SIGNAL', 'common')
-
-
-@y.singleton
-def get_main_channel():
-    return y.MAIN_LOOP.write_channel('MAIN', 'common')
+    return y.SIGNAL_LOOP.write_channel('SIGNAL', 'common')
 
 
 def write_channel(loop_name, name, hid):
@@ -106,17 +104,12 @@ class PSQueue(dict):
         self.queue_event(lambda: {'name': self.name, 'data': fev, 'hid': hid})
 
     def send_event_real(self, fev):
-        #y.stderr.out('zzz', self.name, fev, self.prev)
-        
         self.prev.append(fev)
         subs = self.subs
 
-        try:
-            for k in sorted(subs.keys()):
-                endpoint = subs[k]
-                endpoint['cb'](endpoint, fev)
-        except StopIteration:
-            pass
+        for k in sorted(subs.keys()):
+            endpoint = subs[k]
+            endpoint['cb'](endpoint, fev)
         
     def queue_event(self, fev):
         self.loop.send_event(lambda: self.send_event_real(fev))
@@ -136,12 +129,37 @@ class PSQueue(dict):
             cb(endpoint, msg)
                 
         return endpoint['wq']
+    
+    def real_cb(self, cb, endpoint, msg):
+        try:
+            msg = msg()
         
+            if endpoint['hid'] != msg['hid']:
+                res = msg['data']()
+
+                if debug_pubsub():
+                    y.debug('YYYY', res, endpoint)
+                    
+                try:
+                    cb(res)
+                except TypeError:
+                    cb(endpoint['wq'], res)                    
+        except AllDone as e:
+            self.loop.del_pub_sub(endpoint['name'])
+        except y.StopNow:
+            self.loop.stop()
+                    
+    def subscribe_cb(self, cb, hid):
+        f = lambda x, y: self.real_cb(cb, x, y)
+        f.__name__ = 'wrap_realcb_' + str(cb.__module__) + '_' + str(cb.__name__)
+    
+        return self.subscribe_cb_raw(f, hid)
+
 
 class Loop(dict):
     def __init__(self, name):
         self.__dict__ = self
-        self.q = y.Queue.Queue()
+        self.q = y.queue.SimpleQueue()
         self.n = name
 
         LOOPS.append(self)
@@ -152,38 +170,53 @@ class Loop(dict):
             return self.t
         except AttributeError:
             return 'no id'
-            
-    def run_loop(self, init=lambda: []):
-        self.t = thread_id()
-        self.q.put(init)
-        
-        @self.channel.read_callback()
-        def loop_cb(arg):
-            y.stderr.out(self.n, 'loop arg', arg)
-            self.q.put(lambda: arg)
 
-        try:
+    def iter_queue(self):
+        while True:
             while True:
-                res = self.q.get()()
-                y.stderr.out('XXX', self.n, res)
-        except StopIteration:
-            y.stderr.out(self.n, 'exit now')
-            
-            return
-        except:
-            y.stderr.out(y.traceback.format_exc())
-            y.os.abort()
+                try:
+                    yield self.q.get_nowait()
+                except y.queue.Empty:
+                    t = 0.01
 
+            while True:
+                try:
+                    yield self.q.get(False, t)
+
+                    break
+                except y.queue.Empty:
+                    t = min(t * 1.2 + 0.01, 0.2)
+    
+    def loop_base(self):
+        for f in self.iter_queue():
+            f()
+            
+    def run_loop(self, init=[]):
+        self.t = thread_id()
+
+        for f in init:
+            self.q.put(f)
+        
+        try:
+            try:
+                return self.loop_base()
+            except y.StopNow:
+                pass
+        finally:
+            self.pop('t')
+    
     def stop(self):
         self.q.put(y.stop_iter)
-            
+
     def send_event(self, func):
         if self.thr_id == thread_id():
-            func()
+            try:
+                func()
+            except y.StopNow:
+                self.stop()
         else:
-            y.stderr.out('put', func, self.n)
             self.q.put(func)
-            
+
     @property
     @y.cached_method
     def channel(self):
@@ -214,52 +247,9 @@ class Loop(dict):
 
     def write_channel(self, name, hid):
         return self.get_queue(name).write_channel(hid)
-
-    def subscribe_cb_raw(self, name, cb, hid):
-        return self.get_queue(name).subscribe_cb_raw(cb, hid)
-        
-    def real_cb(self, cb, endpoint, msg):
-        try:
-            msg = msg()
-        
-            if endpoint['hid'] != msg['hid']:
-                res = msg['data']()
-
-                if debug_pubsub():
-                    y.stderr.out('YYYY', res, endpoint)
-                    
-                try:
-                    cb(res)
-                except TypeError:
-                    cb(endpoint['wq'], res)                    
-        except AllDone as e:
-            self.del_pub_sub(endpoint['name'])
-        
-    def print_data(self):
-        for k, v in  self.items():
-            v = y.deep_copy(v)
-            v['prev'] = len(v['prev'])
-            y.xprint_w('k =', k, 'v =', v)
-
+                
     def subscribe_cb(self, name, cb, hid):
-        f = lambda x, y: self.real_cb(cb, x, y)
-        f.__name__ = 'wrap_realcb_' + str(cb.__module__) + '_' + str(cb.__name__)
-    
-        return self.subscribe_cb_raw(name, f, hid)
-
-    def subscribe_queue(self, name, hid):
-        lst = y.Queue.Queue()
-        
-        def cb(endpoint, msg):
-            self.real_cb(lst.put, endpoint, msg)
-
-        wq = self.subscribe_cb_raw(name, cb, hid)
-
-        def rq():
-            while True:
-                yield lst.get()
-
-        return rq, wq
+        return self.get_queue(name).subscribe_cb(cb, hid)
 
     def read_callback(self, name, hid=None):
         def functor(func):
@@ -269,11 +259,16 @@ class Loop(dict):
     
         return functor
     
+    def print_data(self):
+        for k, v in  self.items():
+            v = y.deep_copy(v)
+            v['prev'] = len(v['prev'])
+            y.xprint_w('k =', k, 'v =', v)
+
 
 @y.defer_constructor
 def init_pub_sub_shutdown():
     def registry():
-        @y.abort_on_error
         @y.signal_channel.read_callback()
         def stop_all_loops(arg):
             if arg['signal'] == 'INT':
@@ -287,4 +282,4 @@ def init_pub_sub_shutdown():
             for c in LOOPS:
                 c.stop()
 
-    y.main_channel({'func': registry})
+    registry()

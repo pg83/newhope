@@ -52,7 +52,7 @@ def to_v2(data, info):
     def iter_subst():
         for i, v in enumerate(node.get('extra', [])):
             if v['kind'] == 'file':
-                cmd = 'echo "' + base64.b64encode(v['data']) + '" | (base64 -D -i - -o - || base64 -d) > ' + v['path']
+                cmd = 'echo "' + base64.b64encode(v['data'].encode('utf-8')).decode('utf-8') + '" | (base64 -D -i - -o - || base64 -d) > ' + v['path']
                 key = '$(APPLY_EXTRA_PLAN_' + str(i) + ')'
 
                 yield (key, cmd)

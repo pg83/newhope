@@ -1,6 +1,5 @@
 @y.defer_constructor
 def init_shutdown():
-    @y.abort_on_error
     def register_sigint_handler():
         @y.signal_channel.read_callback()
         def on_sigint_shutdown(arg):
@@ -13,9 +12,6 @@ def init_shutdown():
 
         def exit_handler(*args):
             y.os._exit(6)
-
-        y.signal.signal(y.signal.SIGALRM, exit_handler)
-        y.signal.alarm(2)
 
         t = y.time.time()
 
@@ -52,8 +48,8 @@ def init_shutdown():
         
         #y.signal_channel({'signal': 'DOWN', 'on_shutdown': lambda: y.print_all_stacks()})
 
-    y.main_channel({'func': register_sigint_handler})
-    y.main_channel({'func': register_shutdown})
+    register_sigint_handler()
+    register_shutdown()
 
 
 @y.defer_constructor
@@ -64,10 +60,10 @@ def init_signals():
         def sig_handler(*args):
             bcy({'args': args, 'signal': 'INT'})
 
-        y.signal.signal(y.signal.SIGINT, sig_handler)
+        y.sys.modules['__main__'].real_handler = sig_handler
 
-    y.main_channel({'func': init_sigint})
-
+    init_sigint()
+        
     @y.signal_channel.read_callback()
     def on_sigint_caret(arg):
         if arg['signal'] == 'INT':

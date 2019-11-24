@@ -1,5 +1,6 @@
 import itertools
 
+
 def new_cmd():
     return {
         'cmd': [],
@@ -192,7 +193,7 @@ def run_seq_build(lst, shell_vars, shell_out, targets):
             input = input.replace('$(SHELL)', '$YSHELL')
 
             p = do_compile([shell, '-s'], stdout=sp.PIPE, stderr=sp.STDOUT, stdin=sp.PIPE, shell=False, env=env)
-            res, _ = p.communicate(input=input)
+            res, _ = p.communicate(input=input.encode('utf-8'))
             fail = p.wait()
 
             if not res.strip():
@@ -212,7 +213,7 @@ def run_seq_build(lst, shell_vars, shell_out, targets):
                     'status': 'faulure'
                 })
                 
-                raise StopIteration()
+                raise y.StopNow()
             else:
                 build_results({
                     'message': 'target {g}' + my_name + '{} complete',
@@ -232,5 +233,5 @@ def run_seq_build(lst, shell_vars, shell_out, targets):
             run_cmd(t)
             
         build_results({'message': 'all ok', 'status': 'ok'})
-    except StopIteration:
+    except y.StopNow:
         build_results({'message': 'build not finished', 'status': 'failure'})

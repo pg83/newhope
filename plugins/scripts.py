@@ -54,7 +54,7 @@ def scripts_data(no_last=False):
 
 def unpack_sh(no_last=False):
     for x in scripts_data(no_last=no_last):
-        yield 'echo "{data}" | (base64 -D -i - -o - || base64 -d) > {fname}'.format(data=base64.b64encode(x['data']), fname=y.os.path.basename(x['path']))
+        yield 'echo "{data}" | (base64 -D -i - -o - || base64 -d) > {fname}'.format(data=base64.b64encode(x['data'].encode('utf-8')).decode('utf-8'), fname=y.os.path.basename(x['path']))
 
 
 @y.singleton

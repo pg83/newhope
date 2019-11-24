@@ -163,7 +163,7 @@ def iter_system_impl():
     for c in iter_c():
         data = c.pop('data')
 
-        for l in data.strip().split('\n'):
+        for l in data.decode('utf-8').strip().split('\n'):
             l = l.strip()
 
             if not l:

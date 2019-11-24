@@ -66,4 +66,4 @@ def cli_source(arg, verbose):
                   yield url
                
    for url in iter_urls():
-      print 'will fetch', url, fetch_http(args.path, url)
+      print('will fetch', url, fetch_http(args.path, url))

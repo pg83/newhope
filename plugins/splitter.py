@@ -21,7 +21,7 @@ def repacks():
     }
 
     def iter():
-        for k, v in by_kind.iteritems():
+        for k, v in by_kind.items():
             yield (k, {'folders': v, 'code': '\n'.join(gen_code(k, v))})
 
     return dict(iter())

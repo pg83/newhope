@@ -1,4 +1,4 @@
-#!/Users/pg/8/bin/python
+#!/usr/bin/env python3
 
 import sys
 
@@ -6,38 +6,33 @@ sys.dont_write_bytecode = True
 
 import os
 import signal
-import Queue
-import traceback
 
 
 __file__ = os.path.abspath(__file__)
+real_handler = lambda *args: None
+
+
+def sig_handler(*args):
+    real_handler(*args)
+
+    
+signal.signal(signal.SIGINT, sig_handler)
+signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 
 
 def real_main():
-   signal.signal(signal.SIGPIPE, signal.SIG_IGN)
-   file_data = None
-   data = None
-   #REPLACEME
+    file_data = None
+    data = None
+    #REPLACEME
 
-   if not data:
-      with open(os.path.dirname(__file__) + '/upm/stagea.py') as f:
-         data = f.read()
+    if not data:
+        with open(os.path.dirname(__file__) + '/upm/stagea.py') as f:
+            data = f.read()
 
-   qq = Queue.Queue()      
-
-   args = {'qq': qq, 'where': __file__, 'data': file_data}
-   ctx = {'args': args}
-   exec compile(data +'\nmain(args, **args)\n', '__main__', 'exec') in ctx
-   ctx.clear()
-
-   while True:
-      try:
-         qq.get()()
-      except SystemExit:
-         raise
-      except Exception as e:
-         traceback.print_exc(e)
-         os._exit(4)
+    args = {'where': __file__, 'data': file_data}
+    ctx = {'args': args}
+    exec(compile(data +'\nmain(args, **args)\n', '__main__', 'exec'), ctx)
+    ctx.clear()
 
 
 if __name__ == '__main__':

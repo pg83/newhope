@@ -1,0 +1,14 @@
+file_size() {
+    file="$1"
+    (
+        du --apparent-size --block-size=1 "$file" 2>/dev/null ||
+        gdu --apparent-size --block-size=1 "$file" 2>/dev/null ||
+        find "$file" -printf "%s" 2>/dev/null ||
+        gfind "$file" -printf "%s" 2>/dev/null ||
+        stat --printf="%s" "$file" 2>/dev/null ||
+        stat -f%z "$file" 2>/dev/null ||
+        wc -c <"$file" 2>/dev/null
+    ) | awk '{print $1}'
+}
+
+file_size "$1"
