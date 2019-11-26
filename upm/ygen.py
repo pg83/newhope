@@ -14,9 +14,35 @@ def subst_some_values(v):
     return v
 
 
-def ygenerator(tier=None, include=[], exclude=[], version=1):
-    func_channel = y.GEN_DATA_LOOP.write_channel('orig functions', 'yg')
+def exec_plugin_code(iface):
+    yield y.EOP(y.ACCEPT('mf:plugin'), y.PROVIDES('mf:original'))
 
+    for data in iface.iter_data():
+        code = data.data
+        
+        if not code:
+            yield y.FIN()
+
+            return
+
+        name = code['name']
+        name = name.replace('/', '.')
+
+        if name.endswith('.py'):
+            name = name[:-3]
+
+        mod = __yexec__(code['data'], module_name=name)
+
+        try:
+            for x in mod.event:
+                yield x
+        except AttributeError:
+            pass
+        
+    yield y.EOP()
+
+
+def ygenerator(tier=None, include=[], exclude=[], version=1, where=None):
     def functor(func):
         assert tier is not None
 
@@ -31,9 +57,16 @@ def ygenerator(tier=None, include=[], exclude=[], version=1):
             'include': include,
             'exclude': exclude,
             'version': 1,
+            'hash': y.burn(new_f()),
         }
+        
+        ev = y.ELEM({'func': descr})
 
-        func_channel({'func': descr})
+        if where is not None:
+            where.append(ev)
+        else:
+            fg = func.__globals__
+            fg['event'] = fg.get('event', []) + [ev]
 
         return func
 

@@ -72,7 +72,10 @@ class ColorStdIO(object):
                 pass
                 
         with stdio_lock:
-            self.s.write(t)
+            try:
+                self.s.write(t)
+            except TypeError:
+                self.s.buffer.write(t)
                 
     def flush(self):
         with stdio_lock:
@@ -233,6 +236,7 @@ def load_builtin_modules(data, builtin):
         'ya.single',
         'ya.err_handle',      
         'ya.caches',
+        'ya.pub_sub2',
         'ya.init_log',
         'ya.defer',
         'ya.pub_sub',
@@ -263,7 +267,10 @@ def run_stage4_1(data):
 
     data['signal_channel'] = y.get_signal_channel()
 
+    y.debug('will run defer constructors')
     y.run_defer_constructors()
+    y.debug('done')
+    
     return y.run_main(data.pop('args'))
 
 

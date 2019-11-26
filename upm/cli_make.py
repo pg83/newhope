@@ -1,7 +1,7 @@
 @y.main_entry_point
 def cli_make(arg):
     p = y.argparse.ArgumentParser()
-
+    
     p.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
     p.add_argument('-f', '--path', default='gen', action='store', help='path to Makefile, "-" - read from stdin, "gen" - generate on the fly')
     p.add_argument('-r', '--root', default=None, action='store', help='main root for build files')
@@ -65,7 +65,7 @@ def cli_make(arg):
             data = f.read()
     else:
         data = y.sys.stdin.read()
-
+        
     if int(args.threads):
         return y.run_make_0(data, parsed, shell_vars, args)
 

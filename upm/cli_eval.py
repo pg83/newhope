@@ -14,8 +14,7 @@ def run_eval(args):
 
       return
 
-   # TODO
-   y.send_all_plugins_to_queue()
+   y.pubsub.run(init=[mf_function_holder])
 
    for a in args:
       try:

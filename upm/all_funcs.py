@@ -1,35 +1,52 @@
-def gd_callback(x):
-    return y.GEN_DATA_LOOP.read_callback(x)
-
-
 @y.defer_constructor
 @y.singleton
 def my_funcs():
     all = []
     ids = {}
-
+    v = []
+    
     @y.lookup
     def lookup(name):
         return ids[name]['code']
+
+    return all, ids, v
+
+
+def my_funcs_cb(iface):
+    all, ids, v = my_funcs()
     
-    @y.gd_callback('new functions')
-    def cb(data):
+    yield y.EOP(y.ACCEPT('mf:new functions', 'mf:splitted'))
+
+    for row in iface.iter_data():
+        data = row.data
+
+        if not data:
+            v.append(1)
+            
+            if len(v) == 2:
+                yield y.FIN()
+                
+            yield y.EOP()
+
+            return
+            
         data = data['func']
 
         rec = {
             'data': data,
             'n': len(all),
         }
-
+            
         rec['text_id'] = '_'.join((data['gen'], data['base'], str(rec['n'])))
+    
         ids[rec['text_id']] = rec
         all.append(rec)
 
-    return all
+    yield y.EOP()
 
-
+        
 def gen_all_funcs():
-    return [d['data']['code'] for d in my_funcs()]
+    return [d['data']['code'] for d in my_funcs()[0]]
 
 
 def gen_package_name(x):

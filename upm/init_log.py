@@ -21,4 +21,4 @@ def log_lookup(name):
 
     raise AttributeError()
 
-y.logging.basicConfig(level='DEBUG')
+#y.logging.basicConfig(level='DEBUG')

@@ -1,3 +1,5 @@
+y.pubsub
+
 @y.contextlib.contextmanager
 def defer_context(verbose=False):
     defer = []
@@ -23,11 +25,11 @@ def defer_wrapper(func):
 
 @y.singleton
 def defer_channel():
-    return y.DEFER_LOOP.write_channel('DEFERC', 'common')
+    return []
     
 
 def defer_constructor(func):
-    defer_channel()({'func': func})
+    defer_channel().append({'func': func})
     
     return func
 
@@ -42,11 +44,9 @@ def run_defer_constructors():
     def sentinel():
         return 'shit'
 
-    defer_callback = defer_channel().read_callback()
+    while True:
+        for arg in defer_channel():
+            res = str(arg['func']())
 
-    @defer_callback
-    def on_defer_constructor(arg):
-        if str(arg['func']()) == 'shit':
-            raise y.StopNow()
-
-    y.DEFER_LOOP.run_loop()
+            if res == 'shit':
+                return

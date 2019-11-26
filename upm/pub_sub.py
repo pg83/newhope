@@ -1,3 +1,5 @@
+import queue
+
 LOOPS = []
 
 
@@ -32,7 +34,7 @@ def broadcast_channel(name, hid=None):
 
 @y.singleton
 def get_signal_channel():
-    return y.SIGNAL_LOOP.write_channel('SIGNAL', 'common')
+    return loop_by_name('SIGNAL_LOOP').write_channel('SIGNAL', 'common')
 
 
 def write_channel(loop_name, name, hid):
@@ -98,21 +100,20 @@ class PSQueue(dict):
         return WriteChannel(self, hid)
 
     def send_event(self, ev, hid):
-        self.send_event_base(lambda: ev, hid)
+        self.queue_event({'name': self.name, 'data': ev, 'hid': hid})
 
-    def send_event_base(self, fev, hid):
-        self.queue_event(lambda: {'name': self.name, 'data': fev, 'hid': hid})
-
-    def send_event_real(self, fev):
-        self.prev.append(fev)
+    def send_event_real(self, ev):
+        self.prev.append(ev)
         subs = self.subs
 
         for k in sorted(subs.keys()):
             endpoint = subs[k]
-            endpoint['cb'](endpoint, fev)
-        
-    def queue_event(self, fev):
-        self.loop.send_event(lambda: self.send_event_real(fev))
+            endpoint['cb'](endpoint, ev)
+
+        self.loop.on_event(ev)
+            
+    def queue_event(self, ev):
+        self.loop.send_event(lambda: self.send_event_real(ev))
         
     def subscribe_cb_raw(self, cb, hid):
         key = ep_key(cb, hid, self.name)
@@ -132,19 +133,14 @@ class PSQueue(dict):
     
     def real_cb(self, cb, endpoint, msg):
         try:
-            msg = msg()
-        
             if endpoint['hid'] != msg['hid']:
-                res = msg['data']()
-
-                if debug_pubsub():
-                    y.debug('YYYY', res, endpoint)
+                res = msg['data']
                     
                 try:
                     cb(res)
                 except TypeError:
                     cb(endpoint['wq'], res)                    
-        except AllDone as e:
+        except AllDone:
             self.loop.del_pub_sub(endpoint['name'])
         except y.StopNow:
             self.loop.stop()
@@ -159,10 +155,12 @@ class PSQueue(dict):
 class Loop(dict):
     def __init__(self, name):
         self.__dict__ = self
-        self.q = y.queue.SimpleQueue()
+        self.q = queue.SimpleQueue()
         self.n = name
+        self.a = []
 
         LOOPS.append(self)
+        self.read_all_events_cb(y.pubsub.on_ext_event)
             
     @property
     def thr_id(self):
@@ -258,7 +256,20 @@ class Loop(dict):
             return func
     
         return functor
-    
+
+    def read_all_events_cb(self, func):
+        self.a.append(func)
+
+    def on_event(self, ev):
+        if self.a:
+            try:
+                xev = {'tags': [self.n.upper(), ev['name'].upper(), ev['hid'].upper()], 'data': ev['data']}
+
+                for f in self.a:
+                    f(xev)
+            except:
+                y.os.abort()
+        
     def print_data(self):
         for k, v in  self.items():
             v = y.deep_copy(v)

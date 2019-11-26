@@ -68,18 +68,30 @@ class Splitter(object):
         return SplitKind(self, kind).d
 
     
-@y.GEN_DATA_LOOP.read_callback('new functions')
-def splitter(wq, arg):
-    arg = arg['func']
-    repack = arg.get('repacks', repacks())
+@y.pubsub.wrap    
+def run_splitter(iface):
+    yield y.EOP(y.ACCEPT('mf:new functions'), y.PROVIDES('mf:splitted'))
 
-    if not repack:
-        return
+    for row in iface.iter_data():
+        arg = row.data
+
+        if not arg:
+            yield y.FIN()
+
+            return 
+        
+        arg = arg['func']
+        repack = arg.get('repacks', repacks())
+        
+        if not repack:
+            continue
     
-    s = Splitter(arg, repack)
+        s = Splitter(arg, repack)
     
-    for k in repack:
-        wq({'func': s.gen(k)})
+        for k in repack:
+            yield y.ELEM({'func': s.gen(k)})
+
+    yield y.EOP()
 
         
 def pkg_splitter(arg, kind):

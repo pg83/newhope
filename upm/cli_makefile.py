@@ -34,6 +34,4 @@ def cli_makefile(arg):
 
          f.flush()
 
-         raise y.StopNow()
-
-      y.GEN_DATA_LOOP.run_loop(init=[main_func])
+      main_func()

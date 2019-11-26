@@ -1,21 +1,21 @@
 def main_makefile(internal=False):
-   def iter():
-      host = {'os': 'darwin', 'arch': 'x86_64'}
-      cc = {'host': host, 'target': host}
+    def iter():
+        host = {'os': 'darwin', 'arch': 'x86_64'}
+        cc = {'host': host, 'target': host}
 
-      yield cc
+        yield cc
       
-   data = ''
-   prev = set()
+    data = ''
+    prev = set()
 
-   while True:
-      portion = set(y.gen_packs(iter))
-      
-      len_b = len(prev)
-      prev = prev | portion
-      len_a = len(prev)
+    while True:
+        portion = set(y.gen_packs(iter))
+        
+        len_b = len(prev)
+        prev = prev | portion
+        len_a = len(prev)
 
-      if len_b == len_a and prev:
-         return data
+        if len_b == len_a and prev:
+            return data
 
-      data = y.build_makefile(sorted(prev), internal=internal)
+        data = y.build_makefile(sorted(prev), internal=internal)

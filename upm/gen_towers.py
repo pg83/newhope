@@ -1,15 +1,3 @@
-@y.defer_constructor
-def init():
-    @y.gd_callback('build env')
-    def solver(arg):
-        arg['back_channel']({'func': lambda info: {}, 'descr': ['system', 'fast']})
-
-
-@y.singleton
-def func_channel():
-    return y.GEN_DATA_LOOP.write_channel('orig functions', 'ygg')
-
-
 ic = y.inc_counter()
 
 
@@ -87,7 +75,7 @@ class Func(object):
     @y.cached_method
     def run_func(self, info):
         data = y.deep_copy(self.c(info))
-        data['deps'] = list(y.uniq_list_0(data['deps'] + self.data.calc(self.deps, info)))
+        data['deps'] = list(sorted(frozenset(data['deps'] + self.data.calc(self.deps, info))))
 
         return y.fix_pkg_name(data, self.z)
 
@@ -199,9 +187,8 @@ class Data(object):
 
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
-        self.wc = y.GEN_DATA_LOOP.write_channel('new functions', 'tow')
         self.inc_count = ic()
-        self.data = [self.create_object(x['func']) for x in data]
+        self.data = [self.create_object(x['func']) for x in sorted(data, key=lambda x: x['func']['base'])]
         self.by_name = dict((x.base, x) for x in self.data)
 
     def create_object(self, x):
@@ -236,8 +223,8 @@ class Data(object):
 
     def register(self):
         for v in self.func_by_num:
-            self.wc({'func': v.z})
-
+            yield y.ELEM({'func': v.z})
+        
     def out(self):
         for x in self.func_by_num:
             x.out_deps()
@@ -270,30 +257,41 @@ class Data(object):
         return [self.func_by_num[d].f(arg) for d in deps]
 
 
-def make_proper_permutation(data):
-    dt = Data(data)
+def make_proper_permutation(iface):
+    yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
+
+    data = []
+    init_0(data)
+    
+    for row in iface.iter_data():
+        if not row.data:
+            break
+        
+        data.append(row)
+        yield y.EOP()
+
+    dt = Data([x.data for x in data])
     dt.prepare_funcs(150)
-    dt.register()
-    #dt.out()
+    
+    for x in dt.register():
+        yield x
 
+    yield y.FIN()
 
-@y.ygenerator(tier=0)
-def box0():
-    return {
-        'meta': {
-            'kind': ['special', 'tool'],
-        },
-    }
-
-
-@y.ygenerator(tier=0)
-def compression0():
-    return {
-        'meta': {
-            'kind': ['special', 'tool'],
-        },
-    }
-
-
-def make_perm():
-    make_proper_permutation(y.original_funcs())
+    
+def init_0(where):
+    @y.ygenerator(tier=0, where=where)
+    def box0():
+        return {
+            'meta': {
+                'kind': ['special', 'tool'],
+            },
+        }
+      
+    @y.ygenerator(tier=0, where=where)
+    def compression0():
+        return {
+            'meta': {
+                'kind': ['special', 'tool'],
+            },
+        }

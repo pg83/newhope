@@ -135,7 +135,7 @@ def build_makefile(nodes, internal=False):
         try:
             yield y.build_scripts_run()
         except AttributeError:
-            y.send_all_plugins_to_queue()
+            y.pubsub.run(init=[y.mf_function_holder])
 
             yield y.build_scripts_run()
 

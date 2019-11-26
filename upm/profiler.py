@@ -1,4 +1,4 @@
-def run_profile(func, really=True):
+def run_profile(func, really=False):
     if not really:
         return func
 
