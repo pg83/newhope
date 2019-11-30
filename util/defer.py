@@ -37,7 +37,7 @@ def defer_constructor(func):
 def run_defer_constructors():
     @defer_constructor
     def init_log():
-        if '/debug' in y.verbose:
+        if '/debug/loglevel' in y.verbose:
             y.logging.basicConfig(level='DEBUG')
         
     @defer_constructor

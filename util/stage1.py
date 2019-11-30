@@ -5,12 +5,13 @@ def create_main(args, data):
     sys.modules['ya'] = -1
     sys.modules['gn'] = -1
     sys.modules['pl'] = -1
+    sys.modules['ut'] = -1
 
     def re_exec(args, **kwargs):
         code = """
 def new_main(args, data, **kwargs):
     builtin = dict((x['name'].replace('/', '.')[:-3], x) for x in data)
-    mod = Loader(builtin).create_module('ya.mod_load')
+    mod = Loader(builtin).create_module('ut.mod_load')
     args['builtin'] = builtin
     mod.bootstrap(mod, args, **args)
 

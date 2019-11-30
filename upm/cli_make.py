@@ -1,5 +1,5 @@
 @y.main_entry_point
-def cli_make(arg):
+async def cli_make(arg):
     p = y.argparse.ArgumentParser()
     
     p.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
@@ -54,19 +54,19 @@ def cli_make(arg):
 
     shell_vars = dict(iter_replaces())
     parsed = False
-   
+    
     if args.path == 'gen':
-        data = y.decode_internal_format(y.main_makefile(internal=True))
+        data = await y.decode_internal_format(await y.main_makefile(internal=True))
         parsed = True
     elif args.path == '-':
-        data = y.sys.stdin.read()
+        data = await y.offload(y.sys.stdin.read)
     elif args.path:
         with open(args.path, 'r') as f:
-            data = f.read()
+            data = await y.offload(f.read)
     else:
-        data = y.sys.stdin.read()
+        data = await y.offload(y.sys.stdin.read)
         
     if int(args.threads):
-        return y.run_make_0(data, parsed, shell_vars, args)
+        return await y.run_make_0(data, parsed, shell_vars, args)
 
     return 0

@@ -39,7 +39,6 @@ def queue():
     def raise_exit():
         raise SystemExit(0)
     
-    @y.signal_channel.read_callback()
     def done_timers(arg):
         if arg['signal'] == 'DOWN' and 'when' in arg:
             q.put(raise_exit)

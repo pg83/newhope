@@ -1,21 +1,25 @@
-@y.defer_constructor
 @y.singleton
 def my_funcs():
-    all = []
-    ids = {}
-    v = []
+    data = {
+        'all': [],
+        'ids':  {},
+        'v':  [],
+    }
     
     @y.lookup
     def lookup(name):
-        return ids[name]['code']
+        return data['ids'][name]['code']
 
-    return all, ids, v
+    return data
 
 
 def my_funcs_cb(iface):
-    all, ids, v = my_funcs()
-    
     yield y.EOP(y.ACCEPT('mf:new functions', 'mf:splitted'))
+
+    data = my_funcs()
+    all = data['all']
+    ids = data['ids']
+    v = data['v']
 
     for row in iface.iter_data():
         data = row.data
@@ -46,7 +50,7 @@ def my_funcs_cb(iface):
 
         
 def gen_all_funcs():
-    return [d['data']['code'] for d in my_funcs()[0]]
+    return [d['data']['code'] for d in my_funcs()['all']]
 
 
 def gen_package_name(x):

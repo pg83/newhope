@@ -32,11 +32,6 @@ def broadcast_channel(name, hid=None):
     return func
 
 
-@y.singleton
-def get_signal_channel():
-    return loop_by_name('SIGNAL_LOOP').write_channel('SIGNAL', 'common')
-
-
 def write_channel(loop_name, name, hid):
     return loop_by_name(loop_name).write_channel(name, hid)
     
@@ -139,7 +134,10 @@ class PSQueue(dict):
                 try:
                     cb(res)
                 except TypeError:
-                    cb(endpoint['wq'], res)                    
+                    try:
+                        cb(endpoint['wq'], res)
+                    except TypeError:
+                        cb(res)
         except AllDone:
             self.loop.del_pub_sub(endpoint['name'])
         except y.StopNow:
@@ -201,6 +199,7 @@ class Loop(dict):
             except y.StopNow:
                 pass
         finally:
+            y.os.abort()
             self.pop('t')
     
     def stop(self):
@@ -267,7 +266,7 @@ class Loop(dict):
 
                 for f in self.a:
                     f(xev)
-            except:
+            except Exception:
                 y.os.abort()
         
     def print_data(self):
@@ -280,7 +279,6 @@ class Loop(dict):
 @y.defer_constructor
 def init_pub_sub_shutdown():
     def registry():
-        @y.signal_channel.read_callback()
         def stop_all_loops(arg):
             if arg['signal'] == 'INT':
                 do_stop()

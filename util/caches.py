@@ -29,7 +29,7 @@ def {holder}({vars}):
         if '/cache_stats' in y.verbose:
             y.xprint_w('{{y}}' + f.__module__ + '.' + f.__name__, '{{w}}->', '{{b}}' + str(stats))
 
-    y.atexit.register(at_exit)
+    y.run_at_exit(at_exit)
 
     def {name}(*args, **kwargs):
         k = sdb([key(*args, **kwargs), uniq])

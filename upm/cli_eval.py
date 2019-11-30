@@ -1,5 +1,5 @@
 @y.main_entry_point
-def cli_eval(args):
+async def cli_eval(args):
    run_eval(args)
 
 

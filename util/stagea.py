@@ -17,6 +17,23 @@ def preprocess_data(data):
     return data
 
 
+def fix_print(data):
+    def iter_lines():
+        for l in data.split('\n'):
+            ll = l.strip()
+
+            if '>>' in ll:
+                yield l
+            elif ll.startswith('print '):
+                l = l.replace('print ', 'print(') + ')'
+
+                yield l
+            else:
+                yield l
+
+    return '\n'.join(iter_lines())
+
+
 def bad_name(x):
     if '~' in x:
         return True
@@ -35,6 +52,7 @@ def load_folders(folders, exts, where):
         'upm': 'ya',
         'plugins': 'pl',
         'scripts': 'sc',
+        'util': 'ut',
     }
 
     yield {'name': 'cli', 'path': 'cli', 'data': open(where).read()}
@@ -59,21 +77,24 @@ def load_folders(folders, exts, where):
             with open(path) as fff:
                 data = preprocess_data(fff.read())
 
+                if parts[-1] == 'py':
+                    data = fix_print(data)
+
             yield {'name': name, 'path': path, 'data': data}
 
 
 def thr_func(args, data, where, **kwrgs):
     try:
-        data = data or list(load_folders(['plugins', 'scripts', 'upm'], ['py', ''], where))
+        data = data or list(load_folders(['plugins', 'scripts', 'upm', 'util'], ['py', ''], where))
         by_name = dict((x['name'], x) for x in data)
-        stage0 = by_name['ya/stage0.py']
+        stage0 = by_name['ut/stage0.py']
       
         args.update({'data': data, 'by_name': by_name})
    
         ctx = {'args': args}
-        exec(compile((stage0['data'] + '\nrun_stage0(args, **args)\n'), 'ya/stage0.py', 'exec'), ctx)
+        exec(compile((stage0['data'] + '\nrun_stage0(args, **args)\n'), 'ut/stage0.py', 'exec'), ctx)
         ctx.clear()
-    except:
+    except Exception:
         try:
             sys.stderr.write('can not initialize runtime\n')
             traceback.print_exc()

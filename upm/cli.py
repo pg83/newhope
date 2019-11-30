@@ -15,14 +15,18 @@ def select_handler(mode):
     return eval('y.' + name)
 
 
-def run_main(args):
+async def run_main(args):
     func0 = select_handler(args[1])
-    func1 = lambda: func0(args[2:])
-    func2 = y.run_profile(func1, really=('/profile' in y.verbose))
 
+    async def func1():
+        return await func0(args[2:])
+    
+    async def func2():
+        return await func1()
+    
     y.prompt('/p1')
 
     try:
-        return func2()
+        return await func2()
     finally:
         y.run_down_once()

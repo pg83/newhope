@@ -19,7 +19,20 @@ def self_test2():
       y.xxprint('{color}color{}'.format(color=color))
 
 
+def self_test4():
+   with y.abort_on_error():
+      async def ff(ctl):
+         async def func(x):
+            return x * x
+      
+         print await ctl.loop.map(func, range(0, 1000)).wait()
+
+      y.print_all_threads()
+      y.spawn(ff).wait_sync()
+
+   
 def iter_all_tests():
+    yield self_test4
     yield self_test1
     yield self_test2
     yield self_test3
@@ -27,16 +40,12 @@ def iter_all_tests():
 
 @y.main_entry_point
 def cli_selftest(args, verbose):
-   for f in iter_all_tests():
-      y.xprint_white('-------------------------------------------------------------------')
-
-      try:
+   print 1
+   
+   with y.abort_on_error():
+      for f in iter_all_tests():
          f()
-      except Exception as e:
-         y.xxprint(e, init='{r}')
-         
-      y.xprint_white('-------------------------------------------------------------------')
-
+            
 
 def self_test3():
    @y.run_by_timer(0.3)

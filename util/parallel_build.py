@@ -1,44 +1,6 @@
 import os
-import sys
-import threading
 import subprocess as sp
-import itertools
-import base64
-import time
 
-
-def hash(x):
-    return y.burn([sorted(x['deps1']), sorted(x['deps2']), x['cmd']])
-
-
-def get_only_our_targets(lst, targets):
-    by_link = {}
-
-    for l in lst:
-        for d in l['deps1']:
-            by_link[d] = l['n']
-
-    v = set()
-
-    def visit(n):
-        if n in v:
-            return
-
-        yield n
-
-        v.add(n)
-
-        for l in [by_link[d] for d in lst[n]['deps2']]:
-            for x in visit(l):
-                yield x
-
-    def iter():
-        for t in targets:
-            for x in visit(by_link[t]):
-                yield x
-                
-    return [lst[x] for x in sorted(frozenset(iter()))]
-    
 
 def get_el(qu):
     while True:
@@ -46,36 +8,6 @@ def get_el(qu):
             return qu.get(True, 0.1)
         except y.queue.Empty:
             pass
-
-
-def remove_d(k):
-    if k[0] == '$':
-        return k[1:]
-                
-    return k
-
-
-def super_decode(s):
-    try:
-        return s.decode('utf-8')
-    except:
-        return s
-            
-
-def subst_vars(d, shell_vars):
-    while '$' in d:
-        for k, v in shell_vars.items():
-            d = d.replace(k, v)
-            
-    return d
-
-
-def fix_shell_vars(shell_vars):
-    return [(remove_d(k), v) for k, v in shell_vars.items()]
-
-
-def kill_all_running(*args):
-    os.system('pkill -KILL -g {pgid}'.format(pgid=os.getpgid(os.getpid())))
 
 
 class Tasker(object):
@@ -180,12 +112,12 @@ class Task(object):
             for k in sorted(self.env.keys(), key=lambda x: -len(x)):
                 yield 'export ' + k + '=' + self.env[k]
 
-            yield 'export BIGI="' + base64.b64encode(input.encode('utf-8')).decode('utf-8') + '"'
+            yield 'export BIGI="' + y.base64.b64encode(input.encode('utf-8')).decode('utf-8') + '"'
             yield 'export PATH={runtime}:$PATH'.format(runtime=y.build_scripts_dir())
             yield 'mainfun() {'
             yield input
             yield '}'
-            yield 'mainfun ' + ' '.join(itertools.chain(self.l['deps1'], self.l['deps2']))
+            yield 'mainfun ' + ' '.join(y.itertools.chain(self.l['deps1'], self.l['deps2']))
 
         return '\n'.join(iter_parts()) + '\n'
 
@@ -233,11 +165,11 @@ class Task(object):
 
             try:
                 assert os.path.isfile(x)
-            except:
+            except Exception:
                 raise Exception(x + ' not exists')
             
     def prepare_env(self):
-        return dict(itertools.chain({'OUTER_SHELL': self.shell}.items(), fix_shell_vars(self.shell_vars)))
+        return dict(y.itertools.chain({'OUTER_SHELL': self.shell}.items(), fix_shell_vars(self.shell_vars)))
     
     def process_0(self):
         c = self.l.get('cmd')
@@ -286,7 +218,7 @@ class Task(object):
 class ThreadPool(object):
     def __init__(self, thrs):                
         self.q = y.queue.SimpleQueue()
-        self.threads = [threading.Thread(target=self.func) for i in range(0, thrs)]
+        self.threads = [y.threading.Thread(target=self.func) for i in range(0, thrs)]
         self.start()
 
     def schedule_task(self, task):
@@ -309,7 +241,7 @@ class ThreadPool(object):
         for t in self.threads:
             try:
                 t.join()
-            except:
+            except Exception:
                 pass
             
     def start(self):
@@ -331,7 +263,7 @@ class ThreadPool(object):
             self.finish()
 
 
-def run_parallel_build(lst, shell_vars, targets, thrs, bypass_streams):
+async def run_parallel_build(ctl, lst, shell_vars, targets, thrs, bypass_streams):
     tasker = Tasker(lst, shell_vars, targets)
     tpool = ThreadPool(thrs)
     

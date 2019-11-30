@@ -1,8 +1,23 @@
 #!/Users/pg/12/python/bin/python3
 
 import sys
+import threading
 
 sys.dont_write_bytecode = True
+
+
+def real_trace(*args):
+    pass
+
+
+def trace(*args):
+    globals()['real_trace'](*args)
+
+
+if '/trace' in sys.argv:
+    sys.settrace(trace)
+    threading.settrace(trace)
+    
 
 import os
 import signal
@@ -10,10 +25,7 @@ import traceback
 
 
 def on_exit(*args):
-    for f in sys._current_frames():
-        print(traceback.format_stack(f))
-        
-    os._exit(9)
+    os._exit(8)
 
 __file__ = os.path.abspath(__file__)
 real_handler = on_exit
@@ -33,7 +45,7 @@ def real_main():
     #REPLACEME
 
     if not data:
-        with open(os.path.dirname(__file__) + '/upm/stagea.py') as f:
+        with open(os.path.dirname(__file__) + '/util/stagea.py') as f:
             data = f.read()
 
     args = {'where': __file__, 'data': file_data}
@@ -41,6 +53,13 @@ def real_main():
     exec(compile(data +'\nmain(args, **args)\n', '__main__', 'exec'), ctx)
     ctx.clear()
 
-
+    
 if __name__ == '__main__':
+    abort = os.abort
+
+    def new_abort():
+        traceback.print_exc()
+        abort()
+
+    os.abort = new_abort 
     real_main()

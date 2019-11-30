@@ -187,7 +187,6 @@ def reshard_text(text, nn):
                 for ch in i['text']:
                     yield (ch, cur)
 
-
     def split1():
         cur = []
         

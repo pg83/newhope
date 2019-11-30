@@ -59,18 +59,16 @@ def gen_unpack_node(pkg):
     }
 
 
-def gen_packs_1(constraints=None):
+async def gen_packs_1(constraints=None):
     constraints = constraints or y.get_all_constraints
 
-    for c in constraints():
-        for func in y.gen_all_funcs():
-            yield func(y.deep_copy(c))
+    def iter():
+        for c in constraints():
+            for func in y.gen_all_funcs():
+                yield func(y.deep_copy(c))
 
-        #for t in y.find_compiler_x(y.deep_copy(c)):
-            #yield t
+    return list(iter())
 
 
-def gen_packs(*args, **kwargs):
-    for x in gen_packs_1(*args, **kwargs):
-        assert x
-        yield x
+async def gen_packs(*args, **kwargs):
+    return [x for x in await gen_packs_1(*args, **kwargs)]

@@ -3,7 +3,7 @@ copy_url() {
     what=$(basename $PKGF | tr '-' '\n' | head -n 2 | tail -n 1)
     hope=$(ls $where/ | grep $what | head -n 1 | tr -d '\n')
     fpath="$where/$hope"
-    echo $what, $where, $hope, $fpath 1>&5
+    echo $what, $where, $hope, $fpath
     
     if test -n "$hope" ; then
         echo "copy $fpath to $3" && cd $3 && ls -la && ln "$fpath" . && $YTAR -xf *-tr && rm -rf *-tr  && ls -la && exit 0
@@ -27,4 +27,8 @@ fetch_url() {
     fi
 }
 
-((copy_url $@) || (fetch_url $@)) 1>&5
+(
+	echo "{w} download:"
+        (((copy_url $@) || (fetch_url $@)) | step)
+	echo 
+) 1>&5

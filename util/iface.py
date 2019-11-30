@@ -53,7 +53,8 @@ class StdIO(object):
 
     def write(self, t):
         with stdio_lock:
-            self.s.write(t)
+            self.s.buffer.write(t.encode('utf-8'))
+            self.s.buffer.flush()
         
     def flush(self):
         with stdio_lock:
@@ -65,25 +66,22 @@ class ColorStdIO(object):
         self.s = s
 
     def write(self, t):
-        if len(t) < 10000:
+        self.write_impl(t)
+            
+    def write_impl(self, t):
+        if len(t) < 100000:
             try:
                 t = y.process_color(t, '', {})
             except AttributeError:
                 pass
-                
+            
         with stdio_lock:
-            try:
-                self.s.write(t)
-            except TypeError:
-                self.s.buffer.write(t)
-                
+            self.s.buffer.write(t.encode('utf-8'))
+            self.s.buffer.flush()
+            
     def flush(self):
         with stdio_lock:
             self.s.flush()
-
-    def out(self, *args):
-        #pass
-        self.write(' '.join([str(x) for x in args]) + '\n')
 
 
 class IFace(dict):
@@ -94,17 +92,45 @@ class IFace(dict):
         self._cc = {}
         self._hit = 0
 
-        self.reset_stdio()
-        
+        if 1:
+            self.reset_stdio()
+        else:
+            self.stderr = sys.stderr
+            self.stdout = sys.stdout
+            
         self.add_lookup(lambda x: self.find_module(x))
         self.add_lookup(lambda x: self.find_module('ya.' + x))
         self.add_lookup(lambda x: self.find_module('gn.' + x))
         self.add_lookup(lambda x: self.find_module('pl.' + x))
+        self.add_lookup(lambda x: self.find_module('ut.' + x))
         self.add_lookup(lambda x: sys.modules[x])
         self.add_lookup(self.fast_search)
         self.add_lookup(self.find_function)
         self.add_lookup(lambda x: __import__(x))
-    
+
+    def spawn(self, coro, name):
+        return self.async_loop.spawn(coro, name)
+        
+    async def offload(self, job):
+        return await self.async_loop.offload(job)
+
+    def print_tbx(self):
+        try:
+            y.print_tbx_real()
+        except Exception:
+            y.traceback.print_exc(chain=False)
+      
+    def last_msg(self, t):
+        s = sys.stderr
+
+        sys.stderr = None
+        sys.stdout = None
+        
+        self.stderr = None
+        self.stdout = None
+
+        s.write(t)
+        
     @property
     def copy(self):
         try:
@@ -117,7 +143,7 @@ class IFace(dict):
     def reset_stdio(self):
         self.stdout = ColorStdIO(sys.stdout)
         self.stderr = ColorStdIO(sys.stderr)        
-        
+    
     def set_stdio(self, stdout=None, stderr=None):
         if stdout:
             self.stdout = StdIO(stdout)
@@ -207,7 +233,7 @@ class IFace(dict):
 
             try:
                 return m[name]
-            except:
+            except KeyError:
                 pass
 
         raise AttributeError(name)
@@ -229,20 +255,22 @@ def prompt(l):
   
 def load_builtin_modules(data, builtin):
     initial = (
-        'ya.mod_load',
-        'ya.int_counter',
-        'ya.args_parse',
-        'ya.algo',
-        'ya.single',
-        'ya.err_handle',      
-        'ya.caches',
-        'ya.pub_sub2',
-        'ya.init_log',
-        'ya.defer',
-        'ya.pub_sub',
+        'ut.mod_load',
+        'ut.int_counter',
+        'ut.args_parse',
+        'ut.algo',
+        'ut.single',
+        'ut.at_exit',
+        'ut.err_handle',      
+        'ut.caches',
+        'ut.pub_sub2',
+        'ut.init_log',
+        'ut.defer',
+        'ut.pub_sub',        
+        'ut.manager',
+        'ut.mini_db',
+        
         'ya.ygen',
-        'ya.manager',
-        'ya.mini_db',
         'ya.noid_calcer',
     )
 
@@ -253,44 +281,35 @@ def load_builtin_modules(data, builtin):
 
     for k in builtin:
         if k not in initial:
-            if k.startswith('ya'):
+            if k.startswith('ya') or k.startswith('ut'):
                 __loader__.create_module(k)
                 initial.add(k)
 
 
-def run_stage4_1(data):
-    @y.lookup
-    def lookup(name):
-        return data[name]
-    
-    load_builtin_modules(y.file_data, y.builtin_modules)
-
-    data['signal_channel'] = y.get_signal_channel()
-
-    y.debug('will run defer constructors')
-    y.run_defer_constructors()
-    y.debug('done')
-    
-    return y.run_main(data.pop('args'))
-
-
-def to_int(v):
-    if v is None:
-        return 0
-    
-    return int(v)
-
-
 def run_stage4_0(data):
     try:
-        try:            
-            y.os._exit(to_int(run_stage4_1(data)))
-        except SystemExit as e:
-            y.os._exit(e.code)            
-        except:
+        @y.lookup
+        def lookup(name):
+            return data[name]
+    
+        load_builtin_modules(y.file_data, y.builtin_modules)
+
+        y.debug('will run defer constructors')
+        y.run_defer_constructors()
+        y.debug('done')
+        
+        async def runner(ctl):
             try:
-                y.stderr.write(y.format_tbx() + '\n')
-            except:
-                y.stderr.write(y.traceback.format_exc() + '\n')
-    finally:
-        y.os.abort()
+                try:
+                    return await y.run_main(data.pop('args'))
+                except:
+                    y.print_tbx()
+            finally:
+                y.shut_down()
+            
+        ctx = y.spawn(runner, 'entry_point')
+    except:
+        try:
+            y.print_tbx()
+        finally:
+            y.os.abort()

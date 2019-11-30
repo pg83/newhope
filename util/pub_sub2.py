@@ -13,19 +13,30 @@ def list_to_set(lst):
     return frozenset(lst)
 
 
+@y.singleton
+def is_debug():
+    if '/debug/pubsub' in y.verbose:
+        return True
+
+    return False
+
+
 def guess_print_data(data):
     if data is None:
         return '[eof]'
 
     if data.__class__.__name__ == 'ROW':
         return str(data)
+
+    try:
+        if 'func' in data:
+            return data['func']['gen'] + '-' + data['func']['base']
+
+        if 'name' in data:
+            return data['name']
+    except TypeError:
+        pass
     
-    if 'func' in data:
-        return data['func']['gen'] + '-' + data['func']['base']
-
-    if 'name' in data:
-        return data['name']
-
     return str(data)
 
 
@@ -119,11 +130,19 @@ class FunBase(object):
         self.consumed_rows = 0
 
     @property
+    def __name__(self):
+        return self.f.__name__
+
+    @property
+    def name(self):
+        return self.__name__
+        
+    @property
     def active(self):
         return self.active_x
         
     def new_accept(self, tags):
-        y.debug('new accept', self.f.__name__, tags)
+        is_debug() and y.debug('new accept', self.f.__name__, tags)
         
         if self.accept:
             self.accept.append(frozenset(self.accept.pop() | frozenset(tags)))
@@ -131,7 +150,7 @@ class FunBase(object):
             self.accept.append(frozenset(tags))
             
     def deactivate(self):
-        y.debug('deactivate', str(self))
+        is_debug() and y.debug('deactivate', str(self))
         self.active_x = False
 
     @property
@@ -140,7 +159,7 @@ class FunBase(object):
         
     def __str__(self):
         return str({
-            'name': self.f.__name__,
+            'name': self.name,
             'accept': self.accept,
             'inqueue': len(self.inqueue),
             'n': self.n,
@@ -199,11 +218,15 @@ class FunBase(object):
             yield r.data
             
     def step_1(self):
-        y.debug('will call', str(self))
+        is_debug() and y.debug('will call', str(self))
 
         if self.active:
-            return [ROW(self.n, d) for d in self.step_0()]
+            res = [ROW(self.n, d) for d in self.step_0()]
 
+            is_debug() and y.debug('afteer call', str(self))
+            
+            return res
+            
         return []
 
     def step(self):
@@ -261,11 +284,11 @@ class Scheduler(Iterator):
     def __init__(self, f, parent, n):
         Iterator.__init__(self, f, parent, n)
             
-    def step(self):
-        y.debug('will call scheduler', str(self))
+    async def step(self):
+        is_debug() and y.debug('will call scheduler', str(self))
         
         if self.active:
-            for x in reversed(self.p.funcs):
+            for x in [self.p.funcs[0]] + list(reversed(self.p.funcs)):
                 self.inqueue.extend(x.step_1())
 
         return []
@@ -328,7 +351,7 @@ def debugger(parent):
     
     while True:
         for i in parent.iter_data():
-            y.debug(str(i))
+            is_debug() and y.debug(str(i))
             
         yield EOP()
 
@@ -346,8 +369,8 @@ def tresher(iface):
         
 
 class PubSubLoop(object):
-    def __init__(self):
-        self.ex = y.concurrent.futures.ThreadPoolExecutor(max_workers=3)
+    def __init__(self, ctl=None):
+        self.ctl_ = ctl
         self.funcs = []
         self.by_name = set()
         self.ext = y.collections.deque()
@@ -359,12 +382,16 @@ class PubSubLoop(object):
         #self.add_fun(tresher)
         #self.add_fun(timer)
         
-        if '/debug' in y.verbose:
+        if is_debug():
             self.add_fun(debugger)
             
         self.add_fun(self.state_checker)
         self.activate('ps')
 
+    @property
+    def ctl(self):
+        return self.ctl_ or y.async_loop
+        
     def activate(self, ns):
         self.active_ns.add(ns)
 
@@ -423,28 +450,25 @@ class PubSubLoop(object):
             
         yield EOP()
 
-    def iter_rows_step_par(self, func, el):
-        for x in self.ex.map(func, el):
-            for r in x:
-                yield r
-
-    def run(self, init=[]):
+    async def run(self, init=[]):
         for f in init:
             self.add_fun(f)
         
-        while self.active():
-            self.step()
+        async def pub_sub_cycle(ctl):
+            while self.active():
+                await self.step()
+
+        return await self.ctl.spawn(pub_sub_cycle, 'pub_sub_cycle')
 
     def scheduler(self):
         return self.funcs[0]
             
-    def step(self):
-        self.scheduler().step()
+    async def step(self):
+        s = self.scheduler()
+        
+        await s.step()
         
     def scheduler_step(self, iface):
-        #for f in self.funcs:
-            #print(f)
-            
         extra = []
         
         def iter_0():
@@ -476,7 +500,7 @@ class PubSubLoop(object):
                 
                 for f in self.funcs:
                     for uid in f.add_el(row):
-                        y.debug(str(f), 'accept', str(row))
+                        is_debug() and y.debug(str(f), 'accept', str(row))
                         used = True
 
                 if not used:
@@ -497,5 +521,34 @@ class PubSubLoop(object):
 
         return f
 
-    
+    def wrap_coro(self, c):
+        def wrapper_in(iface):
+            outqueue = y.collections.deque()
+            
+            async def wrapper(ctl):
+                async def in_q():
+                    while True:
+                        try:
+                            yield iface.inqueue.popleft()
+                        except IndexError:
+                            await ctl.sleep(0.01)
+                
+                async for x in c(ctl, in_q()):
+                    outqueue.append(x)
+
+            hndl = self.ctl.spawn(wrapper, 'pubsub_' + c.__name__)
+
+            while True:
+                try:
+                    yield outqueue.popleft()
+                except IndexError:
+                    y.time.sleep(0.01)
+
+        wrapper_in.__name__ = 'wrapper_' + c.__name__
+
+        self.add_fun(wrapper_in)
+
+        return c
+
+
 pubsub = PubSubLoop()

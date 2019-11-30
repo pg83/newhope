@@ -1,11 +1,8 @@
-import hashlib
-import json
-
 from marshal import loads, dumps
 
 
 def deep_copy_json(x):
-    return json.loads(json.dumps(x))
+    return y.json.loads(y.json.dumps(x))
 
 
 def struct_ptr(s):
@@ -101,7 +98,7 @@ class B(object):
 
     def intern_data(self, n):
         n = self.func1(n)
-        k = hashlib.md5(n).hexdigest()[:12]
+        k = y.hashlib.md5(n).hexdigest()[:12]
         self._v[k] = n
         return self.pointer(k)
 
@@ -132,7 +129,7 @@ class B(object):
 
     def check_db(self):
         for k, v in self._v.iteritems():
-            assert k == hashlib.md5(v).hexdigest()[:12]
+            assert k == y.hashlib.md5(v).hexdigest()[:12]
 
         return 'all ok, count = ' + str(len(self._v))
 

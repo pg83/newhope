@@ -21,13 +21,44 @@ def my_eh(typ, val, tb):
     print(typ, val, tb)
 
 
-def my_trace(frame, event, arg):
-    if arg:
-        lineno = frame.f_lineno
-        path = frame.f_code.co_filename
+def decode_prof(data):
+    import zlib
+    
+    return y.marshal.loads(zlib.decompress(data))
+
+
+def encode_prof(v):
+    import zlib
+    
+    return zlib.compress(y.marshal.dumps(v))
+
+    
+class PGProfiler(object):
+    def __init__(self):
+        self.d = []
+        self.i = {}
+        self.w = True
+        self.t = y.threading.get_ident
+        self.n = 0
+        
+    def my_trace(self, frame, event, arg):
+        if not self.w:
+            return
+
+        self.n += 1
+
+        if 1:
+            lineno = frame.f_lineno
+            path = frame.f_code.co_filename
+        
+            self.d.append((self.get_id(lineno), self.get_id(path), self.get_id(self.t())))
+
+        return self.my_trace
+
+    def heavy(self):
         lines = calc_text(frame, path)
         data ='\n'.join(lines[lineno-2:lineno + 1])
-        
+                
         try:
             arg = str(arg)
         except Exception as e:
@@ -35,19 +66,89 @@ def my_trace(frame, event, arg):
             
         print(frame, event, arg, data)
         
-    return my_trace
+    def get_id(self, k):
+        i = self.i
+        
+        if k not in i:
+            i[k] = len(i)
+            
+        return i[k]
 
+    def dumps(self):
+        try:
+            self.w = False
+            res = {'d': self.d, 'i': self.i}
+            
+            return encode_prof(res)
+        finally:
+            self.w = True
+            
+    def loads(self, v):
+        res = decode_prof(v)
 
+        self.i = res['i']
+        self.d = res['d']
+
+    def load_from_file(self, path):
+        with open(path, 'r') as f:
+            self.loads(f.buffer.read())
+        
+    def show_stats(self):
+        def iter_keys():
+            for l, f, t in self.d:
+                yield (l, f)
+
+        i = self.i
+        i = dict((y, x) for x, y in i.items())
+        d = y.collections.defaultdict(int)
+
+        for x in iter_keys():
+            d[x] += 1
+
+        def iter_nk():
+            for k, v in d.items():
+                nk = str(i[k[1]]) + ':' + str(i[k[0]])
+                
+                yield nk, v
+
+        res = sorted(list(iter_nk()), key=lambda x: -x[1])
+                
+        for i, j in res:
+            print(i, j)
+        
+    def run(self, args):
+        self.load_from_file(args[0])
+        self.show_stats()
+    
+    
 def my_exept_hook(type, value, traceback):
     print(type, value, traceback)
 
 
 @y.defer_constructor
 def init():
+    @y.main_entry_point
+    def cli_profile(args):
+            PGProfiler().run(args)
+            
+    @y.lookup
+    def l(name):
+        return {'cli_profile': cli_profile}[name]
+        
     y.sys.excepthook = my_exept_hook
 
     if '/trace' in y.verbose:
-        y.sys.settrace(my_trace)
+        prof = PGProfiler()
+
+        @y.run_at_exit
+        def dump_data():
+            try:
+                with open('data.prof', 'w') as f:
+                    data = prof.dumps()
+                    f.buffer.write(data)
+            except Exception as e:
+                y.stderr.write(str(e) + '\n')
+        y.sys.modules['__main__'].real_trace = prof.my_trace
 
     
 def iter_frames(frame=None):
@@ -66,7 +167,7 @@ def text_from_file(path):
 def mod_key(f):
     try:
         return len(f.f_globals['__ytext__'])
-    except:
+    except Exception:
         pass
 
     return -1
@@ -81,7 +182,7 @@ def calc_text(f, fname):
     for i in (lambda: text_from_module(f), lambda: text_from_file(fname), lambda: []):
         try:
             return i()
-        except:
+        except Exception:
             pass
 
     return []
@@ -206,7 +307,7 @@ def format_tbx(tb_line='', frame=None):
     return '\n'.join((tb and iter_exc or iter_fr)())
 
 
-def print_tbx(*args, **kwargs):
+def print_tbx_real(*args, **kwargs):
     try:
         y.xxprint(format_tbx(*args, **kwargs))
     except Exception as e:
@@ -217,6 +318,8 @@ def print_all_stacks():
     try:
         for k, v in list(y.sys._current_frames().items()):
             print_tbx(tb_line=str(k), frame=v)
-    except:
+    except Exception:
         print_tbx()
-        
+
+
+#y.sys.settrace(my_trace)

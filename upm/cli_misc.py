@@ -1,10 +1,10 @@
 @y.main_entry_point
-def cli_cleanup(arg):
+async def cli_cleanup(arg):
    y.os.system("find . | grep '~' | xargs rm")
 
 
 @y.main_entry_point
-def cli_help(args):
+async def cli_help(args):
    def iter_funcs():
       for f in y.main_entry_points():
          yield f.__name__[4:]

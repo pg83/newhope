@@ -1,5 +1,5 @@
 @y.main_entry_point
-def cli_makefile(arg):
+async def cli_makefile(arg):
    parser = y.argparse.ArgumentParser()
    
    parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
@@ -24,14 +24,18 @@ def cli_makefile(arg):
       else:
          f = y.stdout
 
-      def main_func():
+      async def main_func():
          if args.dot:
-            f.write(y.build_dot_script())
+            data = await y.build_dot_script()
          elif args.shell:
-            f.write(y.build_sh_script(args.shell))
+            data = await y.build_sh_script(args.shell)
          else:
-            f.write(y.main_makefile(internal=args.internal))
+            data = await y.main_makefile(internal=args.internal)
 
-         f.flush()
+         def func():
+            f.write(data)
+            f.flush()
 
-      main_func()
+         return await y.offload(func)
+            
+      return await main_func()

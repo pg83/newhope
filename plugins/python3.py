@@ -396,7 +396,7 @@ def find_modules():
 
                 cmd = \"""
 try:
-    print >>sys.stderr, "{m}"
+    sys.stderr.write("{m}\n")
     import {m}
 except:
     pass

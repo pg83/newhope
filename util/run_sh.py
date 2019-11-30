@@ -12,9 +12,9 @@ def subst(v):
     return y.subst_kv_base(v, iter_subst())
 
 
-def build_sh_script(targets):
+async def build_sh_script(targets):
     res = [1]
-    y.run_makefile(y.main_makefile(), res, targets, 1)
+    await y.run_makefile(y.main_makefile(), res, targets, 1)
     res = res[1:]
 
     def iter_cmd():

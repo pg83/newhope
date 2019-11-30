@@ -41,7 +41,7 @@ def current_host_platform():
 
 
 def fixx(x):
-    for f in (str, lambda x: x.decode(utf-8)):
+    for f in (str, lambda x: x.decode(utf-8), str):
         try:
             x = f(x)
         except Exception:

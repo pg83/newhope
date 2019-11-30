@@ -1,5 +1,5 @@
 def singleton(f):
-    #return singleton3(f)
+    return singleton3(f)
         
     code = """
 def {name2}(f):

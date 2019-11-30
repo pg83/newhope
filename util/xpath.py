@@ -1,6 +1,3 @@
-import inspect
-
-
 def apply_base(funcs, log):
     for f in funcs:
         try:

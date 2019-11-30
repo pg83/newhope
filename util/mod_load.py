@@ -24,7 +24,7 @@ class Mod(dict):
 
       try:
          self.y = loader.get_y()
-      except:
+      except Exception:
          pass
 
       self.exec_text_part(self.builtin_data())
@@ -63,7 +63,7 @@ class Mod(dict):
       if 2 * self.__last_reindex__ < lc:
          try:
             func = self.y.reindex_module
-         except:
+         except Exception:
             func = None
 
          if func:
@@ -92,6 +92,7 @@ class Loader(object):
       self.create_module('ya')
       self.create_module('gn')
       self.create_module('pl')
+      self.create_module('ut')
 
    def create_module(self, name):
       if name in self._by_name:
@@ -119,7 +120,7 @@ class Loader(object):
       return mod
 
    def get_y(self):
-      return self._by_name['ya.iface'].y
+      return self._by_name['ut.iface'].y
 
    def get_source(self, name):
       return self._by_name[name].text()
@@ -145,9 +146,9 @@ class Loader(object):
 
 
 def bootstrap(mod, args, builtin, **kwargs):
-   loader = Loader(builtin)
-   mod1 = loader.create_module('ya.iface')
-   mod1 = loader.create_module('ya.init_log')
-   mod1 = loader.create_module('ya.args_parse')
-   mod2 = loader.create_module('ya.mod_load')
-   mod2.__loader__.create_module('ya.stage2').run_stage2(args, **args)
+    loader = Loader(builtin)
+    mod1 = loader.create_module('ut.iface')
+    mod1 = loader.create_module('ut.init_log')
+    mod1 = loader.create_module('ut.args_parse')
+    mod2 = loader.create_module('ut.mod_load')
+    mod2.__loader__.create_module('ut.stage2').run_stage2(args, **args)

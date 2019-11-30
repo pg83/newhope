@@ -1,7 +1,6 @@
 def fix_user_data(iter):
     for f in iter:
         f = y.deep_copy(f)
-
         ss = f.get('support', [])
 
         if ss and 'darwin' not in ss:

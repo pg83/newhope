@@ -1,5 +1,5 @@
-def build_dot_script():
-    lst = y.decode_internal_format(y.main_makefile(internal=True))
+async def build_dot_script():
+    lst = await y.decode_internal_format(await y.main_makefile(internal=True))
 
     def fix(x):
         return x[1:].replace('/', '-').replace('-', '')

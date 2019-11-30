@@ -19,7 +19,7 @@ def make_engine(data, ntn=lambda x: x['name'], dep_list=None, random=False, seed
     def remove_one(one):
         try:
             one = one['i']
-        except:
+        except Exception:
             pass
 
         for k, v in list(tbl.items()):

@@ -16,10 +16,10 @@ def build_results_channel():
     return y.BUILD_LOOP.write_channel('RESULTS', 'common')
 
 
-def run_make_0(data, parsed, shell_vars, args):
+async def run_make_0(data, parsed, shell_vars, args):
     build_results = build_results_channel()
     
-    def do_run():    
+    async def do_run():    
         @results_callback()
         def on_react_status(arg):
             if arg.get('status', '') == 'build complete':
@@ -38,14 +38,14 @@ def run_make_0(data, parsed, shell_vars, args):
             if status:
                 build_results({'status': status})
         
-        @y.signal_channel.read_callback()
+        #@y.signal_channel.read_callback()
         def on_sig_int(arg):
             if arg['signal'] == 'INT':
                 build_results({'message': 'SIGINT happens', 'status': 'failure'})
                 
-        return y.run_makefile(data, shell_vars, [], args.targets, int(args.threads), parsed, pre_run=['workspace'], bypass_streams=args.proxy)
+        return await y.run_makefile(data, shell_vars, args.targets, int(args.threads), parsed, pre_run=['workspace'])
         
-    def do_run_console():
+    async def do_run_console(ctl):
         white_line = get_white_line()
       
         @results_callback()
@@ -62,7 +62,7 @@ def run_make_0(data, parsed, shell_vars, args):
             if 'text' in arg:
                 data = arg['text'].strip()
             
-                build_results({'write': pretty(white_line + '\n' + '{w}' + data + '{}\n')})
+                build_results({'write': pretty(y.xxformat(white_line, '\n{w}', data, '{}\n'))})
             
             if 'message' in arg:
                 if arg.get('status', '') == 'failure':
@@ -70,13 +70,23 @@ def run_make_0(data, parsed, shell_vars, args):
                 else:
                     color = '{b}'
                
-                build_results({'write': pretty(white_line + '\n' + color + arg['message'] + '{}\n')})
+                build_results({'write': pretty(y.xxformat(white_line + '\n' + color + arg['message'] + '{}\n'))})
 
             if 'write' in arg:
                 y.stderr.write(arg['write'])
-                
-        return do_run()
-    
-    y.BUILD_LOOP.run_loop(init=[do_run_console])
+
+        return await do_run()
+
+    async def run_loop(ctl):
+        try:
+            y.BUILD_LOOP.run_loop()
+        except:
+            y.os.abort()
+            
+    ctx1 = y.spawn(run_loop, 'build_pubsub')
+    ctx2 = y.spawn(do_run_console, 'run_in_console')
+
+    print await ctx2
+    print await ctx1
 
     return 0

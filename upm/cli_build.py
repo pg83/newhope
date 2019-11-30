@@ -9,7 +9,7 @@ def build_docker():
 
 
 @y.main_entry_point
-def cli_build(arg):
+async def cli_build(arg):
    parser = y.argparse.ArgumentParser()
 
    parser.add_argument('-t', '--target', default=[], action='append', help='add target')
@@ -45,7 +45,7 @@ def cli_build(arg):
 
 
 @y.main_entry_point
-def cli_tag(args):
+async def cli_tag(args):
    code = """
        docker tag $1 antonsamokhvalov/newhope:$2
        docker tag antonsamokhvalov/newhope:$2 antonsamokhvalov/newhope:latest

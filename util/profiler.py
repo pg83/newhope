@@ -9,9 +9,14 @@ def run_profile(func, really=False):
         try:
             return p.runcall(func, *args, **kwargs)
         finally:
-            ps = y.pstats.Stats(p, stream=y.stderr)
+            @y.run_at_exit
+            @y.singleton
+            def func():
+                ps = y.pstats.Stats(p, stream=y.stderr)
+                
+                ps.sort_stats('cumtime')
+                ps.print_stats()
 
-            ps.sort_stats('cumtime')
-            ps.print_stats()
+            func()
 
     return wrapper
