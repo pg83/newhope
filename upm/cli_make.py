@@ -53,11 +53,9 @@ async def cli_make(arg):
             yield ('$YSHELL', args.shell)
 
     shell_vars = dict(iter_replaces())
-    parsed = False
     
     if args.path == 'gen':
         data = await y.decode_internal_format(await y.main_makefile(internal=True))
-        parsed = True
     elif args.path == '-':
         data = await y.offload(y.sys.stdin.read)
     elif args.path:
@@ -67,6 +65,6 @@ async def cli_make(arg):
         data = await y.offload(y.sys.stdin.read)
         
     if int(args.threads):
-        return await y.run_make_0(data, parsed, shell_vars, args)
+        return await y.run_make_0(data, shell_vars, args)
 
     return 0

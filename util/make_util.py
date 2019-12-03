@@ -4,6 +4,28 @@ def new_cmd():
     }
 
 
+@y.singleton
+def good_sym():
+    a = [chr(ord('a') + x) for x in range(0, 26)]
+    b = [x.upper() for x in a]
+    c = [i for i in range(0, 10)]
+
+    return frozenset(a + b + c)
+
+
+def sanitize_string(s):
+    gs = good_sym()
+    
+    def iter_good():
+        for c in s:
+            if c in gs:
+                yield c
+            else:
+                yield '_'
+
+    return ''.join(iter_good())
+
+
 def hash(x):
     return y.burn([sorted(x['deps1']), sorted(x['deps2']), x['cmd']])
 
@@ -79,7 +101,6 @@ def find_tool_cached(tool, path):
 
 
 async def parse_makefile(data):
-    print 'x'
     lst = []
     prev = None
     cprint = y.xprint_white
@@ -133,7 +154,7 @@ async def cheet(lst):
     @y.singleton
     def placeholder():
         bsp = lst[0]['deps1'][0]
-            
+
         def build_scripts_path():
             return bsp
 
@@ -167,8 +188,8 @@ async def select_targets(lst, targets):
 
 def build_run_sh(n):
     def iter_run_sh():
-        yield '{r}running {w}[cname]'
-        yield '{y} run.sh:'
+        yield '{br}running {bw}[cname]'
+        yield '{by} run.sh:'
 
         for l in n['cmd']:
             yield '  ' + l

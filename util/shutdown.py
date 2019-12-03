@@ -3,19 +3,20 @@ def kill_all_running(*args):
 
 
 def run_sigint(*args):
+    y.stderr.write('\r\n')
     y.run_handlers()
-    y.last_msg(y.process_color('\r' + y.get_white_line() + '\n{r}build failed{}\n', '', {}))
+    y.last_msg(y.get_white_line() + '\n{br}system failure{}\n')
     y.os._exit(8)
 
 
-def shut_down():
-    y.time.sleep(3)
+def shut_down(retcode=10):
     y.run_handlers()
     kill_all_running()
     kill_all_running()
-    y.os._exit(10)
-    
-    
+    y.last_msg('')
+    y.os._exit(retcode)
+
+
 @y.defer_constructor
 def init_shutdown():
     y.sys.modules['__main__'].real_handler = run_sigint

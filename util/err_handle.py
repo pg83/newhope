@@ -13,7 +13,7 @@ def abort_on_error(func):
                 y.print_tbx()
             finally:
                 y.os.abort()
-            
+
     return wrapper
 
 
@@ -33,11 +33,6 @@ def stop_iter(*args, **kwargs):
 
 async def async_stop_iter(*args, **kwargs):
     raise y.StopNow()
-
-
-@y.singleton
-def run_down_once():
-    y.broadcast_channel('SIGNAL')({'signal': 'DOWN', 'when': 'now'})
 
     
 def on_except():

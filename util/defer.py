@@ -1,5 +1,3 @@
-y.pubsub
-
 @y.contextlib.contextmanager
 def defer_context(verbose=False):
     defer = []
@@ -34,12 +32,7 @@ def defer_constructor(func):
     return func
 
 
-def run_defer_constructors():
-    @defer_constructor
-    def init_log():
-        if '/debug/loglevel' in y.verbose:
-            y.logging.basicConfig(level='DEBUG')
-        
+def run_defer_constructors():        
     @defer_constructor
     def sentinel():
         return 'shit'

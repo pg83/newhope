@@ -71,13 +71,90 @@ def inc_counter():
     return func
 
 
-def to_async(func):
-    if isf(func):
-        return func
+def compile_func(template, _async, name, mod_name):
+    replaces = {
+        True: {'[async]': 'async', '[await]': 'await', 'kind': 'async', '[sleep]': 'y.async_loop.sleep'},
+        False: {'[async] ': '', '[await] ': '', 'kind': 'sync', '[sleep]': 'y.time.sleep'},        
+    }
+
+    def subst(t):
+        for k, v in replaces[_async].items():
+            t = t.replace(k, v)
+
+        return t
     
-    y.debug('wrap to async', func)
-    
-    async def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
+    template = subst(template)
+    name = subst(name)
+    mod_name = subst(mod_name)
+    code = compile(template, mod_name.replace('.', '/') + '.py', 'exec')
+    mod = __yexec__(template, module_name=mod_name)
+
+    return mod[name]
+
+
+def template_engine(func):
+    def gen(_async):
+        subst = {
+            True: 'async',
+            False: 'sync',
+        }
         
+        tmpl = func()
+        mod_name = func.__module__ + '.' + subst[_async]
+        name = func.__name__
+
+        return compile_func(tmpl, _async, name, mod_name)
+
+    select = {
+        True: gen(True),
+        False: gen(False),
+    }
+
+    def wrapper(_async=False):
+        return select[_async]
+
+    wrapper.__name__ = func.__name__
+
     return wrapper
+
+
+class TOut(object):
+    def __init__(self):
+        self.tout = 0
+
+    def ok(self):
+        self.tout = 0
+
+    def bad(self):
+        self.tout = min(self.tout * 1.1 + 0.001, 0.02)
+
+    def current(self):
+        if self.tout < 0.01:
+            return 0
+
+        return self.tout
+
+
+@template_engine
+def deque_iter():
+    return """
+[async] def deque_iter(q, sleep=None):
+    sleep = sleep or [sleep]
+    tout = y.TOut()
+
+    [async] def xsleep(v):
+        if v > 0:
+            [await] sleep(v)
+    
+    while True:
+        try:
+            yield q.popleft()
+            tout.ok()
+        except IndexError:
+            [await] xsleep(tout.current())
+            tout.bad()
+"""
+
+
+deque_iter_sync = deque_iter(_async=False)
+deque_iter_async = deque_iter(_async=True)

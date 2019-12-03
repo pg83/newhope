@@ -87,7 +87,17 @@ def replacer(data):
     return func
 
 
+async def prepare_makefile():
+    @y.lookup
+    def lookup(name):
+        return {'pubsub': y.PubSubLoop()}[name]
+    
+    await y.pubsub.run(init=[y.mf_function_holder])
+
+    
 async def build_makefile(nodes, internal=False):
+    await prepare_makefile()
+    
     by_noid = {}
 
     def iter1():
@@ -131,13 +141,8 @@ async def build_makefile(nodes, internal=False):
 
     def iter5():
         by_name = {}
-
-        try:
-            yield y.build_scripts_run()
-        except AttributeError:
-            y.pubsub.run(init=[y.mf_function_holder])
-
-            yield y.build_scripts_run()
+        
+        yield y.build_scripts_run()
 
         for x in y.iter_workspace():
             yield x

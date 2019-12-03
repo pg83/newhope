@@ -26,7 +26,7 @@ def {holder}({vars}):
     uniq = (y.random.random() * 10000000000000)
 
     def at_exit():
-        if '/cache_stats' in y.verbose:
+        if y.config.get('cache_stats'):
             y.xprint_w('{{y}}' + f.__module__ + '.' + f.__name__, '{{w}}->', '{{b}}' + str(stats))
 
     y.run_at_exit(at_exit)

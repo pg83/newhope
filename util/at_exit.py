@@ -1,8 +1,8 @@
 @y.singleton
 def at_exit():
-    AT_EXIT = []
+    ae = y.collections.deque()
 
-    return AT_EXIT
+    return ae
 
 
 def run_at_exit(f):
@@ -12,16 +12,10 @@ def run_at_exit(f):
 
 
 def run_handlers():
-    ae = at_exit()
-    
-    while ae:
-        xx = [y for y in ae]
-        ae.clear()
-        
-        for x in reversed(xx):
-            try:
-                x()
-            except:
-                pass
-
-        ae = at_exit()
+    try:
+        while True:
+            f = at_exit().pop()
+            y.debug('run', f.__module__ + '.' + f.__name__)
+            f()
+    except IndexError:
+        pass

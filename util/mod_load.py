@@ -9,7 +9,7 @@ def ycompile(a, b, c, **kwargs):
 class Mod(dict):
    def __init__(self, name, loader):
       self.__dict__ = self
-      self.__yid__ = str(int(random.random() * 10000))
+      self.__yid__ = str(int(random.random() * 1000000000))
       self.__name__ = name
       self.__loader__ = loader
       self.__loader__._by_name[self.__name__] = self
@@ -20,8 +20,16 @@ class Mod(dict):
       self.__ycode__ = []
       self.__yexec__ = self.exec_data
       self.__last_reindex__ = 0
-      self.__ylog__ = lambda: self.y.logging.getLogger(self.__name__)
 
+      def get_log():
+         log = self.y.logging.getLogger(self.__name__)
+
+         self.__ylog__ = lambda: log
+
+         return self.__ylog__()
+         
+      self.__ylog__ = get_log
+      
       try:
          self.y = loader.get_y()
       except Exception:
@@ -147,6 +155,7 @@ class Loader(object):
 
 def bootstrap(mod, args, builtin, **kwargs):
     loader = Loader(builtin)
+    
     mod1 = loader.create_module('ut.iface')
     mod1 = loader.create_module('ut.init_log')
     mod1 = loader.create_module('ut.args_parse')

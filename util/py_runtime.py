@@ -47,11 +47,10 @@ class PGProfiler(object):
 
         self.n += 1
 
-        if 1:
-            lineno = frame.f_lineno
-            path = frame.f_code.co_filename
+        lineno = frame.f_lineno
+        path = frame.f_code.co_filename
         
-            self.d.append((self.get_id(lineno), self.get_id(path), self.get_id(self.t())))
+        self.d.append((self.get_id(lineno), self.get_id(path), self.get_id(self.t())))
 
         return self.my_trace
 
@@ -128,8 +127,8 @@ def my_exept_hook(type, value, traceback):
 @y.defer_constructor
 def init():
     @y.main_entry_point
-    def cli_profile(args):
-            PGProfiler().run(args)
+    async def cli_profile(args):
+        PGProfiler().run(args)
             
     @y.lookup
     def l(name):
@@ -137,7 +136,7 @@ def init():
         
     y.sys.excepthook = my_exept_hook
 
-    if '/trace' in y.verbose:
+    if 'pg' in y.config.get('profile', ''):
         prof = PGProfiler()
 
         @y.run_at_exit
@@ -148,6 +147,7 @@ def init():
                     f.buffer.write(data)
             except Exception as e:
                 y.stderr.write(str(e) + '\n')
+                
         y.sys.modules['__main__'].real_trace = prof.my_trace
 
     
@@ -248,7 +248,7 @@ def max_substr(lines):
 def format_trace(l):
     fname, ln, func_name, text = l
 
-    yield ' {w}In {dg}' + fname + '{}, in {g}' + func_name + '{}:{}'
+    yield ' {bw}In {bdg}' + fname + '{}, in {bg}' + func_name + '{}:{}'
 
     if not text:
         return
@@ -261,7 +261,7 @@ def format_trace(l):
     max_len = len(str(l2))
 
     for lnn, t in text:
-        yield (6 - len(str(lnn))) * ' ' + '{b}' + str(lnn) + ': ' + {ln: '{r}'}.get(lnn, '{w}') + t[len(ss):] + '{}{}'
+        yield (6 - len(str(lnn))) * ' ' + '{bb}' + str(lnn) + ': ' + {ln: '{br}'}.get(lnn, '{bw}') + t[len(ss):] + '{}{}'
 
 
 def format_tbv(tb_line=''):
@@ -278,7 +278,7 @@ def current_frame():
     try:
         raise ZeroDivisionError
     except ZeroDivisionError:
-        return sys.exc_info()[2].tb_frame.f_back
+        return y.sys.exc_info()[2].tb_frame.f_back
 
 
 def format_tbx(tb_line='', frame=None):
@@ -317,9 +317,6 @@ def print_tbx_real(*args, **kwargs):
 def print_all_stacks():
     try:
         for k, v in list(y.sys._current_frames().items()):
-            print_tbx(tb_line=str(k), frame=v)
+            y.print_tbx(tb_line=str(k), frame=v)
     except Exception:
-        print_tbx()
-
-
-#y.sys.settrace(my_trace)
+        y.print_tbx()

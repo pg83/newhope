@@ -1,7 +1,7 @@
 import sys
 import imp
 import threading
-import asyncio
+import inspect
 
 
 class StopNow(Exception):
@@ -24,8 +24,11 @@ class IFaceSlave(dict):
 
         return self[key]
 
+    def lst(self):
+        return (self.find_module, self.find_function)
+    
     def find(self, name):
-        for f in (self.find_module, self.find_function):
+        for f in self.lst():
             try:
                 return f(name)
             except AttributeError:
@@ -42,6 +45,44 @@ class IFaceSlave(dict):
 
     def find_function(self, name):
         return self._mod[name]
+
+    
+class IFaceStd(IFaceSlave):
+    def __init__(self, mod, parent):
+        IFaceSlave.__init__(self, mod, parent)
+
+    def import_from(self, name):
+        ctx = dict()
+        exec('from ' + self._mod.__name__ + ' import ' + name, ctx)
+        return ctx[name]
+        
+    def find_module_1(self, name):
+        return self._pa.create_std(__import__(self._mod.__name__ + '.' + name))
+
+    def find_module_2(self, name):
+        x = self.import_from(name)
+
+        if inspect.ismodule(x):
+            return self._pa.create_std(x)
+
+        raise AttributeError(name)
+
+    def find_module_3(self, name):
+        x = self._mod.__dict__[name]
+        
+        if inspect.ismodule(x):
+            return self._pa.create_std(x)
+
+        raise AttributeError(name)
+        
+    def find_function_1(self, name):
+        return self._mod.__dict__[name]
+    
+    def find_function_2(self, name):
+        return self.import_from(name)
+
+    def lst(self):
+        return (self.find_module_2, self.find_module_1, self.find_module_3, self.find_function_1, self.find_function_2)
 
     
 stdio_lock = threading.Lock()
@@ -64,25 +105,57 @@ class StdIO(object):
 class ColorStdIO(object):
     def __init__(self, s):
         self.s = s
+        self.p = ''
 
-    def write(self, t):
-        self.write_impl(t)
-            
-    def write_impl(self, t):
+    def colorize(self, t):
+        try:
+            if 'debug' in y.config.get('color', ''):
+                return t
+        except Exception:
+            pass
+        
         if len(t) < 100000:
             try:
-                t = y.process_color(t, '', {})
-            except AttributeError:
+                return y.process_color(t, '', {})
+            except AttributeError as e:
                 pass
-            
+
+        return t
+
+    def get_part(self):
+        try:
+            return self.p
+        finally:
+            self.p = ''
+                
+    def write(self, t):
+        if not t:
+            return
+        
         with stdio_lock:
-            self.s.buffer.write(t.encode('utf-8'))
-            self.s.buffer.flush()
-            
+            if len(t) > 4096:
+                self.flush_impl()
+                self.write_part(t)
+            else:
+                self.p += t
+
+                if len(self.p) > 4096:
+                    self.flush_impl()
+
+    def write_part(self, p):
+        if p:
+            self.s.buffer.write(self.colorize(p).encode('utf-8'))
+
+        self.s.buffer.flush()
+        self.s.flush()
+
+    def flush_impl(self):
+        self.write_part(self.get_part())
+        
     def flush(self):
         with stdio_lock:
-            self.s.flush()
-
+            self.flush_impl()
+            
 
 class IFace(dict):
     def __init__(self):
@@ -92,45 +165,44 @@ class IFace(dict):
         self._cc = {}
         self._hit = 0
 
-        if 1:
-            self.reset_stdio()
-        else:
-            self.stderr = sys.stderr
-            self.stdout = sys.stdout
+        self.reset_stdio()
             
         self.add_lookup(lambda x: self.find_module(x))
         self.add_lookup(lambda x: self.find_module('ya.' + x))
         self.add_lookup(lambda x: self.find_module('gn.' + x))
         self.add_lookup(lambda x: self.find_module('pl.' + x))
         self.add_lookup(lambda x: self.find_module('ut.' + x))
-        self.add_lookup(lambda x: sys.modules[x])
+        self.add_lookup(lambda x: self.create_std(sys.modules[x]))
         self.add_lookup(self.fast_search)
         self.add_lookup(self.find_function)
-        self.add_lookup(lambda x: __import__(x))
+        self.add_lookup(lambda x: self.create_std(__import__(x)))
 
-    def spawn(self, coro, name):
+    def spawn(self, coro, name=None):
         return self.async_loop.spawn(coro, name)
         
     async def offload(self, job):
         return await self.async_loop.offload(job)
 
-    def print_tbx(self):
+    def print_tbx(self, *args, **kwargs):
         try:
-            y.print_tbx_real()
+            y.print_tbx_real(*args, **kwargs)
         except Exception:
             y.traceback.print_exc(chain=False)
       
     def last_msg(self, t):
-        s = sys.stderr
-
+        e = self.stderr
+        o = self.stdout
+        
         sys.stderr = None
         sys.stdout = None
-        
+
         self.stderr = None
         self.stdout = None
 
-        s.write(t)
-        
+        o.flush()
+        e.write(t)
+        e.flush()
+
     @property
     def copy(self):
         try:
@@ -157,15 +229,22 @@ class IFace(dict):
 
         y.xprint_w('hit =', self._hit, 'miss =', len(self._c))
 
-    def create_slave(self, mod):
-        key = 's:' + mod.__name__
+    def create_slave_0(self, mod, klass):
+        key = 's:' + mod.__name__ + ':' + klass.__name__
 
         try:
             return self[key]
         except KeyError:
-            self[key] = IFaceSlave(mod, self)
+            self[key] = klass(mod, self)
 
         return self[key]
+
+    def create_slave(self, mod):
+        return self.create_slave_0(mod, IFaceSlave)
+    
+    def create_std(self, mod):
+        return mod
+        #return self.create_slave_0(mod, IFaceStd)
 
     def find_module(self, x):
         return self.create_slave(__loader__._by_name[x])
@@ -240,22 +319,39 @@ class IFace(dict):
 
 
 y = IFace()
+y.sys.modules['__main__'].y = y
 
-        
+
 def prompt(l):
-   try:
-      if l in y.verbose:
-         frame = y.inspect.currentframe()
-         frame = frame.f_back
-         
-         y.code.interact(local=frame.f_globals)
-   except Exception as e:
-      pass
+    def can_use():
+        try:
+            if l in y.verbose:
+                return True
+
+            return y.config.get(l, False)
+        except Exception as e:
+            print(e)
+
+        return False
+
+    if can_use():
+        frame = y.inspect.currentframe()
+        frame = frame.f_back
+
+        try:
+            from ptpython.repl import embed
+
+            embed(frame.f_globals, locals())
+        except ImportError:
+            y.code.interact(local=frame.f_globals)
+        except Exception as e:
+            y.debug('in prompt', e)
 
   
 def load_builtin_modules(data, builtin):
     initial = (
         'ut.mod_load',
+        'ut.init_log',
         'ut.int_counter',
         'ut.args_parse',
         'ut.algo',
@@ -263,10 +359,8 @@ def load_builtin_modules(data, builtin):
         'ut.at_exit',
         'ut.err_handle',      
         'ut.caches',
-        'ut.pub_sub2',
-        'ut.init_log',
-        'ut.defer',
-        'ut.pub_sub',        
+        'ut.pub_sub',
+        'ut.defer',        
         'ut.manager',
         'ut.mini_db',
         
@@ -278,7 +372,7 @@ def load_builtin_modules(data, builtin):
         __loader__.create_module(m)
 
     initial = set(initial)
-
+    
     for k in builtin:
         if k not in initial:
             if k.startswith('ya') or k.startswith('ut'):
@@ -291,25 +385,43 @@ def run_stage4_0(data):
         @y.lookup
         def lookup(name):
             return data[name]
-    
+        
         load_builtin_modules(y.file_data, y.builtin_modules)
+
+        y.init_logger(log_level=y.config.get('ll', 'info').upper())
 
         y.debug('will run defer constructors')
         y.run_defer_constructors()
         y.debug('done')
+
+        async def flush_streams(ctl):
+            while True:
+                await ctl.sleep(0.1)
+
+                try:
+                    y.stdout.flush()
+                    y.stderr.flush()
+                except Exception as e:
+                    y.debug('in flush streams', e)
         
-        async def runner(ctl):
+        async def entry_point(ctl):
             try:
                 try:
                     return await y.run_main(data.pop('args'))
+                except SystemExit as e:
+                    code = e.code
+                    
+                    if code is None:
+                        code = 0
+
+                    y.shut_down(retcode=code)
                 except:
                     y.print_tbx()
+                    y.shut_down(retcode=10)
             finally:
-                y.shut_down()
-            
-        ctx = y.spawn(runner, 'entry_point')
+                y.shut_down(0)
+
+        ctx1 = y.spawn(entry_point)
+        ctx2 = y.spawn(flush_streams)
     except:
-        try:
-            y.print_tbx()
-        finally:
-            y.os.abort()
+        y.os.abort()

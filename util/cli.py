@@ -1,8 +1,8 @@
 @y.defer_constructor
 def init_1():
-    if '/psy' in y.verbose:
+    if y.config.get('psy'):
         y.atexit.register(y.print_stats)
-        
+
 
 def select_handler(mode):
     name = 'cli_' + mode
@@ -26,7 +26,4 @@ async def run_main(args):
     
     y.prompt('/p1')
 
-    try:
-        return await func2()
-    finally:
-        y.run_down_once()
+    return await func2()

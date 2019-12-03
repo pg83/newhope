@@ -28,7 +28,7 @@ def make_engine(data, ntn=lambda x: x['name'], dep_list=None, random=False, seed
 
     md5 = y.struct_dump_bytes
     in_use = set()
-        
+
     def build_tbl():
         seed_c = str(seed)
 

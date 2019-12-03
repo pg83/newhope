@@ -3,6 +3,7 @@
 import sys
 import threading
 
+
 sys.dont_write_bytecode = True
 
 
@@ -14,7 +15,7 @@ def trace(*args):
     globals()['real_trace'](*args)
 
 
-if '/trace' in sys.argv:
+if 'profile=pg' in ''.join(sys.argv):
     sys.settrace(trace)
     threading.settrace(trace)
     
@@ -27,6 +28,7 @@ import traceback
 def on_exit(*args):
     os._exit(8)
 
+    
 __file__ = os.path.abspath(__file__)
 real_handler = on_exit
 
@@ -58,8 +60,10 @@ if __name__ == '__main__':
     abort = os.abort
 
     def new_abort():
-        traceback.print_exc()
-        abort()
+        try:
+            traceback.print_exc()
+        finally:
+            abort()
 
     os.abort = new_abort 
     real_main()

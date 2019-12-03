@@ -136,7 +136,7 @@ class B(object):
 
 @y.defer_constructor
 def init():
-    if '/adb' in y.verbose:
+    if y.config.get('adb'):
         v = A()
     else:
         v = B()
@@ -145,5 +145,5 @@ def init():
         if not i.startswith('__'):
             globals()[i] = eval('v.' + i)
             
-    if '/check_db' in y.verbose:
+    if y.config.get('check_db'):
         y.atexit.register(v.check_db)

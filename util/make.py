@@ -3,90 +3,71 @@ def get_white_line():
     return '{w}-----------------------------------------------{}'
 
 
-def build_callback(x):
-    return y.BUILD_LOOP.read_callback(x)
+def prettify(arg, t):
+    if 'target' in arg:
+        tg = arg['target']
+        cn = y.to_pretty_name(tg)
+                    
+        return t.replace(tg, cn).replace('[cname]', cn)
+            
+    return t
 
 
-def results_callback():
-    return build_callback('RESULTS')
-
-
-@y.singleton
-def build_results_channel():
-    return y.BUILD_LOOP.write_channel('RESULTS', 'common')
-
-
-async def run_make_0(data, parsed, shell_vars, args):
-    build_results = build_results_channel()
+async def run_make_0(data, shell_vars, args):
+    is_debug = y.make_exec.is_debug
     
-    async def do_run():    
-        @results_callback()
-        def on_react_status(arg):
-            if arg.get('status', '') == 'build complete':
-                raise y.StopNow()
-            
-        @results_callback()
-        def on_check_status(arg):
-            status = ''
+    async def do_run(build_results):
+        @y.lookup
+        def lookup(name):
+            return {'build_results': build_results}[name]
         
-            if arg.get('status', '') == 'failure':
-                status = 'build complete'
-            
-            if arg.get('retcode', 0):
-                status = 'build complete'
-
-            if status:
-                build_results({'status': status})
-        
-        #@y.signal_channel.read_callback()
-        def on_sig_int(arg):
-            if arg['signal'] == 'INT':
-                build_results({'message': 'SIGINT happens', 'status': 'failure'})
-                
-        return await y.run_makefile(data, shell_vars, args.targets, int(args.threads), parsed, pre_run=['workspace'])
+        return await y.run_makefile(data, shell_vars, args.targets, int(args.threads), pre_run=['workspace'])
         
     async def do_run_console(ctl):
         white_line = get_white_line()
       
-        @results_callback()
         def output_build_results(arg):        
-            def pretty(t):
-                if 'target' in arg:
-                    tg = arg['target']
-                    cn = y.to_pretty_name(tg)
-                    
-                    return t.replace(tg, cn).replace('[cname]', cn)
+            pretty = lambda x: prettify(arg, x)
             
-                return t
-
             if 'text' in arg:
                 data = arg['text'].strip()
             
-                build_results({'write': pretty(y.xxformat(white_line, '\n{w}', data, '{}\n'))})
+                y.build_results({'write': pretty(y.xxformat(white_line, '\n{bw}', data, '{}\n'))})
             
             if 'message' in arg:
                 if arg.get('status', '') == 'failure':
-                    color = '{r}'
+                    color = '{br}'
                 else:
-                    color = '{b}'
+                    color = '{bb}'
                
-                build_results({'write': pretty(y.xxformat(white_line + '\n' + color + arg['message'] + '{}\n'))})
+                y.build_results({'write': pretty(y.xxformat(white_line + '\n' + color + arg['message'] + '{}\n'))})
 
             if 'write' in arg:
                 y.stderr.write(arg['write'])
 
-        return await do_run()
+        return await do_run(output_build_results)
+    
+    async def do_run_log(ctl):
+        def output_build_results(arg):        
+            pretty = lambda x: prettify(arg, x)
 
-    async def run_loop(ctl):
-        try:
-            y.BUILD_LOOP.run_loop()
-        except:
-            y.os.abort()
+            if 'text' in arg:
+                data = arg['text'].strip()
+                ll = {'failure': 'info'}.get(arg.get('status', ''), 'debug')
+
+                y.build_results({ll: pretty('{w}' + data + '{}')})
             
-    ctx1 = y.spawn(run_loop, 'build_pubsub')
-    ctx2 = y.spawn(do_run_console, 'run_in_console')
+            if 'message' in arg:
+                color = {'failure': '{r}'}.get(arg.get('status', ''), '{b}')
+               
+                y.build_results({'info': pretty(color + arg['message'] + '{}')})
 
-    print await ctx2
-    print await ctx1
+            if 'debug' in arg:
+                is_debug() and y.debug('%s', arg['debug'])
+                
+            if 'info' in arg:
+                y.info('%s', arg['info'])
 
-    return 0
+        return await do_run(output_build_results)
+            
+    return await y.spawn(do_run_log)

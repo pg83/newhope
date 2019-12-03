@@ -9,7 +9,7 @@ def xxformat(*args, **kwargs):
     text = ' '.join(y.fixx(x) for x in iter_t())
 
     if 'init' in kwargs:
-        return '{' + kwargs['init'] + '}' + text + '{}'
+        text = '{' + kwargs['init'] + '}' + text + '{}'
     
     return text
                 
@@ -18,82 +18,52 @@ def xxprint(*args, **kwargs):
     kwargs.pop('where', y.stderr).write(xxformat(*args, **kwargs) + '\n')
 
 
+@y.singleton
+def my_cm():
+    return y.deep_copy(y.COLOR_TABLE)
+    
+
 def process_color(text, init, kwargs):
     verbose = kwargs.get('verbose', y.verbose)
     raw = kwargs.get('raw', False)
-    cm = y.color_map_func()
+    cm = my_cm()
     rst = ('c', '')
 
-    def process_part1(s, parts):
-        text = parts.pop()
+    def process_stack(s, text):
+        while text:
+            p = text.find('{')
 
-        while True:
-            pos = text.find('{')
-            
-            if pos >= 0:
-                break
+            if p < 0:
+                yield ('t', text)
 
-            if not parts:
-                break
+                return
 
-            part = parts.pop()
-            text = text + part
+            yield ('t', text[:p])
 
-        if pos < 0:
-            yield ('c', s[-1])
-            yield ('t', text)
-            yield rst
+            text = text[p:]
 
-            return
-        
-        part = text[:pos]
+            p = text.find('}')
 
-        yield ('c', s[-1])
-        yield ('t', part)
-        yield rst
+            if p < 0:
+                yield ('t', text)
 
-        text = text[pos:]
-        pos = text.find('}')
+                return
 
-        if pos < 0:
-            yield ('c', s[-1])
-            yield ('t', text)
-            yield rst
+            c = text[:p + 1]
+            text = text[p + 1:]
 
-            return
-
-        nc = text[1:pos]
-        next = text[pos + 1:]
-
-        add = ''
-
-        if nc not in cm:
-            pp = nc.split(':')
-
-            if len(pp) == 2 and pp[0] in cm:
-                add = '{' + pp[0] + '}' + kwargs[pp[1]] + '{}'
-            else:
+            if c == '{}':
+                s.pop()
+                
                 yield ('c', s[-1])
-                yield ('t', text[:pos + 1])
-                yield rst
-        else:
-            if nc in ('rst', 'reset', ''):
-                s = s[:-1]
+            elif c in cm:
+                s.append(c)
+
+                yield ('c', c)
             else:
-                s.append(nc)
-
-        parts.append(next)
-        
-        if add:
-            parts.append(add)
-
-    def process_part(s, parts):
-        while parts:
-            for x in process_part1(s, parts):
-                yield x
-
-            while parts and not parts[-1]:
-                parts.pop()
+                yield ('t', c)
+                
+    out_txt = (verbose and '/rc' in verbose) or ('txt' in y.config.get('color', ''))
 
     def combine():
         s = [init or '']
@@ -105,11 +75,11 @@ def process_color(text, init, kwargs):
                 
                 if raw:
                     return {'color': c}
-                
-                if verbose and '/rc' in verbose:
-                    return '[' + c + ']'
 
-                return cm[c]
+                if out_txt:
+                    return c
+
+                return cm[''] + cm[c]
             else:
                 res = ''.join([x[1] for x in last])
 
@@ -118,7 +88,7 @@ def process_color(text, init, kwargs):
 
                 return res
 
-        for p in process_part(s, [text]):
+        for p in process_stack(s, text):
             if p[0] == 't' and not p[1]:
                 continue
 
@@ -152,11 +122,8 @@ def lookup(xp):
 
         return func
 
-    raise AttributeError()
+    raise AttributeError(xp)
 
-
-def gen_text():
-    return '{g}' + ('dhfkjgfsdjhfsdfhjkjdfhg' * 10 + '\n') * 10 + 'xxx{b}' + ('78653475347547' * 10 + '\n') * 5 + '{w}' + 'djfhdjkfgkjgf' * 10 + '{}' + ('73673578364583456' * 5 + '\n') * 10 + '{}'
 
 
 def reduce_by_key(iter, keyf):
@@ -221,3 +188,22 @@ def reshard_text(text, nn):
             yield [combine(x) for x in l]
 
     return list(iter2())
+
+
+def run_color_test():
+    text = '''
+{w}{g}982{} | {b}18:32:34{} | {y}ut.iface    {} | {ds}D{} | {bs}will run defer constructors {}{}
+{w}{g}982{} | {b}18:32:34{} | {y}ut.iface    {} | {ds}D{} | {bs}done {}{}
+{w}{g}982{} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}spawn <coro entry_point, from <loop main>, created>{}{}
+{w}{g}982{} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}spawn <coro flush_streams, from <loop main>, created>{}{}
+{w}{g}958{} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}<coro entry_point, from <loop main>, created> step in{}{}
+{w}{g}33 {} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}<coro flush_streams, from <loop main>, created> step in{}{}
+{w}{g}33 {} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}<coro flush_streams, from <loop main>, suspended> step out{}{}
+{w}{g}958{} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}<coro entry_point, from <loop main>, suspended> step out{}{}
+{w}{g}345{} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}reschedule <coro entry_point, from <loop main>, suspended>{}{}
+{w}{g}9  {} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}<coro entry_point, from <loop main>, suspended> step in{}{}
+'''
+    
+    y.sys.stderr.write(process_color(text.strip() + '\n', '', {'verbose': '/rc'}))
+    y.sys.stderr.flush()
+    

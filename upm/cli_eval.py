@@ -1,20 +1,20 @@
 @y.main_entry_point
 async def cli_eval(args):
-   run_eval(args)
+   await run_eval(args)
 
 
-def run_eval(args):
+async def run_eval(args):
    repl = {
       'layers': 'y.gen_all_texts(only_print_layers=True)'
    }
 
    if not args:
       for k, v in repl.items():
-         y.xprint_b(k, '=', v)
+         y.xprint_bb(k, '=', v)
 
       return
 
-   y.pubsub.run(init=[mf_function_holder])
+   await y.prepare_makefile()
 
    for a in args:
       try:
