@@ -38,7 +38,7 @@ def iter_all_tests():
     yield self_test3
 
 
-@y.main_entry_point
+@y.verbose_entry_point
 def cli_selftest(args, verbose):
    print 1
    

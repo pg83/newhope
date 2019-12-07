@@ -14,6 +14,9 @@ def log_lookup(name):
             if not '%' in msg: 
                 msg = msg + ' ' + ' '.join(str(x) for x in args)
                 args = ()
+            elif msg == '%s':
+                msg = ' '.join(str(x) for x in args)
+                args = ()
                 
             return getattr(get_log(), name)(msg, *args, **kwargs)
 
@@ -38,33 +41,55 @@ class ColoredFormatter(y.logging.Formatter):
             dls[l.upper()[0]] = dls[l]
 
         self.styles = dls
-
+        self.fmt = fmt
+        
         y.logging.Formatter.__init__(self, fmt, '%H:%M:%S')
-
+        
     def format(self, record):
-        style = self.styles.get(record.levelname[0])
+        res = self.fmt
 
-        if style:
-            record = y.deep_copy(record)
-            record.msg = style + record.msg + '{}'
+        funcs = {
+            'levelname': lambda x: x[:1].upper(),
+            'msg': lambda x: (x + '    ')[:10]
+        }
 
-        return y.logging.Formatter.format(self, record)
-
-
+        if (target := record.__dict__.get('_target')) is not None:
+            record.text = '{' + record.msg[2] + '}' + target + '{}'        
+        
+        for k, v in record.__dict__.items():
+            res = res.replace('%(' + k + ')', funcs.get(k, lambda x: x)(str(v)))
+        
+        return res
+    
+    
 def init_logger(log_level='INFO'):
-    y.logging.raiseExceptions = False        
+    #y.logging.raiseExceptions = False        
     old_factory = y.logging.getLogRecordFactory()
 
     def record_factory(*args, **kwargs):
         record = old_factory(*args, **kwargs)
-        record.thr = y.threading.get_ident() % 997
-        record.name = record.name[:14]
-        
+
+        try:
+            record.thr = str(y.current_coro().thread_id)
+
+            if len(record.thr) == 1:
+                record.thr = '0' + record.thr
+        except Exception:
+            record.thr = ''
+
+        record.name = record.name[:10]
+        record.msg = record.msg.strip()
+        record.text = ''
+
+        if len(record.msg) > 15:
+            record.text = record.msg
+            record.msg = '{bg}INFO{}'
+
         return record
 
     y.logging.setLogRecordFactory(record_factory)
     
-    fmt = '{w}{g}%(thr)-3s{} | {b}%(asctime)s{} | {y}%(name)-12s{} | {bs}%(levelname).1s{} | %(message)s{}'
+    fmt = ' {w}{g}%(thr){} | {b}%(asctime)s{} | {br}%(levelname){} | %(msg) | %(text) {}'
 
     class Stream(object):
         def __init__(self):

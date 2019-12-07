@@ -1,16 +1,38 @@
-export PATH="$PATH:/bin:/sbin:/usr/bin:/usr/local/bin"
-export CFLAGS="-O2 -w -fno-builtin $CFLAGS"
-
 export PATH="`source fix_uniq ':' $PATH`"
 export CFLAGS="`source fix_uniq_space $CFLAGS`"
+export LDFLAGS="`source fix_uniq_space $LDFLAGS`"
 
-export YSHELL=`(which $YSHELL || which dash || which $OUTER_SHELL || which bash) 2> /dev/null`
-export YMAKE=`which gmake || which make`
-export YXZ=`which xz`
-export YTAR=`which bsdtar || which tar`
-export YGZIP=`which gzip`
-export YBZIP2=`which bzip2`
-export YUNZIP=`which unzip`
-export YCURL=`which curl`
-export YWGET=`which wget`
+find_file() {
+    for i in "$@"; do
+        if test -f "$i"; then
+	    source echon "$i"
+
+            return 0
+	fi
+
+        wi=$(which "$i")
+	
+        if test -f "$wi"; then
+	    source echon "$wi"
+
+            return 0
+	fi
+    done
+
+    return 1
+}
+
+export YSHELL=$(find_file $YSHELL dash $OUTER_SHELL bash)
+export YMAKE=$(find_file $YMAKE gmake make)
+export YXZ=$(find_file $YXZ xz)
+export YTAR=$(find_file $YTAR bsdtar tar)
+export YGZIP=$(find_file $YGZIP gzip)
+export YBZIP2=$(find_file $YBZIP2 bzip2)
+export YUNZIP=$(find_file $YUNZIP unzip)
+export YCURL=$(find_file $YCURL curl)
+export YWGET=$(find_file $YWGET wget)
+export Y7ZA=$(find_file $Y7ZA 7za)
+
 export SHELL="$YSHELL"
+
+env

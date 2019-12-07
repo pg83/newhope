@@ -13,24 +13,30 @@ def monkey_patch():
 
     i.getmodule = my_get_module
 
-
-monkey_patch()
     
+monkey_patch()
+
+
+def patch_ssl():
+    ssl = y.ssl
+    _create_default_context = ssl.create_default_context
+
+    def create_default_context(*args, **kwargs):
+        ctx = _create_default_context(*args, **kwargs)
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        return ctx
+
+    ssl.create_default_context = create_default_context
+    ssl._create_default_https_context = create_default_context
+
+
+patch_ssl()
+
 
 def my_eh(typ, val, tb):
     print(typ, val, tb)
-
-
-def decode_prof(data):
-    import zlib
-    
-    return y.marshal.loads(zlib.decompress(data))
-
-
-def encode_prof(v):
-    import zlib
-    
-    return zlib.compress(y.marshal.dumps(v))
 
     
 class PGProfiler(object):
@@ -78,12 +84,12 @@ class PGProfiler(object):
             self.w = False
             res = {'d': self.d, 'i': self.i}
             
-            return encode_prof(res)
+            return y.encode_prof(res)
         finally:
             self.w = True
             
     def loads(self, v):
-        res = decode_prof(v)
+        res = y.decode_prof(v)
 
         self.i = res['i']
         self.d = res['d']

@@ -9,84 +9,51 @@ import collections.abc
 import random
 import heapq
 import threading
+import weakref
+import contextvars as cv
 
 
+CURRENT_CORO = cv.ContextVar('CURRENT_CORO')
 NOV = '$'
 
 
+def current_coro():
+    return CURRENT_CORO.get()
+
+        
+class Action(Exception):
+    def __init__(self, a):
+        self.action = a
+
+
+def wrap_context(func):
+    def func1(self):
+        try:
+            token = CURRENT_CORO.set(self)
+
+            return func(self)
+        finally:
+            CURRENT_CORO.reset(token)
+            
+    @y.functools.wraps(func)
+    def wrapped(self):
+        return self.ctx.run(func1, self)
+
+    return wrapped
+    
+        
 def set_name(func, name):
     func.__name__ = name
 
     return func
 
-        
-class AddPop(object):
-    def pop(self):
-        t = y.TOut()
-        
-        while (res := self.try_pop()) == NOV:
-            if t.current() > 0:
-                time.sleep(t.current())
-                
-            t.bad() 
-
-        return res
-
-    
-class MTQ(object):
-    def __init__(self, k=queue.SimpleQueue):
-        self.q = k()
-
-    def push(self, v):
-        self.q.put(v)
-
-    def pop(self):
-        return self.q.get()
-
-    def try_pop(self):
-        try:
-            return self.q.get_nowait()
-        except queue.Empty:
-            return NOV
-
-        
-class PQ(object):
-    def __init__(self):
-        self.r, self.w = y.os.pipe()
-
-    def push(self, v):
-        y.os.write(self.w, y.struct.pack('I', v))
-
-    def pop(self):
-        return y.struct.unpack('I', y.os.read(self.r, 4))[0]
-    
-
-class LFQ(AddPop):
-    def __init__(self):
-        self.q = [cc.deque() for i in range(0, 3)]
-
-    def push(self, v):
-        y.random.choice(self.q).append(v)
-
-    def try_pop(self):
-        q = [x for x in self.q]
-        y.random.shuffle(q)
-        
-        for i in q: 
-            try:
-                return i.popleft()
-            except IndexError:
-                pass
-
-        return NOV
-
 
 def factory(where):
     if where == 'timer':
-        return MTQ
+        return y.MTQ
 
     if where == 'sched':
-        return MTQ
+        return y.MTQ
 
 
 def nope():
@@ -104,7 +71,7 @@ def gen_int_uid():
 
 class SchedAction(collections.abc.Awaitable):
     def __str__(self):
-        return '<sched ' + self.name + ', from loop ' + str(self.loop) + ', action ' + self.action.__name__ + ', ' + str(self.id) + '>'
+        return '<sched ' + self.name + ', from ' + self.loop_name + ', action ' + self.action.__name__ + ', ' + str(self.id) + '>'
 
     def __repr__(self):
         return str(self)
@@ -114,19 +81,19 @@ class SchedAction(collections.abc.Awaitable):
 
     __iter__ = __await__
 
-    def __init__(self, loop, name, action):
+    def __init__(self, loop_name, action):
         self.id = ic()
-        self.loop = loop
-        self.name = name
+        self.loop_name = loop_name
+        self.name = loop_name + '_' + action.__name__
         self.action = action
 
-    def sched_action(self, **kwargs):
-        return self.__dict__.pop('action')(**kwargs)
+    def sched_action(self, coro):
+        return self.__dict__.pop('action')(coro)
         
         
 class Future(collections.abc.Awaitable):
     def __str__(self):
-        return '<fut ' + self.name + ', from loop ' + str(self.loop) + ', ' + str(self.id) + '>'
+        return '<fut ' + self.name + ', from loop ' + self.ln + ', ' + str(self.id) + '>'
 
     def __repr__(self):
         return str(self)
@@ -137,10 +104,10 @@ class Future(collections.abc.Awaitable):
 
     __iter__ = __await__
 
-    def __init__(self, loop, action):
+    def __init__(self, loop_name, action):
+        self.ln = loop_name
         self.id = ic()
         self.cb = []
-        self.loop = loop
         self.name = 'fut_' + action.__name__
         self.action = action
         
@@ -163,13 +130,14 @@ class Future(collections.abc.Awaitable):
             return y.unpack(self.r)
         except AttributeError:
             return self
-
-    def run_action(self):
-        self.pop('action', nope)()
         
     def add_cb(self, cb):
-        self.cb.append(cb)
-        self.run_action()
+        try:
+            self.cb.append(cb)
+        except:
+            print(e, self.stack, self.__name__)
+
+            raise
             
     def is_done(self):
         try:
@@ -184,11 +152,14 @@ class Future(collections.abc.Awaitable):
         return self.__dict__.pop
         
     def call_all_callbacks(self):
+        self.stack = y.traceback.format_stack()
+        
         for c in self.pop('cb'):
             c()
-
-    def sched_action(self, coro, **kwargs):
-        self.add_cb(set_name(lambda: self.loop.reschedule(coro), 'reschedule_' + coro.name))
+            
+    def sched_action(self, coro):
+        self.add_cb(coro.reschedule)
+        self.pop('action')()
 
     
 class MinHeap(object):
@@ -226,25 +197,6 @@ class MinHeap(object):
         return not self.v
     
 
-class Scheduler(object):
-    def get_next(self):
-        pass
-
-    def reschedule(self, c):
-        pass
-
-    
-class SimpleRR(Scheduler):
-    def __init__(self):
-        self.d = factory('sched')()
-
-    async def get_next(self):
-        return COROS[self.d.pop()]
-
-    def reschedule(self, v):
-        self.d.push(v.id)
-
-
 class ReadFile(object):
     def __init__(self, name, loop):
         self.loop = loop
@@ -252,19 +204,19 @@ class ReadFile(object):
         self.f = None
         
     async def open(self):
-        self.f = await loop.offload(set_name(lambda: open(self.name, 'rb'), 'open_file'))
+        self.f = await self.loop.offload(set_name(lambda: open(self.name, 'rb'), 'open_file'))
 
     async def close(self):
-        await loop.offload(self.f.close)
+        await self.loop.offload(self.f.close)
         self.f = None
         
     async def read(self):
         assert self.f
-        return await loop.offload(self.f.read)
+        return await self.loop.offload(self.f.read)
     
     async def read_line(self):
         assert self.f
-        return await loop.offload(self.f.readline)
+        return await self.loop.offload(self.f.readline)
 
     
 class TimeScheduler(object):
@@ -319,17 +271,9 @@ class TimeScheduler(object):
         while (val := self.tq.try_pop()) != NOV:
             self.add(*val)
             
-    async def system_time_checker(self, ctl):
+    async def system_time_checker(self):
         while True:
-            try:
-                await self.step()
-            except GeneratorExit:
-                self.respawn()
-                is_debug() and y.debug('generator exit, respawn')
-
-                return
-            except Exception:
-                y.on_except()
+            await self.step()
 
     def respawn(self):
         self.loop.spawn(self.system_time_checker, self.name)
@@ -337,24 +281,42 @@ class TimeScheduler(object):
         
 COROS = {}
 
+
+def coro_rescheduler(coro, i):
+    coro.loop.loop.thrs[i].reschedule(coro)
+
+    
+def yield_action(coro):
+    coro.reschedule()
+
                 
 class Coro(collections.abc.Coroutine):
-    def __init__(self, loop, coro, name):
+    def __init__(self, loop, coro, ctx, name):
+        self.ctx = ctx
         self.id = ic()
         self.n = name
         self.c = coro
         self.l = loop
         self.f = self.create_future(nope)
-        self.r = self.c(self)
+
+        try:
+            self.r = self.c(self)
+        except TypeError:
+            self.r = self.c()
+            
         self.s = y.collections.deque()
         self.v = None
 
         COROS[self.id] = self
+
+    def change_state(self, coro):
+        self.c = coro
+        self.r = self.c(self)
         
     def __str__(self):
         state = str(y.inspect.getcoroutinestate(self))[5:].lower()
         
-        return '<coro ' + self.name + ', from ' + str(self.loop) + ', ' + state + ', ' + str(self.id) + '>'
+        return '<coro ' + self.name + ', ' + str(self.loop) + ', ' + state + ', id ' + str(self.id) + '>'
 
     def __repr__(self):
         return str(self)
@@ -362,6 +324,22 @@ class Coro(collections.abc.Coroutine):
     def is_system(self):
         return 'system_' in self.name
 
+    @property
+    def thread_id(self):
+        return self.loop.thread_id
+    
+    @property
+    def thread_count(self):
+        return self.loop.thread_count
+
+    async def go_to_thread(self, i):
+        assert i < self.thread_count
+        assert i >= 0
+
+        while self.thread_id != i:
+            await self.sched_yield()
+            await self.create_sched_action(set_name(lambda x: coro_rescheduler(x, i), 'coro_rescheduler_' + str(i)))
+                        
     @property
     def name(self):
         return self.n
@@ -381,7 +359,7 @@ class Coro(collections.abc.Coroutine):
     def result(self):
         return self.v
     
-    def step_0(self):
+    def step(self):
         try:
             if self.is_system():
                 return self.slave.send(None)
@@ -400,42 +378,31 @@ class Coro(collections.abc.Coroutine):
 
             raise
 
-    def step(self):
-        try:
-            return self.step_0()
-        except StopIteration:
-            raise
-        except:
-            y.os.abort()
-
+    @wrap_context
     def next(self):
-        return next(self)
-
+        return (self.step() or self.l).sched_action(self)
+    
     def reschedule(self):
         self.l.reschedule(self)
     
     def send(self, v):
         y.os.abort()
         return self.slave.send(v)
-    
+
+    @wrap_context
     def throw(self, *args):
         return self.slave.throw(*args)
-        
+
+    @wrap_context
     def close(self):
         return self.slave.close()
         
     def __await__(self):
         return self.f.__await__()
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        return self.step()
         
-    def spawn(self, c, name=None):
-        name = name or c.__name__
-        res = self.l.spawn(c, self.name + '_' + name)
+    def spawn(self, coro, name=None):
+        name = name or coro.__name__
+        res = self.l.spawn_impl(coro, self, self.name + '_' + name)
         
         self.s.append(res)
 
@@ -488,29 +455,51 @@ class Coro(collections.abc.Coroutine):
     def cr_running(self):
         return self.slave.cr_running
 
-    
-class Loop(object):
-    def __init__(self, name, scheduler=None):
+
+class ThreadLoop(object):
+    def __init__(self, ctx, i, name, loop):
+        self.ctx = ctx
+        self.rng = y.PCGRandom(3, i)
+        self.i = i
         self.name = name
-        self.sched = scheduler or SimpleRR()
-        self.timer_queue = factory('timer')()
-        self.timers = [TimeScheduler(self, 'system_tc_' + str(i)) for i in range(0, 10)]
-        self.thrs = [y.threading.Thread(target=self.drive) for i in range(0, 20)]
+        self.loop = loop
+        self.q = cc.deque()
+        self.t = y.threading.Thread(target=self.thr_loop)
+        self.cs = 0
 
-        for t in self.thrs:
-            t.start()
+    @property
+    def thread_id(self):
+        return self.i
 
-        for t in self.timers:
-            t.respawn()
+    @property
+    def thread_count(self):
+        return len(self.loop.thrs)
+    
+    @property
+    def int_random(self):
+        return self.rng.next_random
+    
+    @property
+    def float_random(self):
+        return self.rng.next_float
         
     def __str__(self):
         return '<loop ' + self.name + '>'
 
     def __repr__(self):
         return str(self)
-    
+
+    def start(self):
+        self.t.start()
+        
+    def thr_loop(self):
+        try:
+            self.ctx.run(self.drive_sync)
+        except:
+            y.os.abort()
+            
     async def read_file(self, name):
-        rf = ReadFile(name, loop)
+        rf = ReadFile(name, self)
 
         await rf.open()
 
@@ -519,81 +508,103 @@ class Loop(object):
 
         raise Exception('can not open file ' + name)
     
-    def schedule(self, coro, name):
-        res = Coro(self, coro, name)
+    def schedule(self, coro, ctx, name):
+        res = Coro(self, coro, ctx, name)
 
-        self.sched.reschedule(res)
         is_debug() and y.debug('spawn', str(res))
+        self.reschedule(res)
         
         return res
 
     def spawn(self, coro, name=None):
+        return self.spawn_impl(coro, self, name)
+    
+    def spawn_impl(self, coro, parent, name):
         name = name or coro.__name__
         
-        return self.schedule(coro, name)
+        return self.schedule(coro, parent.ctx.copy(), name)
     
-    def reschedule(self, coro):    
-        self.sched.reschedule(coro)
+    def reschedule(self, coro):
+        coro.l = self
+        self.q.append(coro.id)
 
         if is_debug():
             if not coro.is_system():
                 y.debug('reschedule', str(coro))
 
-    async def one_step(self):
-        c = await self.sched.get_next()
-        
-        try:
-            x = c.next()
-        except StopIteration:
-            return
-    
-        if x:
-            return x.sched_action(loop=self, coro=c)
-
-        self.reschedule(c)
-
-    async def drive_async(self):
-        while True:
-            await self.one_step()
+    def iter_thrs1(self):
+        if 0:
+            while True:
+                yield self.i
+                time.sleep(0.001)
             
-    def drive(self):
-        async def main(ctl):
-            return await self.drive_async()
+        for i in range(0, 20):
+            yield self.i + i
+            time.sleep(0)
         
-        c = Coro(self, main, 'main')
+        c = self.i
 
         while True:
+            yield c
+
+            time.sleep(0.001)
+            
+            c = c + 1 + 5 * self.float_random()
+
+            if c > 1000:
+                c = 0
+            
+    def get_next(self):
+        tt = self.loop.thrs
+        
+        for j in self.iter_thrs1():
             try:
-                x = c.next()
-            except StopIteration as e:
-                return e.value
-    
-            if x:
-                x.sched_action(loop=self, coro=c)
+                c_id = tt[int(j) % len(tt)].q.popleft()
+            except IndexError:
+                continue
+
+            c = COROS[c_id]
+            c.l = self
+
+            return c
+            
+    def one_step_sync(self, c): 
+        try:
+            return c.next()
+        except StopIteration as s:
+            COROS.pop(c.id)
+
+            return
+
+    def sched_action(self, x):
+        return self.reschedule(x)
+        
+    def drive_sync(self):
+        while True:
+            self.cs += 1
+            self.one_step_sync(self.get_next())
+            time.sleep(0)
 
     async def sched_yield(self):
         return await self.create_yield()
         
     def create_yield(self):
-        def yield_action(loop, coro):
-            loop.reschedule(coro)
-        
         return self.create_sched_action(yield_action)
         
     def create_sched_action(self, action):
-        return SchedAction(self, self.name + '_' + action.__name__, action)
+        return SchedAction(self.name, action)
     
     def create_future(self, action):
-        return Future(self, action)
+        return Future(str(self), action)
         
     async def sleep_deadline(self, dd):
         name = 'sleep_deadline_' + str(int(dd))
-        fut = self.create_future(set_name(lambda: self.timer_queue.push((dd, fut.signal)), name))
+        fut = self.create_future(set_name(lambda: self.loop.timer_queue.push((dd, fut.signal)), name))
 
         return await fut
         
     async def sleep(self, tout):
-        if tout < 0.015:
+        if tout < 0.02:
             return await self.sched_yield()
         
         t1 = time.time()
@@ -609,17 +620,52 @@ class Loop(object):
 
         return y.unpack((await self.spawn(async_job, 'async_' + job.__name__)).__dict__.pop('v'))
 
-    async def map(self, func, data):
-        def gen_func(el):
-            async def async_func(ctl):
-                return await func(el)
 
-            return async_func
+class Loop(object):
+    def __init__(self, name, scheduler=None):
+        self.ctx = cv.copy_context()
+        self.name = name
+        self.timer_queue = factory('timer')(self)
+        self.timers = [TimeScheduler(self, 'system_tc_' + str(i)) for i in range(0, 5)]
+        self.thrs = [ThreadLoop(self.ctx.copy(), i, name + '_' + str(i), self) for i in range(0, 20)]
 
-        h = [self.spawn(gen_func(el)) for el in data]
-        r = [await x for x in h]
+        for t in self.thrs:
+            t.start()
 
-        return r
+        for t in self.timers:
+            t.respawn()
+
+        #self.spawn(self.collect_stats)
+
+    def __str__(self):
+        return '<loop ' + self.name + '>'
+
+    def __repr__(self):
+        return str(self)
+
+    async def collect_stats(self):
+        cc = y.current_coro()
+        
+        while True:
+            for i in range(0, len(self.thrs)):
+                await cc.go_to_thread(i)
+                print('awake in', cc)
+                await cc.sleep(0.5)
+    
+    @property
+    def spawn(self):
+        return self.get_random_queue().spawn
+
+    @property
+    def sleep(self):
+        return self.get_random_queue().sleep
+
+    @property
+    def offload(self):
+        return self.get_random_queue().offload    
+    
+    def get_random_queue(self):
+        return random.choice(self.thrs)
 
     
 async_loop = Loop('main')

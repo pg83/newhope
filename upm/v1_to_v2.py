@@ -41,14 +41,6 @@ def to_v2(data, info):
     node['constraint'] = info['info']
     node['prepare'] = y.to_lines(prepare)
 
-    if 'meta' not in node:
-        node['meta'] = {}
-        
-    meta = node['meta']
-
-    if 'kind' not in meta:
-        meta['kind'] = node.pop('kind', [])
-
     def iter_subst():
         for i, v in enumerate(node.get('extra', [])):
             if v['kind'] == 'file':

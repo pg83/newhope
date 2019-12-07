@@ -71,7 +71,7 @@ def unpack(r):
     if res:
         return res[0]
 
-    raise exc[0](exc[1]).with_traceback(exc[2])    
+    raise exc[1].with_traceback(exc[2])
 
 
 def print_stacks():

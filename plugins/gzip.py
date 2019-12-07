@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-1)
+@y.ygenerator()
 def gzip0():
     return {
         'code': """
@@ -10,6 +10,8 @@ def gzip0():
         'version': '1.10',
         'meta': {
             'kind': ['compression', 'tool'],
-            'depends': []
+            'provides': [
+                {'env': 'YGZIP', 'value': '{pkgroot}/bin/gzip'},
+            ],
         },
     }

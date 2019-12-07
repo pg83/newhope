@@ -3,7 +3,7 @@ def iter_all_tools():
     ff = y.fix_v2
 
     def do():
-        for x in y.itertools.chain(y.iter_system_tools(), y.iter_musl_cc_tools(), y.iter_ndk_tools()):
+        for x in y.itertools.chain(y.iter_system_tools(), y.iter_ndk_tools()):
             yield ff(x)
 
     return list(do())
@@ -57,7 +57,7 @@ def join_toolchains(c, l):
         'node': {
             'build': [],
             'prepare': cn.get('prepare', []) + ln.get('prepare', []),
-            'kind': cn['kind'] + '/' + ln['kind'],
+            'kind': cn['meta']['kind'] + ln['meta']['kind'],
             'name': cn['name'] + '-' + ln['name'],
             'version': cn['version'] + '-' + ln['version'],
         },
@@ -68,7 +68,7 @@ def join_toolchains(c, l):
 def score_toolchains(lst):
     def flt(kind):
         for o in lst:
-            if kind in o['node']['kind']:
+            if kind in o['node']['meta']['kind']:
                 yield o
 
     comp = list(flt('c'))

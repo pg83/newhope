@@ -1,4 +1,4 @@
-@y.ygenerator(tier=1)
+@y.ygenerator()
 def ninja0():
     return {
         'code': """
@@ -10,6 +10,9 @@ def ninja0():
         'version': '1.9.0',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['python_pth']
+            'depends': ['python-pth'],
+            'provides': [
+                {'env': 'YNINJA', 'value': '{pkgroot}/bin/ninja'},
+            ],
         },
     }

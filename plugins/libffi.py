@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-2)
+@y.ygenerator()
 def libffi0():
     return {
         'code': """

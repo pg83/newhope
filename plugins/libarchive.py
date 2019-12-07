@@ -1,4 +1,4 @@
-@y.ygenerator(tier=1)
+@y.ygenerator()
 def libarchive0():
     return {
         'code': """
@@ -7,12 +7,13 @@ def libarchive0():
              $YMAKE -j2
              $YMAKE install
         """,
-        'version': '2.4.0',
+        'version': '3.4.0',
         'meta': {
             'kind': ['library', 'tool', 'compression'],
             'depends': ['zlib', 'bzip2', 'xz', 'curl'],
             'provides': [
-                {'lib': 'archive'}
+                {'lib': 'archive'},
+                {'env': 'YTAR', 'value': '{pkgroot}/bin/bsdtar'},
             ],
         },
     }

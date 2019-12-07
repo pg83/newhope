@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-2)
+@y.ygenerator()
 def dash0():
     return {
         'code': """
@@ -11,5 +11,8 @@ def dash0():
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['libedit'],
+            'provides': [
+                {'env': 'YSHELL', 'value': '{pkgroot}/bin/dash'},
+            ],
         },
     }

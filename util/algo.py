@@ -158,3 +158,22 @@ def deque_iter():
 
 deque_iter_sync = deque_iter(_async=False)
 deque_iter_async = deque_iter(_async=True)
+
+
+def modify_list(k, d, f):
+    d[k] = f(d.get(k, []))
+
+
+def append_list(k, d, v):
+    modify_list(k, d, lambda l: l + [v])
+
+
+def prepend_list(k, d, v):
+    modify_list(k, d, lambda l: [v] + l)
+
+
+def ensure_value(k, d, v):
+    if k not in d:
+        d[k] = v
+
+    return d[k]

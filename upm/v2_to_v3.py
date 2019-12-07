@@ -41,10 +41,11 @@ def prepare_prepare(data, target):
 def print_one_node(root):
     rn = root['trash']['restore_node']
     root_node = root['node']
+    extra = root_node.get('extra_cmd', [])
     target = gen_pkg_path(root)
     nodes = list(uniq_deps([rn(x) for x in root['deps']]))
     naked = root_node.get('naked', False)
-    inputs = [y.build_scripts_path()] + [mgr_pkg_mark(x[0]) for x in nodes] + root_node.get('inputs', [])
+    inputs = [y.build_scripts_path()] + [mgr_pkg_mark(x[0]) for x in nodes] + [x['output'] for x in extra]
 
     int_node = {
         'output': target,
@@ -53,14 +54,14 @@ def print_one_node(root):
 
     def iter_part1():
         if not naked:
-            yield '. init $@'
+            yield '. "$2" && source init $@ && env'
 
         for x in root_node.get('build', []):
             yield x
 
         prepare = prepare_prepare(root_node.get('prepare', []), target)
-        meta = y.meta_to_build(root_node.get('meta', {}), None, target)
-        data = '\n'.join([prepare, meta])
+        meta = y.meta_to_build(root_node.get('meta', {}), root_node['constraint']['host'])
+        data = '\n'.join([prepare, meta]).strip()
         data = data.replace('{pkgroot}', mn(target)) + '\n'
         data = base64.b64encode(data.encode('utf-8'))
 
@@ -71,4 +72,4 @@ def print_one_node(root):
 
     int_node['build'] = list(iter_part1())
 
-    return int_node
+    return [int_node] + extra

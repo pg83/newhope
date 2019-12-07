@@ -27,6 +27,51 @@ def repacks():
     return dict(iter())
 
 
+def split_run_meta(m):
+    m = y.deep_copy(m)
+
+    m.pop('depends', None)
+
+    def flt_kind():
+        for k in m.get('kind', []):
+            if k == 'library':
+                pass
+            else:
+                yield k
+
+    m['kind'] = list(flt_kind())
+    
+    def flt_provides():
+        for p in m.get('provides', []):
+            if 'lib' in p:
+                continue
+
+            if 'env' in p:
+                e = p['env']
+
+                if 'CFLAGS' in e or 'LIBS' in e:
+                    continue
+            
+            yield p
+
+    m['provides'] = list(flt_provides())
+
+    return m
+
+
+def split_meta(m, kind):
+    if kind == 'run':
+        return split_run_meta(m)
+
+    if kind in ('doc', 'log'):
+        return {
+            'flags': m.get('flags', []),
+        }
+    
+    # TODO
+    return m
+
+
 class SplitKind(object):
     def __init__(self, parent, kind):
         self.p = parent
@@ -44,15 +89,19 @@ class SplitKind(object):
         return y.gen_func(self.code, info)
         
     def split_part(self, info):
-        return {
+        res = {
             'code': self.p.repacks[self.k]['code'],
             'kind': {'dev': ['library'], 'run': ['tool']}.get(self.k, []),
-            'codec': 'xz',
             'deps': self.p.deps(info),
+            'meta': split_meta(self.p.meta(info), self.k),
         }
+
+        res['meta']['kind'] = res.pop('kind')
+
+        return res
     
     def code(self, info):
-        return y.fix_pkg_name(y.to_v2(self.split_part(info), info), self.d)
+        return y.fix_pkg_name(y.fix_v2(y.to_v2(self.split_part(info), info)), self.d)
     
         
 class Splitter(object):
@@ -63,7 +112,15 @@ class Splitter(object):
     @y.cached_method
     def deps(self, info):
         return [self.arg['code'](info)]
+    
+    @y.cached_method
+    def meta(self, info):
+        deps = self.deps(info)
 
+        assert len(deps) == 1
+        
+        return y.restore_node_node(deps[0]).get('meta', {})
+                
     def gen(self, kind):
         return SplitKind(self, kind).d
 

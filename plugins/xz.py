@@ -1,4 +1,4 @@
-@y.ygenerator(tier=0)
+@y.ygenerator()
 def xz0():
     return {
         'code': """
@@ -8,5 +8,10 @@ def xz0():
         'version': '5.2.4',
         'meta': {
             'kind': ['compression', 'library', 'tool'],
+            'flags': ['HAVE_XZ_BIN'],
+            'provides': [
+                {'lib': 'lzma'},
+                {'env': 'YXZ', 'value': '{pkgroot}/bin/xz'}
+            ],
         },
     }

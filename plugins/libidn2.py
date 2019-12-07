@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-2)
+@y.ygenerator()
 def libidn20():
     return {
         'code': """
@@ -10,7 +10,7 @@ def libidn20():
         'version': '2.2.0',
         'meta': {
             'kind': ['library'],
-            'depends': ['intl', 'iconv', 'libunistring', 'pkg_config'],
+            'depends': ['intl', 'iconv', 'libunistring', 'pkg-config'],
             'provides': [
                 {'lib': 'idn2', 'configure': {'opt': '--with-libidn2={pkgroot}'}},
             ],

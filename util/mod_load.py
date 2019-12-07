@@ -137,13 +137,13 @@ class Loader(object):
       return self._by_name.itervalues()
 
    def save(self):
-      return y.zlib.encode(y.marshal.dumps({
+      return y.encode_prof({
          'builtin': self._builtin,
          'modules': [{'name': name, 'text': self._by_name[name].text()} for name in self._order]
-      }))
+      })
 
    def load(self, data):
-      data = y.marshal.loads(y.zlib.decode(data))
+      data = y.decode_prof(data)
       loader = Loader()
 
       for x in reversed(data['modules']):

@@ -33,3 +33,20 @@ def mf_function_holder(iface):
         yield y.DEFUN(l)
 
     yield y.FIN()
+
+
+def aggr_flag(name, metas):
+    data = sum((m.get(name, []) for m in metas), [])
+
+    try:
+        return sorted(frozenset(data))
+    except TypeError:
+        return data
+        
+    
+def join_metas(metas, merge=['flags']):
+    return dict((x, aggr_flag(x, metas)) for x in merge) 
+
+
+def apply_meta(to, fr):
+    to.update(join_metas([to, fr]))

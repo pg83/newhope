@@ -1,8 +1,11 @@
 source_all() {
     shift
-
-    for i in $@; do
-        source "$i"
+    
+    vars=$(echo $@ | tr ' ' '\n' | grep '/build' | grep -v 'build-scripts' | tr '\n' ' ')
+    
+    for i in $vars
+    do
+        source $i
     done
 }
 

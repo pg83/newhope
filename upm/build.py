@@ -1,3 +1,16 @@
+def gen_unpack_node(pkg):
+    mpkg = y.mgr_pkg_mark(pkg)
+    vis_name = pkg[4:]
+
+    return {
+        'inputs': [y.build_scripts_path(), pkg],
+        'output': mpkg,
+        'build': [
+            '. "$2" && source unpackage $(basename "$3")'
+        ],
+    }
+
+
 def print_v3_node(n):
     yield n['output'] + ': ' + ' '.join(n['inputs'])
 
@@ -57,7 +70,7 @@ def gen_unpack_node_for_node(r):
 
 
 def preprocess(cmd, r):
-    yield cmd
+    yield from cmd
     yield gen_unpack_node_for_node(r)
 
 
@@ -91,13 +104,13 @@ async def prepare_makefile():
     @y.lookup
     def lookup(name):
         return {'pubsub': y.PubSubLoop()}[name]
-    
+                
     await y.pubsub.run(init=[y.mf_function_holder])
 
-    
+
 async def build_makefile(nodes, internal=False):
     await prepare_makefile()
-    
+
     by_noid = {}
 
     def iter1():
@@ -139,7 +152,7 @@ async def build_makefile(nodes, internal=False):
 
             yield r
 
-    def iter5():
+    def iter5_0():
         by_name = {}
         
         yield y.build_scripts_run()
@@ -160,7 +173,21 @@ async def build_makefile(nodes, internal=False):
                 'inputs': sorted(set(by_name[name])),
                 'build': [],
             }
+            
+    def iter5():
+        by_out = {}
+        
+        for l in iter5_0():
+            k = l['output']
+            id = y.burn(l)
+            
+            if k in by_out:
+                assert by_out[k] == id
+            else:
+                by_out[k] = id
 
+                yield l
+            
     if internal:
         def iter6():
             for cmd in iter5():
@@ -170,7 +197,10 @@ async def build_makefile(nodes, internal=False):
                     'cmd': cmd['build'],
                 }
 
-        return y.zlib.compress(y.marshal.dumps(list(iter6())))
+        mk = y.MakeFile()
+        mk.init_from_lst(list(iter6()))
+
+        return y.dumps_mk(mk)
 
     def iter6():
         for cmd in iter5():
@@ -211,7 +241,3 @@ async def build_makefile(nodes, internal=False):
             res += v
 
     return res
-
-    
-async def decode_internal_format(data):
-    return y.marshal.loads(y.zlib.decompress(data))

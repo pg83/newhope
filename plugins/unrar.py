@@ -1,4 +1,4 @@
-@y.ygenerator(tier=1)
+@y.ygenerator()
 def unrar0():
     return {
         'code': """
@@ -10,5 +10,8 @@ def unrar0():
         'version': '5.8.3',
         'meta': {
             'kind': ['compression', 'tool'],
+            'provides': [
+                {'env': 'YUNRAR', 'value': '{pkgroot}/bin/unrar'},
+            ],
         },
     }

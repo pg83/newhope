@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-2)
+@y.ygenerator()
 def libiconv0():
     return {
         'code': """
@@ -10,9 +10,22 @@ def libiconv0():
         'version': '1.16',
         'meta': {
             'kind': ['box', 'library', 'tool'],
-            'depends': [],
             'provides': [
-                {'lib': 'iconv', 'configure': {'opts': ['--with-libiconv-prefix={pkgroot}', '--with-iconv={pkgroot}']}},
+                {
+                    'lib': 'iconv',
+                    'configure': {
+                        'opts': [
+                            '--with-libiconv-prefix={pkgroot}',
+                            '--with-iconv={pkgroot}',
+                        ],
+                    },
+                    'extra': [
+                        {
+                            'libs': '-framework CoreFoundation',
+                            'os': 'darwin',
+                        },
+                    ],
+                },
                 {'lib': 'charset'},
             ],
         },

@@ -1,5 +1,5 @@
 init() {
-    . runtime && source prepare_env "$(basename $1)" && source all $@ && source header
+    source prepare_env "$(basename $1)" && source all $@ && source set_env
 }
 
 init $@

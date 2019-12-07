@@ -8,6 +8,7 @@ async def cli_makefile(arg):
    parser.add_argument('-I', '--internal', default=False, action='store_const', const=True, help='generte internal format')
    parser.add_argument('-D', '--built-set', default=[], action='append', help='build set for build, like distro')
    parser.add_argument('-T', '--dot', default=False, action='store_const', const=True, help='output dot graph')
+   parser.add_argument('-F', '--dump', default=False, action='store_const', const=True, help='output full dump')
 
    args = parser.parse_args(arg)
 
@@ -29,8 +30,10 @@ async def cli_makefile(arg):
             data = await y.build_dot_script()
          elif args.shell:
             data = await y.build_sh_script(args.shell)
+         elif args.dump:
+            data = await y.gen_full_dump()
          else:
-            data = await y.main_makefile(internal=args.internal)
+            data, portion = await y.main_makefile(internal=args.internal)
 
          def func():
             f.write(data)

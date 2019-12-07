@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-1)
+@y.ygenerator()
 def pth0():
     return {
         'code': """

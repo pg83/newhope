@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-1)
+@y.ygenerator()
 def slang0():
     return {
         'code': """

@@ -9,7 +9,7 @@ async def cli_release(args):
    code = code.replace('{data}', data.decode('utf-8'))
 
    for x in y.file_data:
-      if x['path'] == 'cli':
+      if x['path'].endswith('cli'):
          break
 
    print(x['data'].replace('#REPLACEME', code))

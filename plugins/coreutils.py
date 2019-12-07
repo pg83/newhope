@@ -1,4 +1,4 @@
-@y.ygenerator(tier=0)
+@y.ygenerator()
 def coreutils0():
     return {
         'code': """

@@ -1,7 +1,9 @@
 def iter_workspace():
+    path = 'export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin'
+
     yield {
         'output': 'workspace',
-        'inputs': ['$RD/x', '$WD/x', '$PD/x', '$MD/x'],
+        'inputs': ['$RD/x', '$WD/x', '$PD/x', '$MD/x', '$SD/x'],
         'build': [],
     }
 
@@ -9,7 +11,7 @@ def iter_workspace():
         'output': '$PD/x',
         'inputs': [],
         'build': [
-            'export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin',
+            path,
             'rm -rf "$PD" 2> /dev/null || true',
             'mkdir -p "$PD"',
         ],
@@ -19,7 +21,7 @@ def iter_workspace():
         'output': '$WD/x',
         'inputs': [],
         'build': [
-            'export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin',
+            path,
             'rm -rf "$WD" 2> /dev/null || true',
             'mkdir -p "$WD"',
         ],
@@ -29,7 +31,7 @@ def iter_workspace():
         'output': '$RD/x',
         'inputs': [],
         'build': [
-            'export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin',
+            path,
             'mkdir -p "$RD"',
         ],
     }
@@ -38,7 +40,16 @@ def iter_workspace():
         'output': '$MD/x',
         'inputs': [],
         'build': [
-            'export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin',
+            path,
             'mkdir -p "$MD"',
+        ],
+    }
+    
+    yield {
+        'output': '$SD/x',
+        'inputs': [],
+        'build': [
+            path,
+            'mkdir -p "$SD"',
         ],
     }

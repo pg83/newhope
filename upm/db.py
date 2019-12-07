@@ -51,20 +51,8 @@ def restore_node_deps(ptr):
     return y.load_list(y.load_list(ptr)[1])
 
 
-def store_node_impl(node, extra_deps):
+def store_node(node):
     return y.intern_list([
         y.intern_struct(node['node']),
-        y.intern_list(list(y.itertools.chain(node['deps'], extra_deps))),
+        y.intern_list(node['deps']),
     ])
-
-
-def store_node_plain(node):
-    return store_node_impl(node, [])
-
-
-def store_node(node):
-    def extra():
-        if 'node' in node and 'url' in node['node'] and node.get('do_fetch_node', True):
-            yield y.gen_fetch_node(node['node']['url'])
-
-    return store_node_impl(node, list(extra()))

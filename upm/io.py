@@ -14,6 +14,7 @@ def calc_mode(name):
         ('-bz', 'bz'),
         ('-zp', 'zp'),
         ('-tr', 'tr'),
+        ('-7z', '7z'),
     ]
 
     if '-tr-' in name:
@@ -39,7 +40,7 @@ def calc_mode(name):
 
 
 def known_codecs():
-    return ('xz', 'gz', 'tr', 'bz', 'zp')
+    return ('xz', 'gz', 'tr', 'bz', 'zp', '7z')
 
 
 def prepare_tar_cmd(fr, to, codec=None):
@@ -48,6 +49,7 @@ def prepare_tar_cmd(fr, to, codec=None):
         'gz': '$YGZIP -c',
         'tr': 'cat',
         'bz': '$YBZIP2 -c',
+        '7z': '$Y7ZA a -si {to}',
     }
 
     if not codec:
@@ -68,7 +70,12 @@ def prepare_tar_cmd(fr, to, codec=None):
         yield 'cd ' + fr
         yield '($YTAR -v -cf - . | ' + res[codec] + ')'
 
-    yield '((' + ' && '.join(iter_lines()) + ') > ' + to + '-tmp) && (mv ' + to + '-tmp ' + to + ')'
+    if codec == '7z':
+        tot = to + '-tmp.7z'
+        
+        yield ('(' + ' && '.join(iter_lines()) + ') && (mv {to} ' + to + ')').replace('{to}', tot)
+    else:
+        yield '((' + ' && '.join(iter_lines()) + ') > ' + to + '-tmp) && (mv ' + to + '-tmp ' + to + ')'
 
 
 @y.singleton
@@ -113,7 +120,11 @@ def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
     }
 
     mode = ext_mode or cay.lc_mode(os.path.basename(fr))
-    core = 'cat {fr} {uncompress} $YTAR {extra} -xf -'.format(fr=fr, uncompress=tbl[mode], extra=extra)
+
+    if mode == '7z':
+        core = '$Y7ZA x -so {fr} | $YTAR {extra} -xf -'.format(fr=fr, extra=extra)
+    else:
+        core = 'cat {fr} {uncompress} $YTAR {extra} -xf -'.format(fr=fr, uncompress=tbl[mode], extra=extra)
 
     if to in ' .':
         return core

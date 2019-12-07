@@ -40,6 +40,7 @@ async def cli_make(arg):
         yield ('$MD', '$PREFIX/m')
         yield ('$RD', '$PREFIX/r')
         yield ('$WD', '$PREFIX/w')
+        yield ('$SD', '$PREFIX/s')
 
         if local:
             yield ('$PD', '$PREFIX/p')
@@ -48,23 +49,34 @@ async def cli_make(arg):
             yield ('$PD', '/private')
 
         yield ('$PREFIX', root)
+        
+        for x in y.file_data:
+            if x['path'].endswith('cli'):
+                yield ('$UPM', x['path'])
 
         if args.shell:
             yield ('$YSHELL', args.shell)
 
     shell_vars = dict(iter_replaces())
+    data = None
     
     if args.path == 'gen':
-        data = await y.decode_internal_format(await y.main_makefile(internal=True))
+        mk, portion = await y.main_makefile(internal=True)
+        mk = y.loads_mk(mk)
     elif args.path == '-':
         data = await y.offload(y.sys.stdin.read)
     elif args.path:
         with open(args.path, 'r') as f:
-            data = await y.offload(f.read)
+            data = await y.offload(f.buffer.read)
     else:
         data = await y.offload(y.sys.stdin.read)
-        
+
+    if data:
+        mk = y.MakeFile()
+
+        await mk.init(data)
+
     if int(args.threads):
-        return await y.run_make_0(data, shell_vars, args)
+        return await mk.build(shell_vars, args)
 
     return 0

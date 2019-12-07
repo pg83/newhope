@@ -28,6 +28,9 @@ def my_funcs_cb(iface):
             v.append(1)
             
             if len(v) == 2:
+                #yield y.DATA(['mf:new target'], None)
+                #yield y.DATA(['mf:gen_fetch'], None)
+                
                 yield y.FIN()
                 
             yield y.EOP()

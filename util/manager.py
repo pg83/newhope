@@ -8,7 +8,12 @@ def register_entry_point(f):
 
 
 def main_entry_point(f):
-    register_entry_point(f)
+    register_entry_point(('m', f))
 
     return f
 
+
+def verbose_entry_point(f):
+    register_entry_point(('v', f))
+
+    return f

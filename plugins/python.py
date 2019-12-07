@@ -61,6 +61,8 @@ _sha256 sha256module.c
 _sha512 sha512module.c
 
 readline readline.c
+
+pyexpat expat/xmlparse.c expat/xmlrole.c expat/xmltok.c pyexpat.c -I$(srcdir)/Modules/expat -DHAVE_EXPAT_CONFIG_H -DUSE_PYEXPAT_CAPI
 """
 
 find_modules = """
@@ -103,56 +105,55 @@ find_modules()
 def python_base(kind):
     return {
         'code': """
-            source fetch "https://www.python.org/ftp/python/{version}/Python-{version}.tgz" 1
+            source fetch "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz" 1
             $(APPLY_EXTRA_PLAN_0)
-            $YSHELL ./configure $COFLAGS --prefix=$IDIR/python --enable-static --disable-shared --with-signal-module --with-system-ffi || exit1
+            $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared --with-signal-module --with-system-expat --with-system-ffi || exit1
             ##echo "#define HAVE_PTH 1" >> pyconfig.h
             ##echo "#undef HAVE_PTHREAD_H" >> pyconfig.h             
-            $YMAKE -j2 || exit 1
+            $YMAKE -j3 || exit 1
             $YMAKE install
 
             env
-            PYTHON=$IDIR/python/bin/python2.7
+            PYTHON=$IDIR/bin/python2.7
             mkdir good && cd good 
             $(APPLY_EXTRA_PLAN_1)
-            $PYTHON ./find_modules.py $IDIR/python/lib/python2.7 > all_modules.py
+            $PYTHON ./find_modules.py $IDIR/lib/python2.7 > all_modules.py
             cat ./all_modules.py
             $PYTHON ../Tools/freeze/freeze.py ./all_modules.py
             echo '#define Py_FrozenMain Py_Main' >> frozen
             cat frozen.c >> frozen
             cat ../Modules/main.c >> frozen
             mv frozen frozen.c
-            $YMAKE OPT="$CFLAGS" -j4
+            $YMAKE OPT="$CFLAGS $CPPFLAGS" -j4
             mv all_modules python
             mkdir -p $IDIR/bin
-            install -v -m755 python $IDIR/bin
+            install -v -m755 python $IDIR/bin/staticpython
+            cp -R ../Tools/freeze $IDIR/bin/
+            cp ../Modules/main.c $IDIR/bin/freeze/
         """,
-        'version': '2.7.13',
+        'version': '2.7.17',
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup.local', 'data': python_setup_local},
             {'kind': 'file', 'path': 'find_modules.py', 'data': find_modules},
         ],
         'meta': {
             'kind': kind,
-            'depends': ['ncurses', 'iconv', 'intl', 'zlib', 'pkg_config', 'libffi', 'readline', 'termcap'],
+            'depends': ['ncurses', 'iconv', 'intl', 'zlib', 'pkg-config-int', 'libffi', 'readline', 'termcap', 'expat', 'sqlite3'],
             'soft': ['openssl'],
             'provides': [
                 {'lib': 'python2.7'},
-                {'env': 'PYTHON', 'value': '{pkgroot}/bin/python'},
-                {'env': 'CFLAGS', 'value': '"-I{pkgroot}/python/include $CFLAGS"'},
-                {'env': 'LDFLAGS', 'value': '"-L{pkgroot}/python/lib $LDFLAGS"'},
-                {'env': 'PKG_CONFIG_PATH', 'value': '"{pkgroot}/python/lib/pkgconfig:$PKG_CONFIG_PATH"'},                
+                {'env': 'PYTHON', 'value': '{pkgroot}/bin/staticpython'},
             ],
         },
     }
 
 
-@y.ygenerator(tier=0)
+@y.ygenerator()
 def python0():
     return python_base(['box', 'tool'])
 
 
-@y.ygenerator(tier=0)
+@y.ygenerator()
 def python_pth0():
     r = y.deep_copy(python_base(['tool']))
 

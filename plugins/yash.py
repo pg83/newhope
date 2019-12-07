@@ -1,4 +1,4 @@
-#@y.ygenerator(tier=-2)
+@y.ygenerator()
 def yash0():
     opts = [
         '--enable-socket',
@@ -13,7 +13,8 @@ def yash0():
     return {
         'code': """
             source fetch "https://osdn.net/dl/yash/yash-{version}.tar.xz" 1
-            $YSHELL ./configure $COFLAGS --prefix=$IDIR {opts}
+            export LDFLAGS="$LDFLAGS $LIBS"
+            $YSHELL ./configure --prefix=$IDIR {opts}
             $YMAKE -j2
             $YMAKE install
          """.replace('{opts}', ' '.join(opts)),
@@ -21,5 +22,8 @@ def yash0():
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['intl', 'ncurses'],
+            'provides': [
+                {'env': 'YSHELL_OPT', 'value': '{pkgroot}/bin/yash'},
+            ],
         },
     }

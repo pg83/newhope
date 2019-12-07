@@ -11,6 +11,7 @@ copy_many() {
 copy_many $@
 """
 
+
 def join_funcs(args_calcer, fixer=lambda x: x):
     def wrapper(info):
         res = {
@@ -21,7 +22,11 @@ def join_funcs(args_calcer, fixer=lambda x: x):
             'deps': args_calcer(info),
         }
 
-        return fixer(res)
+        infos = [y.restore_node_node(d) for d in res['deps']]
+
+        res['node']['meta'] = y.join_metas([i.get('meta', {}) for i in infos], merge=['kind', 'flags', 'provides'])
+        
+        return y.fix_v2(fixer(res))
 
     return y.cached(f=lambda info: y.gen_func(wrapper, info))
 

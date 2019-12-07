@@ -1,7 +1,7 @@
 @y.defer_constructor
 def init_1():
     if y.config.get('psy'):
-        y.atexit.register(y.print_stats)
+        y.run_at_exit(y.print_stats)
 
 
 def select_handler(mode):
@@ -17,13 +17,7 @@ def select_handler(mode):
 
 async def run_main(args):
     func0 = select_handler(args[1])
-
-    async def func1():
-        return await func0(args[2:])
-    
-    async def func2():
-        return await func1()
     
     y.prompt('/p1')
 
-    return await func2()
+    return await func0(args[2:])

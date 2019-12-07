@@ -428,12 +428,13 @@ class PubSubLoop(object):
         yield y.EOP(y.ACCEPT('ps:ext queue'))
 
         for i in iface.iter_data():
+            print 'here'
             while self.ext:
                 ev = self.ext.pop()
+                print 'new ext event', ev
                 
-                yield DATA(ev['tags'], ev['data'])
-                
-        yield y.EOP()
+                yield y.EOP(DATA(ev['tags'], ev['data']))
+
         
     def add_fun(self, ff, cls=Iterator):
         name = ff.__name__

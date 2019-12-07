@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-1)
+@y.ygenerator()
 def bzip20():
     return {
         'code': """
@@ -8,8 +8,9 @@ def bzip20():
         'version': '1.0.8',
         'meta': {
             'kind': ['library', 'compression', 'tool'],
-            'provide': [
+            'provides': [
                 {'lib': 'bz2'},
+                {'env': 'YBZIP2', 'value': '{pkgroot}/bin/bzip2'},
             ],
         },
     }

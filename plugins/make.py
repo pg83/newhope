@@ -1,4 +1,4 @@
-@y.ygenerator(tier=-3)
+@y.ygenerator()
 def make0():
     def it():
         if '/test1' in y.verbose:
@@ -22,6 +22,9 @@ def make0():
         'meta': {
             'kind': ['box', 'tool'],
             'soft': ['iconv', 'intl'],
+            'provides': [
+                {'env': 'YMAKE', 'value': '{pkgroot}/bin/make'},
+            ],
         },
     }
 

@@ -14,11 +14,11 @@ def mc(gui):
     }
 
 
-@y.ygenerator(tier=3)
+@y.ygenerator()
 def mc_slang0():
     return mc('slang')
 
 
-@y.ygenerator(tier=3)
+@y.ygenerator()
 def mc_ncurses0():
     return mc('ncurses')

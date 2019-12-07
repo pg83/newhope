@@ -55,7 +55,7 @@ def load_folders(folders, exts, where):
         'util': 'ut',
     }
 
-    yield {'name': 'cli', 'path': 'cli', 'data': open(where).read()}
+    yield {'name': 'cli', 'path': where, 'data': open(where).read()}
 
     for f in folders:
         fp = os.path.join(os.path.dirname(where), f)
@@ -87,6 +87,7 @@ def thr_func(args, data, where, **kwrgs):
     try:
         data = data or list(load_folders(['plugins', 'scripts', 'upm', 'util'], ['py', ''], where))
         by_name = dict((x['name'], x) for x in data)
+        by_name['__main__.py'] = where
         stage0 = by_name['ut/stage0.py']
       
         args.update({'data': data, 'by_name': by_name})

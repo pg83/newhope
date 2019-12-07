@@ -34,6 +34,7 @@ class Func(object):
     def depends(self):
         return self.code().get('meta', {}).get('depends', [])
 
+    @y.cached_method
     def dep_lib_list(self):
         def iter():
             for x in self.dep_list():
@@ -42,6 +43,7 @@ class Func(object):
 
         return list(iter())
 
+    @y.cached_method
     def dep_tool_list(self):
         def iter():
             for x in self.dep_list():
@@ -76,7 +78,9 @@ class Func(object):
     def run_func(self, info):
         data = y.deep_copy(self.c(info))
         data['deps'] = list(sorted(frozenset(data['deps'] + self.data.calc(self.deps, info))))
-
+            
+        y.apply_meta(data['node']['meta'], y.join_metas([y.restore_node_node(d).get('meta', {}) for d in data['deps']]))
+        
         return y.fix_pkg_name(data, self.z)
 
     @y.cached_method
@@ -218,7 +222,7 @@ class Data(object):
             func.deps = sorted(func.calc_deps())
             self.dd[func.base].append(func.i)
 
-            if func.i > num:
+            if all((len(self.dd.get(x, [])) >= num) for x in self.special):
                 break
 
     def register(self):
@@ -255,8 +259,8 @@ class Data(object):
     @y.cached_method
     def calc(self, deps, arg):
         return [self.func_by_num[d].f(arg) for d in deps]
-
-
+    
+    
 def make_proper_permutation(iface):
     yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
 
@@ -271,16 +275,17 @@ def make_proper_permutation(iface):
         yield y.EOP()
 
     dt = Data([x.data for x in data])
-    dt.prepare_funcs(150)
+    dt.prepare_funcs(2)
+    dt.out()
     
     for x in dt.register():
         yield x
-
+        
     yield y.FIN()
 
     
 def init_0(where):
-    @y.ygenerator(tier=0, where=where)
+    @y.ygenerator(where=where)
     def box0():
         return {
             'meta': {
@@ -288,7 +293,7 @@ def init_0(where):
             },
         }
       
-    @y.ygenerator(tier=0, where=where)
+    @y.ygenerator(where=where)
     def compression0():
         return {
             'meta': {

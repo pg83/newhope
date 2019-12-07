@@ -1,4 +1,4 @@
-@y.ygenerator(tier=0)
+@y.ygenerator()
 def tar0():
     return {
         'code': """
@@ -11,5 +11,8 @@ def tar0():
         'meta': {
             'kind': ['compression', 'tool'],
             'depends': ['iconv', 'intl', 'gzip', 'bzip2', 'xz', 'unrar'],
+            'provides': [
+                {'env': 'YGNUTAR', 'value': '{pkgroot}/bin/tar'},
+            ],
         },
     }

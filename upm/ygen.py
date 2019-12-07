@@ -42,23 +42,19 @@ def exec_plugin_code(iface):
     yield y.EOP()
 
 
-def ygenerator(tier=None, include=[], exclude=[], version=1, where=None):
+def ygenerator(where=None):
     def functor(func):
-        assert tier is not None
-
         base_name = func.__name__[:-1]
-        new_f = lambda: subst_some_values(func())
+        new_f = y.singleton(y.compose_simple(func, subst_some_values))
 
         descr = {
             'gen': 'human',
-            'base': base_name,
+            'base': base_name.replace('_', '-'),
             'kind': new_f()['meta']['kind'],
             'code': new_f,
-            'include': include,
-            'exclude': exclude,
-            'version': 1,
-            'hash': y.burn(new_f()),
         }
+
+        assert 'codec' not in new_f()
         
         ev = y.ELEM({'func': descr})
 

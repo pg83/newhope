@@ -36,16 +36,15 @@ def _iter_android_ndk_20():
         res = {
             'node': {
                 'build': [
-                    'mkdir $(INSTALL_DIR)/tmp && cd $(INSTALL_DIR)/tmp',
-                    'unzip $(BUILD_DIR)/fetched_urls/android-ndk-r20-darwin-x86_64.zip -d .',
-                    'mv android-ndk-r20/' + by_arch[t['arch']] + '/* $(INSTALL_DIR)/',
-                    'cd $(INSTALL_DIR) && rm -rf ./tmp ' + rm_for.get(t['arch'], ''),
+                    'mkdir $IDIR/tmp && cd $IDIR/tmp',
+                    'source fetch "https://dl.google.com/android/repository/android-ndk-r20-darwin-x86_64.zip" 0',
+                    'mv android-ndk-r20/' + by_arch[t['arch']] + '/* $IDIR/',
+                    'cd $IDIR && rm -rf ./tmp ' + rm_for.get(t['arch'], ''),
                 ],
                 'prepare': [
                     'export PATH=$(CUR_DIR)/darwin-x86_64/' + t['arch'] + '-linux-android/bin:$PATH'
                 ],
-                'url': 'https://dl.google.com/android/repository/android-ndk-r20-darwin-x86_64.zip',
-                'kind': 'c-linker',
+                'kind': ['c-linker'],
                 'name': 'google',
                 'version': 'r20',
                 'constraint': {'host': host, 'target': t},
@@ -96,17 +95,15 @@ def _iter_android_ndk_20():
     ]
 
     for t in iter_rare_targets():
-        dirname = ('$(MNGR_' + big_one[0]['node']['name'].upper() + '_DIR)').replace('-', '_')
-
         res = {
             'node': {
                 'build': [
-                    'cd ' + dirname,
-                    'cp -R ' + t['arch'] + '* $(INSTALL_DIR)/',
-                    'mkdir $(INSTALL_DIR)/bin',
-                    'cp -R bin/' + t['arch'] + '* $(INSTALL_DIR)/bin/',
-                ] + [('cp -R ' + x + ' $(INSTALL_DIR)/bin/')  for x in llvm],
-                'kind': 'c-linker',
+                    'cd $2',
+                    'cp -R ' + t['arch'] + '* $IDIR/',
+                    'mkdir $IDIR/bin',
+                    'cp -R bin/' + t['arch'] + '* $IDIR/bin/',
+                ] + [('cp -R ' + x + ' $IDIR/bin/')  for x in llvm],
+                'kind': ['c-linker'],
                 'name': 'google-llvm',
                 'version': 'r20',
                 'constraint': {'host': host, 'target': t},
@@ -129,8 +126,8 @@ def iter_ndk_tools():
         c = y.deep_copy(n)
         l = y.deep_copy(n)
 
-        c['node']['kind'] = 'c';
-        l['node']['kind'] = 'linker';
+        c['node']['kind'] = ['c']
+        l['node']['kind'] = ['linker']
 
         if n['node']['name'] == 'google':
             c['node']['type'] = 'gcc'
@@ -156,7 +153,7 @@ def iter_ndk_tools():
             xn.pop('build')
             xn.pop('prepare', None)
 
-            xn['name'] = 'ndk-' + xn['kind'] + '-' + xn['type']
+            xn['name'] = 'ndk-' + '-'.join(xn['kind']) + '-' + xn['type']
 
             yield y.deep_copy(x)
 

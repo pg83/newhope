@@ -5,6 +5,8 @@ python_setup_local = """
 # respectively.  Note that Makefile.pre is created from Makefile.pre.in
 # by the toplevel configure script.
 
+*static*
+
 # (VPATH notes: Setup and Makefile.pre are in the build directory, as
 # are Makefile and config.c; the *.in files are in the source directory.)
 
@@ -152,8 +154,6 @@ _symtable symtablemodule.c
 # modules are to be built as shared libraries (see above for more
 # detail; also note that *static* or *disabled* cancels this effect):
 
-#*shared*
-*static*
 # GNU readline.  Unlike previous Python incarnations, GNU readline is
 # now incorporated in an optional module, configured in the Setup file
 # instead of by a configure script switch.  You may have to insert a
@@ -209,9 +209,7 @@ _csv _csv.c
 # Socket module helper for SSL support; you must comment out the other
 # socket line above, and possibly edit the SSL variable:
 #SSL=/usr/local/ssl
-#_ssl _ssl.c \
-#	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
-#	-L$(SSL)/lib -lssl -lcrypto
+_ssl _ssl.c -DUSE_SSL -lssl -lcrypto
 
 # The crypt module is now disabled by default because it breaks builds
 # on many systems (where -lcrypt is needed), e.g. Linux (I believe).
@@ -223,7 +221,7 @@ _csv _csv.c
 # are not supported by all UNIX systems:
 
 #nis nismodule.c -lnsl	# Sun yellow pages -- not everywhere
-#termios termios.c	# Steen Lumholt's termios module
+termios termios.c	# Steen Lumholt's termios module
 #resource resource.c	# Jeremy Hylton's rlimit interface
 
 _posixsubprocess _posixsubprocess.c  # POSIX subprocess module helper
@@ -301,7 +299,7 @@ _blake2 _blake2/blake2module.c _blake2/blake2b_impl.c _blake2/blake2s_impl.c
 # Lance Ellinghaus's syslog module
 syslog syslogmodule.c		# syslog daemon interface
 
-
+#h_paths_first
 # Curses support, requiring the System V version of curses, often
 # provided by the ncurses library.  e.g. on Linux, link with -lncurses
 # instead of -lcurses).
@@ -354,6 +352,8 @@ pyexpat expat/xmlparse.c expat/xmlrole.c expat/xmltok.c pyexpat.c -I$(srcdir)/Mo
 #_codecs_kr cjkcodecs/_codecs_kr.c
 #_codecs_tw cjkcodecs/_codecs_tw.c
 
+*disabled*
+
 # Example -- included for reference only:
 # xx xxmodule.c
 
@@ -363,7 +363,7 @@ xxsubtype xxsubtype.c
 # Uncommenting the following line tells makesetup that all following modules
 # are not built (see above for more detail).
 #
-#*disabled*
+#
 #
 #_sqlite3 _tkinter _curses pyexpat
 #_codecs_jp _codecs_kr _codecs_tw unicodedata
@@ -412,20 +412,31 @@ def python_base(kind):
         'code': """
             source fetch "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz" 1
             $(APPLY_EXTRA_PLAN_0)
+            $(APPLY_EXTRA_PLAN_1)
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --with-system-libmpdec --enable-static --disable-shared --with-signal-module --with-system-ffi || exit1
-            ##echo "#define HAVE_PTH 1" >> pyconfig.h
-            ##echo "#undef HAVE_PTHREAD_H" >> pyconfig.h             
+            $YMAKE -j2 || exit 1
+            ./python.exe ./fix.py patch ./setup.py
+            DUMP=1 ./python.exe ./setup.py build > data.json
+            ./python.exe ./fix.py ./data.json > Modules/Setup.local
+            $YMAKE -j2 || exit 1
             $YMAKE -j2 || exit 1
             $YMAKE install
+            cp -R Tools $IDIR/
+            mv $IDIR/Tools $IDIR/tools 
         """,
         'version': '3.8.0',
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup', 'data': python_setup_local},
+            {'kind': 'file', 'path': 'fix.py', 'data': y.builtin_modules['pl.python3_bc']['data']},
         ],
         'meta': {
             'kind': kind,
-            'depends': ['ncurses', 'iconv', 'intl', 'zlib', 'pkg_config', 'libffi', 'readline', 'termcap', 'mpdecimal'],
-            'soft': ['openssl'],
+            'depends': [
+                'ncurses', 'iconv', 'intl', 'zlib',
+                'pkg-config', 'libffi', 'readline',
+                'termcap', 'mpdecimal', 'xz', 'bzip2',
+                'sqlite3', 'openssl',
+            ],
             'provides': [
                 {'lib': 'python3.8'},
                 {'env': 'PYTHON3', 'value': '{pkgroot}/bin/python'},
@@ -434,6 +445,6 @@ def python_base(kind):
     }
 
 
-@y.ygenerator(tier=0)
+@y.ygenerator()
 def python30():
     return python_base(['box', 'tool'])

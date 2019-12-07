@@ -97,7 +97,7 @@ def cached(f=None, key=default_key, copy=False):
 
 def compose_simple(*funcs):
     def wrapper(*args, **kwargs):
-        it = y.itertools.chain(list(funcs))
+        it = y.itertools.chain(funcs)
 
         for f in it:
             data = f(*args, **kwargs)

@@ -119,6 +119,8 @@ class ColorStdIO(object):
                 return y.process_color(t, '', {})
             except AttributeError as e:
                 pass
+            except Exception as e:
+                print e
 
         return t
 
@@ -144,8 +146,11 @@ class ColorStdIO(object):
 
     def write_part(self, p):
         if p:
-            self.s.buffer.write(self.colorize(p).encode('utf-8'))
-
+            try:
+                self.s.buffer.write(self.colorize(p).encode('utf-8'))
+            except AttributeError:
+                self.s.buffer.write(p)
+                
         self.s.buffer.flush()
         self.s.flush()
 
@@ -187,7 +192,7 @@ class IFace(dict):
         try:
             y.print_tbx_real(*args, **kwargs)
         except Exception:
-            y.traceback.print_exc(chain=False)
+            y.traceback.print_exc(chain=True)
       
     def last_msg(self, t):
         e = self.stderr
@@ -350,6 +355,7 @@ def prompt(l):
   
 def load_builtin_modules(data, builtin):
     initial = (
+        'ut.rng',
         'ut.mod_load',
         'ut.init_log',
         'ut.int_counter',
@@ -363,6 +369,7 @@ def load_builtin_modules(data, builtin):
         'ut.defer',        
         'ut.manager',
         'ut.mini_db',
+        'ut.queues',
         
         'ya.ygen',
         'ya.noid_calcer',
@@ -394,7 +401,9 @@ def run_stage4_0(data):
         y.run_defer_constructors()
         y.debug('done')
 
-        async def flush_streams(ctl):
+        async def flush_streams():
+            ctl = y.current_coro()
+            
             while True:
                 await ctl.sleep(0.1)
 
@@ -404,7 +413,7 @@ def run_stage4_0(data):
                 except Exception as e:
                     y.debug('in flush streams', e)
         
-        async def entry_point(ctl):
+        async def entry_point():
             try:
                 try:
                     return await y.run_main(data.pop('args'))

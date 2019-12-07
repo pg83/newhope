@@ -91,7 +91,12 @@ def to_visible_name(root):
 def to_pretty_name(t):
     if len(t) < 10:
         return t
+
+    p = t.find('-v5')
+
+    if p < 0:
+        return t
     
-    t = t[:t.find('-v5')]
+    t = t[:p]
 
     return t

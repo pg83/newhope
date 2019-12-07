@@ -17,11 +17,11 @@ def pkg_config_base(opts, deps, kind):
     }
 
 
-@y.ygenerator(tier=0)
+@y.ygenerator()
 def pkg_config0():
     return pkg_config_base([], ['iconv', 'glib'], ['box', 'tool'])
 
 
-@y.ygenerator(tier=0)
+@y.ygenerator()
 def pkg_config_int0():
     return pkg_config_base(['--with-internal-glib'], ['iconv'], ['tool'])
