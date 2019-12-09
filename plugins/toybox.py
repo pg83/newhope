@@ -1,11 +1,19 @@
-def toybox0(info, deps, codec):
-    name = 'toybox-' + info['info']['host']['arch']
-    ver = '0.8.1'
-
-    return y.to_v2({
-        'code': 'mkdir -p $IDIR/bin && cd $IDIR/bin && $(FETCH_URL_FILE) && cp %s toybox && chmod +x toybox' % name,
-        'src': 'http://www.landley.net/toybox/downloads/binaries/' + ver + '/' + name,
-        'version': ver,
-        'deps': deps,
-        'codec': codec,
-    }, info)
+@y.ygenerator()
+def toybox0():
+    return {
+        'os': 'linux',
+        'code': '''
+            mkdir -p $IDIR/bin
+            cd $IDIR/bin
+            source fetch "http://www.landley.net/toybox/downloads/binaries/{version}/toybox-x86_64" 0
+            cp toybox-* toybox
+            chmod +x toybox
+        ''',
+        'version': '0.8.1',
+        'meta': {
+            'kind': ['tool'],
+            'provides': [
+                {'env': 'TOYBOX', 'value': '{pkgroot}/bin/toybox'},
+            ], 
+        },
+    }

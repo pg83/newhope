@@ -3,7 +3,11 @@ def pkg_config_base(opts, deps, kind):
         'code': """
             source fetch "https://pkg-config.freedesktop.org/releases/pkg-config-{version}.tar.gz" 1
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared {opts}
-            $YMAKE
+            cd glib
+            $YSHELL ./configure $COFLAGS --prefix=$IDIR --with-libiconv=gnu --enable-static --disable-shared {opts} --srcdir=.
+            $YMAKE -j2
+            cd ..
+            $YMAKE -j2
             $YMAKE install
         """.replace('{opts}', ' '.join(opts)),
         'version': '0.29.2',

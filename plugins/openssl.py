@@ -12,7 +12,7 @@ def openssl0():
         'version': version,
         'meta': {
             'kind': ['library'],
-            'depends': [],
+            'depends': ['perl5'],
             'provides': [
                 {'lib': 'ssl'},
             ],

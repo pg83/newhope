@@ -1,44 +1,19 @@
-
-
-/*
-@y.options(repacks=None)
-def busybox_run(info):
-    if y.xp('/info/info/host/os') == 'darwin':
-        return system00(info)
-
-    ver = '1.30.1'
-
-    return y.to_v2({
+@y.ygenerator()
+def busybox0():
+    return {
+        'os': 'linux',
         'code': """
-            $YMAKE CROSS_COMPILE=$TOOL_CROSS_PREFIX defconfig
-            $YMAKE CROSS_COMPILE=$TOOL_CROSS_PREFIX
-            (./busybox >& $(INSTALL_DIR)/check_cross) || true
-            mkdir $(INSTALL_DIR)/bin && mv ./busybox $(INSTALL_DIR)/bin/
-        """,
-        'src': 'https://www.busybox.net/downloads/busybox-' + ver + '.tar.bz2',
-        'version': ver,
-        'deps': [bestbox1_run(info), make1_run(info), tar1_run(info), xz1_run(info), curl1_run(info)],
-    }, info)
-*/
-
-def busybox0(info, deps, codec):
-    if y.xp('/info/info/host/os') == 'darwin':
-        return system00(info)
-
-    host = info['info']['host']['arch']
-    arch = {'aarch64': 'arm81'}.get(host, host)
-    ver = '1.31.0'
-
-    return y.to_v2({
-        'code': """
-            mkdir -p $(INSTALL_DIR)/bin
-            cd $(INSTALL_DIR)/bin
-            $(FETCH_URL_FILE)
+            mkdir -p $IDIR/bin
+            cd $IDIR/bin
+            source fetch "https://www.busybox.net/downloads/binaries/{version}-defconfig-multiarch-musl/busybox-x86_64" 0
             mv busybox-* busybox
             chmod +x busybox
         """,
-        'src': 'https://www.busybox.net/downloads/binaries/' + ver + '-defconfig-multiarch-musl/busybox-' + arch,
-        'version': ver,
-        'deps': deps,
-        'codec': codec,
-    }, info)
+        'version': '1.31.0',
+        'meta': {
+            'kind': ['tool'],
+            'provides': [
+                {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
+            ],
+        },
+    }

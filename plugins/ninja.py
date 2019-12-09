@@ -10,7 +10,7 @@ def ninja0():
         'version': '1.9.0',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['python-pth'],
+            'depends': ['python'],
             'provides': [
                 {'env': 'YNINJA', 'value': '{pkgroot}/bin/ninja'},
             ],

@@ -24,8 +24,8 @@ find_file() {
 
 export YSHELL=$(find_file $YSHELL dash $OUTER_SHELL bash)
 export YMAKE=$(find_file $YMAKE gmake make)
-export YXZ=$(find_file $YXZ xz)
-export YTAR=$(find_file $YTAR bsdtar tar)
+export YXZCAT=$(find_file $YXZCAT xzcat)
+export YTAR=$(find_file $YTAR tar bsdtar)
 export YGZIP=$(find_file $YGZIP gzip)
 export YBZIP2=$(find_file $YBZIP2 bzip2)
 export YUNZIP=$(find_file $YUNZIP unzip)

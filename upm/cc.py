@@ -1,9 +1,9 @@
 def small_repr(c):
-    return c['os'] + '-' + c['arch']
+    return c.get('os', 'unknown') + '-' + c.get('arch', 'unknown')
 
 
 def small_repr_cons(c):
-    return small_repr(c['host']) + '$' + small_repr(c['target'])
+    return small_repr(c.get('host', c['target'])) + '$' + small_repr(c['target'])
 
 
 def is_cross(cc):
@@ -62,7 +62,7 @@ def iter_system_impl():
             if k != 'Target':
                 continue
 
-            a, b, _ = v.strip().split('-')
+            a, b, *_ = v.strip().split('-')
 
             host = {
                 'arch': a,
@@ -89,7 +89,7 @@ def iter_system_impl():
                 else:
                     c['prefix'] = ['tool_native_prefix', '']
                     c['prepare'] = ['export CFLAGS="-O2"']
-
+                    
                 yield {
                     'node': c,
                     'deps': [],
@@ -116,5 +116,15 @@ def iter_system_tools():
             xn.pop('prepare', None)
 
             xn['name'] = 'system-' + '-'.join(xn['kind']) + '-' + xn['type']
-
-            yield y.deep_copy(x)
+            x = y.deep_copy(x)
+            xn = x['node']
+            xn['meta'] = {
+                'provides': [
+                    {'env': 'CC', 'value': xn['path']},
+                    {'env': 'LD', 'value': xn['path']},
+                    {'env': 'CXX', 'value': xn['path'] + '++'},                  
+                ],
+            }
+            
+            yield x
+            

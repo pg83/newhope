@@ -63,6 +63,9 @@ class ColoredFormatter(y.logging.Formatter):
     
     
 def init_logger(log_level='INFO'):
+    if 'pip' in y.sys.argv:
+        return
+    
     #y.logging.raiseExceptions = False        
     old_factory = y.logging.getLogRecordFactory()
 

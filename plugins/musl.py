@@ -1,9 +1,20 @@
-def musl0(info, codec, deps):
-    return y.to_v2({
+@y.ygenerator()
+def musl0():
+    return {
+        'os': 'linux',
         'code': """
-            ./configure --prefix=$(INSTALL_DIR) --enable-static --disable-shared || exit 1
-            make -j2 && make install
+            source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
+            $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
+            $YMAKE -j3 || exit 1 
+            $YMAKE install || exit 2
         """,
-        'src': 'https://www.musl-libc.org/releases/musl-1.1.24.tar.gz',
-        'deps': deps,
-    }, info)
+        'version': '1.1.24', 
+        'meta': {
+            'kind': ['library'],
+            'depends': ['bestbox'],
+            'provides': [
+                {'lib': 'c'},
+                {'env': 'CFLAGS', 'value': '"-nostdinc -nostdlib $CFLAGS"'},
+            ],
+        },
+    }

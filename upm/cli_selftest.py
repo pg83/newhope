@@ -45,16 +45,3 @@ def cli_selftest(args, verbose):
    with y.abort_on_error():
       for f in iter_all_tests():
          f()
-            
-
-def self_test3():
-   @y.run_by_timer(0.3)
-   def f1():
-      print('f1')
-
-
-   @y.run_by_timer(1.0)
-   def f2():
-      print('f2')
-
-   y.time.sleep(5)

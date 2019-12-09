@@ -261,7 +261,7 @@ class Item(ItemBase):
             
             raise Exception('can not find ' + self.shell_vars['$YSHELL'])
             
-        return self.find_tool('dash') or self.find_tool('yash') or self.find_tool('sh') or self.find_tool('bash')
+        return self.find_tool('dash') or self.find_tool('yash') or self.find_tool('bash') or self.find_tool('sh')
 
     def build_cmd(self):
         env = self.env

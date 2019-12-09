@@ -1,5 +1,5 @@
-import os
-import sys
+class SkipIt(Exception):
+    pass
 
 
 async def gen_packs(constraints=None):
@@ -8,6 +8,9 @@ async def gen_packs(constraints=None):
     def iter():
         for func in y.gen_all_funcs():
             for c in constraints():
-                yield func(y.deep_copy(c))
-
+                try:
+                    yield func(y.deep_copy(c))
+                except SkipIt:
+                    continue
+                
     return list(iter())

@@ -1,1 +1,5 @@
 (echo "$1" | source base64_decode > "$IDIR/build")
+
+sync
+sleep 1
+sync

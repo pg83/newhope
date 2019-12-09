@@ -94,6 +94,7 @@ class SplitKind(object):
             'kind': {'dev': ['library'], 'run': ['tool']}.get(self.k, []),
             'deps': self.p.deps(info),
             'meta': split_meta(self.p.meta(info), self.k),
+            'codec': self.p.node(info)['codec'],
         }
 
         res['meta']['kind'] = res.pop('kind')
@@ -112,14 +113,16 @@ class Splitter(object):
     @y.cached_method
     def deps(self, info):
         return [self.arg['code'](info)]
+
+    @y.cached_method
+    def node(self, info):
+        deps = self.deps(info)
+        assert len(deps) == 1
+        return y.restore_node_node(deps[0])
     
     @y.cached_method
     def meta(self, info):
-        deps = self.deps(info)
-
-        assert len(deps) == 1
-        
-        return y.restore_node_node(deps[0]).get('meta', {})
+        return self.node(info).get('meta', {})
                 
     def gen(self, kind):
         return SplitKind(self, kind).d

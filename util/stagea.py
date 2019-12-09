@@ -55,7 +55,8 @@ def load_folders(folders, exts, where):
         'util': 'ut',
     }
 
-    yield {'name': 'cli', 'path': where, 'data': open(where).read()}
+    dt = open(where).read()
+    yield {'name': 'cli', 'path': where, 'data': dt[dt.find('import '):]}
 
     for f in folders:
         fp = os.path.join(os.path.dirname(where), f)

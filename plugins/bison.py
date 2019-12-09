@@ -10,6 +10,6 @@ def bison0():
         'version': '3.4.2',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['m4', 'iconv', 'intl']
+            'depends': ['m4', 'iconv', 'intl', 'xz']
         },
     }

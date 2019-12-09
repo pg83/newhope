@@ -49,7 +49,7 @@ def score_pair(c, l):
     return y.struct_dump_bytes([c, l])
 
 
-def join_toolchains(c, l):
+def join_toolchains(c, l, info):
     cn = c['node']
     ln = l['node']
 
@@ -60,12 +60,13 @@ def join_toolchains(c, l):
             'kind': cn['meta']['kind'] + ln['meta']['kind'],
             'name': cn['name'] + '-' + ln['name'],
             'version': cn['version'] + '-' + ln['version'],
+            'constraint': info,
         },
         'deps': [y.store_node(c), y.store_node(l)]
     })
 
 
-def score_toolchains(lst):
+def score_toolchains(lst, info):
     def flt(kind):
         for o in lst:
             if kind in o['node']['meta']['kind']:
@@ -81,12 +82,12 @@ def score_toolchains(lst):
 
     toolchains = list(sorted(list(gen_all()), key=lambda x: x['s']))
 
-    return [join_toolchains(x['c'], x['l']) for x in toolchains]
+    return [join_toolchains(x['c'], x['l'], info) for x in toolchains]
 
 
 @y.cached()
 def iterate_best_compilers(info):
-    return score_toolchains(find_toolchain_by_cc(info))
+    return score_toolchains(find_toolchain_by_cc(info), info)
 
 
 def find_compiler_x(info):

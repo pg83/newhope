@@ -10,7 +10,7 @@ def libtools0():
         'version': '2.4.6',
         'meta': {
             'kind': ['library', 'tool', 'box'],
-            'depends': [],
+            'depends': ['m4'],
             'provides': [
                 {'lib': 'ltdl'},
             ],

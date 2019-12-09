@@ -8,10 +8,10 @@ def xz0():
         'version': '5.2.4',
         'meta': {
             'kind': ['compression', 'library', 'tool'],
-            'flags': ['HAVE_XZ_BIN'],
             'provides': [
                 {'lib': 'lzma'},
-                {'env': 'YXZ', 'value': '{pkgroot}/bin/xz'}
+                {'env': 'YXZ', 'value': '{pkgroot}/bin/xz'},
+                {'env': 'YXZCAT', 'value': '{pkgroot}/bin/xzcat'},
             ],
         },
     }

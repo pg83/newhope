@@ -40,20 +40,8 @@ def to_v2(data, info):
 
     node['constraint'] = info['info']
     node['prepare'] = y.to_lines(prepare)
-
-    def iter_subst():
-        for i, v in enumerate(node.get('extra', [])):
-            if v['kind'] == 'file':
-                cmd = 'echo "' + base64.b64encode(v['data'].encode('utf-8')).decode('utf-8') + '" | (base64 -D -i - -o - || base64 -d) > ' + v['path']
-                key = '$(APPLY_EXTRA_PLAN_' + str(i) + ')'
-
-                yield (key, cmd)
-
-            if v['kind'] == 'subst':
-                yield (v['from'], v['to'])
-
-    node['build'] = y.to_lines(y.subst_kv_base(code, iter_subst()))
-
+    node['build'] = y.to_lines(code)
+    
     compilers = info['compilers']['deps']
 
     if '#pragma cc' not in full:

@@ -61,7 +61,7 @@ async def cli_make(arg):
     data = None
     
     if args.path == 'gen':
-        mk, portion = await y.main_makefile(internal=True)
+        mk, portion = await y.main_makefile(y.iter_cc, internal=True)
         mk = y.loads_mk(mk)
     elif args.path == '-':
         data = await y.offload(y.sys.stdin.read)

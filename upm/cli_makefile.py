@@ -1,3 +1,11 @@
+def iter_cc():
+   info = y.platform.uname()
+   host = {'os': info.system.lower(), 'arch': info.machine}
+   cc = {'host': host, 'target': host}
+      
+   yield cc
+
+   
 @y.main_entry_point
 async def cli_makefile(arg):
    parser = y.argparse.ArgumentParser()
@@ -31,9 +39,9 @@ async def cli_makefile(arg):
          elif args.shell:
             data = await y.build_sh_script(args.shell)
          elif args.dump:
-            data = await y.gen_full_dump()
+            data = await y.gen_full_dump(iter_cc)
          else:
-            data, portion = await y.main_makefile(internal=args.internal)
+            data, portion = await y.main_makefile(iter_cc, internal=args.internal)
 
          def func():
             f.write(data)

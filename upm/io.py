@@ -15,6 +15,7 @@ def calc_mode(name):
         ('-zp', 'zp'),
         ('-tr', 'tr'),
         ('-7z', '7z'),
+        ('-pg', 'pg'),
     ]
 
     if '-tr-' in name:
@@ -40,7 +41,7 @@ def calc_mode(name):
 
 
 def known_codecs():
-    return ('xz', 'gz', 'tr', 'bz', 'zp', '7z')
+    return ('xz', 'gz', 'tr', 'bz', 'zp', '7z', 'pg')
 
 
 def prepare_tar_cmd(fr, to, codec=None):
@@ -50,6 +51,7 @@ def prepare_tar_cmd(fr, to, codec=None):
         'tr': 'cat',
         'bz': '$YBZIP2 -c',
         '7z': '$Y7ZA a -si {to}',
+        'pg': '$UPM codec -c',
     }
 
     if not codec:
@@ -95,8 +97,11 @@ def gen_extra_scripts():
 
 
 def prepare_untar_for_mf(fr, strip=0):
-    return 'source untar_{codec} "{file}" {strip}'.format(codec=calc_mode(y.os.path.basename(fr)), file=fr, strip=strip)
-
+    try:
+        return 'source untar_{codec} "{file}" {strip}'.format(codec=calc_mode(y.os.path.basename(fr)), file=fr, strip=strip)
+    except Exception:
+        return 'cp "{file}" .'.format(file=fr)
+    
 
 def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
     if (ext_mode and ext_mode == 'zp') or fr.endswith('.zip'):
@@ -113,9 +118,10 @@ def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
         return ' && '.join(reversed(list(do())))
 
     tbl = {
-        'xz': '| $YXZ --decompress --stdout |',
+        'xz': '| $YXZCAT -f |',
         'gz': '| $YGZIP -dc |',
         'bz': '| $YBZIP2 -dc |',
+        'pg': '| $UPM codec -d |',
         'tr': '|',
     }
 

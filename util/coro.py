@@ -1,5 +1,3 @@
-ic = y.inc_counter()
-
 import time
 import queue
 import collections as cc
@@ -40,8 +38,18 @@ def wrap_context(func):
         return self.ctx.run(func1, self)
 
     return wrapped
-    
-        
+
+
+@y.contextlib.contextmanager
+def with_contextvar(coro):
+    token = CURRENT_CORO.set(coro)
+
+    try:
+        yield coro.ctx
+    finally:
+        CURRENT_CORO.reset(token)
+
+
 def set_name(func, name):
     func.__name__ = name
 
@@ -81,8 +89,8 @@ class SchedAction(collections.abc.Awaitable):
 
     __iter__ = __await__
 
-    def __init__(self, loop_name, action):
-        self.id = ic()
+    def __init__(self, id, loop_name, action):
+        self.id = id
         self.loop_name = loop_name
         self.name = loop_name + '_' + action.__name__
         self.action = action
@@ -104,9 +112,9 @@ class Future(collections.abc.Awaitable):
 
     __iter__ = __await__
 
-    def __init__(self, loop_name, action):
+    def __init__(self, id, loop_name, action):
         self.ln = loop_name
-        self.id = ic()
+        self.id = id
         self.cb = []
         self.name = 'fut_' + action.__name__
         self.action = action
@@ -293,7 +301,7 @@ def yield_action(coro):
 class Coro(collections.abc.Coroutine):
     def __init__(self, loop, coro, ctx, name):
         self.ctx = ctx
-        self.id = ic()
+        self.id = loop.next_id()
         self.n = name
         self.c = coro
         self.l = loop
@@ -361,24 +369,21 @@ class Coro(collections.abc.Coroutine):
     
     def step(self):
         try:
-            if self.is_system():
-                return self.slave.send(None)
-
-            try:
-                is_debug() and y.debug(str(self), 'step in')
-                
-                return self.slave.send(None)
-            finally:
-                is_debug() and y.debug(str(self), 'step out')
+            return self.step_0()
         except StopIteration as e:
+            COROS.pop(self.id)
+
             is_debug() and y.debug(str(self), 'here we are', e, 'with result', e.value)
             
             self.v = e.value
             self.f.set_result(self)
 
             raise
-
+        
     @wrap_context
+    def step_0(self):
+        return self.slave.send(None)
+
     def next(self):
         return (self.step() or self.l).sched_action(self)
     
@@ -387,7 +392,7 @@ class Coro(collections.abc.Coroutine):
     
     def send(self, v):
         y.os.abort()
-        return self.slave.send(v)
+        #return self.slave.send(v)
 
     @wrap_context
     def throw(self, *args):
@@ -458,6 +463,7 @@ class Coro(collections.abc.Coroutine):
 
 class ThreadLoop(object):
     def __init__(self, ctx, i, name, loop):
+        self.next_id = y.inc_counter()
         self.ctx = ctx
         self.rng = y.PCGRandom(3, i)
         self.i = i
@@ -465,8 +471,7 @@ class ThreadLoop(object):
         self.loop = loop
         self.q = cc.deque()
         self.t = y.threading.Thread(target=self.thr_loop)
-        self.cs = 0
-
+        
     @property
     def thread_id(self):
         return self.i
@@ -572,8 +577,6 @@ class ThreadLoop(object):
         try:
             return c.next()
         except StopIteration as s:
-            COROS.pop(c.id)
-
             return
 
     def sched_action(self, x):
@@ -581,7 +584,6 @@ class ThreadLoop(object):
         
     def drive_sync(self):
         while True:
-            self.cs += 1
             self.one_step_sync(self.get_next())
             time.sleep(0)
 
@@ -592,10 +594,10 @@ class ThreadLoop(object):
         return self.create_sched_action(yield_action)
         
     def create_sched_action(self, action):
-        return SchedAction(self.name, action)
+        return SchedAction(self.next_id(), self.name, action)
     
     def create_future(self, action):
-        return Future(str(self), action)
+        return Future(self.next_id(), str(self), action)
         
     async def sleep_deadline(self, dd):
         name = 'sleep_deadline_' + str(int(dd))

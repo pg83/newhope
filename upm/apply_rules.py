@@ -54,18 +54,15 @@ def fix_v2(v, **kwargs):
         kind.append('library')
 
     m['kind'] = sorted(frozenset(kind))
-        
     f = m['flags']
     
     if n.get('codec', '') == 'tr':
         pass
     else:
         if 'compression' in kind:
-            n['codec'] = 'gz'
-        elif 'HAVE_7ZA_BIN' in f:
-            n['codec'] = '7z'
-        elif 'HAVE_XZ_BIN' in f:
-            n['codec'] = 'xz'
+            n['codec'] = 'pg'
+        elif 'codec' in n:
+            pass
         else:
             n['codec'] = kwargs.get('codec', 'gz')
 
@@ -76,8 +73,31 @@ def fix_v2(v, **kwargs):
         if 'pkg_full_name' not in n:
             n['pkg_full_name'] = y.calc_pkg_full_name(n['url'])
 
+    o = n
+    cc = n.pop('constraint')
+    n = y.platform_slice(n, cc['target'])
+
+    if not n:
+        raise y.SkipIt()
+    
+    n['constraint'] = cc
+    v['node'] = n
+    
+    def iter_subst():
+        for i, v in enumerate(n.get('extra', [])):
+            if v['kind'] == 'file':
+                cmd = 'echo "' + y.base64.b64encode(v['data'].encode('utf-8')).decode('utf-8') + '" | (base64 -D -i - -o - || base64 -d) > ' + v['path']
+                key = '$(APPLY_EXTRA_PLAN_' + str(i) + ')'
+
+                yield (key, cmd)
+
+            if v['kind'] == 'subst':
+                yield (v['from'], v['to'])
+
+    subst = list(iter_subst())
+                
     for p in ('build', 'prepare'):
         if p in n:
-            n[p] = list(apply_fetch(n[p], v))
+            n[p] = [y.subst_kv_base(l, subst) for l in apply_fetch(n[p], v)]
 
     return v

@@ -1,3 +1,7 @@
+sync
+sleep 1
+sync
+
 source () {
     s=$1
     shift

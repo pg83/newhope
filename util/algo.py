@@ -61,15 +61,41 @@ def deep_copy(x):
         raise e
 
 
+class IncCounter(object):
+    def __init__(self):
+        self.c = 0
+        self.l = y.threading.Lock()
+        
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while True:
+            with self.l:
+                begin = self.c
+                end = begin + 10000
+                self.c = end
+
+            for i in range(begin, end):
+                yield i
+
+    def inc_counter(self):
+        it = iter(self.__next__())
+
+        def func():
+            return next(it)
+
+        return func
+
+
+@y.singleton
+def inc_counter_holder():
+    return IncCounter()
+    
+
 def inc_counter():
-    c = [int(y.random.random() * 10000)]
-
-    def func():
-        c[0] += 1
-        return c[0]
-
-    return func
-
+    return inc_counter_holder().inc_counter()
+    
 
 def compile_func(template, _async, name, mod_name):
     replaces = {

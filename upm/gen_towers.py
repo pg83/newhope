@@ -78,7 +78,8 @@ class Func(object):
     def run_func(self, info):
         data = y.deep_copy(self.c(info))
         data['deps'] = list(sorted(frozenset(data['deps'] + self.data.calc(self.deps, info))))
-            
+        data['node']['codec'] = self.codec
+        
         y.apply_meta(data['node']['meta'], y.join_metas([y.restore_node_node(d).get('meta', {}) for d in data['deps']]))
         
         return y.fix_pkg_name(data, self.z)
@@ -219,12 +220,17 @@ class Data(object):
         for func in solver.iter_infinity():
             func.i = len(self.func_by_num)
             self.func_by_num.append(func)
-            func.deps = sorted(func.calc_deps())
+            func.deps = sorted(func.calc_deps())                
             self.dd[func.base].append(func.i)
 
+            if frozenset(func.deps).isdisjoint(frozenset(self.dd.get('compression', []))):
+                func.codec = 'pg'
+            else:
+                func.codec = '7z'
+                
             if all((len(self.dd.get(x, [])) >= num) for x in self.special):
                 break
-
+            
     def register(self):
         for v in self.func_by_num:
             yield y.ELEM({'func': v.z})

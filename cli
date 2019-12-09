@@ -1,9 +1,20 @@
-#!/Users/pg/18/bin/python3
+#!/bin/sh
+export PATH="$PATH:/root/python/bin:/Users/pg/18/bin"
+export __FILE__=$(python3 -c 'import os; import sys; print(os.path.realpath(sys.argv[1]))' "$0")
+data=$(cat << EOF 
 
+import os
 import sys
 import threading
 
 
+if (path := os.environ.get('__FILE__')) is not None:
+    __file__ = path
+else:
+    __file__ = os.path.abspath(__file__).replace('<stdin>', 'cli')
+
+
+sys.argv[0] = __file__
 sys.dont_write_bytecode = True
 
 
@@ -18,9 +29,11 @@ def trace(*args):
 if 'profile=pg' in ''.join(sys.argv):
     sys.settrace(trace)
     threading.settrace(trace)
-    
 
-import os
+
+os.environ['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin'
+
+
 import signal
 import traceback
 
@@ -28,8 +41,7 @@ import traceback
 def on_exit(*args):
     os._exit(8)
 
-    
-__file__ = os.path.abspath(__file__)
+
 real_handler = on_exit
 
 
@@ -67,3 +79,8 @@ if __name__ == '__main__':
 
     os.abort = new_abort 
     real_main()
+EOF
+)
+
+py=$(which "python3.8")
+$py -c "$data" $@

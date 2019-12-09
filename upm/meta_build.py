@@ -8,8 +8,12 @@ def is_dict(v):
 
 
 def is_list(v):
-    return v[:0] == []
+    try:
+        return v[:0] == []
+    except TypeError:
+        pass
 
+    return False
 
 def to_platform(k, v):
     if k == 'os':
@@ -49,7 +53,8 @@ def platform_slice(vv, pl):
 
     def fix_list(l):
         for x in l:
-            yield from do(x)
+            for y in do(x):
+                yield y
     
     def do(v):
         if is_dict(v):
@@ -58,7 +63,8 @@ def platform_slice(vv, pl):
             except Remove:
                 return
             except Replace as r:
-                yield from do(r.value)
+                for y in do(r.value):
+                    yield y
         elif is_list(v):
             yield list(fix_list(v))
         else:
@@ -79,11 +85,10 @@ def is_compat(a, b):
     return True
 
 
-def meta_to_build(meta, platform):
-    meta = platform_slice(meta, platform)
-    
+def meta_to_build(meta):
     def iter():
         kind = set(meta['kind'])
+        
         is_lib = 'library' in kind
         is_bin = 'tool' in kind
         

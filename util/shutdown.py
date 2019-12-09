@@ -1,5 +1,6 @@
 def kill_all_running(*args):
-    y.os.system('pkill -KILL -g {pgid}'.format(pgid=y.os.getpgid(y.os.getpid())))
+    #y.os.system('pkill -KILL -g {pgid}'.format(pgid=y.os.getpgid(y.os.getpid())))
+    y.os.system('pkill -KILL -P {ppid}'.format(ppid=y.os.getpid()))
 
 
 def run_sigint(*args):

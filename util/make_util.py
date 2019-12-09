@@ -32,7 +32,7 @@ def hash(x):
 
 def get_only_our_targets(lst, targets):
     by_link = {}
-    
+    print len(lst)
     for n, l in enumerate(lst):
         for d in l['deps1']:
             by_link[d] = n
