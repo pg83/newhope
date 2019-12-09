@@ -1,8 +1,51 @@
 import os
 import sys
+import signal
 import threading
 import traceback
 
+
+def set_profile(g):
+    if 'profile=pg' not in ''.join(sys.argv):
+        return
+
+    def trace(*args):
+        g.trace_function(*args)
+
+    sys.settrace(trace)
+    threading.settrace(trace)
+
+
+def set_sigint(g):
+    g.sigint_handler = lambda *args: os._exit(8)
+
+    def sig_handler(*args):
+        g.sigint_handler(*args)
+
+    signal.signal(signal.SIGINT, sig_handler)
+    signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+
+    
+def set_abort(g):
+    g.abort_function = os.abort
+
+    def new_abort():
+        try:
+            traceback.print_exc()
+        finally:
+            g.abort_function()
+
+    os.abort = new_abort
+
+
+def set_env(g):
+    sys.argv[0] = g.script_path
+    sys.dont_write_bytecode = True
+    os.environ['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin'
+    set_sigint(g)
+    set_abort(g)
+    set_profile(g)
+    
 
 def preprocess_data(data):
     p1 = data.find('/*')
@@ -55,8 +98,7 @@ def load_folders(folders, exts, where):
         'util': 'ut',
     }
 
-    dt = open(where).read()
-    yield {'name': 'cli', 'path': where, 'data': dt[dt.find('import '):]}
+    yield {'name': 'cli', 'path': where, 'data': open(where).read()}
 
     for f in folders:
         fp = os.path.join(os.path.dirname(where), f)
@@ -84,27 +126,28 @@ def load_folders(folders, exts, where):
             yield {'name': name, 'path': path, 'data': data}
 
 
-def thr_func(args, data, where, **kwrgs):
+def load_system(where):
+    return list(load_folders(['plugins', 'scripts', 'upm', 'util'], ['py', ''], where))
+
+
+def thr_func(g):
     try:
-        data = data or list(load_folders(['plugins', 'scripts', 'upm', 'util'], ['py', ''], where))
-        by_name = dict((x['name'], x) for x in data)
-        by_name['__main__.py'] = where
-        stage0 = by_name['ut/stage0.py']
-      
-        args.update({'data': data, 'by_name': by_name})
-   
-        ctx = {'args': args}
-        exec(compile((stage0['data'] + '\nrun_stage0(args, **args)\n'), 'ut/stage0.py', 'exec'), ctx)
+        g.file_data = g.file_data or load_system(g.script_path)
+        g.by_name = dict((x['name'], x) for x in g.file_data)
+        g.by_name['__main__.py'] = g.script_dir
+
+        ctx = {'_globals': g}
+        exec(compile((g.by_name['ut/stage0.py']['data'] + '\nrun_stage0(_globals)\n'), 'ut/stage0.py', 'exec'), ctx)
         ctx.clear()
     except Exception:
         try:
             sys.stderr.write('can not initialize runtime\n')
-            traceback.print_exc()
         finally:
             os.abort()
 
 
-def main(args, data, where, **kwargs):
-    t = threading.Thread(target=lambda: thr_func(args, **args))
+def main(g):
+    set_env(g)
+    t = threading.Thread(target=lambda: thr_func(g))
     t.start()
     t.join()

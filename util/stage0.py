@@ -1,4 +1,4 @@
-def run_stage0(args, data, by_name, **kwargs):
+def run_stage0(g):
     def iter_modules():
         yield 'ut/iface.py'
         yield 'ut/init_log.py'
@@ -8,10 +8,10 @@ def run_stage0(args, data, by_name, **kwargs):
 
     def iter_data():
         for i in iter_modules():
-            yield by_name[i]['data']
+            yield g.by_name[i]['data']
 
-        yield '\nrun_stage1(args, **args)\n'
+        yield '\nrun_stage1(_globals)\n'
 
-    ctx = {'args': args}
+    ctx = {'_globals': g}
     exec(compile('\n'.join(iter_data()), '0:stage1.py', 'exec'), ctx)
     ctx.clear()

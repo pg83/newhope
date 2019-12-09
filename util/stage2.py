@@ -1,4 +1,4 @@
-def run_stage2(args, builtin, data, **kwargs):
+def run_stage2(g):
     args, verbose, profile = y.parse_args(y.sys.argv)
 
     def iter_cfg():
@@ -12,18 +12,17 @@ def run_stage2(args, builtin, data, **kwargs):
                 yield parts[0], True
 
     config = dict(iter_cfg())
-    
+
     def run_thr():
         fd = {
-            'file_data': data, 
-            'builtin_modules': builtin,
             'verbose': verbose,
             'need_profile': profile,
             'args': args,
             'config': config,
+            'globals': g,
         }
 
-        y.Loader(fd['builtin_modules']).create_module('ut.iface').run_stage4_0(fd)
+        y.Loader(g.builtin_modules).create_module('ut.iface').run_stage4_0(fd)
 
     t = y.threading.Thread(target=run_thr)
     t.start()

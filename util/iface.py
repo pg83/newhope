@@ -84,9 +84,9 @@ class IFaceStd(IFaceSlave):
     def lst(self):
         return (self.find_module_2, self.find_module_1, self.find_module_3, self.find_function_1, self.find_function_2)
 
-    
+
 stdio_lock = threading.Lock()
-    
+
 
 class StdIO(object):
     def __init__(self, s):
@@ -246,7 +246,7 @@ class IFace(dict):
 
     def create_slave(self, mod):
         return self.create_slave_0(mod, IFaceSlave)
-    
+
     def create_std(self, mod):
         return mod
         #return self.create_slave_0(mod, IFaceStd)
@@ -353,7 +353,7 @@ def prompt(l):
             y.debug('in prompt', e)
 
   
-def load_builtin_modules(data, builtin):
+def load_builtin_modules(builtin):
     initial = (
         'ut.rng',
         'ut.mod_load',
@@ -392,8 +392,8 @@ def run_stage4_0(data):
         @y.lookup
         def lookup(name):
             return data[name]
-        
-        load_builtin_modules(y.file_data, y.builtin_modules)
+
+        load_builtin_modules(y.globals.builtin_modules)
 
         y.init_logger(log_level=y.config.get('ll', 'info').upper())
 
@@ -403,7 +403,7 @@ def run_stage4_0(data):
 
         async def flush_streams():
             ctl = y.current_coro()
-            
+    
             while True:
                 await ctl.sleep(0.1)
 
@@ -412,7 +412,7 @@ def run_stage4_0(data):
                     y.stderr.flush()
                 except Exception as e:
                     y.debug('in flush streams', e)
-        
+
         async def entry_point():
             try:
                 try:

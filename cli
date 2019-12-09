@@ -1,86 +1,68 @@
-#!/bin/sh
-export PATH="$PATH:/root/python/bin:/Users/pg/18/bin"
-export __FILE__=$(python3 -c 'import os; import sys; print(os.path.realpath(sys.argv[1]))' "$0")
-data=$(cat << EOF 
+#!/usr/bin/env python3
 
 import os
 import sys
-import threading
 
 
-if (path := os.environ.get('__FILE__')) is not None:
-    __file__ = path
-else:
-    __file__ = os.path.abspath(__file__).replace('<stdin>', 'cli')
+class A(dict):
+    def __init__(self):
+        self.__dict__ = self
 
 
-sys.argv[0] = __file__
-sys.dont_write_bytecode = True
+GLOBALS = A()
 
 
-def real_trace(*args):
-    pass
+def check_ver():
+    vi = sys.version_info
+
+    if vi.major >= 3 and vi.minor >= 8:
+        return
+
+    for x in ('/root/python/bin:/Users/pg/18/bin:' + os.environ.get('PATH', '')).split(':'):
+        for v in ('3.8', '3.9', '3.10'):
+            path = x + '/python' + v
+
+            if os.path.isfile(path):
+                os.execvp(path, [path] + sys.argv)
+
+    raise Exception('we need python 3.8')
 
 
-def trace(*args):
-    globals()['real_trace'](*args)
+check_ver()
 
 
-if 'profile=pg' in ''.join(sys.argv):
-    sys.settrace(trace)
-    threading.settrace(trace)
+def find_me():
+    for f in (lambda: __file__, lambda: sys.argv[0], lambda: os.path.abspath(os.getcwd()) + '/cli'):
+        p = os.path.abspath(f())
+
+        if os.path.isfile(p):
+            GLOBALS.script_path = p
+            GLOBALS.script_dir = os.path.dirname(p)
+
+            return p
+
+    raise Exception('can not find myself')
 
 
-os.environ['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin'
+__file__ = find_me()
 
 
-import signal
-import traceback
-
-
-def on_exit(*args):
-    os._exit(8)
-
-
-real_handler = on_exit
-
-
-def sig_handler(*args):
-    real_handler(*args)
-
-    
-signal.signal(signal.SIGINT, sig_handler)
-signal.signal(signal.SIGPIPE, signal.SIG_IGN)
-
-
-def real_main():
+def real_main(g):
     file_data = None
-    data = None
     #REPLACEME
 
-    if not data:
-        with open(os.path.dirname(__file__) + '/util/stagea.py') as f:
+    g.file_data = file_data
+    
+    if g.file_data:
+        data = dict((x['name'], x) for x in g.file_data)['ut/stagea.py']
+    else:
+        with open(g.script_dir + '/util/stagea.py') as f:
             data = f.read()
 
-    args = {'where': __file__, 'data': file_data}
-    ctx = {'args': args}
-    exec(compile(data +'\nmain(args, **args)\n', '__main__', 'exec'), ctx)
+    ctx = {'_globals': g}
+    exec(compile(data +'\nmain(_globals)\n', '__main__', 'exec'), ctx)
     ctx.clear()
 
-    
+
 if __name__ == '__main__':
-    abort = os.abort
-
-    def new_abort():
-        try:
-            traceback.print_exc()
-        finally:
-            abort()
-
-    os.abort = new_abort 
-    real_main()
-EOF
-)
-
-py=$(which "python3.8")
-$py -c "$data" $@
+    real_main(GLOBALS)

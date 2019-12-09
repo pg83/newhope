@@ -153,11 +153,12 @@ class Loader(object):
       loader._builtin = data['builtin']
 
 
-def bootstrap(mod, args, builtin, **kwargs):
-    loader = Loader(builtin)
+def bootstrap(mod, g):
+    loader = Loader(g.builtin_modules)
     
     mod1 = loader.create_module('ut.iface')
     mod1 = loader.create_module('ut.init_log')
     mod1 = loader.create_module('ut.args_parse')
     mod2 = loader.create_module('ut.mod_load')
-    mod2.__loader__.create_module('ut.stage2').run_stage2(args, **args)
+    
+    mod2.__loader__.create_module('ut.stage2').run_stage2(g)
