@@ -1,19 +1,11 @@
-import sys
-
-
 def create_main(g):
-    sys.modules['ya'] = -1
-    sys.modules['gn'] = -1
-    sys.modules['pl'] = -1
-    sys.modules['ut'] = -1
-
     def re_exec(g):
         code = """
 def new_main(loader, g):
     builtin = dict((x['name'].replace('/', '.')[:-3], x) for x in g.file_data)
-    mod = loader(builtin).create_module('ut.mod_load')
+    mod = loader('0', builtin=builtin).create_module('ut.mod_load')
     g.builtin_modules = builtin
-    mod.bootstrap(mod, g)
+    mod.bootstrap(g)
 
 new_main(loader, _globals)
 """

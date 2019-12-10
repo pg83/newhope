@@ -3,6 +3,7 @@ ic = y.inc_counter()
 
 
 DEFUN = nt('DEFUN', ['f'])
+DECORO = nt('DECORO', ['f'])
 SKIP = nt('SKIP', [])
 DEACT = nt('DEACT', [])
 STATEFUL = nt('STATEFUL', [])
@@ -103,7 +104,9 @@ class DATA(object):
         self.data = data
         
     def __str__(self):
-        return '(DATA {' + ', '.join(sorted(self.tags)) + '}, ' + guess_print_data(self.data) + ')'
+        res = '(DATA {' + ', '.join(sorted(self.tags)) + '}, ' + guess_print_data(self.data) + ')'
+
+        return res.replace('{', '(').replace('}', ')')
 
     def __repr__(self):
         return str(self)
@@ -428,10 +431,8 @@ class PubSubLoop(object):
         yield y.EOP(y.ACCEPT('ps:ext queue'))
 
         for i in iface.iter_data():
-            print 'here'
             while self.ext:
                 ev = self.ext.pop()
-                print 'new ext event', ev
                 
                 yield y.EOP(DATA(ev['tags'], ev['data']))
 
@@ -534,6 +535,8 @@ class PubSubLoop(object):
                 f.deactivate()
             elif cn == 'defun':
                 self.add_fun(c.f)
+            elif cn == 'decoro':
+                self.wrap_coro(c.f)
             elif cn == 'accept':
                 if f.new_accept(list_to_set(c.tags)):
                     self.rebuild_net()

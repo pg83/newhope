@@ -1,5 +1,4 @@
-@y.ygenerator()
-def coreutils0():
+def coreutils_impl(deps, kind):
     return {
         'code': """
              source fetch "https://ftp.gnu.org/gnu/coreutils/coreutils-{version}.tar.xz" 1 
@@ -9,8 +8,17 @@ def coreutils0():
         """,
         'version': '8.31',
         'meta': {
-            'kind': ['box', 'tool'],
-            'depends': ['iconv', 'intl'],
-            'soft': ['openssl'],
+            'kind': ['tool'] + kind,
+            'depends': ['iconv', 'intl'] + deps,
         },
     }
+
+
+@y.ygenerator()
+def coreutils0():
+    return coreutils_impl(['openssl'], ['box'])
+
+
+@y.ygenerator()
+def coreutils_boot0():
+    return coreutils_impl([], [])

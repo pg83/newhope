@@ -1,5 +1,5 @@
 @y.main_entry_point
-async def cli_fetchurl(args):
+async def cli_cmd_fetch(args):
     try:
         if len(args) > 1:
             url = args[0]
@@ -14,5 +14,4 @@ async def cli_fetchurl(args):
         y.fetch_http(root, url, name=name, untar=False)    
         y.os._exit(0)
     except Exception as e:
-        print(e)
         y.os.abort()

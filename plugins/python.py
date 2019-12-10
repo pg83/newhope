@@ -139,7 +139,6 @@ def python_base(kind):
         'meta': {
             'kind': kind,
             'depends': ['ncurses', 'iconv', 'intl', 'zlib', 'pkg-config-int', 'libffi', 'readline', 'termcap', 'expat', 'sqlite3'],
-            'soft': ['openssl'],
             'provides': [
                 {'lib': 'python2.7'},
                 {'env': 'PYTHON', 'value': '{pkgroot}/bin/staticpython'},

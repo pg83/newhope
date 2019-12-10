@@ -8,11 +8,7 @@ def abort_on_error(func):
         except StopIteration:
             raise
         except Exception:
-            try:
-                y.debug(func.__module__, func.__name__)
-                y.print_tbx()
-            finally:
-                y.os.abort()
+            y.os.abort()
 
     return wrapper
 
@@ -25,28 +21,6 @@ def abort_on_error():
         if not y.exc_info()[0]:
             y.print_all_stacks()
             y.os.abort()
-
-
-def stop_iter(*args, **kwargs):
-    raise y.StopNow()
-
-
-async def async_stop_iter(*args, **kwargs):
-    raise y.StopNow()
-
-    
-def on_except():
-    try:
-        y.debug(y.traceback.format_exc())
-    finally:
-        y.os.abort()
-
-
-def safe_run(f):
-    try:
-        return f()
-    except Exception:
-        on_except()
 
 
 def sync_pack(f):

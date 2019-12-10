@@ -12,7 +12,7 @@ def fetch_data(url):
 
     e = None
     
-    for f in (fetch_1,):  #(fetch_1, fetch_2, fetch_1, fetch_3):
+    for f in (fetch_1, fetch_2, fetch_1, fetch_3):
         try:
             return f(url)
         except Exception as err:
@@ -43,7 +43,7 @@ def fetch_http(root, url, name=None, untar=True):
 
 
 @y.main_entry_point
-async def cli_source(arg):
+async def cli_pkg_source(arg):
     parser = y.argparse.ArgumentParser()
 
     parser.add_argument('--path', default='data', action='store', help='Where to store all')

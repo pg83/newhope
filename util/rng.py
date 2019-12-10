@@ -34,6 +34,10 @@ class PCGRandom(object):
 
         return res
     
-    def __iter__(self):
+    def iter_float(self):
         while True:
             yield self.next_float()
+
+    def iter_int(self):
+        while True:
+            yield self.next_random()

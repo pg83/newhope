@@ -3,14 +3,14 @@ def is_debug():
     return 'debug' in y.config.get('make', '')
 
 
-async def run_makefile(mk, shell_vars, targets, threads, pre_run=[]):
+async def run_makefile(mk, targets, threads, pre_run=[]):
     async def run_build_2(ctl):
         await y.cheet(mk)
     
         if pre_run:
-            await run_par_build(ctl, await mk.select_targets(pre_run), shell_vars, pre_run, 1)
+            await run_par_build(ctl, await mk.select_targets(pre_run), pre_run, 1)
 
-        return await run_par_build(ctl, await mk.select_targets(targets), shell_vars, targets, threads)
+        return await run_par_build(ctl, await mk.select_targets(targets), targets, threads)
 
     return await y.spawn(run_build_2)
 
@@ -28,11 +28,10 @@ def CHANNEL(data):
 
         
 class Builder(object):
-    def __init__(self, ctl, mk, shell_vars, targets, threads):
+    def __init__(self, ctl, mk, targets, threads):
         self.mk = mk
         self.threads = threads
         self.ctl = ctl
-        self.shell_vars = shell_vars
         self.targets = targets
         self.lst = [item_factory(x, self, n) for n, x in enumerate(mk.lst)]
         
@@ -46,6 +45,10 @@ class Builder(object):
             self.resolve_path(k)
 
         self.by_dep = by_dep
+
+    @property
+    def shell_vars(self):
+        return self.mk.flags
         
     @y.cached_method
     def resolve_path(self, d):
@@ -389,17 +392,17 @@ class Item(ItemBase):
         y.build_results(msg)
 
         
-async def run_par_build(ctl, mk, shell_vars, targets, threads):
+async def run_par_build(ctl, mk, targets, threads):
     build = ', '.join(targets)
 
-    y.info('{r}start build of', build, '{}')
+    y.info('{br}start build of', build, '{}')
 
     try:
         async def run_par_build_1(ctl):
-            b = Builder(ctl, mk, shell_vars, targets, threads)
+            b = Builder(ctl, mk, targets, threads)
 
             return await b.run()
 
         return await ctl.spawn(run_par_build_1)
     finally:
-        y.info('{r}end build of', build, '{}')
+        y.info('{br}end build of', build, '{}')

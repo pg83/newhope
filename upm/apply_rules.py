@@ -6,7 +6,7 @@ def gen_fetch_cmd(url):
         'inputs': [],
         'output': cache,
         'build': [
-            '$UPM fetchurl "' + url + '" "' + cache + '"'
+            '$SD/upm cmd fetch "' + url + '" "' + cache + '"'
         ],
     }
 

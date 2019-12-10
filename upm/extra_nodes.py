@@ -3,7 +3,7 @@ def iter_workspace():
 
     yield {
         'output': 'workspace',
-        'inputs': ['$RD/x', '$WD/x', '$PD/x', '$MD/x', '$SD/x'],
+        'inputs': ['$RD/x', '$WD/x', '$PD/x', '$MD/x', '$SD/x', '$SD/upm'],
         'build': [],
     }
 
@@ -51,5 +51,15 @@ def iter_workspace():
         'build': [
             path,
             'mkdir -p "$SD"',
+            '(rm -rf $SD/upm || true) 2> /dev/null'
+        ],
+    }
+    
+    yield {
+        'output': '$SD/upm',
+        'inputs': ['$SD/x'],
+        'build': [
+            path,
+            '($UPM cmd release > $SD/upm.tmp) && chmod +x $SD/upm.tmp && $SD/upm.tmp help && mv $SD/upm.tmp $SD/upm',
         ],
     }

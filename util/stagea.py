@@ -9,6 +9,8 @@ def set_profile(g):
     if 'profile=pg' not in ''.join(sys.argv):
         return
 
+    g.trace_function = lambda *args: None
+    
     def trace(*args):
         g.trace_function(*args)
 
@@ -25,13 +27,14 @@ def set_sigint(g):
     signal.signal(signal.SIGINT, sig_handler)
     signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 
-    
+
 def set_abort(g):
     g.abort_function = os.abort
+    g.abort_handler = traceback.print_exc
 
     def new_abort():
         try:
-            traceback.print_exc()
+            g.abort_handler()
         finally:
             g.abort_function()
 
@@ -68,7 +71,7 @@ def fix_print(data):
             if '>>' in ll:
                 yield l
             elif ll.startswith('print '):
-                l = l.replace('print ', 'print(') + ')'
+                l = l.replace('print ', 'print(') + ', file=y.stderr)'
 
                 yield l
             else:
@@ -94,11 +97,12 @@ def load_folders(folders, exts, where):
     replace = {
         'upm': 'ya',
         'plugins': 'pl',
+        'plugins/lib': 'data',
         'scripts': 'sc',
         'util': 'ut',
     }
 
-    yield {'name': 'cli', 'path': where, 'data': open(where).read()}
+    yield {'name': os.path.basename(where), 'path': where, 'data': open(where).read()}
 
     for f in folders:
         fp = os.path.join(os.path.dirname(where), f)
@@ -106,17 +110,14 @@ def load_folders(folders, exts, where):
         for x in os.listdir(fp):
             if bad_name(x):
                 continue
-
-            parts = x.split('.')
             
-            if parts[-1] in exts or len(parts) == 1:
-                pass
-            else:
-                continue
-
+            parts = x.split('.')
             name = os.path.join(replace[f], x)
             path = os.path.join(fp, x)
-         
+
+            if not os.path.isfile(path):
+                continue
+            
             with open(path) as fff:
                 data = preprocess_data(fff.read())
 
@@ -127,15 +128,14 @@ def load_folders(folders, exts, where):
 
 
 def load_system(where):
-    return list(load_folders(['plugins', 'scripts', 'upm', 'util'], ['py', ''], where))
+    return list(load_folders(['plugins', 'plugins/lib', 'scripts', 'upm', 'util'], ['py', ''], where))
 
 
 def thr_func(g):
     try:
         g.file_data = g.file_data or load_system(g.script_path)
         g.by_name = dict((x['name'], x) for x in g.file_data)
-        g.by_name['__main__.py'] = g.script_dir
-
+        
         ctx = {'_globals': g}
         exec(compile((g.by_name['ut/stage0.py']['data'] + '\nrun_stage0(_globals)\n'), 'ut/stage0.py', 'exec'), ctx)
         ctx.clear()

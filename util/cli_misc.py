@@ -1,4 +1,4 @@
-@y.main_entry_point
+@y.verbose_entry_point
 async def cli_cleanup(arg):
    y.os.system("find . | grep '~' | xargs rm")
    y.os.system("find . | grep '#' | xargs rm")
@@ -7,15 +7,22 @@ async def cli_cleanup(arg):
 @y.main_entry_point
 async def cli_help(args):
    def iter_funcs():
-      verbose = ('-v' in y.sys.argv or '-vm' in y.sys.argv)
+      allow = 'm'
+
+      if '-v' in y.sys.argv or '-vm' in y.sys.argv:
+         allow += 'v'
+
+      mep = y.main_entry_points()
       
-      for t, f in y.main_entry_points():
-         if t != 'v' or verbose:
-            yield f.__name__[4:]
+      for name in mep:
+         t, f = mep[name]
+         
+         if t in allow:
+            yield name.replace('_', ' ')
 
    arg = y.sys.argv[0]
    funcs = sorted(set(iter_funcs()))
-   text = 'usage: ' + arg + ' (-v, -vm debug_options)* [' + ', '.join(funcs) + ']'
+   text = 'usage: ' + arg + ' (-v, -vm debug options)* [command] (command options)*{bb}' + '\n    '.join([''] + funcs) + '{}'
    
    y.xprint_bg(text)
 
@@ -42,12 +49,14 @@ async def cli_pip(args):
 
 @y.main_entry_point
 async def cli_repl(args):
-   from ptpython.repl import embed
-   
-   embed(globals(), locals())
+   frame = y.inspect.currentframe()
+   frame = frame.f_back
 
+   try:
+      from ptpython.repl import embed
    
-@y.verbose_entry_point
-async def cli_wait(args):
-    while True:
-        await y.current_coro().sleep(1)
+      embed(frame.f_globals, locals())
+   except ImportError:
+      y.code.interact(local=frame.f_globals)
+   except Exception as e:
+      y.debug('in prompt', e)

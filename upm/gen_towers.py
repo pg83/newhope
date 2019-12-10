@@ -1,3 +1,5 @@
+import sys
+
 ic = y.inc_counter()
 
 
@@ -9,8 +11,25 @@ class Func(object):
         self.i = 0
 
     def out_deps(self):
-        y.xprint_dg(self.base, self.i, self.deps)
+        y.xprint_dg(str(self), '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')
 
+    def contains(self):
+        return self.code().get('meta', {}).get('contains', [])
+
+    def __str__(self):
+        return '<' + self.base  + '-' + str(self.i) + '-' + self.compact_kind() + '>'
+
+    def compact_kind(self):
+        res = ''
+
+        if self.is_tool:
+            res += 't'
+
+        if self.is_library:
+            res += 'l'
+
+        return res
+    
     @property
     def is_library(self):
         return 'library' in self.kind
@@ -62,7 +81,11 @@ class Func(object):
         }
 
         def iter1():
-            yield 'make'
+            code = self.code()
+
+            if self.base not in ('make', 'make-boot', 'musl-boot', 'musl'):
+                if 'YMAKE' in code.get('code', ''):
+                    yield 'make'
 
             for y in self.depends():
                 yield subst.get(y, y)
@@ -72,7 +95,11 @@ class Func(object):
                 if y != self.base:
                     yield y
 
-        return list(iter2())
+        res = list(iter2())
+
+        print(self.base, res, file=sys.stderr)
+
+        return res
 
     @y.cached_method
     def run_func(self, info):
@@ -115,7 +142,7 @@ class Func(object):
         return Func(self.x, self.data)
 
     def calc_deps(self):
-        return self.data.select_deps(self.base) + self.data.last_elements(self.data.special, must_have=False)
+        return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(self.data.special, must_have=False))
 
 
 class SpecialFunc(Func):
@@ -123,8 +150,12 @@ class SpecialFunc(Func):
         Func.__init__(self, x, data)
 
     def depends(self):
+        print('here', file=sys.stderr)
         return self.data.by_kind[self.base]
 
+    def contains(self):
+        return self.depends()
+    
     @y.cached_method
     def f(self, info):
         return self.z['code'](info)
@@ -190,6 +221,8 @@ class Data(object):
             for k in x['func']['kind']:
                 self.by_kind[k].append(x['func']['base'])
 
+        print(self.by_kind, file=sys.stderr)
+                
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
@@ -202,6 +235,22 @@ class Data(object):
 
         return Func(x, self)
 
+    def optimize(self, deps):
+        contains = frozenset(sum([self.func_by_num[i].contains() for i in deps], []))
+
+        def iter_deps():
+            for d in deps:
+                f = self.func_by_num[d]
+                
+                if f.is_library:
+                    yield d
+                elif f.base in contains:
+                    pass
+                else:
+                    yield d
+
+        return list(iter_deps())
+    
     @property
     def special(self):
         return self.by_kind['special']
@@ -211,7 +260,7 @@ class Data(object):
             for k in lst:
                 if k in self.dd or must_have:
                     yield self.dd[k][-1]
-
+                        
         return list(iter())
 
     def prepare_funcs(self, num):
@@ -220,6 +269,7 @@ class Data(object):
         for func in solver.iter_infinity():
             func.i = len(self.func_by_num)
             self.func_by_num.append(func)
+            print(func, file=sys.stderr)
             func.deps = sorted(func.calc_deps())                
             self.dd[func.base].append(func.i)
 

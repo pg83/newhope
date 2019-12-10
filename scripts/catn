@@ -1,0 +1,5 @@
+catn() {
+    n=1 && cat $@ | while read line; do echo "  $n  $line"; n=$((n + 1)); done
+}
+
+catn $@

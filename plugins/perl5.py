@@ -10,7 +10,7 @@ def perl50():
         'version': '5.30.1',
         'meta': {
             'kind': ['tool'],
-            'depends': ['iconv', 'intl', 'zlib', 'coreutils'],
+            'depends': ['iconv', 'intl', 'zlib', 'coreutils-boot'],
             'provides': [
                 {'env': 'YPERL', 'value': '{pkgroot}/bin/perl'},
             ],

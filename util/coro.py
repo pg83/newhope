@@ -24,30 +24,27 @@ class Action(Exception):
         self.action = a
 
 
-def wrap_context(func):
-    def func1(self):
-        try:
-            token = CURRENT_CORO.set(self)
+@y.contextlib.contextmanager
+def with_contextvar(coro):
+    token = CURRENT_CORO.set(coro)
 
+    try:
+        yield
+    finally:
+        CURRENT_CORO.reset(token)
+
+
+def wrap_context(func):
+    @y.functools.wraps(func)
+    def func1(self):
+        with with_contextvar(self):
             return func(self)
-        finally:
-            CURRENT_CORO.reset(token)
             
     @y.functools.wraps(func)
     def wrapped(self):
         return self.ctx.run(func1, self)
 
     return wrapped
-
-
-@y.contextlib.contextmanager
-def with_contextvar(coro):
-    token = CURRENT_CORO.set(coro)
-
-    try:
-        yield coro.ctx
-    finally:
-        CURRENT_CORO.reset(token)
 
 
 def set_name(func, name):
@@ -58,9 +55,6 @@ def set_name(func, name):
 
 def factory(where):
     if where == 'timer':
-        return y.MTQ
-
-    if where == 'sched':
         return y.MTQ
 
 
@@ -140,12 +134,7 @@ class Future(collections.abc.Awaitable):
             return self
         
     def add_cb(self, cb):
-        try:
-            self.cb.append(cb)
-        except:
-            print(e, self.stack, self.__name__)
-
-            raise
+        self.cb.append(cb)
             
     def is_done(self):
         try:
@@ -160,15 +149,17 @@ class Future(collections.abc.Awaitable):
         return self.__dict__.pop
         
     def call_all_callbacks(self):
-        self.stack = y.traceback.format_stack()
-        
         for c in self.pop('cb'):
             c()
             
     def sched_action(self, coro):
-        self.add_cb(coro.reschedule)
-        self.pop('action')()
-
+        try:
+            self.add_cb(coro.reschedule)
+            self.pop('action')()
+        except Exception as e:
+            print e, str(coro), str(self), str(self.result())
+            y.prompt('/sa')
+            raise e
     
 class MinHeap(object):
     def __init__(self):
@@ -253,7 +244,7 @@ class TimeScheduler(object):
         return await self.sleep_deadline(time.time() + tout)
 
     async def sleep_deadline(self, dd):
-        return await self.loop.offload(set_name(lambda: time.sleep(max(dd - time.time(), 0.001)), 'sleep_' + str(int(dd))))
+        return await self.loop.offload(set_name(lambda: time.sleep(max(dd - time.time(), 0)), 'sleep_' + str(int(dd))))
         
     async def wait_queue(self):
         self.process_queue()
@@ -373,7 +364,7 @@ class Coro(collections.abc.Coroutine):
         except StopIteration as e:
             COROS.pop(self.id)
 
-            is_debug() and y.debug(str(self), 'here we are', e, 'with result', e.value)
+            is_debug() and y.debug(str(self), 'here we are', e)
             
             self.v = e.value
             self.f.set_result(self)
@@ -392,7 +383,6 @@ class Coro(collections.abc.Coroutine):
     
     def send(self, v):
         y.os.abort()
-        #return self.slave.send(v)
 
     @wrap_context
     def throw(self, *args):
@@ -623,7 +613,7 @@ class ThreadLoop(object):
         return y.unpack((await self.spawn(async_job, 'async_' + job.__name__)).__dict__.pop('v'))
 
 
-class Loop(object):
+class CoroLoop(object):
     def __init__(self, name, scheduler=None):
         self.ctx = cv.copy_context()
         self.name = name
@@ -668,6 +658,3 @@ class Loop(object):
     
     def get_random_queue(self):
         return random.choice(self.thrs)
-
-    
-async_loop = Loop('main')

@@ -4,14 +4,6 @@ import os
 import sys
 
 
-class A(dict):
-    def __init__(self):
-        self.__dict__ = self
-
-
-GLOBALS = A()
-
-
 def check_ver():
     vi = sys.version_info
 
@@ -31,30 +23,33 @@ def check_ver():
 check_ver()
 
 
-def find_me():
+def find_me(g):
     for f in (lambda: __file__, lambda: sys.argv[0], lambda: os.path.abspath(os.getcwd()) + '/cli'):
         p = os.path.abspath(f())
 
         if os.path.isfile(p):
-            GLOBALS.script_path = p
-            GLOBALS.script_dir = os.path.dirname(p)
-
             return p
 
     raise Exception('can not find myself')
 
 
-__file__ = find_me()
+class Globals(dict):
+    def __init__(self):
+        self.__dict__ = self
 
 
-def real_main(g):
+def real_main():
     file_data = None
     #REPLACEME
+    
+    g = Globals()
 
+    g.script_path = find_me(g)
+    g.script_dir = os.path.dirname(g.script_path)
     g.file_data = file_data
     
     if g.file_data:
-        data = dict((x['name'], x) for x in g.file_data)['ut/stagea.py']
+        data = dict((x['name'], x) for x in g.file_data)['ut/stagea.py']['data']
     else:
         with open(g.script_dir + '/util/stagea.py') as f:
             data = f.read()
@@ -65,4 +60,4 @@ def real_main(g):
 
 
 if __name__ == '__main__':
-    real_main(GLOBALS)
+    real_main()

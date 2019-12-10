@@ -9,12 +9,14 @@ def bestbox0():
             cp $BUSYBOX $IDIR/bin
             
             cd $IDIR/bin
-            
-            ./busybox --install -s ./
 
-            for i in `./toybox`
-            do
-               ln -fs ./toybox ./$i
+            for x in `./busybox --list-full`; do
+                y=$(basename $x)
+                ln -s -f ./busybox $y
+            done            
+
+            for i in `./toybox`; do
+                ln -fs ./toybox ./$i
             done
         """,
         'meta': {

@@ -1,5 +1,5 @@
 @y.main_entry_point
-async def cli_make(arg):
+async def cli_pkg_make(arg):
     p = y.argparse.ArgumentParser()
     
     p.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
@@ -49,34 +49,23 @@ async def cli_make(arg):
             yield ('$PD', '/private')
 
         yield ('$PREFIX', root)
-        
-        for x in y.file_data:
-            if x['path'].endswith('cli'):
-                yield ('$UPM', x['path'])
+        yield ('$UPM', y.globals.script_path)
 
         if args.shell:
             yield ('$YSHELL', args.shell)
 
     shell_vars = dict(iter_replaces())
-    data = None
     
-    if args.path == 'gen':
+    async def gen():
         mk, portion = await y.main_makefile(y.iter_cc, internal=True)
-        mk = y.loads_mk(mk)
-    elif args.path == '-':
-        data = await y.offload(y.sys.stdin.read)
-    elif args.path:
-        with open(args.path, 'r') as f:
-            data = await y.offload(f.buffer.read)
-    else:
-        data = await y.offload(y.sys.stdin.read)
+        
+        return y.loads_mk(mk)
 
-    if data:
-        mk = y.MakeFile()
-
-        await mk.init(data)
-
+    mk = await y.open_mk_file(args.path, gen)
+    
     if int(args.threads):
+        args.pre_run = ['workspace']
+        
         return await mk.build(shell_vars, args)
 
     return 0

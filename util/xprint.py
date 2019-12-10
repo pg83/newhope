@@ -109,7 +109,7 @@ def process_color(text, init, kwargs):
             
     return ''.join(combine())
 
-        
+
 @y.lookup
 def lookup(xp):
     if xp.startswith('xprint_'):
@@ -123,71 +123,6 @@ def lookup(xp):
         return func
 
     raise AttributeError(xp)
-
-
-
-def reduce_by_key(iter, keyf):
-    tmp = []
-
-    for i in iter:
-        if not tmp:
-            tmp.append(i)
-        else:
-            if keyf(i) == keyf(tmp[-1]):
-                tmp.append(i)
-            else:
-                yield tmp
-                tmp = [i]
-
-    if tmp:
-        yield tmp
-
-        
-def reshard_text(text, nn):
-    def iter1():
-        cur = None
-    
-        for i in process_color(text, '{}', dict(raw=True)):
-            if 'color' in i:
-                cur = i['color']
-            else:
-                for ch in i['text']:
-                    yield (ch, cur)
-
-    def split1():
-        cur = []
-        
-        for ch in iter1():
-            if ch[0] == '\n':
-                yield cur
-                cur = []
-            else:
-                cur.append(ch)
-
-        if cur:
-            yield cur
-
-    def reshard_line(l, n):
-        while l:
-            yield l[:n]
-            l = l[n:]
-            
-    def do():
-        for l in split1():
-            for sl in reshard_line(l, nn):
-                yield list(reduce_by_key(sl, keyf=lambda x: x[1]))
-
-    def combine(l):
-        text = ''.join([x[0] for x in l])
-        color = l[0][1]
-
-        return {'text': text, 'color': color}
-
-    def iter2():
-        for l in do():
-            yield [combine(x) for x in l]
-
-    return list(iter2())
 
 
 def run_color_test():
@@ -206,4 +141,3 @@ def run_color_test():
     
     y.sys.stderr.write(process_color(text.strip() + '\n', '', {'verbose': '/rc'}))
     y.sys.stderr.flush()
-    

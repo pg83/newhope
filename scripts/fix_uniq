@@ -4,7 +4,7 @@ fix_uniq() {
     for i in $@
     do
         echo "$i"
-    done | (cat -n | sort -bk2 | uniq -f1 | sort -bnk1 | awk '{print $2}') 
+    done | (source catn | sort -bk2 | uniq -f1 | sort -bnk1 | awk '{print $2}') 
 }
 
 (IFS="$1" fix_uniq $2) | tr '\n' $1 

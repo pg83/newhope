@@ -1,5 +1,4 @@
-@y.ygenerator()
-def make0():
+def make_impl(deps, contains, kind):
     def it():
         if '/test1' in y.verbose:
             raise Exception('test')
@@ -20,7 +19,9 @@ def make0():
         'code': '\n'.join(it()),
         'version': '4.2',
         'meta': {
-            'kind': ['box', 'tool'],
+            'kind': ['tool'] + kind,
+            'depends': deps,
+            'contains': contains,
             'soft': ['iconv', 'intl'],
             'provides': [
                 {'env': 'YMAKE', 'value': '{pkgroot}/bin/make'},
@@ -28,3 +29,12 @@ def make0():
         },
     }
 
+
+@y.ygenerator()
+def make_boot0():
+    return make_impl(['musl-boot'], ['make'], [])
+
+
+@y.ygenerator()
+def make0():
+    return make_impl(['musl'], [], ['box'])

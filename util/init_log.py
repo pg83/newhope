@@ -43,14 +43,12 @@ class ColoredFormatter(y.logging.Formatter):
         self.styles = dls
         self.fmt = fmt
         
-        y.logging.Formatter.__init__(self, fmt, '%H:%M:%S')
-        
     def format(self, record):
         res = self.fmt
 
         funcs = {
             'levelname': lambda x: x[:1].upper(),
-            'msg': lambda x: (x + '    ')[:10]
+            'msg': lambda x: (x + '    ')[:10],
         }
 
         if (target := record.__dict__.get('_target')) is not None:
@@ -65,7 +63,7 @@ class ColoredFormatter(y.logging.Formatter):
 def init_logger(log_level='INFO'):
     if 'pip' in y.sys.argv:
         return
-    
+
     #y.logging.raiseExceptions = False        
     old_factory = y.logging.getLogRecordFactory()
 
@@ -78,8 +76,9 @@ def init_logger(log_level='INFO'):
             if len(record.thr) == 1:
                 record.thr = '0' + record.thr
         except Exception:
-            record.thr = ''
+            record.thr = '##'
 
+        record.asctime = y.datetime.datetime.fromtimestamp(int(y.time.time())).strftime('%H:%M:%S')
         record.name = record.name[:10]
         record.msg = record.msg.strip()
         record.text = ''
@@ -92,7 +91,7 @@ def init_logger(log_level='INFO'):
 
     y.logging.setLogRecordFactory(record_factory)
     
-    fmt = ' {w}{g}%(thr){} | {b}%(asctime)s{} | {br}%(levelname){} | %(msg) | %(text) {}'
+    fmt = '{w}{g}%(thr){} | {m}%(asctime){} | {br}%(levelname){} | %(msg) | %(text){}'
 
     class Stream(object):
         def __init__(self):

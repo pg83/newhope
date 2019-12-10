@@ -198,7 +198,7 @@ async def build_makefile(nodes, internal=False):
                 }
 
         mk = y.MakeFile()
-        mk.init_from_lst(list(iter6()))
+        mk.init_from_parsed({'lst': list(iter6()), 'flags': {}})
 
         return y.dumps_mk(mk)
 

@@ -67,9 +67,6 @@ class IncCounter(object):
         self.l = y.threading.Lock()
         
     def __iter__(self):
-        return self
-
-    def __next__(self):
         while True:
             with self.l:
                 begin = self.c
@@ -80,11 +77,13 @@ class IncCounter(object):
                 yield i
 
     def inc_counter(self):
-        it = iter(self.__next__())
+        it = iter(self)
 
         def func():
             return next(it)
 
+        func()
+        
         return func
 
 

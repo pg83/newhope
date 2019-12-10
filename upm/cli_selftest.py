@@ -39,7 +39,7 @@ def iter_all_tests():
 
 
 @y.verbose_entry_point
-def cli_selftest(args, verbose):
+def cli_test_self(args, verbose):
    print 1
    
    with y.abort_on_error():

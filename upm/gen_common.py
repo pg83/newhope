@@ -6,7 +6,7 @@ def fix_user_data(iter):
 def common_plugins(iface):
     yield y.EOP(y.ACCEPT(), y.PROVIDES('mf:plugin'))
 
-    for el in sorted(y.file_data, key=lambda x: y.burn([3, x['name']])):
+    for el in sorted(y.globals.file_data, key=lambda x: y.burn([3, x['name']])):
         if el['name'].startswith('pl/'):
             yield y.ELEM(y.deep_copy(el))
 
@@ -16,16 +16,22 @@ def common_plugins(iface):
 def mf_function_holder(iface):
     yield y.EOP(y.ACCEPT())
     
-    lst = [
+    lst_f = [
         y.common_plugins,
         y.my_funcs_cb,
-        y.make_proper_permutation,
         y.exec_plugin_code,
+        y.make_proper_permutation,
     ]
 
-    for l in lst:
+    for l in lst_f:
         yield y.DEFUN(l)
 
+    lst_c = [
+    ]
+
+    for l in lst_c:
+        yield y.DECORO(l)
+    
     yield y.FIN()
 
 

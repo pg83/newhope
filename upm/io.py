@@ -51,7 +51,7 @@ def prepare_tar_cmd(fr, to, codec=None):
         'tr': 'cat',
         'bz': '$YBZIP2 -c',
         '7z': '$Y7ZA a -si {to}',
-        'pg': '$UPM codec -c',
+        'pg': '$SD/upm cmd codec -c',
     }
 
     if not codec:
@@ -79,6 +79,17 @@ def prepare_tar_cmd(fr, to, codec=None):
     else:
         yield '((' + ' && '.join(iter_lines()) + ') > ' + to + '-tmp) && (mv ' + to + '-tmp ' + to + ')'
 
+        
+data1 = '''
+if test $2 -eq 1; then
+    q=$(basename $1)
+    q=$(echo $q | tr '-' '\n' | head -n 1)
+    mv ./$q* ./xxx
+    mv ./xxx/* ./
+    rm ./xxx
+fi
+'''
+
 
 @y.singleton
 def gen_extra_scripts():
@@ -89,9 +100,8 @@ def gen_extra_scripts():
             yield 'prepare_' + codec + '_pkg', data
 
         for codec in list(known_codecs()) + ['zp']:
-            data = ''.join(prepare_untar_cmd('"$1"', '.', ext_mode=codec, rm_old=False, extra='--strip-components $2'))
-
-            yield 'untar_' + codec, data
+            data = ''.join(prepare_untar_cmd('"$1"', '.', ext_mode=codec, rm_old=False))
+            yield 'untar_' + codec, data + '\n' + data
 
     return list(do())
 
@@ -121,7 +131,7 @@ def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
         'xz': '| $YXZCAT -f |',
         'gz': '| $YGZIP -dc |',
         'bz': '| $YBZIP2 -dc |',
-        'pg': '| $UPM codec -d |',
+        'pg': '| $SD/upm cmd codec -d |',
         'tr': '|',
     }
 

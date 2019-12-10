@@ -27,7 +27,7 @@ def gen_check_log(data):
 
 def scripts_data(no_last=False):
     def iter():
-        for x in y.file_data:
+        for x in y.globals.file_data:
             k = x['name']
             
             if not k.startswith('sc/'):

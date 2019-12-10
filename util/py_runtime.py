@@ -153,8 +153,8 @@ def init():
                     f.buffer.write(data)
             except Exception as e:
                 y.stderr.write(str(e) + '\n')
-                
-        y.sys.modules['__main__'].real_trace = prof.my_trace
+
+        y.globals.trace_function = prof.my_trace
 
     
 def iter_frames(frame=None):
@@ -190,8 +190,6 @@ def calc_text(f, fname):
             return i()
         except Exception:
             pass
-
-    return []
 
 
 def iter_tb_info(tb):
@@ -313,7 +311,7 @@ def format_tbx(tb_line='', frame=None):
     return '\n'.join((tb and iter_exc or iter_fr)())
 
 
-def print_tbx_real(*args, **kwargs):
+def print_tbx(*args, **kwargs):
     try:
         y.xxprint(format_tbx(*args, **kwargs))
     except Exception as e:
@@ -326,3 +324,24 @@ def print_all_stacks():
             y.print_tbx(tb_line=str(k), frame=v)
     except Exception:
         y.print_tbx()
+
+
+class AbortHandler(object):
+    def __init__(self):
+        self.out = y.stderr
+        self.f1 = format_tbx
+        self.f2 = y.traceback.format_exc
+        self.cf = current_frame
+
+    def handle(self):
+        try:
+            try:
+                self.out.write(self.f1() + '\n')
+                self.out.write(self.f1(frame=self.cf()) + '\n')
+            except:
+                self.out.write(self.f2())
+        finally:
+            self.out.flush()
+            
+            
+y.globals.abort_handler = AbortHandler().handle

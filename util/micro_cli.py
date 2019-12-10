@@ -1,5 +1,5 @@
 @y.verbose_entry_point
-async def cli_offload(args):
+async def cli_test_offload(args):
     print await y.async_loop.offload(lambda: y.subprocess.check_output("ls -la", shell=True))
 
 
@@ -32,7 +32,7 @@ def awkward_suspend():
 
     
 @y.verbose_entry_point
-async def cli_test_q(args):
+async def cli_test_queue(args):
     q = y.QQ(y.async_loop)
     #q = y.MTQ()
     #q = y.PQ()
@@ -73,38 +73,30 @@ async def cli_test_q(args):
     for x in c:
         await x
         
-    
+
 @y.verbose_entry_point
-async def cli_pubsub(args):
+async def cli_test_pubsub(args):
     ps = y.PubSubLoop()
 
     async def f1(ctl, inq):
         yield y.EOP(y.ACCEPT('A'), y.PROVIDES('B'))
-
-        yield y.ELEM(2)
-        yield y.EOP()
+        yield y.EOP(y.ELEM(2))
         
         async for i in inq:
             i = i.data.data
-            #y.info('got f1', i)
-            print 'f1', i
-            yield y.ELEM(i)
-            yield y.EOP()
+            print('f1', i)
+            yield y.EOP(y.ELEM(i))
 
         yield y.FIN()
 
     async def f2(ctl, inq):
         yield y.EOP(y.ACCEPT('B'), y.PROVIDES('A'))
-
-        yield y.ELEM(1)
-        yield y.EOP()
+        yield y.EOP(y.ELEM(1))
 
         async for i in inq:
             i = i.data.data
-            #y.info('got f2', i)
-            print 'f2', i
-            yield y.ELEM(i)
-            yield y.EOP()
+            print('f2', i)
+            yield y.EOP(y.ELEM(i))
 
         yield y.FIN()
 
@@ -115,28 +107,34 @@ async def cli_pubsub(args):
 
 
 @y.verbose_entry_point
-async def cli_template(args):
+async def cli_test_template(args):
     d = y.collections.deque([1, 2, 3])
 
     if args[0] == 'sync':
         for i in y.deque_iter_sync(d):
-            print i
+            print(i)
     else:
         async for i in y.deque_iter_async(d):
-            print i
+            print(i)
 
 
 @y.verbose_entry_point
 async def cli_timeout(args):
+    import os
+    
     tout = int(args[0])
-    pid = y.os.fork()
+    pid = os.fork()
 
     if pid:
         y.time.sleep(tout)
-        y.os.kill(pid, y.signal.SIGINT)
-        y.os.waitpid(pid, 0)
-        y.os._exit(0)
+        os.kill(pid, y.signal.SIGINT)
+        os.waitpid(pid, 0)
+        os._exit(0)
     else:
-        import os
-        
         os.execv(args[1], args[1:])
+
+   
+@y.verbose_entry_point
+async def cli_test_wait(args):
+    while True:
+        await y.current_coro().sleep(1)

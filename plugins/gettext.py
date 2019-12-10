@@ -19,7 +19,6 @@ def gettext0():
         'meta': {
             'kind': ['box', 'library', 'tool'],
             'depends': ['iconv', 'ncurses'],
-            'soft': ['libxml2'],
             'provides': [
                 {'lib': 'intl', 'configure': {'opt': '--with-libintl-prefix={pkgroot}'}},
             ],

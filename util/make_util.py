@@ -32,7 +32,7 @@ def hash(x):
 
 def get_only_our_targets(lst, targets):
     by_link = {}
-    print len(lst)
+    
     for n, l in enumerate(lst):
         for d in l['deps1']:
             by_link[d] = n
@@ -40,6 +40,9 @@ def get_only_our_targets(lst, targets):
     v = set()
 
     def visit(n):
+        if n is None:
+            return
+        
         if n in v:
             return
 
@@ -47,7 +50,7 @@ def get_only_our_targets(lst, targets):
 
         v.add(n)
 
-        for l in [by_link[d] for d in lst[n]['deps2']]:
+        for l in [by_link.get(d, None) for d in lst[n]['deps2']]:
             for x in visit(l):
                 yield x
 
@@ -103,8 +106,22 @@ async def parse_makefile(data):
     lst = []
     prev = None
     cprint = y.xprint_white
-
+    parse_flags = True
+    shell_args = {}
+    
     for line_no, l in enumerate(data.split('\n')):
+        if parse_flags:
+            if '=' in l:
+                pos = l.find('=')
+                key = l[:pos].strip()
+                val = l[pos + 1:].strip()
+                shell_args['$' + key] = val
+
+                continue
+            else:
+                print(shell_args, file=y.sys.stderr)
+                parse_flags = False
+        
         p = l.find('##')
 
         if p > 5:
@@ -146,7 +163,7 @@ async def parse_makefile(data):
     if prev:
         lst.append(prev)
         
-    return lst
+    return {'lst': lst, 'flags': shell_args}
 
 
 async def cheet(mk):
@@ -188,6 +205,11 @@ def build_run_sh(n):
     return '\n'.join(iter_run_sh())
 
 
+class MakeArgs(dict):
+    def __init__(self):
+        self.__dict__ = self
+
+
 class MakeFile(object):
     async def init(self, lst):
         try:
@@ -196,34 +218,59 @@ class MakeFile(object):
             exc1 = e1
         
         try:
-            return self.init_from_lst(await parse_makefile(lst))
+            return self.init_from_parsed(await parse_makefile(lst))
+        except Exception as e2:
+            exc2 = e2
+            
+        try:
+            return self.init_from_parsed(await parse_makefile(lst.decode('utf-8')))
         except Exception as e2:
             exc2 = e2
 
         raise Exception('can not parse makefile: ' + str(exc1) + ', ' + str(exc2))
-            
+
     def init_from_dict(self, d):
         self.lst = d['d']
+        self.flags = d['f']
         self.strings = d['s']
-        self.str_to_num = dict((v, i) for i, v in enumerate(self.strings))
+        self.str_to_num = dict((x, i) for i, x in enumerate(self.strings))
 
         return self
+
+    def clone(self):
+        mk = MakeFile()
+
+        mk.lst = self.lst
+        mk.flags = self.flags
+        mk.strings = self.strings
+        mk.str_to_num = self.str_to_num
+
+        return mk
         
-    def init_from_lst(self, lst):
+    def init_from_parsed(self, parsed):
+        lst = parsed['lst']
+
+        self.flags = parsed['flags']
         self.strings = []
         self.str_to_num = {}
 
         def iter_items():
-            all_deps = []
-            
-            yield {'deps1': self.lst_to_nums(['all']), 'deps2': all_deps, 'cmd': []}
+            all_deps_1 = []
+            all_deps_2 = []
             
             for l in lst:
                 n = dict((k, self.cvt(l, k)) for k in ('deps1', 'deps2', 'cmd'))
 
-                all_deps.extend(n['deps1'])
+                all_deps_1.extend(n['deps1'])
+                all_deps_2.extend(n['deps2'])
                 
                 yield n
+
+            for d in sorted(frozenset(all_deps_2) - frozenset(all_deps_1)):
+                yield {'deps1': [d], 'deps2': [], 'cmd': []}
+                
+            if 'all' not in all_deps_1:
+                yield {'deps1': self.lst_to_nums(['all']), 'deps2': all_deps_1, 'cmd': []}
             
         self.lst = list(iter_items())
 
@@ -255,23 +302,58 @@ class MakeFile(object):
     async def select_targets(self, targets):
         mk = MakeFile()
 
-        mk.str_to_num = self.str_to_num
-        mk.strings = self.strings
-        mk.lst = await select_targets(self.lst, self.lst_to_nums(sorted(targets)))
-        mk.lst += [{'deps1': mk.lst_to_nums(['all']), 'deps2': sorted(frozenset(sum((n['deps2'] for n in mk.lst), []))), 'cmd': []}]
+        lst = await select_targets(self.lst, self.lst_to_nums(sorted(targets)))
+        lst = [self.restore_node(x) for x in lst]
 
+        mk.init_from_parsed({'lst': lst, 'flags': y.deep_copy(self.flags)})
+        
         return mk
 
     def restore_node(self, n):
         return dict((k, self.nums_to_str(n[k])) for k in ('deps1', 'deps2', 'cmd'))
 
     async def build(self, shell_vars, args):
-        return await y.run_make_0(self, shell_vars, args)
+        mk = self.clone()
 
+        mk.flags = y.deep_copy(mk.flags)
+        mk.flags.update(shell_vars)
+        
+        return await y.run_make_0(mk, args)
 
+    async def build_kw(self, shell_vars, **kwargs):
+        args = MakeArgs()
+
+        args.threads = kwargs.pop('threads', 1)
+        args.targets = kwargs.pop('targets', ['all'])
+        args.pre_run = kwargs.pop('pre_run', [])
+        
+        args.update(kwargs)
+
+        return await self.build(shell_vars, args)
+
+    
 def dumps_mk(mk):
-    return y.encode_prof({'d': mk.lst, 's': mk.strings})
+    return y.encode_prof({'d': mk.lst, 's': mk.strings, 'f': mk.flags})
 
     
 def loads_mk(t):
     return MakeFile().init_from_dict(y.decode_prof(t))
+
+
+async def open_mk_file(path, gen=None):
+    if gen and path == 'gen':
+        return await gen()
+    
+    if path == '-':
+        data = await y.offload(y.sys.stdin.read)
+    elif path:
+        with open(path, 'r') as f:
+            data = await y.offload(f.buffer.read)
+    else:
+        data = await y.offload(y.sys.stdin.read)
+
+    mk = MakeFile()
+
+    await mk.init(data)
+
+    return mk

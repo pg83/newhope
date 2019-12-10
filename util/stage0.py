@@ -1,8 +1,6 @@
 def run_stage0(g):
     def iter_modules():
         yield 'ut/iface.py'
-        yield 'ut/init_log.py'
-        yield 'ut/args_parse.py'
         yield 'ut/mod_load.py'
         yield 'ut/stage1.py'
 

@@ -1,9 +1,4 @@
-@y.singleton
-def get_white_line():
-    return '{w}-----------------------------------------------{}'
-
-
-async def run_make_0(mk, shell_vars, args):
+async def run_make_0(mk, args):
     is_debug = y.make_exec.is_debug
     
     async def do_run(build_results):
@@ -11,7 +6,7 @@ async def run_make_0(mk, shell_vars, args):
         def lookup(name):
             return {'build_results': build_results}[name]
         
-        return await y.run_makefile(mk, shell_vars, args.targets, int(args.threads), pre_run=['workspace'])
+        return await y.run_makefile(mk, args.targets, int(args.threads), pre_run=args.pre_run)
             
     async def do_run_log(ctl):
         def output_build_results(arg):        

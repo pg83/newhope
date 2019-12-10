@@ -12,7 +12,6 @@ class Mod(dict):
       self.__yid__ = str(int(random.random() * 1000000000))
       self.__name__ = name
       self.__loader__ = loader
-      self.__loader__._by_name[self.__name__] = self
       self.__file__ = self.__name__
       self.__pkg__ = None
       self.__ytext__ = ''
@@ -20,7 +19,8 @@ class Mod(dict):
       self.__ycode__ = []
       self.__yexec__ = self.exec_data
       self.__last_reindex__ = 0
-
+      self.__sub__ = {}
+      
       def get_log():
          log = self.y.logging.getLogger(self.__name__)
 
@@ -35,8 +35,24 @@ class Mod(dict):
       except Exception:
          pass
 
+      self.__loader__.register_module(self)
       self.exec_text_part(self.builtin_data())
 
+   def vname(self):
+      return self.__name__[len(self.__loader__.root_module().__name__) + 1:]
+      
+   def create_sub_module(self, name):
+      if (pos := name.find('.')) > 0:
+         return self.create_sub_module_0(name[:pos]).create_sub_module(name[pos + 1:])
+
+      return self.create_sub_module_0(name)
+
+   def create_sub_module_0(self, name):
+      if name not in self.__sub__:
+         self.__sub__[name] = Mod(self.full_name(name), self.__loader__)
+
+      return self.__sub__[name]
+      
    def self_exec(self):
       self.exec_text_part(self.pop('__ynext_part__', ''))
 
@@ -91,28 +107,41 @@ class Mod(dict):
    def builtin_data(self):
       return self.__loader__.builtin_data(self)
 
+   def full_name(self, sub):
+      return self.__name__ + '.' + sub
+   
 
 class Loader(object):
-   def __init__(self, builtin={}):
+   def __init__(self, name, builtin={}):
       self._by_name = {}
       self._builtin = builtin
       self._order = []
-      self.create_module('ya')
-      self.create_module('gn')
-      self.create_module('pl')
-      self.create_module('ut')
 
+      Mod(name, self)
+
+   def root_module(self):
+      return self._by_name[self._order[0]]
+      
    def create_module(self, name):
-      if name in self._by_name:
-         return self._by_name[name]
+      fname = self.root_module().full_name(name)
+      
+      if fname in self._by_name:
+         return self._by_name[fname]
 
-      res = Mod(name, self)
-      self._order.append(name)
+      return self.root_module().create_sub_module(name)
 
-      return res
+   def register_module(self, mod):
+      mn = mod.__name__
 
+      assert mn not in self._by_name
+      
+      self._order.append(mn)
+      self._by_name[mn] = mod
+      
+      return mod
+   
    def builtin_data(self, mod):
-      return self._builtin.get(mod.__name__, {}).get('data', '')
+      return self._builtin.get(mod.vname(), {}).get('data', '')
 
    def exec_code(self, mod, data, module_name=None, **kwargs):
       if module_name:
@@ -127,38 +156,25 @@ class Loader(object):
 
       return mod
 
+   def find_sub_module(self, name):
+      return self._by_name[self.root_module().full_name(name)]
+   
    def get_y(self):
-      return self._by_name['ut.iface'].y
+      return self.find_sub_module('ut.iface').y
 
    def get_source(self, name):
       return self._by_name[name].text()
       
    def iter_modules(self):
-      return self._by_name.itervalues()
-
-   def save(self):
-      return y.encode_prof({
-         'builtin': self._builtin,
-         'modules': [{'name': name, 'text': self._by_name[name].text()} for name in self._order]
-      })
-
-   def load(self, data):
-      data = y.decode_prof(data)
-      loader = Loader()
-
-      for x in reversed(data['modules']):
-         mod = loader.create_module(x['name'])
-         mod.exec_text_part(x['data'])
-
-      loader._builtin = data['builtin']
+      for k in self._order:
+         yield self._by_name[k]
 
 
-def bootstrap(mod, g):
-    loader = Loader(g.builtin_modules)
+def bootstrap(g):
+    loader = Loader('1', builtin=g.builtin_modules)
     
-    mod1 = loader.create_module('ut.iface')
-    mod1 = loader.create_module('ut.init_log')
-    mod1 = loader.create_module('ut.args_parse')
-    mod2 = loader.create_module('ut.mod_load')
-    
-    mod2.__loader__.create_module('ut.stage2').run_stage2(g)
+    loader.create_module('ut.iface')
+    loader.create_module('ut.args_parse')
+    loader.create_module('ut.mod_load')
+    loader.create_module('ut.stage2').run_stage2(g)
+
