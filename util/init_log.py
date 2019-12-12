@@ -1,3 +1,6 @@
+import datetime
+
+
 def get_log():
     f = y.sys._getframe()
 
@@ -78,7 +81,7 @@ def init_logger(log_level='INFO'):
         except Exception:
             record.thr = '##'
 
-        record.asctime = y.datetime.datetime.fromtimestamp(int(y.time.time())).strftime('%H:%M:%S')
+        record.asctime = datetime.datetime.fromtimestamp(int(y.time.time())).strftime('%H:%M:%S')
         record.name = record.name[:10]
         record.msg = record.msg.strip()
         record.text = ''
@@ -95,14 +98,14 @@ def init_logger(log_level='INFO'):
 
     class Stream(object):
         def __init__(self):
-            self.s = y.stderr
-
+            self.s = y.sys
+            
         def write(self, t):
-            self.s.write(t)
+            self.s.stderr.write(t)
 
         def flush(self):
             pass
-    
+
     screen_handler = y.logging.StreamHandler(stream=Stream())
     screen_handler.setLevel(log_level)
     screen_handler.setFormatter(ColoredFormatter(fmt))

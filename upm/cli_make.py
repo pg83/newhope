@@ -65,7 +65,8 @@ async def cli_pkg_make(arg):
     
     if int(args.threads):
         args.pre_run = ['workspace']
+        args.shell_vars = shell_vars
         
-        return await mk.build(shell_vars, args)
+        return await mk.build(args)
 
     return 0

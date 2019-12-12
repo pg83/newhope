@@ -83,10 +83,10 @@ def prepare_tar_cmd(fr, to, codec=None):
 data1 = '''
 if test $2 -eq 1; then
     q=$(basename $1)
-    q=$(echo $q | tr '-' '\n' | head -n 1)
+    q=$(echo $q | tr '_' '-' | tr '.' '-' | tr '-' '\n' | head -n 1)
     mv ./$q* ./xxx
     mv ./xxx/* ./
-    rm ./xxx
+    rm -rf ./xxx
 fi
 '''
 
@@ -101,7 +101,7 @@ def gen_extra_scripts():
 
         for codec in list(known_codecs()) + ['zp']:
             data = ''.join(prepare_untar_cmd('"$1"', '.', ext_mode=codec, rm_old=False))
-            yield 'untar_' + codec, data + '\n' + data
+            yield 'untar_' + codec, data + '\n' + data1
 
     return list(do())
 

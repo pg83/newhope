@@ -2,10 +2,6 @@ import sys
 import random
 
 
-def ycompile(a, b, c, **kwargs):
-   return compile('\n' * kwargs.get('firstlineno', 0) + a, b, c)
-
-
 class Mod(dict):
    def __init__(self, name, loader):
       self.__dict__ = self
@@ -38,6 +34,9 @@ class Mod(dict):
       self.__loader__.register_module(self)
       self.exec_text_part(self.builtin_data())
 
+   def ycompile(self, a, b, c, **kwargs):
+      return compile('\n' * kwargs.get('firstlineno', 0) + a, b, c)
+
    def vname(self):
       return self.__name__[len(self.__loader__.root_module().__name__) + 1:]
       
@@ -67,7 +66,7 @@ class Mod(dict):
       if not part.strip():
          return 
 
-      code = ycompile(part, self.__file__.replace('.', '/') + '.py', 'exec', firstlineno=self.line_count())
+      code = self.ycompile(part, self.__file__.replace('.', '/') + '.py', 'exec', firstlineno=self.line_count())
       
       exec(code, self.__dict__)
 
@@ -113,12 +112,13 @@ class Mod(dict):
 
 class Loader(object):
    def __init__(self, name, builtin={}):
+      self.__name__ = name
       self._by_name = {}
       self._builtin = builtin
       self._order = []
-
+      
       Mod(name, self)
-
+      
    def root_module(self):
       return self._by_name[self._order[0]]
       
@@ -176,5 +176,5 @@ def bootstrap(g):
     loader.create_module('ut.iface')
     loader.create_module('ut.args_parse')
     loader.create_module('ut.mod_load')
+    __loader__.__dict__.clear()
     loader.create_module('ut.stage2').run_stage2(g)
-

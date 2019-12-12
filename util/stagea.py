@@ -29,12 +29,36 @@ def set_sigint(g):
 
 
 def set_abort(g):
+    ctx = {
+        'os': os,
+        'sys': sys,
+        'tb': traceback,
+        'str': str,
+    }
+    
+    g.trash = ctx
     g.abort_function = os.abort
-    g.abort_handler = traceback.print_exc
 
+    def xprint(*args):
+        err = g.trash['sys'].__stderr__
+        str = g.trash['str']
+
+        err.write(' '.join(str(x) for x in args) + '\n')
+        err.flush()
+
+    def abort_handler():
+        xprint(g.trash['tb'].format_exc())
+
+    g.abort_handler = abort_handler
+    
     def new_abort():
+        g.trash['os'].__dict__.pop('abort')
+        
         try:
-            g.abort_handler()
+            try:
+                g.abort_handler()
+            except Exception as e:
+                xprint('while handling abort', e)
         finally:
             g.abort_function()
 

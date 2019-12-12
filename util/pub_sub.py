@@ -313,7 +313,7 @@ class Iterator(FunBase):
                     else:
                         yield v
 
-        return iter_0()
+        yield from iter_0()
 
             
 class Scheduler(Iterator):
@@ -504,7 +504,7 @@ class PubSubLoop(object):
                 for el in a:
                     net[el].append(f)
 
-        is_debug() and y.debug('rebuild net', pretty_dumps(net))
+        #is_debug() and y.debug('rebuild net', pretty_dumps(net))
 
         self.net = net
         
@@ -582,7 +582,11 @@ class PubSubLoop(object):
 
             hndl = self.ctl.spawn(wrapper, 'async_' + c.__name__)
 
-            return y.deque_iter_sync(outqueue)
+            while True:
+                try:
+                    yield outqueue.popleft()
+                except IndexError:
+                    yield EOP()
 
         self.add_fun(y.set_name(wrapper_in, 'sync_' + c.__name__))
 

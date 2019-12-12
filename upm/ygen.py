@@ -45,7 +45,7 @@ def exec_plugin_code(iface):
 def ygenerator(where=None):
     def functor(func):
         base_name = func.__name__[:-1]
-        new_f = y.singleton(y.compose_simple(func, subst_some_values))
+        new_f = y.singleton(y.compose_simple(func, y.deep_copy, subst_some_values))
 
         descr = {
             'gen': 'human',

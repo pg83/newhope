@@ -1,49 +1,62 @@
 def make_engine(data, ntn=lambda x: x['name'], dep_list=None, random=False, seed=''):
     data = [{'x': x, 'i': i} for i, x in enumerate(data)]
     name_to_num = dict((ntn(x['x']), x['i']) for x in data)
-
+    
     def build_deps():
         for el in data:
-            yield el['i'], set(name_to_num[name] for name in dep_list(el['x']))
+            for v in (name_to_num.get(name, None) for name in dep_list(el['x'])):
+                if v is not None:
+                    yield el['i'], v
 
-    tbl = dict(build_deps())
+    r, w = simple_engine(build_deps(), random=random, seed=seed)
 
-    def collect_ready():
-        for k in range(0, len(data)):
-            if k not in tbl:
-                yield k
-            elif not tbl[k]:
-                tbl.pop(k)
-                yield k
-
-    def remove_one(one):
+    def nw(el):
         try:
-            one = one['i']
+            el = el['i']
         except Exception:
             pass
 
-        for k, v in list(tbl.items()):
-            if one in v:
-                v.remove(one)
+        w(el)
 
-    md5 = y.struct_dump_bytes
-    in_use = set()
+    def nr():
+        for i in r():
+            yield data[i]
 
-    def build_tbl():
-        seed_c = str(seed)
+    return nr, nw
 
-        while len(in_use) < len(data):
-            if random:
-                seed_c = str(y.random.random())
 
-            ready = sorted(list(set(collect_ready()) - in_use), key=lambda x: md5(str(x) + seed_c))
+def simple_engine(it, random=False, seed=''):
+    if random:
+        seed = y.random.random()
+        
+    by_dep = y.collections.defaultdict(set)
+    by_rdep = y.collections.defaultdict(set)
+    
+    for k, v in it:
+        by_dep[k].add(v)
+        by_rdep[v].add(k)
+        
+    deps = set(by_dep.keys())
+    rdeps = set(by_rdep.keys())
+    ready = rdeps - deps
 
-            if not ready:
-                break
+    def iter_ready():
+        while ready:
+            tmp = list(sorted(ready, key=lambda x: y.burn([x, seed])))
+            ready.clear()
+            yield from tmp
+            
+        if not by_dep:
+            return
 
-            for one in ready:
-                if one not in in_use:
-                    in_use.add(one)
-                    yield data[one]
+    def cb(item):
+        for k in by_rdep[item]:
+            el = by_dep[k]
 
-    return build_tbl, remove_one
+            el.remove(item)
+            
+            if not el:
+                by_dep.pop(k)
+                ready.add(k)
+                
+    return iter_ready, cb

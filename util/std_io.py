@@ -24,7 +24,8 @@ class ColorStdIO(object):
     def __init__(self, s):
         self.s = s
         self.p = ''
-
+        self.f = {'strip_colors': not self.isatty()}
+            
     def isatty(self):
         return self.s.isatty()
         
@@ -35,7 +36,7 @@ class ColorStdIO(object):
         return not is_debug()
 
     def colorize_0(self, t):
-        return y.process_color(t, '', {})
+        return y.process_color(t, '', self.f)
     
     def colorize(self, t):
         if not self.can_colorize(t):
@@ -101,7 +102,9 @@ class ColorStdIO(object):
         with stdio_lock:
             self.flush_impl()
             self.s.close()
+
             
-            
-y.sys.stdout = ColorStdIO(y.sys.stdout)
-y.sys.stderr = ColorStdIO(y.sys.stderr)
+@y.defer_constructor
+def init_stdio():
+    y.sys.stdout = ColorStdIO(y.sys.stdout)
+    y.sys.stderr = ColorStdIO(y.sys.stderr)

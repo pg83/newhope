@@ -18,11 +18,6 @@ NOV = '$'
 def current_coro():
     return CURRENT_CORO.get()
 
-        
-class Action(Exception):
-    def __init__(self, a):
-        self.action = a
-
 
 @y.contextlib.contextmanager
 def with_contextvar(coro):
@@ -63,8 +58,16 @@ def nope():
     
 
 @y.singleton
-def is_debug():
+def is_dbg():
     return 'debug' in y.config.get('coro', '')
+
+
+class X(object):
+    debug = True
+
+
+def is_debug(ctx=X):
+    return ctx.debug and is_dbg()
 
 
 def gen_int_uid():
@@ -118,7 +121,7 @@ class Future(collections.abc.Awaitable):
         return self.name
         
     def signal(self):
-        self.set_result(None)
+        self.set_result([None])
         
     def set_result(self, res):
         self.run_job(lambda: res)
@@ -131,7 +134,7 @@ class Future(collections.abc.Awaitable):
         try:
             return y.unpack(self.r)
         except AttributeError:
-            return self
+            return None
         
     def add_cb(self, cb):
         self.cb.append(cb)
@@ -159,8 +162,9 @@ class Future(collections.abc.Awaitable):
         except Exception as e:
             print e, str(coro), str(self), str(self.result())
             y.prompt('/sa')
-            raise e
-    
+            coro.reschedule()
+
+            
 class MinHeap(object):
     def __init__(self):
         self.v = []
@@ -275,7 +279,7 @@ class TimeScheduler(object):
             await self.step()
 
     def respawn(self):
-        self.loop.spawn(self.system_time_checker, self.name)
+        self.loop.spawn(self.system_time_checker, self.name, debug=False)
 
         
 COROS = {}
@@ -290,28 +294,31 @@ def yield_action(coro):
 
                 
 class Coro(collections.abc.Coroutine):
-    def __init__(self, loop, coro, ctx, name):
+    def __init__(self, loop, coro, ctx, name, debug):
+        self.debug = debug
         self.ctx = ctx
-        self.id = loop.next_id()
-        self.n = name
-        self.c = coro
-        self.l = loop
-        self.f = self.create_future(nope)
 
         try:
-            self.r = self.c(self)
-        except TypeError:
-            self.r = self.c()
-            
+            self.id = current_coro().l.next_id()
+        except LookupError:
+            self.id = loop.next_id()
+
+        self.n = name
+        self.l = loop
+        self.f = self.create_future(nope)
+        self.change_state(coro)
         self.s = y.collections.deque()
-        self.v = None
 
         COROS[self.id] = self
 
     def change_state(self, coro):
         self.c = coro
-        self.r = self.c(self)
         
+        try:
+            self.r = self.c(self)
+        except TypeError:
+            self.r = self.c()
+    
     def __str__(self):
         state = str(y.inspect.getcoroutinestate(self))[5:].lower()
         
@@ -356,7 +363,7 @@ class Coro(collections.abc.Coroutine):
         return self.l
 
     def result(self):
-        return self.v
+        return self.f.result()
     
     def step(self):
         try:
@@ -364,10 +371,9 @@ class Coro(collections.abc.Coroutine):
         except StopIteration as e:
             COROS.pop(self.id)
 
-            is_debug() and y.debug(str(self), 'here we are', e)
+            is_debug(self) and y.debug(str(self), 'here we are', e)
             
-            self.v = e.value
-            self.f.set_result(self)
+            self.f.set_result(e.value)
 
             raise
         
@@ -395,9 +401,12 @@ class Coro(collections.abc.Coroutine):
     def __await__(self):
         return self.f.__await__()
         
-    def spawn(self, coro, name=None):
+    def spawn(self, coro, name=None, debug=None):
+        if debug is None:
+            debug = self.debug
+
         name = name or coro.__name__
-        res = self.l.spawn_impl(coro, self, self.name + '_' + name)
+        res = self.l.spawn_impl(coro, self, self.name + '_' + name, debug)
         
         self.s.append(res)
 
@@ -503,29 +512,27 @@ class ThreadLoop(object):
 
         raise Exception('can not open file ' + name)
     
-    def schedule(self, coro, ctx, name):
-        res = Coro(self, coro, ctx, name)
+    def schedule(self, coro, ctx, name, debug):
+        res = Coro(self, coro, ctx, name, debug)
 
-        is_debug() and y.debug('spawn', str(res))
+        is_debug(res) and y.debug('spawn', str(res))
         self.reschedule(res)
         
         return res
 
-    def spawn(self, coro, name=None):
-        return self.spawn_impl(coro, self, name)
+    def spawn(self, coro, name=None, debug=True):
+        return self.spawn_impl(coro, self, name, debug)
     
-    def spawn_impl(self, coro, parent, name):
+    def spawn_impl(self, coro, parent, name, debug):
         name = name or coro.__name__
         
-        return self.schedule(coro, parent.ctx.copy(), name)
+        return self.schedule(coro, parent.ctx.copy(), name, debug)
     
     def reschedule(self, coro):
         coro.l = self
         self.q.append(coro.id)
 
-        if is_debug():
-            if not coro.is_system():
-                y.debug('reschedule', str(coro))
+        is_debug(coro) and y.debug('reschedule', str(coro))
 
     def iter_thrs1(self):
         if 0:
@@ -610,7 +617,7 @@ class ThreadLoop(object):
         async def async_job(ctl):
             return y.sync_pack(job)
 
-        return y.unpack((await self.spawn(async_job, 'async_' + job.__name__)).__dict__.pop('v'))
+        return y.unpack(await self.spawn(async_job, 'async_' + job.__name__, debug=('sleep' not in job.__name__)))
 
 
 class CoroLoop(object):

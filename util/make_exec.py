@@ -4,13 +4,20 @@ def is_debug():
 
 
 async def run_makefile(mk, targets, threads, pre_run=[]):
+    mmk = mk
+    
     async def run_build_2(ctl):
+        mk = mmk
+        
         await y.cheet(mk)
     
         if pre_run:
-            await run_par_build(ctl, await mk.select_targets(pre_run), pre_run, 1)
+            await run_par_build(ctl, await mk.select_targets(pre_run), 1)
 
-        return await run_par_build(ctl, await mk.select_targets(targets), targets, threads)
+        if targets:
+            mk = await mk.select_targets(targets)
+            
+        return await run_par_build(ctl, mk, threads)
 
     return await y.spawn(run_build_2)
 
@@ -28,11 +35,10 @@ def CHANNEL(data):
 
         
 class Builder(object):
-    def __init__(self, ctl, mk, targets, threads):
+    def __init__(self, ctl, mk, threads):
         self.mk = mk
         self.threads = threads
         self.ctl = ctl
-        self.targets = targets
         self.lst = [item_factory(x, self, n) for n, x in enumerate(mk.lst)]
         
         by_dep = {}
@@ -76,7 +82,7 @@ class Builder(object):
 
                     return
                     
-                if item.my_name == 'all':
+                if item.my_name == '_all':
                     yield CHANNEL({'action': 'finish', 'status': 'success'})
                     yield y.FIN()
 
@@ -89,7 +95,44 @@ class Builder(object):
         assert False
 
     async def producer(self, ctl, inq):
-        rq, wq = y.make_engine(self.lst, lambda x: x.deps1[0], dep_list=lambda x: sorted(frozenset(x.deps2)))
+        def iter_data():
+            yield from self.lst
+
+            lstl = len(self.lst)
+            deps = sum([x.deps1 for x in self.lst], [])
+            
+            class ItemAll(object):
+                @property
+                def n(self):
+                    return {'deps1': self.deps1, 'deps2': self.deps2, 'cmd': []}
+                    
+                @property
+                def my_name(self):
+                    return '_all'
+
+                @property
+                def deps1(self):
+                    return [self.num]
+                
+                @property
+                def deps2(self):
+                    return deps
+
+                @property
+                def num(self):
+                    return lstl + 1
+
+                async def run_cmd(self, ctl):
+                    y.build_results({
+                        'message': 'all done',
+                        'target': self.my_name,
+                    })
+                    
+                    return 0
+
+            yield ItemAll()
+                
+        rq, wq = y.make_engine(iter_data(), lambda x: x.deps1[0], dep_list=lambda x: sorted(frozenset(x.deps2)))
         by_n = {}
         complete = set()
         
@@ -99,10 +142,13 @@ class Builder(object):
             for i, el in enumerate(rq()):
                 item = el['x']
                 by_n[item.num] = el
-                
+
                 is_debug() and y.debug('yield ready', y.pretty_dumps(item))
 
                 yield y.ELEM({'item': item})
+
+                if i % 16 == 0:
+                    yield y.EOP()
 
             yield y.EOP()
 
@@ -143,7 +189,8 @@ class Builder(object):
             y.build_results({'message': 'done', 'status': 'ok'})
         else:
             y.build_results({'message': 'fail', 'status': 'failure'})
-
+            y.os.abort()
+            
 
 def item_factory(n, p, i):
     if n.get('cmd'):
@@ -332,12 +379,12 @@ class Item(ItemBase):
                 p = sp.Popen([self.shell, '-s'], stdout=sp.PIPE, stderr=sp.STDOUT, stdin=sp.PIPE, shell=False, env=env)
                 res, _ = p.communicate(input=input_bin)
                 retcode = p.wait()
-
+                
                 return (res, retcode)
 
             res, retcode = await ctl.loop.offload(y.set_name(fun, 'fun_' + y.sanitize_string(self.my_name)))
             
-            res = res.decode('utf-8')
+            #res = res.decode('utf-8')
             res = res.strip()
             
             if not res:
@@ -346,11 +393,8 @@ class Item(ItemBase):
             out.append(res)
 
             if retcode == 0:
-                # TODO
-                if self.p.targets[0] == 'workspace':
-                    pass
-                else:
-                    self.check_results()
+                pass
+                #self.check_results()
         except sp.CalledProcessError as e:
             out.append(e.output)
             retcode = e.returncode
@@ -392,17 +436,15 @@ class Item(ItemBase):
         y.build_results(msg)
 
         
-async def run_par_build(ctl, mk, targets, threads):
-    build = ', '.join(targets)
+async def run_par_build(ctl, mk, threads):
+    y.info('{br}start build{}')
+    
+    async def run_par_build_1(ctl):
+        b = Builder(ctl, mk, threads)
 
-    y.info('{br}start build of', build, '{}')
+        return await b.run()
 
     try:
-        async def run_par_build_1(ctl):
-            b = Builder(ctl, mk, targets, threads)
-
-            return await b.run()
-
         return await ctl.spawn(run_par_build_1)
     finally:
-        y.info('{br}end build of', build, '{}')
+        y.info('{br}end build{}')

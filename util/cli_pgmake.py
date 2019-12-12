@@ -16,6 +16,4 @@ async def cli_cmd_pgmake(args):
 
             yield '$' + k, v
 
-    shell_vars = dict(iter_vars())
-
-    await mk.build_kw(shell_vars, threads=args.threads, targets=(args.targets or ['all']), pre_run=[])
+    await mk.build_kw(shell_vars=dict(iter_vars()), threads=args.threads, targets=args.targets, pre_run=[])

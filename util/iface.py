@@ -99,6 +99,13 @@ class IFace(dict):
         self.add_lookup(lambda x: self.create_std(sys.modules[x]))
         self.add_lookup(lambda x: self.create_std(__import__(x)))
 
+    def clear_cache(self):
+        for k in list(self.keys()):
+            if k.startswith('_'):
+                continue
+
+            self.pop(k)
+        
     @property
     def stdout(self):
         return sys.stdout
@@ -107,8 +114,8 @@ class IFace(dict):
     def stderr(self):
         return sys.stderr
         
-    def spawn(self, coro, name=None):
-        return self.async_loop.spawn(coro, name)
+    def spawn(self, coro, name=None, debug=True):
+        return self.async_loop.spawn(coro, name=name, debug=debug)
         
     async def offload(self, job):
         return await self.async_loop.offload(job)
@@ -268,6 +275,7 @@ def load_builtin_modules(builtin):
         'ut.xprint',
         'ut.rng',
         'ut.mod_load',
+        'ut.defer',
         'ut.std_io',
         'ut.init_log',
         'ut.int_counter',
@@ -277,15 +285,11 @@ def load_builtin_modules(builtin):
         'ut.err_handle',      
         'ut.caches',
         'ut.pub_sub',
-        'ut.defer',        
-        'ut.manager',
+        'ut.cli',
         'ut.mini_db',
         'ut.queues',
-        
-        'ya.ygen',
-        'ya.noid_calcer',
     )
-
+    
     for m in initial:
         __loader__.create_module(m)
 
@@ -310,6 +314,9 @@ def run_stage4_1(data):
     def lookup(name):
         return data[name]
 
+    y.clear_cache()
+    y.linecache.clearcache()
+    
     load_builtin_modules(y.globals.builtin_modules)
 
     data['async_loop'] = y.CoroLoop('main')
@@ -351,5 +358,5 @@ def run_stage4_1(data):
         finally:
             y.shut_down(0)
 
-    y.spawn(entry_point)
-    y.spawn(flush_streams)
+    y.spawn(entry_point, debug=False)
+    y.spawn(flush_streams, debug=False)

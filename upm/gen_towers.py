@@ -3,6 +3,15 @@ import sys
 ic = y.inc_counter()
 
 
+@y.singleton
+def is_debug():
+    return 'debug' in y.config.get('tow', '')
+
+
+def uniq_list(l):
+    return list(sorted(frozenset(l)))
+
+
 class Func(object):
     def __init__(self, x, data):
         self.x = x
@@ -11,7 +20,7 @@ class Func(object):
         self.i = 0
 
     def out_deps(self):
-        y.xprint_dg(str(self), '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')
+        y.xprint_db('{dr}' + str(self) + '{}', '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')
 
     def contains(self):
         return self.code().get('meta', {}).get('contains', [])
@@ -50,9 +59,22 @@ class Func(object):
     def base(self):
         return self.x['base']
 
+    @y.cached_method
+    def raw_depends(self):
+        subst = {
+            'intl': 'gettext',
+            'iconv': 'libiconv',
+        }
+        
+        return [subst.get(x, x) for x in self.code().get('meta', {}).get('depends', [])]
+    
     def depends(self):
-        return self.code().get('meta', {}).get('depends', [])
+        return self.raw_depends()
 
+    @y.cached_method
+    def all_depends(self):
+        return uniq_list(sum([self.data.by_name[x].all_depends() for x in self.depends()], [x for x in self.depends()]))
+    
     @y.cached_method
     def dep_lib_list(self):
         def iter():
@@ -75,27 +97,14 @@ class Func(object):
 
     @y.cached_method
     def dep_list(self):
-        subst = {
-            'intl': 'gettext',
-            'iconv': 'libiconv',
-        }
+        def iter1():            
+            yield from self.depends()
 
-        def iter1():
-            code = self.code()
+            for d in ('make', 'musl', 'bestbox'):
+                if self.base not in self.data.find_func(d).all_depends() and self.base != d:
+                    yield d
 
-            if self.base not in ('make', 'make-boot', 'musl-boot', 'musl'):
-                if 'YMAKE' in code.get('code', ''):
-                    yield 'make'
-
-            for y in self.depends():
-                yield subst.get(y, y)
-
-        def iter2():
-            for y in iter1():
-                if y != self.base:
-                    yield y
-
-        res = list(iter2())
+        res = list(iter1())
 
         print(self.base, res, file=sys.stderr)
 
@@ -104,7 +113,7 @@ class Func(object):
     @y.cached_method
     def run_func(self, info):
         data = y.deep_copy(self.c(info))
-        data['deps'] = list(sorted(frozenset(data['deps'] + self.data.calc(self.deps, info))))
+        data['deps'] = uniq_list(data['deps'] + self.data.calc(self.deps, info))
         data['node']['codec'] = self.codec
         
         y.apply_meta(data['node']['meta'], y.join_metas([y.restore_node_node(d).get('meta', {}) for d in data['deps']]))
@@ -150,11 +159,23 @@ class SpecialFunc(Func):
         Func.__init__(self, x, data)
 
     def depends(self):
-        print('here', file=sys.stderr)
         return self.data.by_kind[self.base]
-
+    
+    @y.cached_method
     def contains(self):
-        return self.depends()
+        def it():
+            deps = self.depends()
+
+            yield deps
+
+            for x in deps:
+                yield self.data.by_name[x].contains()
+            
+        res = uniq_list(sum([x for x in it()], []))
+
+        print res
+        
+        return res
     
     @y.cached_method
     def f(self, info):
@@ -220,8 +241,6 @@ class Data(object):
         for x in data:
             for k in x['func']['kind']:
                 self.by_kind[k].append(x['func']['base'])
-
-        print(self.by_kind, file=sys.stderr)
                 
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
@@ -269,7 +288,6 @@ class Data(object):
         for func in solver.iter_infinity():
             func.i = len(self.func_by_num)
             self.func_by_num.append(func)
-            print(func, file=sys.stderr)
             func.deps = sorted(func.calc_deps())                
             self.dd[func.base].append(func.i)
 
@@ -280,6 +298,9 @@ class Data(object):
                 
             if all((len(self.dd.get(x, [])) >= num) for x in self.special):
                 break
+
+    def find_first(self, name):
+        return self.dd.get(name, [-1])[0]
             
     def register(self):
         for v in self.func_by_num:
@@ -309,6 +330,9 @@ class Data(object):
     def full_tool_deps(self, name):
         return frozenset(self.by_name[name].dep_tool_list())
 
+    def find_func(self, name):
+        return self.by_name[name]
+    
     def select_deps(self, name):
         return self.last_elements(self.full_deps(name))
 
@@ -345,14 +369,15 @@ def init_0(where):
     def box0():
         return {
             'meta': {
+                'depends': ['compression'],
                 'kind': ['special', 'tool'],
             },
         }
-      
+
     @y.ygenerator(where=where)
     def compression0():
         return {
             'meta': {
-                'kind': ['special', 'tool'],
+                'kind': ['special', 'tool', 'box'],
             },
         }

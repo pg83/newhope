@@ -3,7 +3,8 @@ def unrar0():
     return {
         'code': """
              CXX=$(which clang++)
-             source fetch "http://www.rarlab.com/rar/unrarsrc-{version}.tar.gz" 1
+             source fetch "http://www.rarlab.com/rar/unrarsrc-{version}.tar.gz" 0
+             cd unrar
              echo $CXX
              (echo "CXX=$CXX"; cat makefile) | grep -v 'CXX=c++' > mk1; mv mk1 makefile
              $YMAKE -f makefile

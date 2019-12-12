@@ -328,20 +328,22 @@ def print_all_stacks():
 
 class AbortHandler(object):
     def __init__(self):
-        self.out = y.stderr
+        self.sys = y.sys
         self.f1 = format_tbx
         self.f2 = y.traceback.format_exc
         self.cf = current_frame
 
     def handle(self):
+        o = self.sys.stderr
+        
         try:
             try:
-                self.out.write(self.f1() + '\n')
-                self.out.write(self.f1(frame=self.cf()) + '\n')
+                o.write(self.f1() + '\n')
+                o.write(self.f1(frame=self.cf()) + '\n')
             except:
-                self.out.write(self.f2())
+                o.write(self.f2())
         finally:
-            self.out.flush()
+            o.flush()
             
             
 y.globals.abort_handler = AbortHandler().handle

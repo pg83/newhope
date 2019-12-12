@@ -22,7 +22,16 @@ def run_stage2(g):
             'globals': g,
         }
 
-        y.Loader('&', builtin=g.builtin_modules).create_module('ut.iface').run_stage4_0(fd)
+        loader = y.Loader('&', builtin=g.builtin_modules)
+        ml = loader.create_module('ut.mod_load')
+
+        for m in loader.iter_modules():
+            m.__class__ = ml.Mod
+
+        loader.__class__ = ml.Loader
+
+        __loader__.__dict__.clear()
+        loader.create_module('ut.iface').run_stage4_0(fd)
 
     t = y.threading.Thread(target=run_thr)
     t.start()

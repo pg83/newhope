@@ -3,6 +3,7 @@ def make_impl(deps, contains, kind):
         if '/test1' in y.verbose:
             raise Exception('test')
 
+        yield 'export YTAR="busybox tar"'
         yield 'source fetch "http://mirror.lihnidos.org/GNU/ftp/gnu/make/make-{version}.tar.gz" 1'
 
         yield '$YSHELL ./configure --prefix=$IDIR || exit 1'
@@ -32,9 +33,9 @@ def make_impl(deps, contains, kind):
 
 @y.ygenerator()
 def make_boot0():
-    return make_impl(['musl-boot'], ['make'], [])
+    return make_impl(['musl-boot'], [], [])
 
 
 @y.ygenerator()
 def make0():
-    return make_impl(['musl'], [], ['box'])
+    return make_impl(['musl'], ['make-boot'], ['box'])

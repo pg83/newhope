@@ -26,6 +26,7 @@ def my_cm():
 def process_color(text, init, kwargs):
     verbose = kwargs.get('verbose', y.verbose)
     raw = kwargs.get('raw', False)
+    strip_colors = kwargs.get('strip_colors', False)
     cm = my_cm()
     rst = ('c', '')
 
@@ -64,7 +65,7 @@ def process_color(text, init, kwargs):
                 yield ('t', c)
                 
     out_txt = (verbose and '/rc' in verbose) or ('txt' in y.config.get('color', ''))
-
+    
     def combine():
         s = [init or '']
         last = []
@@ -78,6 +79,9 @@ def process_color(text, init, kwargs):
 
                 if out_txt:
                     return c
+
+                if strip_colors:
+                    return ''
 
                 return cm[''] + cm[c]
             else:

@@ -26,11 +26,7 @@ def sanitize_string(s):
     return ''.join(iter_good())
 
 
-def hash(x):
-    return y.burn([sorted(x['deps1']), sorted(x['deps2']), x['cmd']])
-
-
-def get_only_our_targets(lst, targets):
+def select_targets(lst, targets):
     by_link = {}
     
     for n, l in enumerate(lst):
@@ -40,9 +36,6 @@ def get_only_our_targets(lst, targets):
     v = set()
 
     def visit(n):
-        if n is None:
-            return
-        
         if n in v:
             return
 
@@ -50,9 +43,13 @@ def get_only_our_targets(lst, targets):
 
         v.add(n)
 
-        for l in [by_link.get(d, None) for d in lst[n]['deps2']]:
-            for x in visit(l):
-                yield x
+        def iter1():
+            for d in lst[n]['deps2']:
+                if d in by_link:
+                    yield by_link[d]
+        
+        for l in iter1():
+            yield from visit(l)
 
     def iter():
         for t in targets:
@@ -72,7 +69,7 @@ def subst_vars(d, shell_vars):
 def remove_d(k):
     if k[0] == '$':
         return k[1:]
-                
+
     return k
 
 
@@ -108,7 +105,7 @@ async def parse_makefile(data):
     cprint = y.xprint_white
     parse_flags = True
     shell_args = {}
-    
+
     for line_no, l in enumerate(data.split('\n')):
         if parse_flags:
             if '=' in l:
@@ -151,7 +148,7 @@ async def parse_makefile(data):
             try:
                 a, b = ls.split(':')
             except Exception as e:
-                y.xprint_r(ls, line_no, e)
+                y.info('{br}', ls, line_no, e, '{}')
 
                 raise
 
@@ -162,7 +159,7 @@ async def parse_makefile(data):
 
     if prev:
         lst.append(prev)
-        
+
     return {'lst': lst, 'flags': shell_args}
 
 
@@ -190,17 +187,13 @@ async def cheet(mk):
         y.build_scripts_dir()
 
 
-async def select_targets(lst, targets):
-    return get_only_our_targets(lst, targets)
-
-
 def build_run_sh(n):
     def iter_run_sh():
         yield '{br}running {bw}[cname]'
         yield '{by} run.sh:'
 
         for l in n['cmd']:
-            yield '  ' + l
+            yield '  ' + str(l)
 
     return '\n'.join(iter_run_sh())
 
@@ -240,45 +233,21 @@ class MakeFile(object):
     def clone(self):
         mk = MakeFile()
 
-        mk.lst = self.lst
-        mk.flags = self.flags
-        mk.strings = self.strings
-        mk.str_to_num = self.str_to_num
+        mk.__dict__.update(self.__dict__)
 
         return mk
         
     def init_from_parsed(self, parsed):
-        lst = parsed['lst']
-
         self.flags = parsed['flags']
         self.strings = []
         self.str_to_num = {}
-
-        def iter_items():
-            all_deps_1 = []
-            all_deps_2 = []
-            
-            for l in lst:
-                n = dict((k, self.cvt(l, k)) for k in ('deps1', 'deps2', 'cmd'))
-
-                all_deps_1.extend(n['deps1'])
-                all_deps_2.extend(n['deps2'])
-                
-                yield n
-
-            for d in sorted(frozenset(all_deps_2) - frozenset(all_deps_1)):
-                yield {'deps1': [d], 'deps2': [], 'cmd': []}
-                
-            if 'all' not in all_deps_1:
-                yield {'deps1': self.lst_to_nums(['all']), 'deps2': all_deps_1, 'cmd': []}
-            
-        self.lst = list(iter_items())
+        self.lst = [self.store_node(n) for n in parsed['lst']]
 
         return self
         
     def cvt(self, l, name):
         return self.lst_to_nums(l.get(name, []))
-        
+
     def bsp(self):
         return self.strings[self.lst[0]['deps1'][0]]
 
@@ -302,34 +271,38 @@ class MakeFile(object):
     async def select_targets(self, targets):
         mk = MakeFile()
 
-        lst = await select_targets(self.lst, self.lst_to_nums(sorted(targets)))
+        lst = select_targets(self.lst, self.lst_to_nums(sorted(targets)))
         lst = [self.restore_node(x) for x in lst]
 
         mk.init_from_parsed({'lst': lst, 'flags': y.deep_copy(self.flags)})
         
         return mk
 
+    def store_node(self, n):
+        return dict((k, self.cvt(n, k)) for k in ('deps1', 'deps2', 'cmd'))
+
     def restore_node(self, n):
         return dict((k, self.nums_to_str(n[k])) for k in ('deps1', 'deps2', 'cmd'))
 
-    async def build(self, shell_vars, args):
+    async def build(self, args):
         mk = self.clone()
 
         mk.flags = y.deep_copy(mk.flags)
-        mk.flags.update(shell_vars)
+        mk.flags.update(args.shell_vars)
         
         return await y.run_make_0(mk, args)
 
-    async def build_kw(self, shell_vars, **kwargs):
+    async def build_kw(self, **kwargs):
         args = MakeArgs()
 
+        args.shell_vars = kwargs.pop('shell_vars', {})
         args.threads = kwargs.pop('threads', 1)
-        args.targets = kwargs.pop('targets', ['all'])
+        args.targets = kwargs.pop('targets', [])
         args.pre_run = kwargs.pop('pre_run', [])
-        
+
         args.update(kwargs)
 
-        return await self.build(shell_vars, args)
+        return await self.build(args)
 
     
 def dumps_mk(mk):
