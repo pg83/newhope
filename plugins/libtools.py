@@ -11,8 +11,5 @@ def libtools0():
         'meta': {
             'kind': ['library', 'tool', 'box'],
             'depends': ['m4'],
-            'provides': [
-                {'lib': 'ltdl'},
-            ],
         }
     }

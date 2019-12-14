@@ -37,7 +37,10 @@ def fetch_http(root, url, name=None, untar=True):
         f.buffer.write(data)
 
     if untar:
-        y.subprocess.check_output(['tar -xf ' + name], cwd=root, shell=True)
+        if '.zip' in name:
+            y.subprocess.check_output(['unzip ' + name], cwd=root, shell=True)
+        else:
+            y.subprocess.check_output(['tar -xf ' + name], cwd=root, shell=True)
 
     return fname
 

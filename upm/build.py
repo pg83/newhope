@@ -209,32 +209,9 @@ async def build_makefile(nodes, internal=False):
 
             if cmd['build']:
                 yield '\n\n'
-
-    async def iter_7():
-        def split():
-            lst = []
-
-            for i in iter6():
-                lst.append(i)
-
-                if len(lst) > 5000:
-                    yield lst
-                    lst = []
-
-            if lst:
-                yield lst
-
-        l = list(split())
-
-        async def join(el):
-            return ''.join(el)
-        
-        l = await y.async_loop.map(join, l)
-
-        for x in l:
-            yield x
                         
-    with y.without_gc() as gc:
+    #with y.without_gc() as gc:
+    if 1:
         res = ''
 
         for v in iter6():

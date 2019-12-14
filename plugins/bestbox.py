@@ -6,18 +6,17 @@ def bestbox0():
             mkdir -p $IDIR/bin
 
             cp $TOYBOX $IDIR/bin
-            cp $BUSYBOX $IDIR/bin
-            
+            cp $BUSYBOX $IDIR/bin            
             cd $IDIR/bin
+
+            for i in `./toybox`; do
+                ln -fs ./toybox ./$i
+            done
 
             for x in `./busybox --list-full`; do
                 y=$(basename $x)
                 ln -s -f ./busybox $y
             done            
-
-            for i in `./toybox`; do
-                ln -fs ./toybox ./$i
-            done
         """,
         'meta': {
             'kind': ['tool', 'box'],

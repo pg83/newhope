@@ -74,8 +74,10 @@ class Builder(object):
                 return
 
             if (item := el.pop('item', None)) is not None:
+                is_debug() and y.debug('run cmd', item)
                 retcode = await item.run_cmd(ctl)
-
+                is_debug() and y.debug('done run cmd', item, retcode)
+                
                 if retcode:
                     yield CHANNEL({'action': 'finish', 'status': 'failure'})
                     yield y.FIN()
@@ -120,56 +122,70 @@ class Builder(object):
 
                 @property
                 def num(self):
-                    return lstl + 1
+                    return lstl + 100000
 
                 async def run_cmd(self, ctl):
                     y.build_results({
-                        'message': 'all done',
+                        'status': 'fini',
+                        'message': 'build complete',
                         'target': self.my_name,
                     })
                     
                     return 0
 
             yield ItemAll()
+
+        async def next_el():
+            is_debug() and y.debug('wait next el')
+
+            async for el in inq:
+                el = el.data.data
+                is_debug() and y.debug('got', el)
+                return el
                 
         rq, wq = y.make_engine(iter_data(), lambda x: x.deps1[0], dep_list=lambda x: sorted(frozenset(x.deps2)))
+
+        if 0:
+            while True:
+                for i in list(rq()):
+                    print str(i['x'])
+                    wq(i)
+        
         by_n = {}
         complete = set()
         
         yield y.EOP(y.ACCEPT('mk:ready', 'mk:channel'), y.PROVIDES('mk:build'))
 
+        def fmt_in_fly(data):
+            return '(' + ', '.join([x['x'].my_name for x in data.values()]) + ')'
+        
         while True:
             for i, el in enumerate(rq()):
                 item = el['x']
                 by_n[item.num] = el
 
-                is_debug() and y.debug('yield ready', y.pretty_dumps(item))
+                is_debug() and y.debug('yield ready', y.pretty_dumps(item), 'in fly', fmt_in_fly(by_n))
 
                 yield y.ELEM({'item': item})
 
-                if i % 16 == 0:
-                    yield y.EOP()
+                #if i % 16 == 0:
+                yield y.EOP()
 
             yield y.EOP()
 
-            is_debug() and y.debug('wait for complete')
-
-            async for el in inq:
-                el = el.data.data
-
-                if el.get('action', '') == 'finish':
-                    yield y.FIN()
-
-                    return
+            el = await next_el()
                 
-                if (item := el.get('ready')) is not None:
-                    key = y.burn(item.n)
-                    assert key not in complete
-                    complete.add(key)
-                    is_debug() and y.debug('got complete', item)
-                    wq(by_n[item.num]['i'])
-                    
-                    break
+            if el.get('action', '') == 'finish':
+                yield y.FIN()
+
+                return
+                
+            if (item := el.get('ready')) is not None:
+                key = y.burn(item.n)
+                assert key not in complete
+                complete.add(key)
+                wq(by_n.pop(item.num)['i'])
+                is_debug() and y.debug('got complete', item, 'in fly', fmt_in_fly(by_n))
 
         assert False
     
@@ -183,13 +199,6 @@ class Builder(object):
                 yield y.set_name(wrap_gen(self.runner), 'runner_' + str(i))
 
         return await p.run(coro=list(iter_workers()))
-
-    def on_build_status(self, fail):
-        if fail:
-            y.build_results({'message': 'done', 'status': 'ok'})
-        else:
-            y.build_results({'message': 'fail', 'status': 'failure'})
-            y.os.abort()
             
 
 def item_factory(n, p, i):
@@ -254,11 +263,6 @@ class ItemBase(object):
         return self.p.resolve_path
 
     async def run_cmd(self, ctl):
-        y.build_results({
-            'message': 'done',
-            'target': self.my_name,
-        })
-        
         return 0
 
     
@@ -345,26 +349,60 @@ class Item(ItemBase):
             except Exception as e:
                 raise Exception(x + ' not exists: ' + str(e))
 
-    async def run_cmd(self, ctl):
+    def check_done(self):
         try:
             self.check_results()
-            all_done = True
-        except Exception:
-            all_done = False
 
-        if all_done:
+            return True
+        except Exception:
+            pass
+        
+        return False
+
+    async def run_cmd(self, ctl):
+        target = self.my_name
+        
+        if self.check_done():
             y.build_results({
-                'message': 'done',
-                'target': self.my_name,
+                'message': 'use cached {target}',
+                'status': 'done',
+                'target': target,
             })
 
             return 0
 
         y.build_results({
-            'message': 'init',
-            'target': self.my_name,
+            'message': 'starting {target}',
+            'status': 'init',
+            'target': target,
         })
+
+        retcode, res, input = await self.run_cmd_0(ctl)
         
+        msg = {
+            'output': res,
+            'command': input,
+            'target': target,
+        }
+
+        if retcode:
+            msg.update({
+                'message': 'target {target} failed',
+                'status': 'fail',
+                'retcode': retcode,
+            })
+        else:
+            msg.update({
+                'message': 'target {target} complete',
+                'status': 'done',
+            })
+
+        y.build_results(msg)
+
+        if retcode:
+            y.shut_down(5, last_msg='{br}target ' + target + ' failed, exiting now{}\n')
+        
+    async def run_cmd_0(self, ctl):
         sp = y.subprocess
         out = []
         retcode = 0
@@ -382,8 +420,7 @@ class Item(ItemBase):
                 
                 return (res, retcode)
 
-            res, retcode = await ctl.loop.offload(y.set_name(fun, 'fun_' + y.sanitize_string(self.my_name)))
-            
+            res, retcode = await ctl.loop.offload(y.set_name(fun, 'fun_' + y.sanitize_string(self.my_name)))            
             #res = res.decode('utf-8')
             res = res.strip()
             
@@ -402,48 +439,17 @@ class Item(ItemBase):
             out.append(y.format_tbx())
             retcode = -1
 
-        res = '\n'.join(y.super_decode(o.strip()) for o in out)
+        return retcode, '\n'.join(y.super_decode(o.strip()) for o in out), input
 
-        if retcode:
-            print res, input
-        
-        self.build_out(res, retcode, input)
-
-        return retcode
-
-    def build_out(self, res, retcode, input):
-        target = self.my_name
-        
-        msg = {
-            'text': res,
-            'command': input,
-            'target': target,
-        }
-            
-        if retcode:
-            msg.update({
-                'message': 'fail',
-                'retcode': retcode,
-                'target': target,
-                'status': 'faulure'
-            })
-        else:
-            msg.update({
-                'message': 'done',
-                'target': target,
-            })
-
-        y.build_results(msg)
-
-        
-async def run_par_build(ctl, mk, threads):
-    y.info('{br}start build{}')
     
+async def run_par_build(ctl, mk, threads):
     async def run_par_build_1(ctl):
         b = Builder(ctl, mk, threads)
 
         return await b.run()
 
+    y.info('{br}start build{}')
+    
     try:
         return await ctl.spawn(run_par_build_1)
     finally:

@@ -11,12 +11,10 @@ def musl_impl(code, deps, cont, kind):
         'meta': {
             'kind': kind,
             'contains': cont,
-            'depends': ['bestbox'] + deps,
+            'depends': ['bestbox', 'clang-tc'] + deps,
             'provides': [
-                {'env': 'CFLAGS', 'value': '"-nostdinc -isystem{pkgroot}/include $CFLAGS"'},
-                {'env': 'LDFLAGS', 'value': '"-nostdlib -static -fuse-ld=lld -L{pkgroot}/lib $LDFLAGS"'},
-                {'env': 'LIBS', 'value': '"{pkgroot}/lib/libc.a $LIBS"'},
-                {'env': 'CC', 'value': '"/usr/bin/clang"'},
+                {'lib': 'muslc'},
+                {'env': 'CFLAGS', 'value': '"-isystem{pkgroot}/include $CFLAGS"'},
             ],
         },
     }
@@ -30,6 +28,8 @@ def musl_boot0():
        $(APPLY_EXTRA_PLAN_1)
        sh ./mk.sh x86_64 .
        SRC=$(pwd) BDIR=$BDIR/build IDIR=$IDIR CC=/usr/bin/gcc sh run.sh
+       cd $IDIR/lib
+       ln -s libc.a libmuslc.a
     """
     
     return musl_impl(code, [], [], ['tool'])
@@ -44,9 +44,14 @@ def musl0():
        $YMAKE install || exit 2
        $(APPLY_EXTRA_PLAN_2)
        . ./malloc.sh
+       cd $IDIR/lib
+       llvm-ar q libc.a crt1.o crti.o crtn.o
+       rm *crt*
+       llvm-ranlib libc.a
+       ln -s libc.a libmuslc.a
     """
     
     res = y.deep_copy(musl_impl(code, ['make-boot', 'jemalloc'], ['musl-boot'], ['library']))
-    res['meta']['provides'].append({'env': 'LIBS', 'value': '"{pkgroot}/lib/crt1.o {pkgroot}/lib/crti.o {pkgroot}/lib/crtn.o $LIBS"'})
+    #res['meta']['provides'].append({'env': 'LIBS', 'value': '"{pkgroot}/lib/crt1.o {pkgroot}/lib/crti.o {pkgroot}/lib/crtn.o $LIBS"'})
 
     return res

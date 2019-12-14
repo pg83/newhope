@@ -462,18 +462,11 @@ class PubSubLoop(object):
     def unused_row(self, iface):
         yield EOP(ACCEPT('ps:unused row'))
 
-        unused = []
-        
-        for row in iface.iter_data():
-            unused.append(row)
+        while True:
+            for row in iface.iter_data():
+                yield row.data.data
 
-        if len(unused) > 100:
-            for r in unused:
-                yield r
-
-            unused.clear()
-            
-        yield EOP()
+            yield EOP()
 
     async def run(self, init=[], coro=[]):
         for f in init:

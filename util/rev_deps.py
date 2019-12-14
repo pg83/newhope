@@ -45,9 +45,6 @@ def simple_engine(it, random=False, seed=''):
             tmp = list(sorted(ready, key=lambda x: y.burn([x, seed])))
             ready.clear()
             yield from tmp
-            
-        if not by_dep:
-            return
 
     def cb(item):
         for k in by_rdep[item]:

@@ -5,7 +5,7 @@ def mbedtls0():
             source fetch "https://tls.mbed.org/download/mbedtls-{version}-apache.tgz" 1
             #pragma cc
             cat Makefile | grep -v 'DESTDIR=' > M && mv M Makefile
-            CC=gcc $YMAKE -j2 programs lib && $YMAKE DESTDIR=$IDIR install
+            $YMAKE -j4 CC=$CC AR=$AR RANLIB=$RANLIB CFLAGS="$CFLAGS" LIBS="$LIBS" LDFLAGS="$LDFLAGS" DESTDIR=$IDIR programs lib install
         """,
         'version': '2.16.3',
         'meta': {

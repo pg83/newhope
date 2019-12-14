@@ -3,6 +3,7 @@ def zlib0():
     return {
         'code': """
             source fetch "http://zlib.net/zlib-{version}.tar.gz" 1
+            export LDFLAGS="$LDFLAGS $LIBS"
             $YSHELL ./configure $COFLAGS --static --64 --prefix=$IDIR || exit 1
             $YMAKE -j2 && $YMAKE install
         """,

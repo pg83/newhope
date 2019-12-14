@@ -248,7 +248,7 @@ class TimeScheduler(object):
         return await self.sleep_deadline(time.time() + tout)
 
     async def sleep_deadline(self, dd):
-        return await self.loop.offload(set_name(lambda: time.sleep(max(dd - time.time(), 0)), 'sleep_' + str(int(dd))))
+        return await current_coro().loop.offload(set_name(lambda: time.sleep(max(dd - time.time(), 0)), 'sleep_' + str(int(dd))))
         
     async def wait_queue(self):
         self.process_queue()
@@ -326,9 +326,6 @@ class Coro(collections.abc.Coroutine):
 
     def __repr__(self):
         return str(self)
-    
-    def is_system(self):
-        return 'system_' in self.name
 
     @property
     def thread_id(self):

@@ -64,6 +64,7 @@ class Func(object):
         subst = {
             'intl': 'gettext',
             'iconv': 'libiconv',
+            'c++': 'libcxx',
         }
         
         return [subst.get(x, x) for x in self.code().get('meta', {}).get('depends', [])]
@@ -100,13 +101,21 @@ class Func(object):
         def iter1():            
             yield from self.depends()
 
-            for d in ('make', 'musl', 'bestbox'):
-                if self.base not in self.data.find_func(d).all_depends() and self.base != d:
-                    yield d
+            for d in ('make', 'musl', 'bestbox', 'clang-tc'):
+                if self.base in self.data.find_func(d).all_depends():
+                    continue
+                
+                if self.base == d:
+                    continue
+
+                if 'code' not in self.code():
+                    continue
+                
+                yield d
 
         res = list(iter1())
 
-        print(self.base, res, file=sys.stderr)
+        #print(self.base, res, file=sys.stderr)
 
         return res
 
@@ -173,7 +182,7 @@ class SpecialFunc(Func):
             
         res = uniq_list(sum([x for x in it()], []))
 
-        print res
+        #print res
         
         return res
     

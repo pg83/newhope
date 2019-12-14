@@ -13,27 +13,14 @@ async def run_make_0(mk, args):
             if 'target' in arg:
                 arg['_target'] = y.to_pretty_name(arg.pop('target'))
             
-            if 'text' in arg:
-                data = arg.pop('text').strip()
-                ll = {'failure': 'info'}.get(arg.get('status', ''), 'debug')
+            if 'output' in arg:
+                data = arg.pop('output').strip()
 
-                y.build_results({ll: '{w}' + data + '{}'})
+                if (status := arg.get('status', '')) == 'fail':
+                    arg['message'] = arg.get('message', '') + '\n' + data
             
             if 'message' in arg:
-                colors = {
-                    'fail': '{br}',
-                    'done': '{bb}',
-                    'init': '{by}',
-                }
-
-                msg = arg.pop('message')[:4].lower()
-                color = colors.get(msg, '{bw}')
-                msg = color + msg.upper() + '{}'
-                
-                y.build_results({'info': {'message': msg, 'extra': arg}})
-
-            if 'debug' in arg:
-                is_debug() and y.debug('%s', arg['debug'])
+                y.build_results({'info': {'message': arg.pop('message'), 'extra': arg}})
                 
             if 'info' in arg:
                 y.info(arg['info']['message'], extra=arg['info']['extra'])

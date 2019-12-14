@@ -21,7 +21,7 @@ async def main_makefile(iter_cc, internal=False):
         prev = prev | portion
         len_a = len(prev)
 
-        if (len_b == len_a and prev) or cnt > 1:
+        if (len_b == len_a and prev) or cnt > 2:
             return data, prev
         
         data = await y.build_makefile(sorted(prev), internal=internal)

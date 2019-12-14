@@ -10,7 +10,7 @@ def gawk0():
         'version': '5.0.1',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['iconv', 'intl', 'readline', 'libsigsegv'],
+            'depends': ['iconv', 'intl', 'readline', 'libsigsegv', 'c++'],
             'soft': ['mpfr', 'gmp'],
         },
     }
