@@ -116,7 +116,7 @@ def prepare_untar_for_mf(fr, strip=0):
 def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
     if (ext_mode and ext_mode == 'zp') or fr.endswith('.zip'):
         def do():
-            yield '$YUNZIP ' + fr
+            yield '$YUNZIP -o ' + fr
 
             if to not in ' .':
                 yield 'cd ' + to

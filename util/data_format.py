@@ -10,14 +10,6 @@ def encode_prof(v):
     return lzma.compress(marshal.dumps(v))
 
 
-class DictWithMethods(dict):
-    def ensure_get(self, k, default):
-        if k not in self:
-            self[k] = default
-
-        return self[k]
-
-
 class SimpleDB(object):
     def __init__(self, path):
         self.path = y.os.path.expanduser(path)
@@ -29,7 +21,7 @@ class SimpleDB(object):
         
     def read_db(self):
         try:
-            y.info('{bb}open db ' + self.path + '{}')
+            y.debug('{bb}open db ' + self.path + '{}')
             
             with open(self.path, 'rb') as f:
                 return decode_prof(f.read())
@@ -60,14 +52,14 @@ def get_key(db, k, default):
 def open_simple_db(path):
     db = SimpleDB(path)
     data = db.read_db()
-    md5 = y.burn(data)
+    md5 = y.burn(y.json.dumps(data, sort_keys=True))
     
     try:
         yield data
     finally:
-        new_md5 = y.burn(data)
-
+        new_md5 = y.burn(y.json.dumps(data, sort_keys=True))
+        
         if md5 == new_md5:
-            y.info('db not changed, not write it')
+            y.debug('db not changed, not write it')
         else:
             db.write_db(data)

@@ -2,7 +2,7 @@ def coreutils_impl(deps, kind):
     return {
         'code': """
              source fetch "https://ftp.gnu.org/gnu/coreutils/coreutils-{version}.tar.xz" 1 
-             $YSHELL ./configure $COFLAGS --prefix=$IDIR --libexecdir=$IDIR/bin --without-gmp || exit 1
+             $YSHELL ./configure $COFLAGS --prefix=$IDIR --libexecdir=$IDIR/bin --without-gmp --enable-single-binary=symlinks || exit 1
              $YMAKE -j $NTHRS
              $YMAKE install
         """,

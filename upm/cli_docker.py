@@ -3,7 +3,7 @@ def build_docker(cwd):
     lines = data.split('\n')
     line = lines[len(lines) - 2]
 
-    print(data.strip(), file=y.stdout)
+    y.info('{bb}new docker image{dw}\n' + data.strip() + '{}{}')
 
     return line.split(' ')[2]
 
@@ -19,7 +19,7 @@ async def cli_docker_build(args):
     path = path_to_images()
 
     for t in args:
-        new_ver = build_docker(path + t)
+        new_ver = build_docker(path + '/' + t)
 
         with y.open_pdb() as db:
             db.images[t] = db.images.get(t, []) + [new_ver]
@@ -49,7 +49,7 @@ async def cli_docker_run(arg):
 
 def get_running():
     out = y.subprocess.check_output(['docker container ls'], shell=True).decode('utf-8')
-    res = dict((y[0], y[1]) for y in (x.split() for x in out.split('\n')[1:] if x))
+    res = dict((y[1], y[0]) for y in (x.split() for x in out.split('\n')[1:] if x))
 
     return res
    
@@ -57,17 +57,28 @@ def get_running():
 @y.main_entry_point
 async def cli_docker_list(arg):
     info = get_running()
-
+    
     def is_running(cont):
         try:
-            return data_for_container(cont)['data'][-1] in info.keys()
-        except Exception:
+            return data_for_container(cont)['data'][-1] in info
+        except Exception as e:
             return False
-        
+
+    text = {
+        False: '{br}-{}',
+        True: '{bg}+{}',
+    }
+
     for i in y.os.listdir(path_to_images()):
-        print(is_running(i), '{bb}' + i + '{}')
+        print(text[is_running(i)], '{bb}' + i + '{}')
 
 
 @y.main_entry_point
 async def cli_docker_shell(arg):
     assert arg, 'empty arguments'
+
+    cont = arg[0]
+    cont_image = data_for_container(cont)['data'][-1]
+    cont_id = get_running()[cont_image]
+
+    y.os.execvp('docker', ['docker', 'exec', '-ti', cont_id, '/bin/bash'])

@@ -11,6 +11,5 @@ export PIC=""
 export PATH="$PATH:/bin:/sbin:/usr/bin:/usr/local/bin"
 export CFLAGS="-O2 $PIC -fno-builtin $CFLAGS"
 export LDFLAGS="$PIC $LDFLAGS"
-export NTHR=10
+export NTHR=$(source num_cpu)
 export NTHRS=$NTHR
-

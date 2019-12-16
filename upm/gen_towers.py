@@ -61,6 +61,7 @@ class Func(object):
             'intl': 'gettext',
             'iconv': 'libiconv',
             'c++': 'libcxx',
+            'm4': 'quasar-m4',
         }
         
         return [subst.get(x, x) for x in self.code().get('meta', {}).get('depends', [])]

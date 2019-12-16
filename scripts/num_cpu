@@ -1,0 +1,9 @@
+on_darwin() {
+    sysctl -n hw.ncpu
+}
+
+on_linux() {
+    cat /proc/cpuinfo | grep MHz | wc -l
+}
+
+(on_darwin || on_linux) 2> /dev/null

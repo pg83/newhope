@@ -4,9 +4,11 @@ def without_gc(print_stats=False):
 
     try:
         ygc.disable()
+        
         yield ygc
     finally:
         ygc.enable()
         
         if print_stats:
-            y.xprint_r(ygc.garbage)
+            if ygc.garbage:
+                y.xprint_r('gc garbage left:', ygc.garbage)
