@@ -2,6 +2,7 @@
 def libunwind0():
     return {
         'code': """
+             #pragma cc
              source fetch "http://releases.llvm.org/{version}/libunwind-{version}.src.tar.xz" 0
              mv libunwind* xxx
              mv xxx/* ./

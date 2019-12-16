@@ -3,7 +3,7 @@ def iter_all_tools():
     ff = y.fix_v2
 
     def do():
-        for x in y.itertools.chain(y.iter_system_tools(), y.iter_ndk_tools()):
+        for x in y.iter_system_tools():
             yield ff(x)
 
     return list(do())
@@ -45,25 +45,48 @@ def get_all_constraints():
     return res
 
 
-def score_pair(c, l):
-    return y.struct_dump_bytes([c, l])
+def score_tc(c, l, cpp):
+    s = 0
+
+    for t in (c, l, cpp):
+        st = str(t)
+
+        if 'clang' in st:
+            s += 10
+            
+        if 'clang++' in st:
+            s += 20
+
+        if 'lld' in st:
+            s += 100
+
+    return s
 
 
-def join_toolchains(c, l, info):
-    cn = c['node']
-    ln = l['node']
+def join_tc_meta(tcs):
+    return {
+        'kind': y.uniq_list_3(sum((x['meta']['kind'] for x in tcs), [])),
+        'provides': sum((x['meta']['provides'] for x in tcs), []),
+    }
 
-    return y.fix_v2({
+    
+def join_toolchains(info, tcs):
+    nodes = [x['node'] for x in tcs]
+    res = {
         'node': {
             'build': [],
-            'prepare': cn.get('prepare', []) + ln.get('prepare', []),
-            'kind': cn['meta']['kind'] + ln['meta']['kind'],
-            'name': cn['name'] + '-' + ln['name'],
-            'version': cn['version'] + '-' + ln['version'],
+            'prepare': sum((x.get('prepare', []) for x in nodes), []),
+            'name': 'tc-' + '-'.join(x['name'] for x in nodes),
+            'version': y.burn(nodes),
             'constraint': info,
+            'meta': join_tc_meta(nodes),
         },
-        'deps': [y.store_node(c), y.store_node(l)]
-    })
+        'deps': [y.store_node(x) for x in tcs],
+    }
+
+    print res
+    
+    return y.fix_v2(res)
 
 
 def score_toolchains(lst, info):
@@ -72,17 +95,19 @@ def score_toolchains(lst, info):
             if kind in o['node']['meta']['kind']:
                 yield o
 
-    comp = list(flt('c'))
+    cc = list(flt('c'))
+    cxx = list(flt('c++'))
     link = list(flt('linker'))
 
     def gen_all():
-        for c in comp:
-            for l in link:
-                yield {'c': c, 'l': l, 's': score_pair(c, l)}
+        for c in cc:
+            for cpp in cxx:
+                for l in link:
+                    yield {'c': c, 'l': l, 'c++': cpp, 's': score_tc(c, l, cpp)}
 
-    toolchains = list(sorted(list(gen_all()), key=lambda x: x['s']))
+    toolchains = list(sorted(list(gen_all()), key=lambda x: -x['s']))
 
-    return [join_toolchains(x['c'], x['l'], info) for x in toolchains]
+    return [join_toolchains(info, [x['c'], x['c++'], x['l']]) for x in toolchains]
 
 
 @y.cached()

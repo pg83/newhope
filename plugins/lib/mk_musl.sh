@@ -3,7 +3,7 @@ set +x
 SRC="$2"
 ARCH="$1"
 OPT="-std=c99 -nostdinc -ffreestanding -D_XOPEN_SOURCE=700"
-CFLAGS="-O2 -w $OPT -I\$SRC/arch/$ARCH -I\$SRC/arch/generic -I\$SRC/src/include -I\$SRC/src/internal -I\$IDIR/include"
+CFLAGS="$PIC $OPT -I\$SRC/arch/$ARCH -I\$SRC/arch/generic -I\$SRC/src/include -I\$SRC/src/internal -I\$IDIR/include"
 marker="\$IDIR/include/version.h"
 
 (
@@ -26,8 +26,11 @@ EOF
 
 srcs=$(
     cd $SRC
-    echo crt/crt1.c
-    echo crt/dso.c
+    
+    ls crt/crt1.c
+    ls crt/dso.c
+    ls crt/$ARCH/*.c
+    ls crt/$ARCH/*.s
     
     for f in `ls src/ | grep -v include`; do
 	ls src/$f/*.c
@@ -44,6 +47,10 @@ echo "set -x" > run1.sh
 echo "set -x" > run2.sh
 echo "set -x" > run3.sh
 echo "set -x" > run4.sh
+echo "set -x" > run5.sh
+echo "set -x" > run6.sh
+echo "set -x" > run7.sh
+echo "set -x" > run8.sh
 
 c=0
 
@@ -70,11 +77,12 @@ echo "sh run1.sh &"
 echo "sh run2.sh &"
 echo "sh run3.sh &"
 echo "sh run4.sh &"
-echo "wait"
-echo "wait"
-echo "wait"
+echo "sh run5.sh &"
+echo "sh run6.sh &"
+echo "sh run7.sh &"
+echo "sh run8.sh &"
 echo "wait"
 echo "(rm -rf \$IDIR/lib || true) && mkdir \$IDIR/lib"
-echo "cd \$BDIR/obj && llvm-ar rc $arc $outs1"
-echo "llvm-ranlib $arc"
+echo "cd \$BDIR/obj && \$AR rc $arc $outs1"
+echo "\$RANLIB $arc"
 ) >> run.sh

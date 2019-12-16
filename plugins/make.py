@@ -12,7 +12,7 @@ def make_impl(deps, contains, kind):
         yield 'export YMAKE=$IDIR/bin/make'
 
         yield '$YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-load || exit 1'
-        yield '$YMAKE -j4'
+        yield '$YMAKE -j $NTHRS'
         yield '$YMAKE install'
 
     return {

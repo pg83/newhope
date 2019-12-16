@@ -3,8 +3,9 @@ def dash0():
     return {
         'code': """
             source fetch "http://gondor.apana.org.au/~herbert/dash/files/dash-{version}.tar.gz" 1
+            export CFLAGS_FOR_BUILD="$CFLAGS $LDFLAGS $LIBS"
             $YSHELL ./configure $COFLAGS --prefix=$IDIR
-            $YMAKE -j2
+            $YMAKE -j $NTHRS
             $YMAKE install
          """,
         'version': '0.5.10.2',

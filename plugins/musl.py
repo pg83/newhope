@@ -4,14 +4,14 @@ def musl_impl(code, deps, cont, kind):
         'code': code,
         'version': '1.1.24', 
         'extra': [
-            {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk.sh']['data']},
+            {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_musl.sh']['data']},
             {'kind': 'file', 'path': 'crt/dso.c', 'data': y.globals.by_name['data/dso.c']['data']},
             {'kind': 'file', 'path': 'malloc.sh', 'data': y.globals.by_name['data/malloc.sh']['data']},
         ],
         'meta': {
             'kind': kind,
             'contains': cont,
-            'depends': ['bestbox', 'clang-tc'] + deps,
+            'depends': ['bestbox'] + deps,
             'provides': [
                 {'lib': 'muslc'},
                 {'env': 'CFLAGS', 'value': '"-isystem{pkgroot}/include $CFLAGS"'},
@@ -40,18 +40,17 @@ def musl0():
     code = """
        source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
        $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
-       $YMAKE -j4 || exit 1 
+       $YMAKE -j $NTHRS || exit 1 
        $YMAKE install || exit 2
        $(APPLY_EXTRA_PLAN_2)
-       . ./malloc.sh
+       source ./malloc.sh
        cd $IDIR/lib
-       llvm-ar q libc.a crt1.o crti.o crtn.o
+       $AR q libc.a crt1.o crti.o crtn.o
        rm *crt*
-       llvm-ranlib libc.a
+       $RANLIB libc.a
        ln -s libc.a libmuslc.a
     """
     
     res = y.deep_copy(musl_impl(code, ['make-boot', 'jemalloc'], ['musl-boot'], ['library']))
-    #res['meta']['provides'].append({'env': 'LIBS', 'value': '"{pkgroot}/lib/crt1.o {pkgroot}/lib/crti.o {pkgroot}/lib/crtn.o $LIBS"'})
 
     return res

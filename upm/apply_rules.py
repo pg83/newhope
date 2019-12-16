@@ -50,7 +50,7 @@ def fix_v2(v, **kwargs):
     if 'compression' in kind:
         kind.append('tool')
 
-    if 'provides' in m:
+    if 'provides' in m and any(('lib' in x) for x in m['provides']):
         kind.append('library')
 
     m['kind'] = sorted(frozenset(kind))

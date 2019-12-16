@@ -133,12 +133,8 @@ def my_exept_hook(type, value, traceback):
 @y.defer_constructor
 def init():
     @y.main_entry_point
-    async def cli_profile(args):
+    async def cli_dev_profile(args):
         PGProfiler().run(args)
-            
-    @y.lookup
-    def l(name):
-        return {'cli_profile': cli_profile}[name]
         
     y.sys.excepthook = my_exept_hook
 

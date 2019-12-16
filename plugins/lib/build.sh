@@ -26,6 +26,8 @@ echo ""
 
 srcs=$(
     cd $SRC
+    echo crt/crti.s
+    echo crt/crtn.s
     echo crt/crt1.c
     echo crt/dso.c
     
@@ -59,7 +61,7 @@ arc="\$IDIR/lib/libc.a"
 
 echo "$arc: $outs"
 echo "\t(rm -rf \$IDIR/lib || true) && mkdir \$IDIR/lib"
-echo "\tcd \$BDIR/obj && ar rc $arc $outs1"
-echo "\tranlib $arc"
+echo "\tcd \$BDIR/obj && \$AR rc $arc $outs1"
+echo "\t\$RANLIB $arc"
 echo ""
 echo "all: $arc $marker"

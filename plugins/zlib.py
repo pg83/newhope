@@ -5,7 +5,7 @@ def zlib0():
             source fetch "http://zlib.net/zlib-{version}.tar.gz" 1
             export LDFLAGS="$LDFLAGS $LIBS"
             $YSHELL ./configure $COFLAGS --static --64 --prefix=$IDIR || exit 1
-            $YMAKE -j2 && $YMAKE install
+            $YMAKE -j $NTHRS && $YMAKE install
         """,
         'version': '1.2.11',
         'meta': {

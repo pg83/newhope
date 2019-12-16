@@ -6,18 +6,6 @@ def find_tool_uncached(tool, path):
             return pp
 
 
-def subst_info(info):
-    info = y.deep_copy(info)
-
-    if 'host' not in info:
-        info['host'] = current_host_platform()
-
-    if 'target' not in info:
-        info['target'] = y.deep_copy(info['host'])
-
-    return info
-
-
 @y.singleton
 def getuser():
     return y.os.getusername()
@@ -30,14 +18,6 @@ def user_home():
 
 def upm_root():
    return user_home() + '/upm_root'
-
-
-@y.singleton
-def current_host_platform():
-    return {
-        'arch': y.platform.machine(),
-        'os': y.platform.system().lower(),
-    }
 
 
 def fixx(x):
@@ -57,4 +37,4 @@ def find_tool(name):
 
 @y.singleton
 def docker_binary():
-   return find_tool('docker')
+    return find_tool('docker')

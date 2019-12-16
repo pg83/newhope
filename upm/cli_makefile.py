@@ -1,8 +1,7 @@
 def iter_cc():
-   info = y.platform.uname()
-   host = {'os': info.system.lower(), 'arch': info.machine}
+   host = y.current_host_platform()
    cc = {'host': host, 'target': host}
-      
+
    yield cc
 
    

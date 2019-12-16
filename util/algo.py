@@ -7,6 +7,10 @@ from marshal import loads, dumps
 isf = y.inspect.iscoroutinefunction
 
 
+def uniq_list_3(l):
+    return list(sorted(frozenset(l)))
+
+
 def uniq_list_2(iter, key):
     visited = set()
 

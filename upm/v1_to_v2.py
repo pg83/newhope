@@ -44,9 +44,8 @@ def to_v2(data, info):
     
     compilers = info['compilers']['deps']
 
-    if '#pragma cc' not in full:
-        if './configure' not in full:
-            compilers = []
+    if all((y not in full) for y in ('#pragma cc', './configure', 'YMAKE', '$CC', '$CXX', 'gcc', 'clang')):
+        compilers = []
 
     return y.fix_v2({
         'node': node,

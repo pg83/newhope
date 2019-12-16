@@ -12,7 +12,7 @@ def libffi0():
                  -i libffi.pc.in
 
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static || exit 1
-             $YMAKE -j2
+             $YMAKE -j $NTHRS
              $YMAKE install
         """,
         'version': '3.2.1',

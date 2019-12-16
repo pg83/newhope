@@ -4,7 +4,7 @@ def diffutils0():
         'code': """
              source fetch "https://ftp.gnu.org/gnu/diffutils/diffutils-{version}.tar.xz" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-gcc-warnings || exit 1
-             $YMAKE -j2
+             $YMAKE -j $NTHRS
              $YMAKE install
         """,
         'version': '3.7',

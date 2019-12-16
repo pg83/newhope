@@ -1,8 +1,3 @@
-cd $IDIR && (find . | grep '\.a' | while read line; do
-     llvm-ar d $line libc.a
-     llvm-ranlib $line
-done)
-
 for i in "$BDIR/runtime/stdout.log" "$BDIR/runtime/stderr.log" "$BD/config.log"; do
     source copy_log "$i" "$IDIR/log"   
 done

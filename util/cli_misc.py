@@ -48,7 +48,7 @@ async def cli_pip(args):
 
 
 @y.main_entry_point
-async def cli_repl(args):
+async def cli_dev_repl(args):
    frame = y.inspect.currentframe()
    frame = frame.f_back
 

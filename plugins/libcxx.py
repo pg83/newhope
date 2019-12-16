@@ -2,6 +2,7 @@
 def libcxx0():
     return {
         'code': """
+             #pragma cc
              source fetch "http://releases.llvm.org/{version}/libcxx-{version}.src.tar.xz" 0
              mv libcxx* xxx
              mv xxx/* ./

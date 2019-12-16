@@ -5,7 +5,7 @@ def glib0():
              source fetch "http://ftp.acc.umu.se/pub/gnome/sources/glib/2.30/glib-{version}.tar.xz" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static --with-pcre=internal --with-libiconv=gnu --disable-nls || exit 1
              (
-                $YMAKE -j2 || exit 1
+                $YMAKE -j $NTHRS || exit 1
                 $YMAKE install
              ) 2>&1 | grep -v 'automake-1.11: command not found'
         """,

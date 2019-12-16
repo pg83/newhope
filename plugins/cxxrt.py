@@ -2,6 +2,7 @@
 def libcxxrt0():
     return {
         'code': """
+             #pragma cc
              source fetch "https://github.com/pathscale/libcxxrt/archive/master.zip" 0
              mv libcxxrt* xxx
              mv xxx/* ./

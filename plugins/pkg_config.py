@@ -5,9 +5,9 @@ def pkg_config_base(opts, deps, kind):
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared {opts}
             cd glib
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --with-libiconv=gnu --enable-static --disable-shared {opts} --srcdir=.
-            $YMAKE -j2
+            $YMAKE -j $NTHRS
             cd ..
-            $YMAKE -j2
+            $YMAKE -j $NTHRS
             $YMAKE install
         """.replace('{opts}', ' '.join(opts)),
         'version': '0.29.2',

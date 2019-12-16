@@ -8,10 +8,6 @@ def is_debug():
     return 'debug' in y.config.get('tow', '')
 
 
-def uniq_list(l):
-    return list(sorted(frozenset(l)))
-
-
 class Func(object):
     def __init__(self, x, data):
         self.x = x
@@ -74,7 +70,7 @@ class Func(object):
 
     @y.cached_method
     def all_depends(self):
-        return uniq_list(sum([self.data.by_name[x].all_depends() for x in self.depends()], [x for x in self.depends()]))
+        return y.uniq_list_3(sum([self.data.by_name[x].all_depends() for x in self.depends()], [x for x in self.depends()]))
     
     @y.cached_method
     def dep_lib_list(self):
@@ -101,7 +97,7 @@ class Func(object):
         def iter1():            
             yield from self.depends()
 
-            for d in ('make', 'musl', 'bestbox', 'clang-tc'):
+            for d in ('make', 'musl', 'bestbox'):
                 if self.base in self.data.find_func(d).all_depends():
                     continue
                 
@@ -122,7 +118,7 @@ class Func(object):
     @y.cached_method
     def run_func(self, info):
         data = y.deep_copy(self.c(info))
-        data['deps'] = uniq_list(data['deps'] + self.data.calc(self.deps, info))
+        data['deps'] = y.uniq_list_3(data['deps'] + self.data.calc(self.deps, info))
         data['node']['codec'] = self.codec
         
         y.apply_meta(data['node']['meta'], y.join_metas([y.restore_node_node(d).get('meta', {}) for d in data['deps']]))
@@ -180,9 +176,7 @@ class SpecialFunc(Func):
             for x in deps:
                 yield self.data.by_name[x].contains()
             
-        res = uniq_list(sum([x for x in it()], []))
-
-        #print res
+        res = y.uniq_list_3(sum([x for x in it()], []))
         
         return res
     

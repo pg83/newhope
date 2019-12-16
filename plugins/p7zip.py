@@ -3,10 +3,16 @@ def p7zip0():
     return {
         'code': """
              source fetch "https://downloads.sourceforge.net/p7zip/p7zip_{version}_src_all.tar.bz2" 1
-             mv {mk} makefile.machine
-             $YMAKE -j4 -f makefile DEST_DIR=$IDIR 7za install
-             cd $IDIR/usr/local/ && mv * $IDIR/
-             rm -rf $IDIR/usr/local
+             cat {mk} | grep -v 'PRE_COMP' | sed -e 's/CXX=.*/CXX=clang++/' | sed -e 's/CC=.*/CC=clang/' > makefile.machine
+             #ln -s $CC gcc
+             #ln -s $CXX g++
+             #export PATH=$(pwd):$PATH
+             export CFLAGS="-w $CFLAGS"
+             $YMAKE -j $NTHRS -f makefile DEST_DIR=$IDIR CC=$CC CXX=$CXX ALLFLAGS_C="$CFLAGS" ALLFLAGS_CPP="$CXXFLAGS -std=c++03" LDFLAGS="$LDFLAGS $LIBS" 7za install
+             (cd $IDIR/usr/local/ && mv * $IDIR/
+             rm -rf $IDIR/usr/local)
+             mkdir $IDIR/bin
+             install bin/7za $IDIR/bin
         """,
         'extra': [
             {'os': 'linux', 'value': {'kind': 'subst', 'from': '{mk}', 'to': 'makefile.linux_amd64'}},
@@ -15,7 +21,7 @@ def p7zip0():
         'version': '16.02',
         'meta': {
             'depends': [
-                'yasm',
+                'c++',
             ],
             'kind': ['compression', 'tool', 'library'],
             'provides': [
