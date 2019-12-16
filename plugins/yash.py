@@ -15,7 +15,7 @@ def yash0():
             source fetch "https://osdn.net/dl/yash/yash-{version}.tar.xz" 1
             export LDFLAGS="$LDFLAGS $LIBS"
             $YSHELL ./configure --prefix=$IDIR {opts}
-            $YMAKE -j2
+            $YMAKE -j $NTHRS
             $YMAKE install
          """.replace('{opts}', ' '.join(opts)),
         'version': '2.49',

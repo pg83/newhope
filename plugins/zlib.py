@@ -4,8 +4,10 @@ def zlib0():
         'code': """
             source fetch "http://zlib.net/zlib-{version}.tar.gz" 1
             export LDFLAGS="$LDFLAGS $LIBS"
+            export TEST_LDFLAGS="$LDFLAGS -L. libz.a"
             $YSHELL ./configure $COFLAGS --static --64 --prefix=$IDIR || exit 1
-            $YMAKE -j $NTHRS && $YMAKE install
+            $YMAKE -j $NTHRS TEST_LDFLAGS="$TEST_LDFLAGS"
+            $YMAKE install
         """,
         'version': '1.2.11',
         'meta': {

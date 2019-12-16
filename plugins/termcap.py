@@ -4,7 +4,7 @@ def termcap0():
         'code': """
             source fetch "https://ftp.gnu.org/gnu/termcap/termcap-{version}.tar.gz" 1
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static 
-            $YMAKE -j2
+            $YMAKE -j $NTHRS
             $YMAKE install
         """,
         'version': '1.3.1',

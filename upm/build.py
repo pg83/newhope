@@ -170,7 +170,7 @@ async def build_makefile(nodes, internal=False):
         for name in sorted(by_name.keys()):
             yield {
                 'output': name,
-                'inputs': sorted(set(by_name[name])),
+                'inputs': sorted(frozenset(by_name[name])),
                 'build': [],
             }
             

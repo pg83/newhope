@@ -1,7 +1,7 @@
 source_all() {
     shift
     
-    vars=$(echo $@ | tr ' ' '\n' | grep '/build' | grep -v 'build-scripts' | tr '\n' ' ')
+    vars=$(echo $@ | tr ' ' '\n' | grep '/build$' | grep -v 'build-scripts' | tr '\n' ' ')
     
     for i in $vars
     do

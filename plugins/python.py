@@ -110,7 +110,7 @@ def python_base(kind):
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared --with-signal-module --with-system-expat --with-system-ffi || exit1
             ##echo "#define HAVE_PTH 1" >> pyconfig.h
             ##echo "#undef HAVE_PTHREAD_H" >> pyconfig.h             
-            $YMAKE -j3 || exit 1
+            $YMAKE -j $NTHRS || exit 1
             $YMAKE install
 
             env
@@ -124,7 +124,7 @@ def python_base(kind):
             cat frozen.c >> frozen
             cat ../Modules/main.c >> frozen
             mv frozen frozen.c
-            $YMAKE OPT="$CFLAGS $CPPFLAGS" -j4
+            $YMAKE OPT="$CFLAGS $CPPFLAGS" -j $NTHRS
             mv all_modules python
             mkdir -p $IDIR/bin
             install -v -m755 python $IDIR/bin/staticpython

@@ -10,6 +10,14 @@ def encode_prof(v):
     return lzma.compress(marshal.dumps(v))
 
 
+class DictWithMethods(dict):
+    def ensure_get(self, k, default):
+        if k not in self:
+            self[k] = default
+
+        return self[k]
+
+
 class SimpleDB(object):
     def __init__(self, path):
         self.path = y.os.path.expanduser(path)
@@ -39,6 +47,13 @@ class SimpleDB(object):
         
     def rcu(self, func):
         self.write_db(func(self.read_db()))
+
+
+def get_key(db, k, default):
+    if k not in db:
+        db[k] = default
+
+    return db[k]
 
 
 @y.contextlib.contextmanager

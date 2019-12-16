@@ -12,12 +12,12 @@ async def run_makefile(mk, targets, threads, pre_run=[]):
         await y.cheet(mk)
     
         if pre_run:
-            await run_par_build(ctl, await mk.select_targets(pre_run), 1)
+            await run_par_build(ctl, await mk.select_targets(pre_run), 1, False)
 
         if targets:
             mk = await mk.select_targets(targets)
             
-        return await run_par_build(ctl, mk, threads)
+        return await run_par_build(ctl, mk, threads, True)
 
     return await y.spawn(run_build_2)
 
@@ -35,7 +35,8 @@ def CHANNEL(data):
 
         
 class Builder(object):
-    def __init__(self, ctl, mk, threads):
+    def __init__(self, ctl, mk, threads, check):
+        self.check = check
         self.mk = mk
         self.threads = threads
         self.ctl = ctl
@@ -226,6 +227,10 @@ class ItemBase(object):
             'id': id(self),
         }
 
+    @property
+    def check(self):
+        return self.p.check
+    
     @property
     def num(self):
         return self.i
@@ -420,8 +425,7 @@ class Item(ItemBase):
                 
                 return (res, retcode)
 
-            res, retcode = await ctl.loop.offload(y.set_name(fun, 'fun_' + y.sanitize_string(self.my_name)))            
-            #res = res.decode('utf-8')
+            res, retcode = await ctl.loop.offload(y.set_name(fun, 'fun_' + y.sanitize_string(self.my_name)))
             res = res.strip()
             
             if not res:
@@ -430,8 +434,8 @@ class Item(ItemBase):
             out.append(res)
 
             if retcode == 0:
-                pass
-                #self.check_results()
+                if self.check:
+                    self.check_results()
         except sp.CalledProcessError as e:
             out.append(e.output)
             retcode = e.returncode
@@ -442,9 +446,9 @@ class Item(ItemBase):
         return retcode, '\n'.join(y.super_decode(o.strip()) for o in out), input
 
     
-async def run_par_build(ctl, mk, threads):
+async def run_par_build(ctl, mk, threads, check):
     async def run_par_build_1(ctl):
-        b = Builder(ctl, mk, threads)
+        b = Builder(ctl, mk, threads, check)
 
         return await b.run()
 

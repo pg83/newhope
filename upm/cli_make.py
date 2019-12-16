@@ -23,6 +23,10 @@ async def cli_pkg_make(arg):
         if args.root:
             return args.root
 
+        with y.open_pdb() as db:
+            if 'build_prefix' in db.kv:
+                return db.kv['build_prefix']
+        
         if local:
             return y.upm_root()
 
@@ -64,6 +68,9 @@ async def cli_pkg_make(arg):
     mk = await y.open_mk_file(args.path, gen)
     
     if int(args.threads):
+        if not args.targets:
+            args.targets = ['all']
+            
         args.pre_run = ['workspace']
         args.shell_vars = shell_vars
         

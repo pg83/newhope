@@ -21,18 +21,18 @@ async def cli_docker_build(args):
     for t in args:
         new_ver = build_docker(path + t)
 
-        with y.open_simple_db('~/.upmdb') as db:
-            db[t] = db.get(t, []) + [new_ver]
+        with y.open_pdb() as db:
+            db.images[t] = db.images.get(t, []) + [new_ver]
 
 
 def data_for_container(cont):
    path = path_to_images() + '/' + cont
    
-   with y.open_simple_db('~/.upmdb') as data:
-      if cont not in data:
-         raise Exception('no containers for ' + cont)
+   with y.open_pdb() as db:
+       if cont not in db.images:
+           raise Exception('no containers for ' + cont)
 
-      return {'data': data[cont], 'path': path}
+       return {'data': db.images[cont], 'path': path}
 
 
 @y.main_entry_point
@@ -67,7 +67,7 @@ async def cli_docker_list(arg):
     for i in y.os.listdir(path_to_images()):
         print(is_running(i), '{bb}' + i + '{}')
 
-        
+
 @y.main_entry_point
 async def cli_docker_shell(arg):
     assert arg, 'empty arguments'

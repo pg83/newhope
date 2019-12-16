@@ -4,7 +4,7 @@ def expat0():
         'code': """
              source fetch "https://github.com/libexpat/libexpat/releases/download/R_{_version_}/expat-{version}.tar.bz2" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --without-examples --enable-static --disable-shared || exit 1
-             $YMAKE -j2
+             $YMAKE -j $NTHRS
              $YMAKE install
         """,
         'version': '2.2.9',

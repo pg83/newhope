@@ -4,7 +4,7 @@ def sed0():
         'code': """
              source fetch "https://ftp.gnu.org/gnu/sed/sed-{version}.tar.xz" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR || exit 1
-             $YMAKE -j2
+             $YMAKE -j $NTHRS
              $YMAKE install
         """,
         'version': '4.7',

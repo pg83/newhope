@@ -91,6 +91,8 @@ def meta_to_build(meta):
         
         is_lib = 'library' in kind
         is_bin = 'tool' in kind
+
+        yield 'export CMAKE_PREFIX_PATH="{pkgroot}:$CMAKE_PREFIX_PATH"'
         
         if is_lib:
             yield 'export CFLAGS="-I{pkgroot}/include $CFLAGS"'

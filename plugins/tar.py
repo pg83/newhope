@@ -5,7 +5,7 @@ def tar0():
              source fetch "https://ftp.gnu.org/gnu/tar/tar-{version}.tar.gz" 1
              export FORCE_UNSAFE_CONFIGURE=1 
              $YSHELL ./configure $COFLAGS --prefix=$IDIR
-             $YMAKE -j2 && $YMAKE install
+             $YMAKE -j $NTHRS && $YMAKE install
         """,
         'version': '1.32',
         'meta': {

@@ -4,7 +4,7 @@ def libarchive0():
         'code': """
              source fetch "https://libarchive.org/downloads/libarchive-{version}.tar.gz" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared
-             $YMAKE -j2
+             $YMAKE -j $NTHRS
              $YMAKE install
         """,
         'version': '3.4.0',

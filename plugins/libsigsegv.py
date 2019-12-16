@@ -4,7 +4,7 @@ def libsigsegv0():
         'code': """
              source fetch "https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-{version}.tar.gz" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static || exit 1
-             $YMAKE -j2
+             $YMAKE -j $NTHRS
              $YMAKE install
         """,
         'version': '2.12',
