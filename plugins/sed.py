@@ -11,5 +11,8 @@ def sed0():
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['iconv', 'intl'],
+            'provides': [
+                {'env': 'SED', 'value': '{pkgroot}/bin/sed'},
+            ],
         }
     }

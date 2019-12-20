@@ -1,9 +1,12 @@
+export CFLAGS="$CFLAGS $CPPFLAGS"
 export CXXFLAGS="$CXXFLAGS $CFLAGS"
 
 export PATH="`source fix_uniq ':' $PATH`"
 export CFLAGS="`source fix_uniq_space $CFLAGS`"
 export LDFLAGS="`source fix_uniq_space $LDFLAGS`"
 export CXXFLAGS="`source fix_uniq_space $CXXFLAGS`"
+export CPPFLAGS="`source fix_uniq_space $CPPFLAGS`"
+export LIBS="`source fix_uniq_space $LIBS`"
 
 find_file() {
     for i in "$@"; do
@@ -28,7 +31,7 @@ find_file() {
 export YSHELL=$(find_file $YSHELL dash $OUTER_SHELL bash)
 export YMAKE=$(find_file $YMAKE gmake make)
 export YXZCAT=$(find_file $YXZCAT xzcat)
-export YTAR=$(find_file $YTAR tar bsdtar)
+export YTAR=$(find_file $YTAR $YGNUTAR tar bsdtar)
 export YGZIP=$(find_file $YGZIP gzip)
 export YBZIP2=$(find_file $YBZIP2 bzip2)
 export YUNZIP=$(find_file $YUNZIP unzip)

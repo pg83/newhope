@@ -2,8 +2,8 @@ set +x
 
 SRC="$2"
 ARCH="$1"
-OPT="-std=c99 -nostdinc -ffreestanding -D_XOPEN_SOURCE=700"
-CFLAGS="$PIC $OPT -I\$SRC/arch/$ARCH -I\$SRC/arch/generic -I\$SRC/src/include -I\$SRC/src/internal -I\$IDIR/include"
+OPT="-std=c99 -nostdinc -ffreestanding -D_XOPEN_SOURCE=700 -fno-stack-protector -fomit-frame-pointer -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -fdata-sections"
+CFLAGS="$PIC $OPT -I\$SRC/arch/$ARCH -I\$SRC/arch/generic -I\$SRC/src/include -I\$SRC/src/internal -I\$IDIR/include $CFLAGS"
 marker="\$IDIR/include/version.h"
 
 (
@@ -64,7 +64,7 @@ for s in $srcs; do
     out="\$BDIR/obj/$out1"
     outs="$out $outs"
 
-    c=$(((c + 1) % 4))
+    c=$(((c + 1) % 8))
     f=$((c + 1))
     
     echo "(\$CC \$CFLAGS -c \$SRC/$s -o $out.tmp && mv $out.tmp $out) || exit 1" >> run$f.sh

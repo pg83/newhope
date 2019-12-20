@@ -7,8 +7,7 @@ export PKGF="$RD/$1"
 export TMPDIR="$BDIR/tmp"
 export BD="$BDIR/playground"
 
-for i in "$IDIR" "$BDIR"
-do
+for i in "$IDIR" "$BDIR"; do
     source rmmkcd "$i"
 done
 
@@ -18,8 +17,8 @@ mkdir "$TMPDIR"
 
 source mkcd "$BDIR/runtime"
 
-exec 1> $BDIR/runtime/stdout.log
-exec 2> $BDIR/runtime/stderr.log
+exec 2> $BDIR/runtime/out.log
+exec 1> $BDIR/runtime/out.log
 
 echo $RUNSH | source base64_decode > $BDIR/runtime/run.sh
 unset RUNSH

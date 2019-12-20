@@ -36,6 +36,7 @@ class ColorStdIO(object):
         return not is_debug()
 
     def colorize_0(self, t):
+        #return t
         return y.process_color(t, '', self.f)
     
     def colorize(self, t):
@@ -103,6 +104,13 @@ class ColorStdIO(object):
             self.flush_impl()
             self.s.close()
 
+    def fileno(self):
+        return self.s.fileno()
+
+    @property
+    def encoding(self):
+        return self.s.encoding
+    
             
 @y.defer_constructor
 def init_stdio():

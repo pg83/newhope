@@ -1,3 +1,8 @@
+@y.lookup
+def lookup_pubsub(name):
+    return {'pubsub': y.PubSubLoop}[name]()
+
+    
 def gen_unpack_node(pkg):
     mpkg = y.mgr_pkg_mark(pkg)
     vis_name = pkg[4:]
@@ -43,10 +48,14 @@ def do_apply_node(root, by_name):
 
     def iter_groups():
         yield 'all'
-        yield nnn
-        x = nnn + '-' + y.short_const_1(cc.get('host', {}))
-        yield x
-        yield x + y.short_const_1(cc.get('target', {}))
+
+        cur = ''
+
+        for x in (nnn, y.small_repr(cc.get('host', {})), y.small_repr(cc.get('target', {}))):
+            cur += '-'
+            cur += x
+
+            yield cur[1:]
 
     for name in iter_groups():
         name = name.replace('_', '-')
@@ -100,17 +109,7 @@ def replacer(data):
     return func
 
 
-async def prepare_makefile():
-    @y.lookup
-    def lookup(name):
-        return {'pubsub': y.PubSubLoop()}[name]
-                
-    await y.pubsub.run(init=[y.mf_function_holder])
-
-
 async def build_makefile(nodes, internal=False):
-    await prepare_makefile()
-
     by_noid = {}
 
     def iter1():
@@ -210,11 +209,9 @@ async def build_makefile(nodes, internal=False):
             if cmd['build']:
                 yield '\n\n'
                         
-    #with y.without_gc() as gc:
-    if 1:
-        res = ''
+    res = ''
 
-        for v in iter6():
-            res += v
+    for v in iter6():
+        res += v
 
     return res

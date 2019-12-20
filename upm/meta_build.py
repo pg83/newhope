@@ -95,8 +95,8 @@ def meta_to_build(meta):
         yield 'export CMAKE_PREFIX_PATH="{pkgroot}:$CMAKE_PREFIX_PATH"'
         
         if is_lib:
-            yield 'export CFLAGS="-I{pkgroot}/include $CFLAGS"'
-            yield 'export CPPFLAGS="-I{pkgroot}/include $CPPFLAGS"'
+            #yield 'export CFLAGS="-I{pkgroot}/include $CFLAGS"'
+            yield 'export CPPFLAGS="$CPPFLAGS -I{pkgroot}/include"'
             yield 'export LDFLAGS="-L{pkgroot}/lib $LDFLAGS"'
             yield 'export PKG_CONFIG_PATH="{pkgroot}/lib/pkgconfig:$PKG_CONFIG_PATH"'
 
@@ -106,16 +106,16 @@ def meta_to_build(meta):
         for p in meta.get('provides', []):
             if is_lib:
                 if 'lib' in p:
-                    yield 'export LIBS="$LIBS {lib}"'.format(lib='-l' + p['lib'])
+                    yield 'export LIBS="{lib} $LIBS"'.format(lib='-l' + p['lib'])
 
                 if 'extra' in p:
                     for e in p['extra']:
                         if 'libs' in e:
-                            yield 'export LIBS="$LIBS {extra}"'.format(extra=e['libs'])
+                            yield 'export LIBS="{extra} $LIBS"'.format(extra=e['libs'])
 
                         if 'ipath' in e:
-                            yield 'export CPPFLAGS="-I{ipath} $CPPFLAGS"'.format(ipath=e['ipath'])
-                            yield 'export CFLAGS="-I{ipath} $CFLAGS"'.format(ipath=e['ipath'])
+                            yield 'export CPPFLAGS="$CPPFLAGS -I{ipath}"'.format(ipath=e['ipath'])
+                            #yield 'export CFLAGS="-I{ipath} $CFLAGS"'.format(ipath=e['ipath'])
 
                 if 'configure' in p:
                     cfg = p['configure']

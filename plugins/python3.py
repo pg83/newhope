@@ -6,19 +6,30 @@ def python_base(kind):
             $(APPLY_EXTRA_PLAN_1)
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --with-system-libmpdec --enable-static --disable-shared --with-signal-module --with-system-ffi || exit1
             $YMAKE -j $NTHRS || exit 1
-            ./python.exe ./fix.py patch ./setup.py
-            DUMP=1 ./python.exe ./setup.py build > data.json
-            ./python.exe ./fix.py ./data.json > Modules/Setup.local
+            PY=`which ./python.exe || which ./python`
+            $PY ./fix.py patch ./setup.py
+            DUMP=1 $PY ./setup.py build > data.json
+            $PY ./fix.py ./data.json > Modules/Setup.local
             $YMAKE -j $NTHRS || exit 1
             $YMAKE -j $NTHRS || exit 1
-            $YMAKE install
+            $YMAKE ENSUREPIP=no install
+
             cp -R Tools $IDIR/
             mv $IDIR/Tools $IDIR/tools 
+
+            (cd $IDIR/lib/python3.8 && ln -s config-3.8* config-3.8)
+
+            mkdir good && cd good
+            $(APPLY_EXTRA_PLAN_2)
+            $(APPLY_EXTRA_PLAN_3)
+            source ./mk_staticpython.sh "$IDIR/bin/python3.8" "3.8" "3" "Py_BytesMain"
         """,
         'version': '3.8.0',
         'extra': [
-            {'kind': 'file', 'path': 'Modules/Setup', 'data': y.globals.by_name['data/Setup.local']['data']},
-            {'kind': 'file', 'path': 'fix.py', 'data': y.globals.by_name['data/python3_bc.py']['data']},
+            {'kind': 'file', 'path': 'Modules/Setup', 'data': y.builtin_data('data/Setup.local')},
+            {'kind': 'file', 'path': 'fix.py', 'data': y.builtin_data('data/python3_bc.py')},
+            {'kind': 'file', 'path': 'find_modules.py', 'data': y.builtin_data('data/find_modules.py')},
+            {'kind': 'file', 'path': 'mk_staticpython.sh', 'data': y.builtin_data('data/mk_staticpython.sh')},
         ],
         'meta': {
             'kind': kind,
@@ -30,7 +41,8 @@ def python_base(kind):
             ],
             'provides': [
                 {'lib': 'python3.8'},
-                {'env': 'PYTHON3', 'value': '{pkgroot}/bin/python'},
+                {'env': 'PYTHON3', 'value': '{pkgroot}/bin/staticpython3'},
+                {'env': 'PYTHON3HOME', 'value': '{pkgroot}/lib/python3.8'},
             ],
         },
     }
@@ -38,4 +50,4 @@ def python_base(kind):
 
 @y.ygenerator()
 def python30():
-    return python_base(['box', 'tool'])
+    return python_base(['tool', 'box'])

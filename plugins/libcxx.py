@@ -18,7 +18,6 @@ def libcxx0():
             'depends': ['libcxxrt'],
             'provides': [
                 {'lib': 'c++'},
-                {'env': 'CXXFLAGS', 'value': '"-isystem{pkgroot}/include $CXXFLAGS"'},
             ],
         },
     }

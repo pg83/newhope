@@ -51,7 +51,7 @@ def prepare_tar_cmd(fr, to, codec=None):
         'tr': 'cat',
         'bz': '$YBZIP2 -c',
         '7z': '$Y7ZA a -si {to}',
-        'pg': '$SD/upm cmd codec -c',
+        'pg': '(PYTHONHOME= $SD/upm cmd codec -c)',
     }
 
     if not codec:
@@ -116,7 +116,7 @@ def prepare_untar_for_mf(fr, strip=0):
 def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
     if (ext_mode and ext_mode == 'zp') or fr.endswith('.zip'):
         def do():
-            yield '$YUNZIP -o ' + fr
+            yield '($YUNZIP -o ' + fr + ' || $Y7ZA x -y ' + fr + ') 2> /dev/null'
 
             if to not in ' .':
                 yield 'cd ' + to
@@ -131,7 +131,7 @@ def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
         'xz': '| $YXZCAT -f |',
         'gz': '| $YGZIP -dc |',
         'bz': '| $YBZIP2 -dc |',
-        'pg': '| $SD/upm cmd codec -d |',
+        'pg': '| (PYTHONHOME= $SD/upm cmd codec -d) |',
         'tr': '|',
     }
 

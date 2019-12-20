@@ -309,6 +309,10 @@ def run_stage4_0(data):
         y.os.abort()
 
 
+def builtin_data(name):
+    return y.globals.by_name[name]['data']
+
+
 def run_stage4_1(data):
     @y.lookup
     def lookup(name):

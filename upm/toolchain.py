@@ -83,8 +83,6 @@ def join_toolchains(info, tcs):
         },
         'deps': [y.store_node(x) for x in tcs],
     }
-
-    print res
     
     return y.fix_v2(res)
 

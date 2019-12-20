@@ -55,8 +55,6 @@ async def cli_pkg_source(arg):
     args = parser.parse_args(arg)
     args.path = y.os.path.abspath(args.path)
 
-    await y.prepare_makefile()
-
     def find_func():
         for x in y.my_funcs()["all"]:
             d = x['data']

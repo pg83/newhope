@@ -13,7 +13,7 @@ def my_funcs():
     return data
 
 
-def my_funcs_cb(iface):
+def my_funcs_cb(iface, cb):
     yield y.EOP(y.ACCEPT('mf:new functions', 'mf:splitted'))
 
     data = my_funcs()
@@ -27,33 +27,27 @@ def my_funcs_cb(iface):
         if not data:
             v.append(1)
             
-            if len(v) == 2:
-                #yield y.DATA(['mf:new target'], None)
-                #yield y.DATA(['mf:gen_fetch'], None)
-                
+            if len(v) == 2:                
                 yield y.FIN()
                 
             yield y.EOP()
 
             return
-            
+
         data = data['func']
+
+        cb(data['code'])
 
         rec = {
             'data': data,
             'n': len(all),
         }
-            
-        rec['text_id'] = '_'.join((data['gen'], data['base'], str(rec['n'])))
-    
+
+        rec['text_id'] = '_'.join((data['gen'], data['base'], str(rec['n'])))    
         ids[rec['text_id']] = rec
         all.append(rec)
 
     yield y.EOP()
-
-        
-def gen_all_funcs():
-    return [d['data']['code'] for d in my_funcs()['all']]
 
 
 def gen_package_name(x):

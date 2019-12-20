@@ -2,10 +2,15 @@
 def perl50():
     return {
         'code': """
-            source fetch "https://www.cpan.org/src/5.0/perl-{version}.tar.gz" 1
-            ./Configure -des -Accflags="$CFLAGS" -Aldflags="$LDFLAGS $LIBS" -Dusethreads -Duse64bitall -Dprefix=$IDIR -Duseperlio -Uusesfio -Duseshrplib=false -Dusedl=false
+            source fetch "https://www.cpan.org/src/5.0/perl-{version}.tar.gz" 0
+            mv perl* xxx
+            cd xxx
+            ./Configure -des -Accflags="$CFLAGS" -Aldflags="$LDFLAGS $LIBS" -Dusethreads -Duse64bitall -Dprefix=$IDIR -Duseperlio -Uusesfio -Duseshrplib=false -Dusedl=false -Dcc="$CC $CFLAGS $LDFLAGS $LIBS"
             $YMAKE -j $NTHRS
             $YMAKE install
+        """,
+        'prepare': """
+            source perl5_env
         """,
         'version': '5.30.1',
         'meta': {

@@ -72,7 +72,7 @@ mv qw "src/filesystem/operations.cpp"
 
 for s in $SRCS; do
     out=$(echo $s | tr '/' '_' | tr -d '\n').o
-    $CXX $CXXFLAGS $X_CXXFLAGS -c $s -o obj/$out
+    $CXX $X_CXXFLAGS $CXXFLAGS -c $s -o obj/$out
 done
 
 $AR q obj/libc++.a "obj/"*.o

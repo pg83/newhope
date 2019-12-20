@@ -4,7 +4,7 @@ def unrar0():
         'code': """
              source fetch "http://www.rarlab.com/rar/unrarsrc-{version}.tar.gz" 0
              cd unrar
-             $YMAKE CC=$CC CXX=$CXX AR=$AR RANLIB=$RANLIB LDFLAGS="$LDFLAGS" CXXFLAGS="$CXXFLAGS" -f makefile
+             $YMAKE CC=$CC CXX=$CXX AR=$AR RANLIB=$RANLIB LDFLAGS="$LDFLAGS" CPPFLAGS="" CXXFLAGS="$CXXFLAGS" -f makefile
              mkdir -p $IDIR/bin
              install -v -m755 unrar $IDIR/bin
         """,

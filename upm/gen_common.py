@@ -13,15 +13,17 @@ def common_plugins(iface):
     yield y.FIN()
 
 
-def mf_function_holder(iface):
+def mf_function_holder(cc, cb, iface):
     yield y.EOP(y.ACCEPT())
+
+    def my_funcs_with_cb(iface):
+        yield from y.my_funcs_cb(iface, cb)
     
     lst_f = [
         y.common_plugins,
-        y.my_funcs_cb,
+        my_funcs_with_cb,
         y.exec_plugin_code,
-        y.make_proper_permutation,
-    ]
+    ] + [y.make_proper_permutation_gen(x) for x in cc]
 
     for l in lst_f:
         yield y.DEFUN(l)
@@ -33,6 +35,15 @@ def mf_function_holder(iface):
         yield y.DECORO(l)
     
     yield y.FIN()
+
+    
+def mf_function_holder_gen(cc, cb):
+    def func(iface):
+        yield from mf_function_holder(cc, cb, iface)
+
+    func.__name__ = 'mf_function_holder_generator_' + '_'.join(str(x) for x in cc)
+
+    return func
 
 
 def aggr_flag(name, metas):

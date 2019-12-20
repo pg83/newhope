@@ -383,9 +383,14 @@ class Item(ItemBase):
         })
 
         retcode, res, input = await self.run_cmd_0(ctl)
+
+        def iter_lines():
+            for l in res.strip().split('\n'):
+                if 'export ' in l:
+                    yield l
         
         msg = {
-            'output': res,
+            'output': '\n'.join(iter_lines()),
             'command': input,
             'target': target,
         }

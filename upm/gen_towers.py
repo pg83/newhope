@@ -8,6 +8,15 @@ def is_debug():
     return 'debug' in y.config.get('tow', '')
 
 
+SUBST = {
+    'intl': 'gettext',
+    'iconv': 'libiconv',
+    'c++': 'libcxx',
+    'm4': 'quasar-m4',
+    'termcap': 'ncurses',
+}
+        
+
 class Func(object):
     def __init__(self, x, data):
         self.x = x
@@ -47,9 +56,9 @@ class Func(object):
     def kind(self):
         return self.x['kind']
 
-    @property
+    @y.cached_method
     def code(self):
-        return self.x['code']
+        return y.platform_slice(self.x['code'](), self.data.info['target'])
 
     @property
     def base(self):
@@ -57,12 +66,7 @@ class Func(object):
 
     @y.cached_method
     def raw_depends(self):
-        subst = {
-            'intl': 'gettext',
-            'iconv': 'libiconv',
-            'c++': 'libcxx',
-            'm4': 'quasar-m4',
-        }
+        subst = SUBST
         
         return [subst.get(x, x) for x in self.code().get('meta', {}).get('depends', [])]
     
@@ -71,7 +75,12 @@ class Func(object):
 
     @y.cached_method
     def all_depends(self):
-        return y.uniq_list_3(sum([self.data.by_name[x].all_depends() for x in self.depends()], [x for x in self.depends()]))
+        def it():
+            for x in self.depends():
+                yield x
+                yield from self.data.by_name[x].all_depends()
+                
+        return frozenset(it())
     
     @y.cached_method
     def dep_lib_list(self):
@@ -80,18 +89,16 @@ class Func(object):
                 if self.data.by_name[x].is_library:
                     yield x
 
-        return list(iter())
+        return frozenset(iter())
 
     @y.cached_method
     def dep_tool_list(self):
         def iter():
             for x in self.dep_list():
-                y = self.data.by_name[x]
-                
-                if y.is_tool or not y.is_library:
+                if not self.data.by_name[x].is_library:
                     yield x
                     
-        return list(iter())
+        return frozenset(iter())
 
     @y.cached_method
     def dep_list(self):
@@ -107,41 +114,36 @@ class Func(object):
 
                 if 'code' not in self.code():
                     continue
-                
+
                 yield d
 
-        res = list(iter1())
-
-        #print(self.base, res, file=sys.stderr)
-
-        return res
+        return frozenset(iter1())
 
     @y.cached_method
-    def run_func(self, info):
-        data = y.deep_copy(self.c(info))
-        data['deps'] = y.uniq_list_3(data['deps'] + self.data.calc(self.deps, info))
+    def run_func(self):
+        data = y.deep_copy(self.c())
+        data['deps'] = y.uniq_list_x(data['deps'] + self.data.calc(self.deps))
         data['node']['codec'] = self.codec
-        
+
         y.apply_meta(data['node']['meta'], y.join_metas([y.restore_node_node(d).get('meta', {}) for d in data['deps']]))
-        
+
         return y.fix_pkg_name(data, self.z)
 
     @y.cached_method
-    def c(self, info):
-        return y.to_v2(self.code(), info)
+    def c(self):
+        return y.to_v2(self.code(), self.data.info)
 
-    @y.cached_method
-    def f(self, info):
-        return self.ff(info)
+    @property
+    def f(self):
+        return self.ff
     
     @property
-    @y.cached_method
     def z(self):
         return self.zz
     
     @y.cached_method
-    def ff(self, info):
-        return y.gen_func(self.run_func, info)
+    def ff(self):
+        return y.gen_func(self.run_func)
 
     @property
     @y.cached_method
@@ -151,6 +153,8 @@ class Func(object):
             'base': self.base,
             'gen': 'tow',
             'kind': self.kind,
+            'repacks': {},
+            'info': self.data.info,
         }
 
     def clone(self):
@@ -170,21 +174,16 @@ class SpecialFunc(Func):
     @y.cached_method
     def contains(self):
         def it():
-            deps = self.depends()
+            for x in self.depends():
+                yield x
+                yield from self.data.by_name[x].contains()
+                            
+        return frozenset(it())
 
-            yield deps
-
-            for x in deps:
-                yield self.data.by_name[x].contains()
-            
-        res = y.uniq_list_3(sum([x for x in it()], []))
-        
-        return res
-    
     @y.cached_method
-    def f(self, info):
-        return self.z['code'](info)
-    
+    def f(self):
+        return self.z['code']()
+
     @property
     @y.cached_method
     def z(self):
@@ -193,15 +192,15 @@ class SpecialFunc(Func):
             'base': self.base,
             'gen': 'tow',
             'kind': self.kind + ['split', 'run'],
+            'info': self.data.info,
+            'repacks': {},
         }
 
     @y.cached_method
-    def gen_c(self):
-        return y.join_funcs(lambda info: self.data.calc(self.deps, info))
+    def c(self):
+        f = y.join_funcs(lambda: self.data.calc(self.deps), ex_code='(cd $IDIR/bin && (rm python* || true)) 2> /dev/null')
 
-    @y.cached_method
-    def c(self, info):
-        return y.restore_node(self.gen_c()(info))
+        return y.restore_node(f())
 
     def clone(self):
         return SpecialFunc(self.x, self.data)
@@ -225,21 +224,23 @@ class Solver(object):
             self._w(el['i'])
             yield el['x']
 
-    def iter_solvers(self):
+    def iter_solvers(self, num):
         cur = self
-
-        while True:
-            yield cur
+        yield cur
+        
+        for i in range(0, num - 1):
             cur = cur.next_solver()
+            yield cur
 
-    def iter_infinity(self):
-        for s in self.iter_solvers():
+    def iter_infinity(self, num):
+        for s in self.iter_solvers(num):
             for i in s.iter_items():
                 yield i.clone()
 
 
 class Data(object):
-    def __init__(self, data):
+    def __init__(self, info, data):
+        self.info = info
         self.by_kind = y.collections.defaultdict(list)
 
         for x in data:
@@ -259,7 +260,11 @@ class Data(object):
         return Func(x, self)
 
     def optimize(self, deps):
-        contains = frozenset(sum([self.func_by_num[i].contains() for i in deps], []))
+        def it():
+            for i in deps:
+                yield from self.func_by_num[i].contains()
+            
+        contains = frozenset(it())
 
         def iter_deps():
             for d in deps:
@@ -272,7 +277,7 @@ class Data(object):
                 else:
                     yield d
 
-        return list(iter_deps())
+        return frozenset(iter_deps())
     
     @property
     def special(self):
@@ -289,28 +294,29 @@ class Data(object):
     def prepare_funcs(self, num):
         solver = Solver(self.data)
 
-        for func in solver.iter_infinity():
+        for func in solver.iter_infinity(num):
             func.i = len(self.func_by_num)
             self.func_by_num.append(func)
-            func.deps = sorted(func.calc_deps())                
+            func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)                
             self.dd[func.base].append(func.i)
-
-            if frozenset(func.deps).isdisjoint(frozenset(self.dd.get('compression', []))):
-                func.codec = 'pg'
-            else:
-                func.codec = '7z'
-                
-            if all((len(self.dd.get(x, [])) >= num) for x in self.special):
-                break
-
+            func.codec = 'pg'
+            
     def find_first(self, name):
         return self.dd.get(name, [-1])[0]
-            
+
     def register(self):
         for v in self.func_by_num:
             yield y.ELEM({'func': v.z})
-        
-    def out(self):
+
+    def iter_deps(self):
+        for f in self.func_by_num:
+            for d in f.deps:
+                yield f.i, d
+
+    def exec_seq(self):
+        return list(y.execution_sequence(self.iter_deps()))
+    
+    def out(self):    
         for x in self.func_by_num:
             x.out_deps()
 
@@ -322,15 +328,13 @@ class Data(object):
         my_deps = self.by_name[name].dep_lib_list()
 
         def iter_lst():
-            for x in my_deps:
-                yield x
-
             for y in my_deps:
-                for x in self.full_lib_deps(y):
-                    yield x
+                yield y
+                yield from self.full_lib_deps(y)
 
         return frozenset(iter_lst())
 
+    @y.cached_method
     def full_tool_deps(self, name):
         return frozenset(self.by_name[name].dep_tool_list())
 
@@ -341,11 +345,11 @@ class Data(object):
         return self.last_elements(self.full_deps(name))
 
     @y.cached_method
-    def calc(self, deps, arg):
-        return [self.func_by_num[d].f(arg) for d in deps]
+    def calc(self, deps):
+        return [self.func_by_num[d].f() for d in deps]
     
-    
-def make_proper_permutation(iface):
+
+def make_proper_permutation(iface, info):
     yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
 
     data = []
@@ -358,7 +362,7 @@ def make_proper_permutation(iface):
         data.append(row)
         yield y.EOP()
 
-    dt = Data([x.data for x in data])
+    dt = Data(info, [x.data for x in data])
     dt.prepare_funcs(2)
     dt.out()
     
@@ -368,6 +372,15 @@ def make_proper_permutation(iface):
     yield y.FIN()
 
     
+def make_proper_permutation_gen(info):
+    def func(iface):
+        yield from make_proper_permutation(iface, info)
+
+    func.__name__ = 'make_proper_permutation_' + y.small_repr(info)
+
+    return func
+
+
 def init_0(where):
     @y.ygenerator(where=where)
     def box0():

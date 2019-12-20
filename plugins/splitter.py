@@ -82,27 +82,28 @@ class SplitKind(object):
             'base': self.p.arg['base'] + '-' + self.k,
             'kind': ['split', self.k],
             'code': self.run,
+            'info': self.p.arg['info'],
         }
 
     @y.cached_method
-    def run(self, info):
-        return y.gen_func(self.code, info)
+    def run(self):
+        return y.store_node(self.code())
         
-    def split_part(self, info):
+    def split_part(self):
         res = {
             'code': self.p.repacks[self.k]['code'],
             'kind': {'dev': ['library'], 'run': ['tool']}.get(self.k, []),
-            'deps': self.p.deps(info),
-            'meta': split_meta(self.p.meta(info), self.k),
-            'codec': self.p.node(info)['codec'],
+            'deps': [self.p.dep()],
+            'meta': split_meta(self.p.meta(), self.k),
+            'codec': self.p.node()['codec'],
         }
 
         res['meta']['kind'] = res.pop('kind')
 
-        return res
+        return res, self.p.arg['info']
     
-    def code(self, info):
-        return y.fix_pkg_name(y.fix_v2(y.to_v2(self.split_part(info), info)), self.d)
+    def code(self):
+        return y.fix_pkg_name(y.fix_v2(y.to_v2(*self.split_part())), self.d)
     
         
 class Splitter(object):
@@ -110,19 +111,14 @@ class Splitter(object):
         self.arg = arg
         self.repacks = repacks
 
-    @y.cached_method
-    def deps(self, info):
-        return [self.arg['code'](info)]
+    def dep(self):
+        return self.arg['code']()
 
-    @y.cached_method
-    def node(self, info):
-        deps = self.deps(info)
-        assert len(deps) == 1
-        return y.restore_node_node(deps[0])
+    def node(self):
+        return y.restore_node_node(self.dep())
     
-    @y.cached_method
-    def meta(self, info):
-        return self.node(info).get('meta', {})
+    def meta(self):
+        return self.node().get('meta', {})
                 
     def gen(self, kind):
         return SplitKind(self, kind).d
@@ -153,6 +149,6 @@ def run_splitter(iface):
 
     yield y.EOP()
 
-        
+
 def pkg_splitter(arg, kind):
     return Splitter(arg, repacks()).gen(kind)['code']

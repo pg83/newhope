@@ -6,7 +6,7 @@ def gen_fetch_cmd(url):
         'inputs': [],
         'output': cache,
         'build': [
-            '$SD/upm cmd fetch "' + url + '" "' + cache + '"'
+            'PYTHONHOME= $SD/upm cmd fetch "' + url + '" "' + cache + '"'
         ],
     }
 
@@ -72,16 +72,6 @@ def fix_v2(v, **kwargs):
     if 'url' in n:
         if 'pkg_full_name' not in n:
             n['pkg_full_name'] = y.calc_pkg_full_name(n['url'])
-
-    o = n
-    cc = n.pop('constraint')
-    n = y.platform_slice(n, cc['target'])
-
-    if not n:
-        raise y.SkipIt()
-    
-    n['constraint'] = cc
-    v['node'] = n
     
     def iter_subst():
         for i, v in enumerate(n.get('extra', [])):
@@ -95,7 +85,7 @@ def fix_v2(v, **kwargs):
                 yield (v['from'], v['to'])
 
     subst = list(iter_subst())
-                
+    
     for p in ('build', 'prepare'):
         if p in n:
             n[p] = [y.subst_kv_base(l, subst) for l in apply_fetch(n[p], v)]

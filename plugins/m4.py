@@ -11,5 +11,8 @@ def m40():
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['libsigsegv'],
+            'provides': [
+                {'env': 'M4', 'value': '{pkgroot}/bin/m4'},
+            ],
         },
     }

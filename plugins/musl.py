@@ -14,7 +14,8 @@ def musl_impl(code, deps, cont, kind):
             'depends': ['bestbox'] + deps,
             'provides': [
                 {'lib': 'muslc'},
-                {'env': 'CFLAGS', 'value': '"-isystem{pkgroot}/include $CFLAGS"'},
+                {'env': 'CPPFLAGS', 'value': '"$CPPFLAGS -I{pkgroot}/include"'},
+                {'env': 'CFLAGS', 'value': '"-w $CFLAGS"'},
             ],
         },
     }
@@ -26,10 +27,12 @@ def musl_boot0():
        source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
        $(APPLY_EXTRA_PLAN_0)
        $(APPLY_EXTRA_PLAN_1)
+       export CFLAGS="-Diconv=musl_iconv -Diconv_open=musl_iconv_open -Diconv_close=musl_iconv_close $CFLAGS"
        sh ./mk.sh x86_64 .
-       SRC=$(pwd) BDIR=$BDIR/build IDIR=$IDIR CC=/usr/bin/gcc sh run.sh
-       cd $IDIR/lib
-       ln -s libc.a libmuslc.a
+       SRC=$(pwd) BDIR=$BDIR/build IDIR=$IDIR CC=$CC sh run.sh
+       (cd $IDIR/lib && ln -s libc.a libmuslc.a)
+       rm $IDIR/include/iconv.h
+       source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/llvm-mirror/clang/master/lib/Headers/stdatomic.h"
     """
     
     return musl_impl(code, [], [], ['tool'])
@@ -39,18 +42,17 @@ def musl_boot0():
 def musl0():
     code = """
        source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
+       export CFLAGS="-Diconv=musl_iconv -Diconv_open=musl_iconv_open -Diconv_close=musl_iconv_close $CFLAGS"
        $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
        $YMAKE -j $NTHRS || exit 1 
        $YMAKE install || exit 2
        $(APPLY_EXTRA_PLAN_2)
        source ./malloc.sh
-       cd $IDIR/lib
-       $AR q libc.a crt1.o crti.o crtn.o
-       rm *crt*
-       $RANLIB libc.a
-       ln -s libc.a libmuslc.a
+       (cd $IDIR/lib && $AR q libc.a crt1.o crti.o crtn.o && rm *crt* && $RANLIB libc.a && ln -s libc.a libmuslc.a)
+       rm $IDIR/include/iconv.h
+       source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/llvm-mirror/clang/master/lib/Headers/stdatomic.h"
     """
     
-    res = y.deep_copy(musl_impl(code, ['make-boot', 'jemalloc'], ['musl-boot'], ['library']))
+    res = y.deep_copy(musl_impl(code, ['make-boot', 'mimalloc'], ['musl-boot'], ['library']))
 
     return res

@@ -156,6 +156,21 @@ def parse_lld(info):
             'host': host,
             'target': t,
         }
+
+        opts = [
+            '-nostdlib',
+            '-static',
+            '-all-static',
+            '-fuse-ld=lld',
+            '-Wl,--no-dynamic-linker',
+            '-Wl,--no-export-dynamic',
+            '-Wl,--no-whole-archive',
+            '-Wl,--sort-section,alignment',
+            '-Wl,--sort-common',
+            '-Wl,--gc-sections',
+            '-Wl,--hash-style=both',
+            '-Wl,--exclude-libs=ALL',
+        ]
         
         c['build'] = []
         c['name'] = 'lld'
@@ -164,7 +179,7 @@ def parse_lld(info):
             'kind': ['linker', 'tool'],
             'provides': [
                 {'env': 'LD', 'value': '"' + path + '"'},
-                {'env': 'LDFLAGS', 'value': '"-nostdlib -static -all-static -fuse-ld=lld -Wl,--no-dynamic-linker $LDFLAGS"'}
+                {'env': 'LDFLAGS', 'value': '"{opts} $LDFLAGS"'.replace('{opts}', ' '.join(opts))}
             ],
         }
 

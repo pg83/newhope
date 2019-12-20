@@ -32,6 +32,10 @@ def uniq_list_0(iter):
     return uniq_list_1(iter, lambda x: x)
 
 
+def uniq_list_x(iter):
+    return list(uniq_list_0(iter))
+
+
 def to_lines(text):
     def iter_l():
         for l in text.split('\n'):

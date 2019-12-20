@@ -117,16 +117,17 @@ def init_logger(log_level='INFO'):
     fmt = '{w}{g}%(thr){} | {m}%(asctime){} | {br}%(levelname){} | %(status) | {dw}%(msg){}{}'
 
     class Stream(object):
-        def __init__(self):
-            self.s = y.sys
-            
         def write(self, t):
-            self.s.stderr.write(t)
+            y.stderr.write(t)
 
         def flush(self):
             pass
 
-    screen_handler = y.logging.StreamHandler(stream=Stream())
+    @y.lookup
+    def lookup(name):
+        return {'log_stream': Stream()}[name]
+        
+    screen_handler = y.logging.StreamHandler(stream=y.log_stream)
     screen_handler.setLevel(log_level)
     screen_handler.setFormatter(ColoredFormatter(fmt))
 

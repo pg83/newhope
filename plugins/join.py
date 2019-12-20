@@ -2,24 +2,30 @@ copy_many = """
 copy_many() {
     shift
     shift
-    for i in $@
-    do
-        cp -R $(dirname $i)/* $IDIR/
+    for i in $@; do
+        (cd $(dirname $i) && $YTAR -v -cf - .) | (cd $IDIR/ && $YTAR -v -Uxf -)
     done
 }
-
 copy_many $@
 """
 
 
-def join_funcs(args_calcer, fixer=lambda x: x):
-    def wrapper(info):
+def join_funcs(args_calcer, fixer=lambda x: x, ex_code=''):
+    def wrapper():
+        def iter_lines_0():
+            for d in (copy_many, ex_code):
+                yield from d.strip().split('\n')
+                
+        def iter_lines_1():
+            for l in iter_lines_0():
+                if l:
+                    yield l
+        
         res = {
             'node': {
-                'build': list(copy_many.strip().split('\n')),
-                'constraint': info['info'],
+                'build': list(iter_lines_1()),
             },
-            'deps': args_calcer(info),
+            'deps': args_calcer(),
         }
 
         infos = [y.restore_node_node(d) for d in res['deps']]
@@ -28,16 +34,4 @@ def join_funcs(args_calcer, fixer=lambda x: x):
         
         return y.fix_v2(fixer(res))
 
-    return y.cached(f=lambda info: y.gen_func(wrapper, info))
-
-
-def big_join_func(base, gen, args):
-    descr = {
-        'gen': gen,
-        'base': base,
-        'kind': ['join'],
-    }
-
-    descr['code'] = join_funcs(args, lambda x: y.fix_pkg_name(x, descr))
-
-    return descr
+    return y.cached(f=lambda: y.gen_func(wrapper))

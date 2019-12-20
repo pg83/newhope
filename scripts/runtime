@@ -9,7 +9,9 @@ export source
 #export PIC="-fPIC -fpie"
 export PIC=""
 export PATH="$PATH:/bin:/sbin:/usr/bin:/usr/local/bin"
-export CFLAGS="-O2 $PIC -fno-builtin $CFLAGS"
+export CFLAGS="-O2 $PIC -pipe -fno-builtin $CFLAGS"
 export LDFLAGS="$PIC $LDFLAGS"
-export NTHR=$(source num_cpu)
+export NCPU=$(source num_cpu)
+#export NTHR=$(($NCPU / 3))
+export NTHR=$NCPU
 export NTHRS=$NTHR

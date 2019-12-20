@@ -58,7 +58,7 @@ def print_one_node(root):
 
         prepare = prepare_prepare(root_node.get('prepare', []), target)
         meta = y.meta_to_build(root_node.get('meta', {}))
-        data = '\n'.join([prepare, meta]).strip()
+        data = '\n'.join([meta, prepare]).strip()
         data = data.replace('{pkgroot}', mn(target)) + '\n'
         data = base64.b64encode(data.encode('utf-8'))
         

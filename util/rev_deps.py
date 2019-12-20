@@ -57,3 +57,16 @@ def simple_engine(it, random=False, seed=''):
                 ready.add(k)
                 
     return iter_ready, cb
+
+
+def execution_sequence(it, random=False, seed=''):
+    r, w = simple_engine(it, random=random, seed=seed)
+    done = False
+    
+    while not done:
+        done = True
+        
+        for i in r():
+            done = False
+            yield i
+            w(i)

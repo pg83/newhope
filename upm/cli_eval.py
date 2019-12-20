@@ -14,8 +14,6 @@ async def run_eval(args):
 
       return
 
-   await y.prepare_makefile()
-
    for a in args:
       try:
          print(eval(repl.get(a, a)))
