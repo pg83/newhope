@@ -5,7 +5,7 @@ def openssl0():
     return {
         'code': """
             source fetch "https://www.openssl.org/source/old/{minver}/openssl-{version}.tar.gz" 1
-            $YPERL ./Configure {flags} no-asm threads no-shared no-dso no-hw no-engine --prefix=$IDIR --openssldir=$IDIR -w -std=c99 -D_GNU_SOURCE=1 $CFLAGS $LDFLAGS $LIBS
+            $YPERL ./Configure {flags} no-asm threads no-shared no-dso no-hw no-tests no-engine --prefix=$IDIR --openssldir=$IDIR -w -std=c99 -D_GNU_SOURCE=1 $CFLAGS $LDFLAGS $LIBS
             $YMAKE -j $NTHRS
             $YMAKE install
         """.replace('{minver}', version[:-1]),
@@ -16,7 +16,7 @@ def openssl0():
         'version': version,
         'meta': {
             'kind': ['library'],
-            'depends': ['perl5', 'kernel-h'],
+            'depends': ['perl5', 'kernel-h', 'dl'],
             'provides': [
                 {'lib': 'ssl'},
             ],

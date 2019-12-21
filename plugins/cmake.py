@@ -14,7 +14,7 @@ def cmake0():
         'version': '3.16.1',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['c++', 'zlib', 'bzip2', 'xz', 'libarchive', 'kernel-h', 'expat'],
+            'depends': ['c++', 'zlib', 'bzip2', 'xz', 'libarchive', 'kernel-h', 'expat', 'dl'],
             'provides': [
                 {'env': 'CMAKE', 'value': '{pkgroot}/bin/cmake'},
             ],

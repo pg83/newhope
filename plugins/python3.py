@@ -16,7 +16,7 @@ def python_base(kind):
             $PY ./fix.py ./data.json > Modules/Setup.local
             $YMAKE -j $NTHRS || exit 1
             $YMAKE -j $NTHRS || exit 1
-            $YMAKE ENSUREPIP=no install
+            $YMAKE install
 
             cp -R Tools $IDIR/
             mv $IDIR/Tools $IDIR/tools 

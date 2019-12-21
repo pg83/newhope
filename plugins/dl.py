@@ -6,7 +6,7 @@ def dl0():
              cd newhope* && cd support/libdl
              $YMAKE CXX="$CXX" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" LIBS="$LIBS" AR="$AR" NM="$NM" RANLIB="$RANLIB" DESTDIR="$IDIR" install
         """,
-        'version': 'e785c9205424249765336f0f0fa92112119d615b',
+        'version': 'ab279c5728fb2760f82e090c08ac07bb88c595be',
         'meta': {
             'kind': ['library'],
             'depends': ['c++'],
