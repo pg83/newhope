@@ -1,9 +1,7 @@
 @y.singleton
 def find_system_tools():
     def iter_candidates():
-        #yield 'gcc', {'kind': ['c'], 'type': 'gcc'}
         yield 'clang', {'kind': ['c'], 'type': 'clang'}
-        #yield 'g++', {'kind': ['c++'], 'type': 'gcc'}
         yield 'clang++', {'kind': ['c++'], 'type': 'clang'}
         yield 'ld.lld', {'kind': ['linker'], 'type': 'lld', 'os': 'linux'}
         yield 'ld64.lld', {'kind': ['linker'], 'type': 'lld', 'os': 'darwin'}
@@ -118,6 +116,8 @@ def parse_clang(info):
                         {'env': 'CFLAGS', 'value': '"-nostdinc $CFLAGS"'.replace('{tg}', tg)},
                         {'env': 'AR', 'value': '"' + where + '/llvm-ar' + '"'},
                         {'env': 'RANLIB', 'value': '"' + where + '/llvm-ranlib' + '"'},
+                        {'env': 'STRIP', 'value': '"' + where + '/llvm-strip' + '"'},
+                        {'env': 'NM', 'value': '"' + where + '/llvm-nm' + '"'},
                     ]
                 elif k == 'c++':
                     meta['provides'] = [

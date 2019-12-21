@@ -34,4 +34,4 @@ def join_funcs(args_calcer, fixer=lambda x: x, ex_code=''):
         
         return y.fix_v2(fixer(res))
 
-    return y.cached(f=lambda: y.gen_func(wrapper))
+    return y.singleton(lambda: y.gen_func(wrapper))

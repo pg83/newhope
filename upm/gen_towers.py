@@ -10,12 +10,21 @@ def is_debug():
 
 SUBST = {
     'intl': 'gettext',
+    #'gettext': 'gettext-tiny',
     'iconv': 'libiconv',
     'c++': 'libcxx',
     'm4': 'quasar-m4',
     'termcap': 'ncurses',
+    'ncurses': 'netbsd-curses',
 }
-        
+
+
+def do_subst(x):
+    x = SUBST.get(x, x)
+    x = SUBST.get(x, x)
+
+    return x
+
 
 class Func(object):
     def __init__(self, x, data):
@@ -66,9 +75,7 @@ class Func(object):
 
     @y.cached_method
     def raw_depends(self):
-        subst = SUBST
-        
-        return [subst.get(x, x) for x in self.code().get('meta', {}).get('depends', [])]
+        return [do_subst(x) for x in self.code().get('meta', {}).get('depends', [])]
     
     def depends(self):
         return self.raw_depends()
@@ -198,7 +205,7 @@ class SpecialFunc(Func):
 
     @y.cached_method
     def c(self):
-        f = y.join_funcs(lambda: self.data.calc(self.deps), ex_code='(cd $IDIR/bin && (rm python* || true)) 2> /dev/null')
+        f = y.join_funcs(lambda: self.data.calc(self.deps), ex_code='(cd $IDIR/bin && (rm python* pydoc* || true)) 2> /dev/null')
 
         return y.restore_node(f())
 

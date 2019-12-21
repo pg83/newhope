@@ -1,0 +1,5 @@
+prune() {
+    PYTHONHOME= $SD/upm cmd prune $@
+}
+
+prune $@

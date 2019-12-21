@@ -1,7 +1,11 @@
 def python_base(kind):
+    version = '3.8.0'
+    ver = '.'.join(version.split('.')[:2])
+    
     return {
         'code': """
             source fetch "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz" 1
+            export PYTHONHOME=
             $(APPLY_EXTRA_PLAN_0)
             $(APPLY_EXTRA_PLAN_1)
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --with-system-libmpdec --enable-static --disable-shared --with-signal-module --with-system-ffi || exit1
@@ -17,14 +21,14 @@ def python_base(kind):
             cp -R Tools $IDIR/
             mv $IDIR/Tools $IDIR/tools 
 
-            (cd $IDIR/lib/python3.8 && ln -s config-3.8* config-3.8)
+            (cd $IDIR/lib/python{ver} && ln -s config-{ver}* config-{ver})
 
             mkdir good && cd good
             $(APPLY_EXTRA_PLAN_2)
             $(APPLY_EXTRA_PLAN_3)
-            source ./mk_staticpython.sh "$IDIR/bin/python3.8" "3.8" "3" "Py_BytesMain"
-        """,
-        'version': '3.8.0',
+            source ./mk_staticpython.sh "$IDIR/bin/python{ver}" "{ver}" "3" "Py_BytesMain"
+        """.replace('{ver}', ver),
+        'version': version,
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup', 'data': y.builtin_data('data/Setup.local')},
             {'kind': 'file', 'path': 'fix.py', 'data': y.builtin_data('data/python3_bc.py')},

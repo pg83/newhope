@@ -1,0 +1,12 @@
+cleanup() {
+    source rmrf "$1/usr"
+
+    for i in "man" "doc"; do
+        if test -d "$1/$i"; then
+            (mkdir "$1/share" || true) 2> /dev/null
+	    mv -f "$1/$i" "$1/share/"
+        fi
+    done
+}
+
+cleanup "$1"

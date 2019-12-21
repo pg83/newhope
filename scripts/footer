@@ -5,4 +5,6 @@ done
 ext=$(source file_ext "$PKGF")
 
 source rmdel "$IDIR/lib/"*.la
+source prune "$IDIR"
+source cleanup "$IDIR"
 source prepare_"$ext"_pkg "$IDIR" "$PKGF"

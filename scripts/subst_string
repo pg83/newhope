@@ -1,0 +1,5 @@
+do_subst_string() {
+    PYTHONHOME= $SD/upm cmd subst $@
+}
+
+do_subst_string $@

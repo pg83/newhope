@@ -1,0 +1,2 @@
+ln -s $STRIP ./strip
+export PATH="$(pwd):$PATH"

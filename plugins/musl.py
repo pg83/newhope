@@ -37,12 +37,12 @@ def musl_boot0():
     
     return musl_impl(code, [], [], ['tool'])
 
-    
+
 @y.ygenerator()
 def musl0():
     code = """
        source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
-       export CFLAGS="-Diconv=musl_iconv -Diconv_open=musl_iconv_open -Diconv_close=musl_iconv_close $CFLAGS"
+       export CFLAGS="-Diconv=musl_iconv -Diconv_open=musl_iconv_open -Diconv_close=musl_iconv_close -Ddlopen=musl_dlopen -Ddlclose=musl_dlclose -Ddlerror=musl_dlerror -Ddlsym=musl_dlsym $CFLAGS"
        $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
        $YMAKE -j $NTHRS || exit 1 
        $YMAKE install || exit 2

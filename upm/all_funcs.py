@@ -36,7 +36,7 @@ def my_funcs_cb(iface, cb):
 
         data = data['func']
 
-        cb(data['code'])
+        cb(data)
 
         rec = {
             'data': data,

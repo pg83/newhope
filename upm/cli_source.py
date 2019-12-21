@@ -55,32 +55,31 @@ async def cli_pkg_source(arg):
     args = parser.parse_args(arg)
     args.path = y.os.path.abspath(args.path)
 
-    def find_func():
-        for x in y.my_funcs()["all"]:
-            d = x['data']
-            n = (d['gen'] + '-' + d['base']).replace('-', '_')
-            c = d['code']
+    async def find_func():
+        funcs = await y.gen_mk_data(list(y.iter_cc()))
 
-            yield n, c
+        def do():
+            for d in funcs:
+                n = (d['gen'] + '-' + d['base']).replace('-', '_')
+                c = d['code']
+                
+                yield n, c
 
-    funcs = dict(find_func())
+        return dict(do())
+
+    funcs = await find_func()
     
     @y.lookup
     def lookup(name):
         return funcs[name]
 
     def iter_urls():
-        host = y.current_host_platform()
-        target = host
-        cc = {'host': host, 'target': target}
-        params = {'info': cc, 'compilers': {'deps': [], 'cross': False}}
-
         for t in args.targets:
             if t.startswith('http'):
                 yield url
             else:
                 t = t.replace('-', '_')
-                node = y.restore_node_node(eval('y.' + t)(y.deep_copy(params)))
+                node = y.restore_node_node(eval('y.' + t)())
                 url = node.get('src') or node.get('url')
 
                 if url:

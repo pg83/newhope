@@ -1,7 +1,7 @@
 cd obj/src/malloc/
-llvm-ar rc libmuslalloc.a *.lo
+$AR rc libmuslalloc.a *.lo
 cp libmuslalloc.a $IDIR/lib
 cd $IDIR/lib/
-files=$(llvm-ar t libmuslalloc.a)
-llvm-ar d libc.a $files
-ranlib libc.a
+files=$($AR t libmuslalloc.a)
+$AR d libc.a $files
+$RANLIB libc.a

@@ -10,12 +10,12 @@ def bestbox0():
             cd $IDIR/bin
 
             for i in `./toybox`; do
-                ln -fs ./toybox ./$i
+                ln -fs toybox $i
             done
 
             for x in `./busybox --list-full`; do
                 y=$(basename $x)
-                ln -s -f ./busybox $y
+                ln -fs busybox $y
             done            
         """,
         'meta': {
@@ -28,6 +28,7 @@ def bestbox0():
                 {'env': 'YWGET', 'value': '{pkgroot}/bin/wget'},
                 {'env': 'TOYBOX', 'value': '{pkgroot}/bin/toybox'},
                 {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
+                {'env': 'YSHELL', 'value': '{pkgroot}/bin/sh'},
             ],
         },  
     }
@@ -37,17 +38,22 @@ def bestbox0():
 def superbox0():
     data = y.deep_copy(bestbox0())
     data['meta']['provides'].append({'env': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'})
+    data['meta']['provides'].append({'env': 'DASH', 'value': '{pkgroot}/bin/dash'})    
     data['meta']['kind'].append('box')
-    data['meta']['depends'] += ['coreutils']
-    data['meta']['contains'] = ['bestbox', 'busybox', 'toybox', 'coreutils']
-    data['code'] += """
-            cp $COREUTILS $IDIR/bin/
-            cd $IDIR/bin/
-            progs=$(./coreutils --help | tr '\n' ' ' | sed -e 's/.*\[//' | sed -e 's/ Use: .*//') 
+    data['meta']['depends'] += ['coreutils', 'dash']
+    data['meta']['contains'] = ['bestbox', 'busybox', 'toybox', 'coreutils', 'dash']
+    data['code'] += '''
+            cp "$COREUTILS" "$IDIR/bin/"
+            cd "$IDIR/bin/"
+            progs=$(./coreutils --help | tr '\\n' ' ' | sed -e 's/.*\[//' | sed -e 's/ Use: .*//') 
         
             for i in $progs; do 
-                ln -sf ./coreutils $i
+                ln -fs coreutils $i
             done
-"""
+
+            cp "$DASH" "$IDIR/bin/"
+            cd "$IDIR/bin/"
+            ln -fs dash sh
+'''
 
     return data

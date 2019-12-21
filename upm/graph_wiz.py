@@ -1,5 +1,5 @@
 async def build_dot_script():
-    mk, _ = await y.main_makefile(internal=True)
+    mk = await y.main_makefile(internal=True)
     mk = await y.decode_mk(mk)
 
     return build_dot_script_0(mk)

@@ -40,7 +40,7 @@ async def cli_pkg_makefile(arg):
          elif args.dump:
             data = await y.gen_full_dump(iter_cc)
          else:
-            data, portion = await y.main_makefile(iter_cc, internal=args.internal)
+            data = await y.main_makefile(iter_cc, internal=args.internal)
 
          def func():
             f.write(data)
