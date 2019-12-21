@@ -41,7 +41,7 @@ def python_base(kind):
                 'ncurses', 'iconv', 'intl', 'zlib',
                 'pkg-config', 'libffi', 'readline',
                 'termcap', 'mpdecimal', 'xz', 'bzip2',
-                'sqlite3', 'openssl',
+                'sqlite3', 'openssl', 'dl',
             ],
             'provides': [
                 {'lib': 'python3.8'},

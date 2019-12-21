@@ -25,7 +25,7 @@ echo '#define VERSION "1.1.24"' > "\$IDIR/include/version.h"
 EOF
 
 srcs=$(
-    cd $SRC
+    (cd $SRC
     
     ls crt/crt1.c
     ls crt/dso.c
@@ -37,7 +37,7 @@ srcs=$(
 	ls src/$f/*.s
 	ls src/$f/$ARCH/*.c
 	ls src/$f/$ARCH/*.s
-    done
+    done) | grep -v 'dlsym.s'
 ) 2> /dev/null
 
 outs=""

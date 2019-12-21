@@ -23,9 +23,9 @@ install: libdl.a test
 	./test && (mkdir -p $(DESTDIR)/lib || true) && (mkdir -p $(DESTDIR)/include || true) && cp libdl.a $(DESTDIR)/lib && cp dl.h $(DESTDIR)/include
 
 test: test.cpp libdl.a
-	$(CXX) -I. $(CXXFLAGS) $(MY_FLAGS) -L. $(LDFLAGS) $(LIBS) -Wl,--whole-archive -ldl test.cpp
+	$(CXX) -I. $(CXXFLAGS) $(MY_FLAGS) -L. $(LDFLAGS) $(LIBS) -Wl,--whole-archive -ldl test.cpp -o test
 
 clean:
-	rm *.o *.a libdl.cpp
+	rm *.o *.a libdl.cpp test
 
 all: libdl.a test

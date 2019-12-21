@@ -7,6 +7,7 @@ def libunwind0():
              mv libunwind* xxx
              mv xxx/* ./
              $(APPLY_EXTRA_PLAN_0)
+             cat src/AddressSpace.hpp | grep -v 'pragma comment' > tmp && mv tmp src/AddressSpace.hpp
              source mk.sh
         """,
         'version': '9.0.0',
