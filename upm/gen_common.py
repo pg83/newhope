@@ -15,13 +15,10 @@ def common_plugins(iface):
 
 def mf_function_holder(cc, cb, iface):
     yield y.EOP(y.ACCEPT())
-
-    def my_funcs_with_cb(iface):
-        yield from y.my_funcs_cb(iface, cb)
     
     lst_f = [
         y.common_plugins,
-        my_funcs_with_cb,
+        y.FuncAggr(cb).on_new_data,
         y.exec_plugin_code,
     ] + [y.make_proper_permutation_gen(x) for x in cc]
 

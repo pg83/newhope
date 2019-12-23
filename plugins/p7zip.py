@@ -20,7 +20,7 @@ def p7zip0():
             'depends': [
                 'c++',
             ],
-            'kind': ['compression', 'tool', 'library'],
+            'kind': ['box', 'tool', 'library'],
             'provides': [
                 {'env': 'Y7ZA', 'value': '{pkgroot}/bin/7za'},
             ],

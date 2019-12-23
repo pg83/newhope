@@ -35,7 +35,7 @@ class Mod(dict):
       self.exec_text_part(self.builtin_data())
 
    def ycompile(self, a, b, c, **kwargs):
-      return compile('\n' * kwargs.get('firstlineno', 0) + a, b, c)
+      return self.__loader__._g.compile('\n' * kwargs.get('firstlineno', 0) + a, b, c)
 
    def vname(self):
       return self.__name__[len(self.__loader__.root_module().__name__) + 1:]
@@ -111,11 +111,12 @@ class Mod(dict):
    
 
 class Loader(object):
-   def __init__(self, name, builtin={}):
+   def __init__(self, name, g):
       self.__name__ = name
       self._by_name = {}
-      self._builtin = builtin
+      self._builtin = g.builtin_modules
       self._order = []
+      self._g = g
       
       Mod(name, self)
       
@@ -171,8 +172,8 @@ class Loader(object):
 
 
 def bootstrap(g):
-    loader = Loader('1', builtin=g.builtin_modules)
-    
+    loader = Loader('1', g)
+
     loader.create_module('ut.iface')
     loader.create_module('ut.args_parse')
     loader.create_module('ut.mod_load')

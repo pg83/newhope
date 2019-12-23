@@ -3,7 +3,8 @@
 import os
 import sys
 import gc
-
+import hashlib
+import marshal
 
 #gc.set_debug(gc.DEBUG_LEAK)
 
@@ -38,15 +39,38 @@ def find_me(g):
 
 
 class Globals(dict):
-    def __init__(self):
+    def __init__(self, cache):
         self.__dict__ = self
+        self.cache = cache
+        self.md5 = hashlib.md5
+        self.dumps = marshal.dumps
+        self.do_compile = compile
+        self.hit = 0
+        self.miss = 0
+        
+    def key(self, data):
+        return self.md5(self.dumps(data)).hexdigest()
+        
+    def compile(self, a, b, c):
+        key = self.key([a, b, c])
 
+        if key not in self.cache:
+            self.miss += 1
+            self.cache[key] = self.do_compile(a, b, c)
+        else:
+            self.hit += 1
+            
+        return self.cache[key]
+        
 
 def real_main():
     file_data = None
     #REPLACEME
-    
-    g = Globals()
+
+    if file_data:
+        g = Globals(fd['compile_cache'])
+    else:
+        g = Globals({})
 
     g.script_path = find_me(g)
     g.script_dir = os.path.dirname(g.script_path)

@@ -11,7 +11,7 @@ def unrar0():
         """,
         'version': '5.8.3',
         'meta': {
-            'kind': ['compression', 'tool'],
+            'kind': ['box', 'tool'],
             'depends': ['c++'],
             'provides': [
                 {'env': 'YUNRAR', 'value': '{pkgroot}/bin/unrar'},

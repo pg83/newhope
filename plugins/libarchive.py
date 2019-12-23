@@ -9,7 +9,7 @@ def libarchive0():
         """,
         'version': '3.4.0',
         'meta': {
-            'kind': ['library', 'tool', 'compression'],
+            'kind': ['library', 'tool', 'box'],
             'depends': ['zlib', 'bzip2', 'xz'],
             'provides': [
                 {'lib': 'archive'},

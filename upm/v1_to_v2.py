@@ -8,7 +8,7 @@ def call_v2(func):
     data = func()
 
     if y.is_pointer(data):
-        data = y.deep_copy(y.restore_node(data))
+        data = y.restore_node(data)
 
     return data
 

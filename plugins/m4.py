@@ -1,4 +1,4 @@
-#@y.ygenerator()
+@y.ygenerator()
 def m40():
     return {
         'code': """
@@ -9,7 +9,7 @@ def m40():
         """,
         'version': '1.4.18',
         'meta': {
-            'kind': ['box', 'tool'],
+            'kind': ['tool'],
             'depends': ['libsigsegv'],
             'provides': [
                 {'env': 'M4', 'value': '{pkgroot}/bin/m4'},

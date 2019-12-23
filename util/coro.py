@@ -292,9 +292,89 @@ def coro_rescheduler(coro, i):
 def yield_action(coro):
     coro.reschedule()
 
+
+class Green(object):
+    def __init__(self, func, loop):
+        self.f = func
+        self.g = self.f(self)
+        self.a = loop.create_future(nope)
+        self.s = 'CREATED'
+        self.cr_await = None
+
+    def __pow__(self, other):
+        self.cr_await = other
+        
+        try:
+            yield from other.__await__()
+        finally:
+            self.cr_await = None
+            
+    def __await__(self):
+        return self.a.__await__()
+
+    def send(self, v):
+        assert not self.is_closed()
+
+        try:
+            self.s = 'RUNNING'
+            
+            try:
+                return self.g.send(v)
+            finally:
+                self.s = 'SUSPENDED'
+        except StopIteration as e:
+            self.s = 'CLOSED'
+            self.a.set_result(e.value)
+
+            raise e
+        except:
+            self.s = 'CLOSED'
+            
+            def func():
+                raise
+
+            self.a.run_job(func)
+
+    def is_closed(self):
+        return self.s == 'CLOSED'
+            
+    def throw(self, *args):
+        assert not self.is_closed()
+        
+        self.g.throw(*args)
+
+    def close(self):
+        assert not self.is_closed()
+        
+        self.close()
+        
+    @property
+    def __name__(self):
+        return self.f.__name__
+
+    @property
+    def cr_code(self):
+        return self.f.__code__
+
+    @property
+    def cr_frame(self):
+        return self.g.gi_frame
+
+    @property
+    def cr_origin(self):
+        return None
+    
+    @property
+    def cr_running(self):
+        return self.s
+     
                 
 class Coro(collections.abc.Coroutine):
     def __init__(self, loop, coro, ctx, name, debug):
+        if not y.inspect.iscoroutinefunction(coro):
+            x = coro
+            coro = lambda: Green(x, loop)
+            
         self.debug = debug
         self.ctx = ctx
 
@@ -322,7 +402,7 @@ class Coro(collections.abc.Coroutine):
     def __str__(self):
         state = str(y.inspect.getcoroutinestate(self))[5:].lower()
         
-        return '<coro ' + self.name + ', ' + str(self.loop) + ', ' + state + ', id ' + str(self.id) + '>'
+        return '<' + self.r.__class__.__name__.lower() + ' ' + self.name + ', ' + str(self.loop) + ', ' + state + ', id ' + str(self.id) + '>'
 
     def __repr__(self):
         return str(self)

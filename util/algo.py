@@ -119,7 +119,7 @@ def compile_func(template, _async, name, mod_name):
     template = subst(template)
     name = subst(name)
     mod_name = subst(mod_name)
-    code = compile(template, mod_name.replace('.', '/') + '.py', 'exec')
+    code = y.globals.compile(template, mod_name.replace('.', '/') + '.py', 'exec')
     mod = __yexec__(template, module_name=mod_name)
 
     return mod[name]
@@ -159,7 +159,7 @@ class TOut(object):
         self.tout = 0
 
     def bad(self):
-        self.tout = min(self.tout * 1.2 + 0.001, 0.05)
+        self.tout = min(self.tout * 1.2 + 0.001, 0.03)
 
     def current(self):
         if self.tout < 0.01:

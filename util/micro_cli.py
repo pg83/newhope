@@ -138,3 +138,26 @@ async def cli_timeout(args):
 async def cli_test_wait(args):
     while True:
         await y.current_coro().sleep(1)
+
+        
+@y.verbose_entry_point
+async def cli_test_green(args):
+    async def func1():
+        c = y.current_coro()
+        
+        while True:
+            await c.sleep(1)
+            print(c)
+            
+    def func2(ctl):
+        c = y.current_coro()
+        
+        while True:
+            ywait c.sleep(2)
+            print(c)
+    
+    a1 = y.current_coro().spawn(func1)
+    a2 = y.current_coro().spawn(func2)
+
+    await a1
+    await a2

@@ -7,7 +7,7 @@ def xz0():
         """,
         'version': '5.2.4',
         'meta': {
-            'kind': ['compression', 'library', 'tool'],
+            'kind': ['box', 'library', 'tool'],
             'provides': [
                 {'lib': 'lzma'},
                 {'env': 'YXZ', 'value': '{pkgroot}/bin/xz'},

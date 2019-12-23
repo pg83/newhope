@@ -3,12 +3,12 @@ def iter_workspace():
 
     yield {
         'output': 'workspace',
-        'inputs': ['$RD/x', '$WD/x', '$PD/x', '$MD/x', '$SD/x', '$SD/upm'],
+        'inputs': ['package_dir', 'work_dir', 'install_dir', 'cache_dir', 'source_dir', 'release_upm'],
         'build': [],
     }
 
     yield {
-        'output': '$PD/x',
+        'output': 'install_dir',
         'inputs': [],
         'build': [
             path,
@@ -18,7 +18,7 @@ def iter_workspace():
     }
     
     yield {
-        'output': '$WD/x',
+        'output': 'work_dir',
         'inputs': [],
         'build': [
             path,
@@ -28,7 +28,7 @@ def iter_workspace():
     }
     
     yield {
-        'output': '$RD/x',
+        'output': 'package_dir',
         'inputs': [],
         'build': [
             path,
@@ -37,7 +37,7 @@ def iter_workspace():
     }
     
     yield {
-        'output': '$MD/x',
+        'output': 'cache_dir',
         'inputs': [],
         'build': [
             path,
@@ -46,7 +46,7 @@ def iter_workspace():
     }
     
     yield {
-        'output': '$SD/x',
+        'output': 'source_dir',
         'inputs': [],
         'build': [
             path,
@@ -56,8 +56,8 @@ def iter_workspace():
     }
     
     yield {
-        'output': '$SD/upm',
-        'inputs': ['$SD/x'],
+        'output': 'release_upm',
+        'inputs': ['source_dir'],
         'build': [
             path,
             '($UPM cmd release > $SD/upm.tmp) && chmod +x $SD/upm.tmp && $SD/upm.tmp help && mv $SD/upm.tmp $SD/upm',

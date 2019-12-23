@@ -84,7 +84,7 @@ def preprocess_data(data):
 
         return preprocess_data(d1 + ' ' * (p2 + 2 - p1) + d2)
 
-    return data
+    return data.replace('ywait', 'yield from y.current_coro().slave **')
 
 
 def fix_print(data):
@@ -161,7 +161,7 @@ def thr_func(g):
         g.by_name = dict((x['name'], x) for x in g.file_data)
         
         ctx = {'_globals': g}
-        exec(compile((g.by_name['ut/stage0.py']['data'] + '\nrun_stage0(_globals)\n'), 'ut/stage0.py', 'exec'), ctx)
+        exec(g.compile((g.by_name['ut/stage0.py']['data'] + '\nrun_stage0(_globals)\n'), 'ut/stage0.py', 'exec'), ctx)
         ctx.clear()
     except Exception:
         try:

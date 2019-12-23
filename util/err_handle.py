@@ -26,6 +26,8 @@ def abort_on_error():
 def sync_pack(f):
     try:
         return ([f()], None)
+    except StopIteration:
+        raise
     except Exception:
         return (None, y.sys.exc_info())
 

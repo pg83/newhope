@@ -22,7 +22,7 @@ def run_stage2(g):
             'globals': g,
         }
 
-        loader = y.Loader('&', builtin=g.builtin_modules)
+        loader = y.Loader('&', g)
         ml = loader.create_module('ut.mod_load')
 
         for m in loader.iter_modules():

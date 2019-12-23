@@ -11,5 +11,5 @@ def run_stage0(g):
         yield '\nrun_stage1(_globals)\n'
 
     ctx = {'_globals': g}
-    exec(compile('\n'.join(iter_data()), '0:stage1.py', 'exec'), ctx)
+    exec(g.compile('\n'.join(iter_data()), '0:stage1.py', 'exec'), ctx)
     ctx.clear()
