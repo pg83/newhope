@@ -161,3 +161,62 @@ async def cli_test_green(args):
 
     await a1
     await a2
+
+
+@y.verbose_entry_point
+async def cli_test_preproc(args):
+    y.test_preproc()
+
+/*
+def test_preproc():
+    #define X 1
+
+    #if defined(Y)
+        print('bad')
+    #elif defined(X) and X == 1
+        print('good')
+    #else
+        print('bad')
+    #endif
+
+    if X == 1:
+        print('good')
+    else:
+        print('bad')
+
+    #undef X
+
+    #if defined(X)
+        print('bad')
+    #else
+        print('good')
+    #endif
+
+    try:
+        a = X
+        print('bad')
+    except NameError:
+        print('good')
+
+    #define A 5 * 6 + 1
+
+    #if A == 31
+        print('good')
+    #else
+        print('bad')
+    #endif
+
+    #define X 1
+    #define Y 2
+
+    #if defined(X)
+        print('good')
+        #if defined(Y)
+            print('good')
+        #else
+            print('bad')
+        #endif
+    #else
+        print('bad')
+    #endif
+*/

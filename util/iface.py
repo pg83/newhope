@@ -272,6 +272,7 @@ def prompt(l):
 def load_builtin_modules(builtin):
     initial = (
         'ut.single',
+        'ut.preproc',
         'ut.xprint',
         'ut.rng',
         'ut.mod_load',
