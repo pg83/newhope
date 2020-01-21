@@ -128,8 +128,10 @@ class IFace(dict):
         sys.stdout = None
 
         o.flush()
-        e.write(t)
         e.flush()
+        
+        e.write(t)
+        e.flush(t)
 
     @property
     def copy(self):
@@ -271,6 +273,7 @@ def prompt(l):
   
 def load_builtin_modules(builtin):
     initial = (
+        'ut.burn_it',
         'ut.single',
         'ut.preproc',
         'ut.xprint',
@@ -280,6 +283,7 @@ def load_builtin_modules(builtin):
         'ut.std_io',
         'ut.init_log',
         'ut.int_counter',
+        'ut.mini_db',
         'ut.args_parse',
         'ut.algo',
         'ut.at_exit',
@@ -287,7 +291,6 @@ def load_builtin_modules(builtin):
         'ut.caches',
         'ut.pub_sub',
         'ut.cli',
-        'ut.mini_db',
         'ut.queues',
     )
     

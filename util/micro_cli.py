@@ -119,7 +119,7 @@ async def cli_test_template(args):
 
 
 @y.verbose_entry_point
-async def cli_timeout(args):
+async def cli_misc_timeout(args):
     import os
     
     tout = int(args[0])
@@ -162,46 +162,49 @@ async def cli_test_green(args):
     await a1
     await a2
 
-
+        
 @y.verbose_entry_point
 async def cli_test_preproc(args):
-    y.test_preproc()
+    test_preproc_x(args)
 
-/*
-def test_preproc():
+
+def test_preproc_x(args):
     #define X 1
 
     #if defined(Y)
         print('bad')
     #elif defined(X) and X == 1
-        print('good')
+        print('good 1')
     #else
         print('bad')
     #endif
 
     if X == 1:
-        print('good')
+        print('good 2')
     else:
         print('bad')
 
+    print repr(X), id(X)        
     #undef X
 
     #if defined(X)
         print('bad')
     #else
-        print('good')
+        print('good 3')
     #endif
 
     try:
+        print repr(X), id(X)        
         a = X
-        print('bad')
+        print repr(X), id(X)
+        print('bad', a)
     except NameError:
-        print('good')
+        print('good 4')
 
     #define A 5 * 6 + 1
 
     #if A == 31
-        print('good')
+        print('good 5')
     #else
         print('bad')
     #endif
@@ -210,13 +213,15 @@ def test_preproc():
     #define Y 2
 
     #if defined(X)
-        print('good')
+        print('good 6')
         #if defined(Y)
-            print('good')
+            try:
+                raise Exception("good 7")
+            except Exception as e:
+                print(str(e))
         #else
             print('bad')
         #endif
     #else
         print('bad')
     #endif
-*/

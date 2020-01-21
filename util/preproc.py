@@ -1,48 +1,40 @@
 undefined = object()
 
 
+@y.singleton
+def is_debug():
+    return 'preproc=debug' in ''.join(y.sys.argv)
+
+
 class Defines(dict):
     def __init__(self, defs):
         self.__dict__ = self
         self.update(defs)
 
         def defined(x):
-            print x
+            is_debug() and print(x)
             return not x is undefined
 
         self.defined = defined
 
     def __missing__(self, key):
-        print 'missing', key
+        is_debug() and print('missing', key)
         return undefined
 
 
 class Preproc(object):
-    def __init__(self, defines, text):
+    def __init__(self, l, text):
         self.t = text
-        self.d = Defines(defines)
-        self.s = ['C']
+        self.d = Defines(l)
         self.r = []
         self.v = []
         
     def run(self):
         for l in self.t.split('\n'):
-            print 'line', l, self.s[-1]
-            res, val = self.command(l)
-            
-            if res:
-                self.r.append(val)
-            elif self.s[-1] == 'S':
-                self.r.append('')
-            elif self.s[-1] == 'C':
-                self.r.append(l)
+            _, val = self.command(l)
+            self.r.append(val)
 
-        #print self.v, self.s
-
-        #assert len(self.v) == 0
-        #assert len(self.s) == 1 and self.s[0] == 'C' 
-                
-        return '\n'.join(self.r)
+        return '\n'.join(self.r) + '\n'
 
     def command(self, l):
         ll = l.strip()
@@ -57,84 +49,70 @@ class Preproc(object):
             fill = l[:-len(ll)]
 
             try:
-                f = getattr(self, 'do_' + self.s[-1].lower() + '_' + cmd)
+                f = getattr(self, 'do_' + cmd)
             except AttributeError:
                 return False, l
 
             data = ll[p + 1:]
             res = f(data) or ''
             
-            print repr(cmd), repr(data), repr(fill + res), f.__name__
+            is_debug() and print(repr(cmd), repr(data), repr(fill + res), f.__name__)
 
             return True, fill + res
 
         return False, l
 
-    def do_c_define(self, l):
+    def do_define(self, l):
         x, y = l.split(' ', 1)
         
         self.d[x] = eval(y, self.d)
-
-        print('do define', x, '=', self.d[x])
         
         return x + ' = ' + repr(self.d[x])
-        
-    def do_s_define(self, l):
-        pass
-    
-    def do_c_undef(self, l):
+
+    def do_undef(self, l):
         self.d.pop(l.strip())
 
-        return 'locals().pop("' + l.strip() + '")'
-        
-    def do_s_undef(self, l):
-        pass
-    
-    def do_c_if(self, l):
-        self.s.append('C')
+        return 'del ' + l.strip()
+
+    def do_if(self, l):
         self.v.append(False)
-        self.do_c_elif(l)
-
-    def do_s_if(self, l):
-        self.v.append(None)
-
-    def do_c_elif(self, l):
-        self.s.pop()
+        return self.do_elif(l)
         
+    def do_elif(self, l):
         if not self.v[-1]:
-            print l, eval(l, self.d)
+            is_debug() and print(l, eval(l, self.d))
             
             if eval(l, self.d):
                 self.v[-1] = True
-                self.s.append('C')
-            else:
-                self.s.append('S')
-        else:
-            self.s.append('S')
-
-    def do_s_elif(self, l):
-        pass
-
-    def do_c_else(self, l):
-        self.s.pop()
-        
+                
+                return 'if 1:'
+            
+        return 'if 0:'
+    
+    def do_else(self, l):
         if self.v[-1] == False:
             self.v[-1] = True
-            self.s.append('C')
-        else:
-            self.s.append('S')
+            return 'if 1:'
+        
+        return 'if 0:'
 
-    def do_s_else(self, l):
-        pass
-
-    def do_c_endif(self, l):
-        self.s.pop()
+    def do_endif(self, l):
         assert self.v.pop() is not None
 
-    def do_s_endif(self, l):
-        if self.v.pop() is not None:
-            self.s.pop()
+    def do_exclude(self, l):
+        if eval(l, self.d):
+            is_debug() and print('will exclude ' + l)
+            return 'if 0:'
+        
+        is_debug() and print('will include ' + l)
+        return 'if 1:'
 
+    def do_endex(self, l):
+        pass
+
+    def do_print_state(self, l):
+        print '\n'.join(self.r)
+    
 
 @y.singleton
 def global_defines():
@@ -145,15 +123,22 @@ def global_defines():
 
 
 def preprocess_text(text, defines=global_defines()):
-    return text
+    ps = y.globals.by_prefix
+    fs = y.globals.file_data
 
-    if '#' in text:
-        res = Preproc(defines, text).run()
+    def check(*els):
+        for el in els:
+            el = chr(35) + el
 
-        print(res)
-        
-        return res
+            if el in ps and y.burn(text) in ps[el]:
+                return True
 
+    if check('if', 'ex'):
+        try:
+            return Preproc(defines, text).run()
+        except Exception as e:
+            raise Exception('shit happen while parsing ' + text) from e
+            
     return text
 
 

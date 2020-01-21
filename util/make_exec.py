@@ -168,8 +168,6 @@ class Builder(object):
                 is_debug() and y.debug('yield ready', y.pretty_dumps(item), 'in fly', fmt_in_fly(by_n))
 
                 yield y.ELEM({'item': item})
-
-                #if i % 16 == 0:
                 yield y.EOP()
 
             yield y.EOP()

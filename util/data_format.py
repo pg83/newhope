@@ -58,7 +58,7 @@ def open_simple_db(path):
         yield data
     finally:
         new_md5 = y.burn(y.json.dumps(data, sort_keys=True))
-        
+
         if md5 == new_md5:
             y.debug('db not changed, not write it')
         else:

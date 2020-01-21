@@ -3,6 +3,19 @@ import sys
 import signal
 import threading
 import traceback
+import collections
+import hashlib
+import json
+
+from marshal import loads, dumps
+
+
+def y_burn(p):
+    return y_struct_dump_bytes(p)
+
+
+def y_struct_dump_bytes(p):
+    return hashlib.md5(dumps(p)).hexdigest()[:16]
 
 
 def set_profile(g):
@@ -126,7 +139,8 @@ def load_folders(folders, exts, where):
         'util': 'ut',
     }
 
-    yield {'name': os.path.basename(where), 'path': where, 'data': open(where).read()}
+    data = open(where).read()
+    yield {'name': os.path.basename(where), 'path': where, 'data': data, 'burn': y_burn(data)}
 
     for f in folders:
         fp = os.path.join(os.path.dirname(where), f)
@@ -148,18 +162,33 @@ def load_folders(folders, exts, where):
                 if parts[-1] == 'py':
                     data = fix_print(data)
 
-            yield {'name': name, 'path': path, 'data': data}
+            yield {'name': name, 'path': path, 'data': data, 'burn': y_burn(data)}
 
 
 def load_system(where):
     return list(load_folders(['plugins', 'plugins/lib', 'scripts', 'upm', 'util'], ['py', ''], where))
 
 
+def iter_prefix(x):
+    l = ''
+
+    for y in x:
+        l = l + y
+        
+        yield l
+
+
 def thr_func(g):
     try:
         g.file_data = g.file_data or load_system(g.script_path)
         g.by_name = dict((x['name'], x) for x in g.file_data)
+        g.by_prefix = collections.defaultdict(set)
         
+        for i, x in enumerate(g.file_data):
+            for w in x['data'].split():
+                for p in iter_prefix(w):
+                    g.by_prefix[p].add(x['burn'])
+                        
         ctx = {'_globals': g}
         exec(g.compile((g.by_name['ut/stage0.py']['data'] + '\nrun_stage0(_globals)\n'), 'ut/stage0.py', 'exec'), ctx)
         ctx.clear()

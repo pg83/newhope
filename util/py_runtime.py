@@ -335,7 +335,8 @@ class AbortHandler(object):
         try:
             try:
                 o.write(self.f1() + '\n')
-                o.write(self.f1(frame=self.cf()) + '\n')
+                if y.verbose:
+                    o.write(self.f1(frame=self.cf()) + '\n')
             except:
                 o.write(self.f2())
         finally:

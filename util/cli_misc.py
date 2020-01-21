@@ -1,11 +1,11 @@
 @y.verbose_entry_point
-async def cli_cleanup(arg):
+async def cli_misc_cleanup(arg):
    y.os.system("find . | grep '~' | xargs rm")
    y.os.system("find . | grep '#' | xargs rm")
 
 
 @y.main_entry_point
-async def cli_help(args):
+async def cli_misc_help(args):
    def iter_funcs():
       allow = 'm'
 
@@ -28,7 +28,7 @@ async def cli_help(args):
 
 
 @y.main_entry_point
-async def cli_pip(args):
+async def cli_misc_pip(args):
     import signal
 
     def ff(a, b):
