@@ -132,11 +132,11 @@ def bad_name(x):
 
 def load_folders(folders, exts, where):
     replace = {
-        'upm': 'ya',
+        'ya': 'ya',
         'plugins': 'pl',
         'plugins/lib': 'data',
         'scripts': 'sc',
-        'util': 'ut',
+        'ut': 'ut',
     }
 
     data = open(where).read()
@@ -166,7 +166,7 @@ def load_folders(folders, exts, where):
 
 
 def load_system(where):
-    return list(load_folders(['plugins', 'plugins/lib', 'scripts', 'upm', 'util'], ['py', ''], where))
+    return list(load_folders(['plugins', 'plugins/lib', 'scripts', 'ya', 'ut'], ['py', ''], where))
 
 
 def iter_prefix(x):

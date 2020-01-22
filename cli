@@ -79,7 +79,7 @@ def real_main():
     if g.file_data:
         data = dict((x['name'], x) for x in g.file_data)['ut/stagea.py']['data']
     else:
-        with open(g.script_dir + '/util/stagea.py') as f:
+        with open(g.script_dir + '/ut/stagea.py') as f:
             data = f.read()
 
     ctx = {'_globals': g}

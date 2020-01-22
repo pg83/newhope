@@ -87,10 +87,10 @@ if 1:
             self._v = {}
 
         def func1(self, data):
-            return y.marhall.dumps(data)
+            return y.marshal.dumps(data)
 
         def func2(self, data):
-            return y.marhall.loads(data)
+            return y.marshal.loads(data)
 
         def intern_data(self, n):
             n = self.func1(n)

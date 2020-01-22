@@ -24,6 +24,8 @@ def do_subst(x):
     x = SUBST.get(x, x)
 
     return x
+    
+XX = 0
 
 
 class Func(object):
@@ -39,8 +41,12 @@ class Func(object):
     def contains(self):
         return self.code().get('meta', {}).get('contains', [])
 
+    @property
+    def __name__(self):
+        return str(self)
+    
     def __str__(self):
-        return '<' + self.base  + '-' + str(self.i) + '-' + self.compact_kind() + '>'
+        return '<' + self.base  + '-' + str(self.i) + '-' + self.compact_kind() + '-' + self.data.info['target']['os'] + '>'
 
     def compact_kind(self):
         res = ''
@@ -75,7 +81,19 @@ class Func(object):
 
     @y.cached_method
     def raw_depends(self):
-        return [do_subst(x) for x in self.code().get('meta', {}).get('depends', [])]
+        try:
+            global XX
+            XX += 1
+            print XX * '+', self.__name__
+
+            code = self.code()
+
+            if code:
+                return [do_subst(x) for x in self.code().get('meta', {}).get('depends', [])]
+
+            return []
+        finally:
+            XX -= 1
     
     def depends(self):
         return self.raw_depends()
@@ -92,6 +110,7 @@ class Func(object):
     @y.cached_method
     def dep_lib_list(self):
         def iter():
+            print self.__name__
             for x in self.dep_list():
                 if self.data.by_name[x].is_library:
                     yield x
@@ -107,19 +126,27 @@ class Func(object):
                     
         return frozenset(iter())
 
+    def extra_libs(self):
+        return self.data.extra_libs()
+    
     @y.cached_method
     def dep_list(self):
         def iter1():            
             yield from self.depends()
 
-            for d in ('make', 'musl', 'bestbox'):
+            for d in self.extra_libs():
                 if self.base in self.data.find_func(d).all_depends():
                     continue
                 
                 if self.base == d:
                     continue
 
-                if 'code' not in self.code():
+                code = self.code()
+
+                if not code:
+                    continue
+                
+                if 'code' not in code:
                     continue
 
                 yield d
@@ -248,18 +275,34 @@ class Solver(object):
 class Data(object):
     def __init__(self, info, data):
         self.info = info
-        self.by_kind = y.collections.defaultdict(list)
-
-        for x in data:
-            for k in x['func']['kind']:
-                self.by_kind[k].append(x['func']['base'])
                 
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
-        self.data = [self.create_object(x['func']) for x in sorted(data, key=lambda x: x['func']['base'])]
-        self.by_name = dict((x.base, x) for x in self.data)
 
+        def iter_objects():
+            for x in sorted(data, key=lambda x: x['func']['base']):
+                obj = self.create_object(x['func'])
+
+                if obj.code():
+                    yield obj
+        
+        self.data = list(iter_objects())
+        self.by_name = dict((x.base, x) for x in self.data)
+        self.by_kind = y.collections.defaultdict(list)
+
+        for x in self.data:
+            for k in x.kind:
+                self.by_kind[k].append(x.base)
+
+    def extra_libs(self):
+        tg = self.info['host']
+
+        if tg['os'] == 'linux':
+            return ('make', 'musl', 'bestbox')
+
+        return ('make',)
+        
     def create_object(self, x):
         if x['base'] in self.special:
             return SpecialFunc(x, self)
@@ -288,7 +331,7 @@ class Data(object):
     
     @property
     def special(self):
-        return self.by_kind['special']
+        return ['box']
 
     def last_elements(self, lst, must_have=True):
         def iter():
@@ -312,7 +355,7 @@ class Data(object):
         return self.dd.get(name, [-1])[0]
 
     def register(self):
-        for v in self.func_by_num:
+        for v in [self.func_by_num[self.dd['box'][-1]]]:
             yield y.ELEM({'func': v.z})
 
     def iter_deps(self):
@@ -393,15 +436,6 @@ def init_0(where):
     def box0():
         return {
             'meta': {
-                'depends': ['compression'],
                 'kind': ['special', 'tool'],
-            },
-        }
-
-    @y.ygenerator(where=where)
-    def compression0():
-        return {
-            'meta': {
-                'kind': ['special', 'tool', 'box'],
             },
         }

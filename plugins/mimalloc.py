@@ -13,7 +13,16 @@ def mimalloc0():
         'version': '',
         'meta': {
             'kind': ['library'],
-            'depends': ['musl-boot', 'kernel-h'],
+            'depends': [
+                {
+                    'os': 'linux',
+                    'value': 'musl-boot',
+                },
+                {
+                    'os': 'linux',
+                    'value': 'kernel-h'
+                },
+            ],
             'provides': [
                 {'lib': 'mimalloc'},
             ],

@@ -35,9 +35,9 @@ def make_impl(boot, deps, contains, kind):
 
 @y.ygenerator()
 def make_boot0():
-    return make_impl(True, ['musl-boot'], [], [])
+    return make_impl(True, [{'os': 'linux', 'value': 'musl-boot'}], [], [])
 
 
 @y.ygenerator()
 def make0():
-    return make_impl(False, ['musl', 'make-boot'], ['make-boot'], ['box'])
+    return make_impl(False, [{'os': 'linux', 'value': 'musl'}, 'make-boot'], ['make-boot'], ['box'])

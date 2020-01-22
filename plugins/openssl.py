@@ -16,7 +16,14 @@ def openssl0():
         'version': version,
         'meta': {
             'kind': ['library'],
-            'depends': ['perl5', 'kernel-h', 'dl'],
+            'depends': [
+                'perl5',
+                {
+                    'os': 'linux',
+                    'value': 'kernel-h',
+                },
+                'dl',
+            ],
             'provides': [
                 {'lib': 'ssl'},
             ],
