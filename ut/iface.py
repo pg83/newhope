@@ -131,7 +131,7 @@ class IFace(dict):
         e.flush()
         
         e.write(t)
-        e.flush(t)
+        e.flush()
 
     @property
     def copy(self):
