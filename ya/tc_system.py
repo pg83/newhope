@@ -9,17 +9,25 @@ def find_system_tools():
         yield 'wasm-ld', {'kind': ['linker'], 'type': 'lld', 'os': 'webasm'}
 
     def find():
-        for tool, info in iter_candidates():
-            tp = y.find_tool(tool)
-            
-            if not tp:
-                continue
+        def find_cand():
+            for tool, info in iter_candidates():
+                for tp in y.find_tool(tool):
+                    if tp:
+                        y.info('find tool', tp, info)
+
+                        yield tp, info
+
+        for tp, info in find_cand():
+            if info['type'] == 'clang':
+                if not y.os.path.isfile(y.os.path.dirname(tp) + '/llvm-ar'):
+                    y.info('skip', tp, 'cause not full tool chain')
+                    continue
 
             try:
                 data = y.subprocess.check_output([tp, '--version'], stderr=y.subprocess.STDOUT, shell=False)
             except Exception as e:
                 data = str(e)
-                
+
             info.update({'name': y.os.path.basename(tp), 'path': tp, 'data': data})
 
             yield info
@@ -34,13 +42,13 @@ def parse_gcc(info):
         return
 
     raise Exception('todo')
-    
+
 
 def parse_clang_info(data):
     lines = data.strip().split('\n')
     info = {}
     info['version'] = lines[0].split(' ')[3]
-    
+
     for l in lines:
         l = l.strip()
 
@@ -68,7 +76,7 @@ def parse_clang_info(data):
 def filter_by_os(it, info):
     if 'os' in info:
         ios = info['os']
-        
+
         for x in it:
             if x['os'] == ios:
                 yield x
@@ -80,7 +88,7 @@ def parse_clang(info):
     host = y.current_host_platform()
     extra = parse_clang_info(info['data'])
     path = info['path']
-    
+
     for t in filter_by_os(y.iter_all_targets(), info):
         c = {}
 
@@ -94,7 +102,7 @@ def parse_clang(info):
         c['constraint'] = cc
         c['version'] = extra['version']
         c['build'] = []
-        
+
         tg = t['arch'] + '-' + t['os']
 
         def iter_kind():
@@ -106,10 +114,10 @@ def parse_clang(info):
 
         def iter_nodes():
             where = y.os.path.dirname(path)
-            
+
             for k in iter_kind():
                 meta = {'kind': [k, 'tool']}
-                
+
                 if k == 'c':
                     meta['provides'] = [
                         {'env': 'CC', 'value': '"' + path + '"'},
@@ -131,7 +139,7 @@ def parse_clang(info):
                         {'env': 'LDFLAGS', 'value': '"-nostdlib -static -all-static $LDFLAGS"'},
                     ]
 
-                n = y.deep_copy(c)
+                n = y.dc(c)
 
                 n['name'] = info['name']
                 n['meta'] = meta
@@ -143,6 +151,55 @@ def parse_clang(info):
                 'node': n,
                 'deps': [],
             }
+
+
+
+@y.singleton
+def iter_darwin():
+    def iter_nodes():
+        for k in ('c', 'c++', 'linker'):
+            meta = {'kind': [k, 'tool']}
+            path = '/usr/bin/clang'
+            
+            if k == 'c':
+                meta['provides'] = [
+                    {'env': 'CC', 'value': '"' + path + '"'},
+                    {'env': 'CFLAGS', 'value': '"$CFLAGS"'},
+                    {'env': 'AR', 'value': '"ar"'},
+                    {'env': 'RANLIB', 'value': '"ranlib"'},
+                    {'env': 'STRIP', 'value': '"strip"'},
+                    {'env': 'NM', 'value': '"nm"'},
+                ]
+            elif k == 'c++':
+                meta['provides'] = [
+                    {'env': 'CXX', 'value': '"' + path + '"'},
+                ]
+            elif k == 'linker':
+                meta['provides'] = [
+                    {'env': 'LD', 'value': '"' + path + '"'},
+                ]
+                
+            yield meta
+
+    def do_iter():
+        for meta in iter_nodes():
+            n = {
+                'name': '-'.join(['clang'] + meta['kind']),
+                'build': [],
+                'version': y.burn(meta),
+                'meta': meta,
+                'constraint': {
+                    'host': y.current_host_platform(),
+                    'target': y.current_host_platform(),
+                },
+            }
+            
+            yield {
+                'node': n,
+                'deps': [],
+            }
+
+    return list(do_iter())
 
 
 def parse_lld(info):
@@ -157,21 +214,21 @@ def parse_lld(info):
             'target': t,
         }
 
-        opts = [
+        opts = extra + [
+            '-fuse-ld=lld',
             '-nostdlib',
             '-static',
             '-all-static',
-            '-fuse-ld=lld',
-            '-Wl,--no-dynamic-linker',
-            '-Wl,--no-export-dynamic',
             '-Wl,--no-whole-archive',
             '-Wl,--sort-section,alignment',
             '-Wl,--sort-common',
             '-Wl,--gc-sections',
             '-Wl,--hash-style=both',
             '-Wl,--exclude-libs=ALL',
+            '-Wl,--no-dynamic-linker',
+            '-Wl,--no-export-dynamic',
         ]
-        
+
         c['build'] = []
         c['name'] = 'lld'
         c['version'] = y.burn(info)
@@ -187,10 +244,12 @@ def parse_lld(info):
             'node': c,
             'deps': [],
         }
-    
-    
+
+
 def iter_system_tools():
-    for c in y.deep_copy(find_system_tools()):
+    yield from iter_darwin()
+    
+    for c in y.dc(iter_darwin()):
         try:
             c['data'] = c['data'].decode('utf-8')
         except AttributeError:

@@ -55,7 +55,7 @@ def print_one_node(root):
     def iter_part1():
         if not naked:
             yield '. "$2" && source init $@'
-
+            
         prepare = prepare_prepare(root_node.get('prepare', []), target)
         meta = y.meta_to_build(root_node.get('meta', {}))
         data = '\n'.join([meta, prepare]).strip()

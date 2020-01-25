@@ -15,6 +15,7 @@ def is_list(v):
 
     return False
 
+
 def to_platform(k, v):
     if k == 'os':
         return {'os': v}
@@ -31,7 +32,7 @@ class Replace(Exception):
         self.value = v
 
 
-@y.cached()
+#@y.cached()
 def is_compat_0(pl, k, v):
     return is_compat(pl, to_platform(k, v))
 
@@ -95,7 +96,6 @@ def meta_to_build(meta):
         yield 'export CMAKE_PREFIX_PATH="{pkgroot}:$CMAKE_PREFIX_PATH"'
         
         if is_lib:
-            #yield 'export CFLAGS="-I{pkgroot}/include $CFLAGS"'
             yield 'export CPPFLAGS="$CPPFLAGS -I{pkgroot}/include"'
             yield 'export LDFLAGS="-L{pkgroot}/lib $LDFLAGS"'
             yield 'export PKG_CONFIG_PATH="{pkgroot}/lib/pkgconfig:$PKG_CONFIG_PATH"'
@@ -115,7 +115,6 @@ def meta_to_build(meta):
 
                         if 'ipath' in e:
                             yield 'export CPPFLAGS="$CPPFLAGS -I{ipath}"'.format(ipath=e['ipath'])
-                            #yield 'export CFLAGS="-I{ipath} $CFLAGS"'.format(ipath=e['ipath'])
 
                 if 'configure' in p:
                     cfg = p['configure']
@@ -131,3 +130,15 @@ def meta_to_build(meta):
                 yield 'export {k}={v}'.format(k=p['env'], v=p['value'])
 
     return '\n'.join(iter()) + '\n'
+
+
+@y.verbose_entry_point
+async def cli_test_pslice(args):
+    print args
+    pl = y.to_full_target(args[0])
+    print pl
+    data = [{'os': 'linux', 'value': lambda x: x}]
+
+    print pl, data
+    print y.platform_slice(pl, data)
+

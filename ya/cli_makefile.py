@@ -1,10 +1,12 @@
 def iter_cc():
    host = y.current_host_platform()
-   cc = {'host': host, 'target': host}
 
-   yield cc
-
+   yield {'host': host, 'target': host}
    
+   #for t in y.iter_all_targets():
+      #yield {'host': y.dc(host), 'target': y.dc(t)}
+
+
 @y.main_entry_point
 async def cli_pkg_makefile(arg):
    parser = y.argparse.ArgumentParser()

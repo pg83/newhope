@@ -4,7 +4,7 @@ def subst_some_values(v):
         yield '_' + k + '_', v.replace('.', '_').replace('-', '_')
         
     if 'code' in v and '{' in v['code']:
-        v = y.deep_copy(v)
+        v = y.dc(v)
         
         for x in ('version', 'name', 'num'):
             if x in v:
@@ -45,7 +45,7 @@ def exec_plugin_code(iface):
 def ygenerator(where=None):
     def functor(func):
         base_name = func.__name__[:-1]
-        new_f = y.singleton(y.compose_simple(func, y.deep_copy, subst_some_values))
+        new_f = y.singleton(y.compose_simple(func, y.dc, subst_some_values))
 
         descr = {
             'gen': 'human',

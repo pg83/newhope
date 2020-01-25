@@ -274,7 +274,7 @@ class MakeFile(object):
         lst = select_targets(self.lst, self.lst_to_nums(sorted(targets)))
         lst = [self.restore_node(x) for x in lst]
 
-        mk.init_from_parsed({'lst': lst, 'flags': y.deep_copy(self.flags)})
+        mk.init_from_parsed({'lst': lst, 'flags': y.dc(self.flags)})
         
         return mk
 
@@ -287,7 +287,7 @@ class MakeFile(object):
     async def build(self, args):
         mk = self.clone()
 
-        mk.flags = y.deep_copy(mk.flags)
+        mk.flags = y.dc(mk.flags)
         mk.flags.update(args.shell_vars)
         
         return await y.run_make_0(mk, args)

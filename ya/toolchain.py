@@ -30,7 +30,7 @@ def group_by_cc():
 
 
 def find_toolchain_by_cc(cc):
-    return y.deep_copy(group_by_cc()[y.small_repr_cons(cc)])
+    return y.dc(group_by_cc()[y.small_repr_cons(cc)])
 
 
 @y.singleton
@@ -116,7 +116,7 @@ def iterate_best_compilers(info):
 def find_compiler_x(info):
     def do():
         for x in iterate_best_compilers(info):
-            x = y.deep_copy(x)
+            x = y.dc(x)
             x['node']['constraint'] = info
 
             yield y.store_node(x)

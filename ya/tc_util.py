@@ -32,13 +32,13 @@ def is_cross(cc):
 
 
 def subst_info(info):
-    info = y.deep_copy(info)
+    info = y.dc(info)
 
     if 'host' not in info:
         info['host'] = current_host_platform()
 
     if 'target' not in info:
-        info['target'] = y.deep_copy(info['host'])
+        info['target'] = y.dc(info['host'])
 
     return info
 
@@ -69,9 +69,10 @@ def rev_target_map():
     res = {}
     
     for x in iter_all_targets():
-        assert x not in res
         res[small_repr(x)] = x
 
+    print res
+        
     return res
 
 

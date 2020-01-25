@@ -6,7 +6,7 @@ def xxformat(*args, **kwargs):
         if 'text' in kwargs:
             yield kwargs.pop('text')
 
-    text = ' '.join(y.fixx(x) for x in iter_t())
+    text = ' '.join(str(x) for x in iter_t())
 
     if 'init' in kwargs:
         text = '{' + kwargs['init'] + '}' + text + '{}'
@@ -20,7 +20,7 @@ def xxprint(*args, **kwargs):
 
 @y.singleton
 def my_cm():
-    return y.deep_copy(y.COLOR_TABLE)
+    return y.dc(y.COLOR_TABLE)
     
 
 def process_color(text, init, kwargs):

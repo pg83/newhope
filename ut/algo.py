@@ -47,7 +47,7 @@ def to_lines(text):
     return list(iter_l())
 
 
-def deep_copy(x):
+def dc(x):
     try:
         return loads(dumps(x))
     except Exception as e:
@@ -61,7 +61,7 @@ class IncCounter(object):
     def __init__(self):
         self.c = 0
         self.l = y.threading.Lock()
-        
+
     def __iter__(self):
         while True:
             with self.l:

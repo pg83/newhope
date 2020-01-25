@@ -1,5 +1,3 @@
-import sys
-
 ic = y.inc_counter()
 
 
@@ -8,27 +6,36 @@ def is_debug():
     return 'debug' in y.config.get('tow', '')
 
 
-SUBST = {
-    'intl': 'gettext',
-    #'gettext': 'gettext-tiny',
-    'iconv': 'libiconv',
-    'c++': 'libcxx',
-    'm4': 'quasar-m4',
-    'termcap': 'ncurses',
-    'ncurses': 'netbsd-curses',
-}
+@y.cached
+def subst_by_platform(os):
+    common = {
+        'intl': 'gettext',
+        'iconv': 'libiconv',
+        'c++': 'libcxx',
+        'm4': 'quasar-m4',
+        'termcap': 'ncurses',
+        'ncurses': 'ncurses',
+    }
 
+    by_os = {
+        'linux': common.copy(),
+        'darwin': common.copy(),
+    }
 
-def do_subst(x):
-    x = SUBST.get(x, x)
-    x = SUBST.get(x, x)
+    by_os['linux'].update({'ncurses': 'netbsd-curses'})
 
-    return x
-    
-XX = 0
+    return by_os[os]
 
 
 class Func(object):
+    def do_subst(self, x):
+        s = subst_by_platform(self.data.info['host']['os'])
+
+        x = s.get(x, x)
+        x = s.get(x, x)
+
+        return x
+
     def __init__(self, x, data):
         self.x = x
         self.inc_count = ic()
@@ -58,7 +65,7 @@ class Func(object):
             res += 'l'
 
         return res
-    
+
     @property
     def is_library(self):
         return 'library' in self.kind
@@ -67,13 +74,27 @@ class Func(object):
     def is_tool(self):
         return 'tool' in self.kind
 
+    
     @property
+    #@y.cached_method
     def kind(self):
         return self.x['kind']
+    
+        res = self.slice(self.x['kind'])
+
+        if res is None:
+            print self.base
+
+            return []
+
+        return res
+
+    def slice(self, data):
+        y.platform_slice(data, self.data.info['target'])
 
     @y.cached_method
     def code(self):
-        return y.platform_slice(self.x['code'](), self.data.info['target'])
+        return self.slice(self.x['code']())
 
     @property
     def base(self):
@@ -81,20 +102,13 @@ class Func(object):
 
     @y.cached_method
     def raw_depends(self):
-        try:
-            global XX
-            XX += 1
-            print XX * '+', self.__name__
+        code = self.code()
 
-            code = self.code()
+        if code:
+            return [self.do_subst(x) for x in self.code().get('meta', {}).get('depends', [])]
 
-            if code:
-                return [do_subst(x) for x in self.code().get('meta', {}).get('depends', [])]
-
-            return []
-        finally:
-            XX -= 1
-    
+        return []
+   
     def depends(self):
         return self.raw_depends()
 
@@ -110,7 +124,8 @@ class Func(object):
     @y.cached_method
     def dep_lib_list(self):
         def iter():
-            print self.__name__
+            print 'dep', self.__name__
+            
             for x in self.dep_list():
                 if self.data.by_name[x].is_library:
                     yield x
@@ -123,7 +138,7 @@ class Func(object):
             for x in self.dep_list():
                 if not self.data.by_name[x].is_library:
                     yield x
-                    
+
         return frozenset(iter())
 
     def extra_libs(self):
@@ -155,7 +170,7 @@ class Func(object):
 
     @y.cached_method
     def run_func(self):
-        data = y.deep_copy(self.c())
+        data = y.dc(self.c())
         data['deps'] = y.uniq_list_x(data['deps'] + self.data.calc(self.deps))
         data['node']['codec'] = self.codec
 
@@ -275,18 +290,19 @@ class Solver(object):
 class Data(object):
     def __init__(self, info, data):
         self.info = info
-                
+
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
 
         def iter_objects():
             for x in sorted(data, key=lambda x: x['func']['base']):
+                print 'fff', x
                 obj = self.create_object(x['func'])
-
+                print obj, obj.code()
                 if obj.code():
                     yield obj
-        
+
         self.data = list(iter_objects())
         self.by_name = dict((x.base, x) for x in self.data)
         self.by_kind = y.collections.defaultdict(list)
@@ -302,7 +318,7 @@ class Data(object):
             return ('make', 'musl', 'bestbox')
 
         return ('make',)
-        
+
     def create_object(self, x):
         if x['base'] in self.special:
             return SpecialFunc(x, self)
@@ -313,7 +329,7 @@ class Data(object):
         def it():
             for i in deps:
                 yield from self.func_by_num[i].contains()
-            
+
         contains = frozenset(it())
 
         def iter_deps():
@@ -355,6 +371,11 @@ class Data(object):
         return self.dd.get(name, [-1])[0]
 
     def register(self):
+        if not self.dd['box']:
+            y.info('not data for ', self.info)
+
+            return
+            
         for v in [self.func_by_num[self.dd['box'][-1]]]:
             yield y.ELEM({'func': v.z})
 
@@ -366,7 +387,7 @@ class Data(object):
     def exec_seq(self):
         return list(y.execution_sequence(self.iter_deps()))
     
-    def out(self):    
+    def out(self):
         for x in self.func_by_num:
             x.out_deps()
 
@@ -412,6 +433,7 @@ def make_proper_permutation(iface, info):
         data.append(row)
         yield y.EOP()
 
+    print 'zzzz', info, data
     dt = Data(info, [x.data for x in data])
     dt.prepare_funcs(2)
     dt.out()
@@ -421,12 +443,46 @@ def make_proper_permutation(iface, info):
         
     yield y.FIN()
 
+
+async def async_make_proper_permutation(iface, info):
+    yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
+
+    data = []
+    init_0(data)
     
+    for row in iface.iter_data():
+        if not row.data:
+            break
+        
+        data.append(row)
+        yield y.EOP()
+
+    print 'zzz', info, data
+    dt = Data(info, [x.data for x in data])
+    dt.prepare_funcs(2)
+    dt.out()
+    
+    for x in dt.register():
+        yield x
+        
+    yield y.FIN()
+
+
 def make_proper_permutation_gen(info):
     def func(iface):
         yield from make_proper_permutation(iface, info)
 
     func.__name__ = 'make_proper_permutation_' + y.small_repr(info)
+
+    return func
+
+
+def async_make_proper_permutation_gen(info):
+    async def func(iface):
+        async for x in async_make_proper_permutation(iface, info):
+            yield x
+
+    func.__name__ = 'async_make_proper_permutation_' + y.small_repr(info)
 
     return func
 

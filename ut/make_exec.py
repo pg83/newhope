@@ -417,15 +417,26 @@ class Item(ItemBase):
         input = self.build_cmd()
         
         try:
-            env = y.deep_copy(self.env)
-            
+            env = y.dc(self.env)
+            #naked = 'source init' not in input
+            naked = False
+
             def fun():
                 input_bin = input.encode('utf-8')
                 env['RUNSH'] = y.base64.b64encode(input_bin)
-                p = sp.Popen([self.shell, '-s'], stdout=sp.PIPE, stderr=sp.STDOUT, stdin=sp.PIPE, shell=False, env=env)
+
+                if naked:
+                    stdo = y.sys.stderr
+                    stde = y.sys.stderr
+                else:
+                    stdo = sp.PIPE
+                    stde = sp.STDOUT
+                    
+                p = sp.Popen([self.shell, '-s'], stdout=stdo, stderr=stde, stdin=sp.PIPE, shell=False, env=env)
                 res, _ = p.communicate(input=input_bin)
+                res = res or ''
                 retcode = p.wait()
-                
+
                 return (res, retcode)
 
             res, retcode = await ctl.loop.offload(y.set_name(fun, 'fun_' + y.sanitize_string(self.my_name)))

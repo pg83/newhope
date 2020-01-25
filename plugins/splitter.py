@@ -28,7 +28,7 @@ def repacks():
 
 
 def split_run_meta(m):
-    m = y.deep_copy(m)
+    m = y.dc(m)
 
     m.pop('depends', None)
 

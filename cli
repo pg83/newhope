@@ -16,7 +16,7 @@ def check_ver():
     if vi.major >= 3 and vi.minor >= 8:
         return
 
-    for x in ('/root/python/bin:/Users/pg/18/bin:' + os.environ.get('PATH', '')).split(':'):
+    for x in ('/root/python/bin:/Users/pg/18/bin:' + os.environ.get('PATH', '/bin:/usr/bin:/usr/local/bin')).split(':'):
         for v in ('3.8', '3.9', '3.10'):
             path = x + '/python' + v
 

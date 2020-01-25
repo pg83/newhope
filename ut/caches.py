@@ -15,7 +15,7 @@ def get_copy_func(copy=False):
     if not copy:
         return lambda x: x
 
-    return lambda x: y.deep_copy(x)
+    return lambda x: y.dc(x)
 
 
 tmpl = """

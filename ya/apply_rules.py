@@ -33,7 +33,7 @@ def apply_fetch(lines, v):
 def fix_v2(v, **kwargs):
     assert v is not None
 
-    v = y.deep_copy(v)
+    v = y.dc(v)
     n = v['node']
 
     m = y.ensure_value('meta', n, {})

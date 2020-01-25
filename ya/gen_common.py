@@ -1,6 +1,6 @@
 def fix_user_data(iter):
     for f in iter:
-        yield y.deep_copy(f)
+        yield y.dc(f)
 
 
 def common_plugins(iface):
@@ -8,7 +8,7 @@ def common_plugins(iface):
 
     for el in sorted(y.globals.file_data, key=lambda x: y.burn([3, x['name']])):
         if el['name'].startswith('pl/'):
-            yield y.ELEM(y.deep_copy(el))
+            yield y.ELEM(y.dc(el))
 
     yield y.FIN()
 
@@ -25,15 +25,10 @@ def mf_function_holder(cc, cb, iface):
     for l in lst_f:
         yield y.DEFUN(l)
 
-    lst_c = [
-    ]
-
-    for l in lst_c:
-        yield y.DECORO(l)
-    
     yield y.FIN()
+    y.os.abort()
 
-    
+
 def mf_function_holder_gen(cc, cb):
     def func(iface):
         yield from mf_function_holder(cc, cb, iface)
@@ -50,7 +45,7 @@ def aggr_flag(name, metas):
         return sorted(frozenset(data))
     except TypeError:
         return data
-        
+
     
 def join_metas(metas, merge=['flags']):
     return dict((x, aggr_flag(x, metas)) for x in merge) 

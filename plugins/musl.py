@@ -54,6 +54,6 @@ def musl0():
        source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/llvm-mirror/clang/master/lib/Headers/stdatomic.h"
     """
     
-    res = y.deep_copy(musl_impl(code, ['make-boot', 'mimalloc'], ['musl-boot'], ['library']))
+    res = y.dc(musl_impl(code, ['make-boot', 'mimalloc'], ['musl-boot'], ['library']))
 
     return res

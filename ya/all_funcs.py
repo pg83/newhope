@@ -30,7 +30,7 @@ def gen_package_name(x):
 
 
 def fix_pkg_name(res, descr):
-    res = y.deep_copy(res)
+    res = y.dc(res)
 
     res['node']['name'] = gen_package_name(descr)
     res['node']['gen'] = descr['gen']

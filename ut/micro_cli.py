@@ -167,7 +167,7 @@ async def cli_test_green(args):
 async def cli_test_preproc(args):
     test_preproc_x(args)
 
-
+/*
 def test_preproc_x(args):
     #define X 1
 
@@ -225,3 +225,4 @@ def test_preproc_x(args):
     #else
         print('bad')
     #endif
+*/

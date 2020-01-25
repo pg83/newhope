@@ -81,7 +81,7 @@ def set_abort(g):
 def set_env(g):
     sys.argv[0] = g.script_path
     sys.dont_write_bytecode = True
-    os.environ['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin'
+    #os.environ['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin'
     set_sigint(g)
     set_abort(g)
     set_profile(g)

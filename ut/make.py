@@ -25,8 +25,5 @@ async def run_make_0(mk, args):
             
     async def do_run_log():
         return await do_run(output_build_results)
-    
-    async def do_run_app():
-        return await do_run(y.construct_pt_app())
-            
+
     return await y.spawn(do_run_log)

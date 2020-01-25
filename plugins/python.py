@@ -41,7 +41,7 @@ def python0():
 
 @y.ygenerator()
 def python_pth0():
-    r = y.deep_copy(python_base(['tool']))
+    r = y.dc(python_base(['tool']))
 
     r['code'] = r['code'].replace('./configure', './configure --with-pth').replace('##', '')
     r['meta']['depends'].append('pth')

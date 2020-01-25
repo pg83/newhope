@@ -36,7 +36,7 @@ def bestbox0():
 
 @y.ygenerator()
 def superbox0():
-    data = y.deep_copy(bestbox0())
+    data = y.dc(bestbox0())
     data['os'] = 'linux'
     data['meta']['provides'].append({'env': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'})
     data['meta']['provides'].append({'env': 'DASH', 'value': '{pkgroot}/bin/dash'})    
