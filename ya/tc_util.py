@@ -6,7 +6,7 @@ def cons_to_name_x(c):
         c = c['target']
     except KeyError:
         pass
-    
+
     res = ''
 
     for k, f in (('os', 1), ('libc', 1), ('arch', 2)):
@@ -56,7 +56,7 @@ def iter_all_targets():
                 'os': 'linux',
                 'libc': libc,
             }
-            
+
     for a in ('x86_64',):
         yield {
             'arch': a,
@@ -67,19 +67,19 @@ def iter_all_targets():
 @y.singleton
 def rev_target_map():
     res = {}
-    
+
     for x in iter_all_targets():
         res[small_repr(x)] = x
 
     print res
-        
+
     return res
 
 
 def to_full_target(name):
     return rev_target_map()[name]
 
-        
+
 def iter_all_arch():
     yield from sorted(frozenset(x['arch'] for x in iter_all_targets()))
 
@@ -87,7 +87,7 @@ def iter_all_arch():
 def iter_all_os():
     yield from sorted(frozenset(x['os'] for x in iter_all_targets()))
 
-    
+
 @y.singleton
 def current_host_platform():
     res = {

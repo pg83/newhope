@@ -1,7 +1,7 @@
 @y.contextlib.contextmanager
 def defer_context(verbose=False):
     defer = []
-    
+
     try:
         yield defer.append
     finally:
@@ -10,7 +10,7 @@ def defer_context(verbose=False):
                 d()
             except Exception:
                 pass
-        
+
 
 def defer_wrapper(func):
     @y.functools.wraps(func)
@@ -24,15 +24,15 @@ def defer_wrapper(func):
 @y.singleton
 def defer_channel():
     return []
-    
+
 
 def defer_constructor(func):
     defer_channel().append({'func': func})
-    
+
     return func
 
 
-def run_defer_constructors():        
+def run_defer_constructors():
     @defer_constructor
     def sentinel():
         return 'shit'

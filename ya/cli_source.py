@@ -1,9 +1,9 @@
 def fetch_data(url):
     def fetch_1(url):
         import urllib.request as urllib2
-        
+
         return urllib2.urlopen(url).read()
-    
+
     def fetch_2(url):
         return y.subprocess.check_output(['curl -s -S --retry 3 -L -k -o - ' + url], shell=True)
 
@@ -11,7 +11,7 @@ def fetch_data(url):
         return y.subprocess.check_output(['curl -s -S --retry 3 -L -o - ' + url], shell=True)
 
     e = None
-    
+
     for f in (fetch_1, fetch_2, fetch_1, fetch_3):
         try:
             return f(url)
@@ -63,7 +63,7 @@ async def cli_pkg_source(arg):
             for d in funcs:
                 n = (d['gen'] + '-' + d['base']).replace('-', '_')
                 c = d['code']
-                
+
                 yield n, c
 
         return dict(do())
@@ -71,7 +71,7 @@ async def cli_pkg_source(arg):
     funcs = await find_func()
 
     print funcs
-    
+
     @y.lookup
     def lookup(name):
         return funcs[name]
@@ -93,6 +93,6 @@ async def cli_pkg_source(arg):
                 if urls:
                     for url in urls:
                         yield url
-               
+   
     for url in iter_urls():
         print('will fetch', url, fetch_http(args.path, url))

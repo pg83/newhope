@@ -16,7 +16,7 @@ def zlib0():
             'provides': [
                 {'lib': 'z', 'configure': {'opt': '--with-z={pkgroot}'}},
                 {'env': 'ZLIB_CFLAGS', 'value': '"-I{pkgroot}/include"'},
-                {'env': 'ZLIB_LIBS', 'value': '"-L{pkgroot}/lib -lz"'},                
+                {'env': 'ZLIB_LIBS', 'value': '"-L{pkgroot}/lib -lz"'},
             ],
         },
     }

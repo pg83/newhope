@@ -13,7 +13,7 @@ def run_profile(func, really=False):
             @y.singleton
             def func():
                 ps = y.pstats.Stats(p, stream=y.stderr)
-                
+
                 ps.sort_stats('cumtime')
                 ps.print_stats()
 

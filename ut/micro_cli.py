@@ -7,36 +7,36 @@ async def cli_test_offload(args):
 async def cli_test_ctx(args):
     async def func1():
         c = y.current_coro()
-        
+
         while True:
             await c.sleep(1)
             print(c)
-            
+
     async def func2():
         c = y.current_coro()
-        
+
         while True:
             await c.sleep(2)
             print(c)
-    
+
     a1 = y.current_coro().spawn(func1)
     a2 = y.current_coro().spawn(func2)
 
     await a1
     await a2
 
-    
+
 @y.asyncio.coroutine
 def awkward_suspend():
     yield
 
-    
+
 @y.verbose_entry_point
 async def cli_test_queue(args):
     q = y.QQ(y.async_loop)
     #q = y.MTQ()
     #q = y.PQ()
-    
+
     async def func1(ctl):
         while True:
             for i in range(0, 2000):
@@ -44,7 +44,7 @@ async def cli_test_queue(args):
                 await ctl.sched_yield()
                 q.push(int(y.random.random() * 1000))
                 q.push(int(y.random.random() * 1000))
-            
+
     async def func3(ctl):
         while True:
             for i in range(0, 500):
@@ -52,19 +52,19 @@ async def cli_test_queue(args):
                 await q.async_pop()
                 await ctl.sched_yield()
                 q.push(int(y.random.random() * 1000))
-            
+
     async def func2(ctl):
         while True:
             for i in range(0, 100):
                 q.push(int(y.random.random() * 1000))
-            
+
             await ctl.sched_yield()
-        
+
             for i in range(0, 100):
                 await q.async_pop()
-        
+
     c = []
-        
+
     for i in range(0, 20):
         c.append(y.spawn(func1, 'func1_' + str(i)))
         c.append(y.spawn(func2, 'func2_' + str(i)))
@@ -72,7 +72,7 @@ async def cli_test_queue(args):
 
     for x in c:
         await x
-        
+
 
 @y.verbose_entry_point
 async def cli_test_pubsub(args):
@@ -81,7 +81,7 @@ async def cli_test_pubsub(args):
     async def f1(ctl, inq):
         yield y.EOP(y.ACCEPT('A'), y.PROVIDES('B'))
         yield y.EOP(y.ELEM(2))
-        
+
         async for i in inq:
             i = i.data.data
             print('f1', i)
@@ -121,7 +121,7 @@ async def cli_test_template(args):
 @y.verbose_entry_point
 async def cli_misc_timeout(args):
     import os
-    
+
     tout = int(args[0])
     pid = os.fork()
 
@@ -139,30 +139,30 @@ async def cli_test_wait(args):
     while True:
         await y.current_coro().sleep(1)
 
-        
+
 @y.verbose_entry_point
 async def cli_test_green(args):
     async def func1():
         c = y.current_coro()
-        
+
         while True:
             await c.sleep(1)
             print(c)
-            
+
     def func2(ctl):
         c = y.current_coro()
-        
+
         while True:
             ywait c.sleep(2)
             print(c)
-    
+
     a1 = y.current_coro().spawn(func1)
     a2 = y.current_coro().spawn(func2)
 
     await a1
     await a2
 
-        
+
 @y.verbose_entry_point
 async def cli_test_preproc(args):
     test_preproc_x(args)
@@ -184,7 +184,7 @@ def test_preproc_x(args):
     else:
         print('bad')
 
-    print repr(X), id(X)        
+    print repr(X), id(X)
     #undef X
 
     #if defined(X)
@@ -194,7 +194,7 @@ def test_preproc_x(args):
     #endif
 
     try:
-        print repr(X), id(X)        
+        print repr(X), id(X)
         a = X
         print repr(X), id(X)
         print('bad', a)

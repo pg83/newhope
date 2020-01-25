@@ -8,7 +8,7 @@ def mimalloc0():
              $AR q libmimalloc.a static.o
              $RANLIB libmimalloc.a
              mkdir $IDIR/lib
-             mv libmimalloc.a $IDIR/lib/             
+             mv libmimalloc.a $IDIR/lib/ 
         """,
         'version': '',
         'meta': {

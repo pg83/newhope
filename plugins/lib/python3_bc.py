@@ -4,7 +4,7 @@ import sys
 
 patch = """
         import json
-        
+
         if os.environ.get('DUMP'):
             print(json.dumps([x.__dict__ for x in extensions], sort_keys=True, indent=4))
             sys.stdout.flush()
@@ -18,7 +18,7 @@ class Skip(Exception):
 def build_descr(el):
     pre = ''
     after = ''
-    
+
     name = el['name']
 
     if name.startswith('_test'):
@@ -37,7 +37,7 @@ def build_descr(el):
 
     if name in bad:
         pre = '#'
-    
+
     sources = []
     cflags = []
     ldflags = []
@@ -60,13 +60,13 @@ def build_descr(el):
 
     def flt_wl_1(l):
         return list(flt_wl(l))
-    
+
     for x in el['include_dirs']:
         if '/usr' in x:
             raise Skip()
-            
+
         cflags.append(fix_inc(('-I' + x).replace('-IMo', '-I$(srcdir)/Mo')))
-    
+
     for x in el['libraries']:
         cflags.append('-l' + x)
 
@@ -74,7 +74,7 @@ def build_descr(el):
         sources.append(x)
 
     cflags_d = []
-    
+
     for x in el['define_macros']:
         if x[1]:
             cflags_d.append('#define ' + str(x[0]) + ' ' + str(x[1]))
@@ -93,7 +93,7 @@ def build_descr(el):
 
     if cflags_d:
         add = '\n'.join(cflags_d) + '\n\n'
-        
+
         for s in sources:
             s = 'Modules/' + s
 
@@ -102,7 +102,7 @@ def build_descr(el):
 
             with open(s, 'w') as f:
                 f.write(data)
-                    
+    
     return pre + ' '.join([name] + flt_wl_1(sources) + flt_wl_1(list(flt_lib(cflags))) + flt_wl_1(list(flt_lib(ldflags)))) + after
 
 
@@ -118,27 +118,27 @@ def apply_patch(path, p, line):
             yield ll
 
     data = '\n'.join(iter())
-            
+
     with open(path, 'w') as f:
         f.write(data)
-        
+
 
 def main():
     if sys.argv[1] == 'patch':
         return apply_patch(sys.argv[2], patch, '# move ctypes to the end')
-    
+
     with open(sys.argv[1]) as f:
         data = f.read()
         data = json.loads(data[data.find('['):])
 
     print('*static*')
-        
+
     for el in data:
         try:
             print(build_descr(el))
         except Skip:
             print('skip', str(el), file=sys.stderr)
-        
-        
+
+
 if __name__ == '__main__':
     main()

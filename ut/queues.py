@@ -29,7 +29,7 @@ class QQ(object):
         def cb(v):
             #print 'XXXXXXXX', fut, v
             fut.set_result(v)
-        
+
         self.c.append(cb)
         self.cycle()
 
@@ -39,12 +39,12 @@ class QQ(object):
         res = fut.result()
 
         return res
-    
+
     def push(self, v):
         self.q.append(v)
         self.cycle()
-        
-    
+
+
 class MTQ(object):
     def __init__(self, *args):
         self.q = y.queue.SimpleQueue()
@@ -54,7 +54,7 @@ class MTQ(object):
 
     def pop(self):
         return self.q.get()
-    
+
     async def async_pop(self):
         return self.pop()
 
@@ -64,7 +64,7 @@ class MTQ(object):
         except y.queue.Empty:
             return NOV
 
-        
+
 class PQ(object):
     def __init__(self, *args):
         self.r, self.w = y.os.pipe()
@@ -74,7 +74,7 @@ class PQ(object):
 
     async def async_pop(self):
         return self.pop()
-    
+
     def pop(self):
         return y.struct.unpack('I', y.os.read(self.r, 4))[0]
-    
+

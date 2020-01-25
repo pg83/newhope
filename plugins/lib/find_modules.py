@@ -20,29 +20,29 @@ def find_modules():
 
                 if '.' in p:
                     skip(p)
-                    
+    
                     continue
-                
+
                 m = p.replace('/', '.')
 
                 if m in no:
                     skip(m)
-                    
+    
                     continue
 
                 if m.startswith('test.'):
                     skip(m)
-                    
+    
                     continue
-                
+
                 if '.test.' in m:
                     skip(m)
-                    
+    
                     continue
-                
+
                 if '.tests.' in m:
                     skip(m)
-                    
+    
                     continue
 
                 cmd = '''

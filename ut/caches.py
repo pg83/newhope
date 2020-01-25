@@ -51,7 +51,7 @@ def simple_cache(f):
 
     def wrapper(*args):
         key = y.burn(args)
-        
+
         try:
             return c[key]
         except KeyError:
@@ -76,9 +76,9 @@ def get_cache_holder(f, ic=y.inc_counter()):
 
     hold_name = 'cache_holder_' + name
     vars = ', '.join(['key', 'f', 'cf'])
-    
+
     return get_cache_holder_module(tmpl.format(name=name.upper(), vars=vars, holder=hold_name), name)[hold_name]
-    
+
 
 def cached(f=None, key=default_key, copy=False):
     cf = get_copy_func(copy=copy)
@@ -91,7 +91,7 @@ def cached(f=None, key=default_key, copy=False):
 
     if f:
         return functor(f)
-    
+
     return functor
 
 
@@ -128,7 +128,7 @@ def cached_method1(meth):
     def wrapper(self, *args, **kwargs):
         key = y.burn([meth.__name__, args, kwargs])[2:10]
         d = self.__dict__
-        
+
         try:
             return d[key]
         except KeyError:

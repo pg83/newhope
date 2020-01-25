@@ -10,7 +10,7 @@ def gen_code(kind, folders):
         for y in (('cp -R $MDIR/%s $IDIR/') % x[1:] for x in folders):
             yield y
 
-            
+
 @y.singleton
 def repacks():
     by_kind = {
@@ -40,7 +40,7 @@ def split_run_meta(m):
                 yield k
 
     m['kind'] = list(flt_kind())
-    
+
     def flt_provides():
         for p in m.get('provides', []):
             if 'lib' in p:
@@ -51,7 +51,7 @@ def split_run_meta(m):
 
                 if 'CFLAGS' in e or 'LIBS' in e:
                     continue
-            
+
             yield p
 
     m['provides'] = list(flt_provides())
@@ -67,7 +67,7 @@ def split_meta(m, kind):
         return {
             'flags': m.get('flags', []),
         }
-    
+
     # TODO
     return m
 
@@ -76,7 +76,7 @@ class SplitKind(object):
     def __init__(self, parent, kind):
         self.p = parent
         self.k = kind
-        
+
         self.d = {
             'gen': self.p.arg['gen'],
             'base': self.p.arg['base'] + '-' + self.k,
@@ -88,7 +88,7 @@ class SplitKind(object):
     @y.cached_method
     def run(self):
         return y.store_node(self.code())
-        
+
     def split_part(self):
         res = {
             'code': self.p.repacks[self.k]['code'],
@@ -101,11 +101,11 @@ class SplitKind(object):
         res['meta']['kind'] = res.pop('kind')
 
         return res, self.p.arg['info']
-    
+
     def code(self):
         return y.fix_pkg_name(y.fix_v2(y.to_v2(*self.split_part())), self.d)
-    
-        
+
+
 class Splitter(object):
     def __init__(self, arg, repacks):
         self.arg = arg
@@ -116,15 +116,15 @@ class Splitter(object):
 
     def node(self):
         return y.restore_node_node(self.dep())
-    
+
     def meta(self):
         return self.node().get('meta', {})
-                
+
     def gen(self, kind):
         return SplitKind(self, kind).d
 
-    
-@y.pubsub.wrap    
+
+@y.pubsub.wrap
 def run_splitter(iface):
     yield y.EOP(y.ACCEPT('mf:new functions'), y.PROVIDES('mf:splitted'))
 
@@ -135,15 +135,15 @@ def run_splitter(iface):
             yield y.FIN()
 
             return 
-        
+
         arg = arg['func']
         repack = arg.get('repacks', repacks())
-        
+
         if not repack:
             continue
-    
+
         s = Splitter(arg, repack)
-    
+
         for k in repack:
             yield y.ELEM({'func': s.gen(k)})
 

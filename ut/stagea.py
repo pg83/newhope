@@ -23,7 +23,7 @@ def set_profile(g):
         return
 
     g.trace_function = lambda *args: None
-    
+
     def trace(*args):
         g.trace_function(*args)
 
@@ -48,7 +48,7 @@ def set_abort(g):
         'tb': traceback,
         'str': str,
     }
-    
+
     g.trash = ctx
     g.abort_function = os.abort
 
@@ -63,10 +63,10 @@ def set_abort(g):
         xprint(g.trash['tb'].format_exc())
 
     g.abort_handler = abort_handler
-    
+
     def new_abort():
         g.trash['os'].__dict__.pop('abort')
-        
+
         try:
             try:
                 g.abort_handler()
@@ -85,7 +85,7 @@ def set_env(g):
     set_sigint(g)
     set_abort(g)
     set_profile(g)
-    
+
 
 def preprocess_data(data):
     p1 = data.find('/*')
@@ -144,18 +144,18 @@ def load_folders(folders, exts, where):
 
     for f in folders:
         fp = os.path.join(os.path.dirname(where), f)
-      
+  
         for x in os.listdir(fp):
             if bad_name(x):
                 continue
-            
+
             parts = x.split('.')
             name = os.path.join(replace[f], x)
             path = os.path.join(fp, x)
 
             if not os.path.isfile(path):
                 continue
-            
+
             with open(path) as fff:
                 data = preprocess_data(fff.read())
 
@@ -174,7 +174,7 @@ def iter_prefix(x):
 
     for y in x:
         l = l + y
-        
+
         yield l
 
 
@@ -183,12 +183,12 @@ def thr_func(g):
         g.file_data = g.file_data or load_system(g.script_path)
         g.by_name = dict((x['name'], x) for x in g.file_data)
         g.by_prefix = collections.defaultdict(set)
-        
+
         for i, x in enumerate(g.file_data):
             for w in x['data'].split():
                 for p in iter_prefix(w):
                     g.by_prefix[p].add(x['burn'])
-                        
+        
         ctx = {'_globals': g}
         exec(g.compile((g.by_name['ut/stage0.py']['data'] + '\nrun_stage0(_globals)\n'), 'ut/stage0.py', 'exec'), ctx)
         ctx.clear()

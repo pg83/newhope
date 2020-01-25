@@ -44,8 +44,8 @@ def register_entry_point(f):
     assert name not in mep
 
     mep[name] = f
-    
-    if '_' in name:                
+
+    if '_' in name:
         def it_help(prefix):
             yield '{bg}options:{}'
 
@@ -55,12 +55,12 @@ def register_entry_point(f):
         async def func(mn, args):
             if args:
                 nn = mn + '_' + args[0]
-                
+
                 if nn in mep:
                     return await mep[nn][1](args[1:])
             else:
                 print('\n'.join(it_help(mn)), file=y.stderr)
-                
+
         def register(n, s):
             if not s:
                 return
@@ -75,7 +75,7 @@ def register_entry_point(f):
             else:
                 ff = lambda args: func(n, args)
                 ff.__name__ = n
-                
+
                 mep[n] = ('d', ff)
 
             register(n, s)
@@ -99,7 +99,7 @@ def verbose_entry_point(f):
 def init_1():
     if y.config.get('psy'):
         y.run_at_exit(y.print_stats)
-    
+
 
 async def run_main(args):
     with y.without_gc(True):

@@ -5,18 +5,18 @@ def is_debug():
 
 async def run_makefile(mk, targets, threads, pre_run=[]):
     mmk = mk
-    
+
     async def run_build_2(ctl):
         mk = mmk
-        
+
         await y.cheet(mk)
-    
+
         if pre_run:
             await run_par_build(ctl, await mk.select_targets(pre_run), 1, False)
 
         if targets:
             mk = await mk.select_targets(targets)
-            
+
         return await run_par_build(ctl, mk, threads, True)
 
     return await y.spawn(run_build_2)
@@ -33,7 +33,7 @@ def wrap_gen(func):
 def CHANNEL(data):
     return y.DATA(tags=['mk:channel'], data=data)
 
-        
+
 class Builder(object):
     def __init__(self, ctl, mk, threads, check):
         self.check = check
@@ -41,7 +41,7 @@ class Builder(object):
         self.threads = threads
         self.ctl = ctl
         self.lst = [item_factory(x, self, n) for n, x in enumerate(mk.lst)]
-        
+
         by_dep = {}
 
         for x in self.lst:
@@ -56,17 +56,17 @@ class Builder(object):
     @property
     def shell_vars(self):
         return self.mk.flags
-        
+
     @y.cached_method
     def resolve_path(self, d):
         return y.subst_vars(self.mk.strings[d], self.shell_vars)
 
     async def runner(self, ctl, inq):
         yield y.EOP(y.ACCEPT('mk:build', 'mk:channel'), y.PROVIDES('mk:ready'))
-        
+
         async for el in inq:
             el = el.data.data
-            
+
             is_debug() and y.debug('got', str(el))
 
             if el.get('action', '') == 'finish':
@@ -78,13 +78,13 @@ class Builder(object):
                 is_debug() and y.debug('run cmd', item)
                 retcode = await item.run_cmd(ctl)
                 is_debug() and y.debug('done run cmd', item, retcode)
-                
+
                 if retcode:
                     yield CHANNEL({'action': 'finish', 'status': 'failure'})
                     yield y.FIN()
 
                     return
-                    
+    
                 if item.my_name == '_all':
                     yield CHANNEL({'action': 'finish', 'status': 'success'})
                     yield y.FIN()
@@ -94,7 +94,7 @@ class Builder(object):
                 yield y.EOP(y.ELEM({'ready': item}))
             else:
                 yield y.EOP()
-                
+
         assert False
 
     async def producer(self, ctl, inq):
@@ -103,12 +103,12 @@ class Builder(object):
 
             lstl = len(self.lst)
             deps = sum([x.deps1 for x in self.lst], [])
-            
+
             class ItemAll(object):
                 @property
                 def n(self):
                     return {'deps1': self.deps1, 'deps2': self.deps2, 'cmd': []}
-                    
+    
                 @property
                 def my_name(self):
                     return '_all'
@@ -116,7 +116,7 @@ class Builder(object):
                 @property
                 def deps1(self):
                     return [self.num]
-                
+
                 @property
                 def deps2(self):
                     return deps
@@ -131,7 +131,7 @@ class Builder(object):
                         'message': 'build complete',
                         'target': self.my_name,
                     })
-                    
+    
                     return 0
 
             yield ItemAll()
@@ -143,7 +143,7 @@ class Builder(object):
                 el = el.data.data
                 is_debug() and y.debug('got', el)
                 return el
-                
+
         rq, wq = y.make_engine(iter_data(), lambda x: x.deps1[0], dep_list=lambda x: sorted(frozenset(x.deps2)))
 
         if 0:
@@ -151,15 +151,15 @@ class Builder(object):
                 for i in list(rq()):
                     print str(i['x'])
                     wq(i)
-        
+
         by_n = {}
         complete = set()
-        
+
         yield y.EOP(y.ACCEPT('mk:ready', 'mk:channel'), y.PROVIDES('mk:build'))
 
         def fmt_in_fly(data):
             return '(' + ', '.join([x['x'].my_name for x in data.values()]) + ')'
-        
+
         while True:
             for i, el in enumerate(rq()):
                 item = el['x']
@@ -173,12 +173,12 @@ class Builder(object):
             yield y.EOP()
 
             el = await next_el()
-                
+
             if el.get('action', '') == 'finish':
                 yield y.FIN()
 
                 return
-                
+
             if (item := el.get('ready')) is not None:
                 key = y.burn(item.n)
                 assert key not in complete
@@ -187,35 +187,35 @@ class Builder(object):
                 is_debug() and y.debug('got complete', item, 'in fly', fmt_in_fly(by_n))
 
         assert False
-    
+
     async def run(self):
         p = y.PubSubLoop(self.ctl)
-        
+
         def iter_workers():
             yield y.set_name(wrap_gen(self.producer), 'producer_0')
-            
+
             for i in range(0, self.threads):
                 yield y.set_name(wrap_gen(self.runner), 'runner_' + str(i))
 
         return await p.run(coro=list(iter_workers()))
-            
+
 
 def item_factory(n, p, i):
     if n.get('cmd'):
         return Item(n, p, i)
 
     return ItemBase(n, p, i)
-            
+
 
 class ItemBase(object):
     def __init__(self, n, p, i):
         self.n = n
         self.p = p
         self.i = i
-        
+
     def __str__(self):
         return y.json.dumps(self.__json__(), sort_keys=True)
-        
+
     def __json__(self):
         return {
             'num': self.num,
@@ -228,39 +228,39 @@ class ItemBase(object):
     @property
     def check(self):
         return self.p.check
-    
+
     @property
     def num(self):
         return self.i
-    
+
     @property
     def my_name(self):
         return ', '.join(self.str_deps1)
-            
+
     @property
     def deps1(self):
         return self.n['deps1']
-    
+
     @property
     def str_deps1(self):
         return self.p.mk.nums_to_str(self.deps1)
-    
+
     @property
     def deps2(self):
         return self.n.get('deps2', [])
-    
+
     @property
     def str_deps2(self):
         return self.p.mk.nums_to_str(self.deps2)
-    
+
     @property
     def cmd(self):
         return self.n.get('cmd', [])
-    
+
     @property
     def str_cmd(self):
         return self.p.mk.nums_to_str(self.cmd)
-        
+
     @property
     def resolve_path(self):
         return self.p.resolve_path
@@ -268,13 +268,13 @@ class ItemBase(object):
     async def run_cmd(self, ctl):
         return 0
 
-    
+
 class Item(ItemBase):
     def __init__(self, n, p, i):
         ItemBase.__init__(self, n, p, i)
 
         assert self.cmd
-        
+
         self.path = list(self.iter_search_path())
         self.shell = self.find_shell()
         assert self.shell
@@ -289,14 +289,14 @@ class Item(ItemBase):
         })
 
         return res
-    
+
     @property
     def shell_vars(self):
         return self.p.shell_vars
-        
+
     def prepare_env(self):
         return dict(y.itertools.chain({'OUTER_SHELL': self.shell}.items(), y.fix_shell_vars(self.shell_vars)))
-        
+
     def find_tool(self, tool):
         if tool[0] == '/':
             return tool
@@ -308,36 +308,36 @@ class Item(ItemBase):
             yield y.os.path.join(y.os.path.dirname(self.resolve_path(d)), 'bin')
 
         yield from y.os.environ['PATH'].split(':')
-            
+
     def find_shell(self):
         if '$YSHELL' in self.shell_vars:
             shell = self.find_tool(self.shell_vars['$YSHELL'])
 
             if shell:
                 return shell
-            
+
             raise Exception('can not find ' + self.shell_vars['$YSHELL'])
-            
+
         return self.find_tool('dash') or self.find_tool('yash') or self.find_tool('bash') or self.find_tool('sh')
 
     def build_cmd(self):
         env = self.env
-        
+
         def iter_cmd():
             yield 'set -e'
             yield 'set -x'
-            
+
             for k in sorted(env, key=lambda x: -len(x)):
                 yield 'export {k}={v}'.format(k=k, v=env[k])
 
             yield 'mainfun() {'
-            
+
             for l in self.str_cmd:
                 yield l
-                    
+    
             yield '}'
             yield 'mainfun ' + ' '.join(y.itertools.chain(self.str_deps1, self.str_deps2))
-                
+
         input = '\n'.join(iter_cmd()) + '\n'
         input = input.replace('$(SHELL)', '$YSHELL')
 
@@ -359,12 +359,12 @@ class Item(ItemBase):
             return True
         except Exception:
             pass
-        
+
         return False
 
     async def run_cmd(self, ctl):
         target = self.my_name
-        
+
         if self.check_done():
             y.build_results({
                 'message': 'use cached {target}',
@@ -386,7 +386,7 @@ class Item(ItemBase):
             for l in res.strip().split('\n'):
                 if 'export ' in l:
                     yield l
-        
+
         msg = {
             'output': '\n'.join(iter_lines()),
             'command': input,
@@ -409,13 +409,13 @@ class Item(ItemBase):
 
         if retcode:
             y.shut_down(5, last_msg='{br}target ' + target + ' failed, exiting now{}\n')
-        
+
     async def run_cmd_0(self, ctl):
         sp = y.subprocess
         out = []
         retcode = 0
         input = self.build_cmd()
-        
+
         try:
             env = y.dc(self.env)
             #naked = 'source init' not in input
@@ -431,7 +431,7 @@ class Item(ItemBase):
                 else:
                     stdo = sp.PIPE
                     stde = sp.STDOUT
-                    
+    
                 p = sp.Popen([self.shell, '-s'], stdout=stdo, stderr=stde, stdin=sp.PIPE, shell=False, env=env)
                 res, _ = p.communicate(input=input_bin)
                 res = res or ''
@@ -441,7 +441,7 @@ class Item(ItemBase):
 
             res, retcode = await ctl.loop.offload(y.set_name(fun, 'fun_' + y.sanitize_string(self.my_name)))
             res = res.strip()
-            
+
             if not res:
                 res = y.build_run_sh(self.n)
 
@@ -459,7 +459,7 @@ class Item(ItemBase):
 
         return retcode, '\n'.join(y.super_decode(o.strip()) for o in out), input
 
-    
+
 async def run_par_build(ctl, mk, threads, check):
     async def run_par_build_1(ctl):
         b = Builder(ctl, mk, threads, check)
@@ -467,7 +467,7 @@ async def run_par_build(ctl, mk, threads, check):
         return await b.run()
 
     y.info('{br}start build{}')
-    
+
     try:
         return await ctl.spawn(run_par_build_1)
     finally:

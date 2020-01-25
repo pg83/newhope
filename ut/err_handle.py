@@ -31,11 +31,11 @@ def sync_pack(f):
     except Exception:
         return (None, y.sys.exc_info())
 
-    
+
 async def async_pack(f):
     try:
         res = await f()
-        
+
         return ([res], None)
     except Exception:
         return (None, y.sys.exc_info())
@@ -55,5 +55,5 @@ def print_stacks():
         y.time.sleep(5)
         y.print_all_stacks()
 
-        
+
 #y.threading.Thread(target=print_stacks).start()

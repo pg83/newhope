@@ -9,5 +9,5 @@ async def cli_cmd_fetch(args):
         url = args[0]
         root = './'
         name = y.os.path.basename(url)
-            
-    y.fetch_http(root, url, name=name, untar=False)    
+
+    y.fetch_http(root, url, name=name, untar=False)

@@ -15,7 +15,7 @@ def good_sym():
 
 def sanitize_string(s):
     gs = good_sym()
-    
+
     def iter_good():
         for c in s:
             if c in gs:
@@ -28,7 +28,7 @@ def sanitize_string(s):
 
 def select_targets(lst, targets):
     by_link = {}
-    
+
     for n, l in enumerate(lst):
         for d in l['deps1']:
             by_link[d] = n
@@ -47,22 +47,22 @@ def select_targets(lst, targets):
             for d in lst[n]['deps2']:
                 if d in by_link:
                     yield by_link[d]
-        
+
         for l in iter1():
             yield from visit(l)
 
     def iter():
         for t in targets:
             yield from visit(by_link[t])
-                
+
     return [lst[x] for x in sorted(frozenset(iter()))]
-    
+
 
 def subst_vars(d, shell_vars):
     while '$' in d:
         for k, v in shell_vars.items():
             d = d.replace(k, v)
-            
+
     return d
 
 
@@ -78,7 +78,7 @@ def super_decode(s):
         return s.decode('utf-8')
     except Exception:
         return s
-            
+
 
 def fix_shell_vars(shell_vars):
     return [(remove_d(k), v) for k, v in shell_vars.items()]
@@ -91,7 +91,7 @@ def cached_file_list(where):
     except FileNotFoundError:
         return frozenset()
 
-    
+
 @y.cached()
 def find_tool_cached(tool, path):
     for p in path:
@@ -118,7 +118,7 @@ async def parse_makefile(data):
             else:
                 print(shell_args, file=y.sys.stderr)
                 parse_flags = False
-        
+
         p = l.find('##')
 
         if p > 5:
@@ -175,7 +175,7 @@ async def cheet(mk):
             return y.os.path.dirname(bsp)
 
         l = locals()
-        
+
         @y.lookup
         def look(name):
             return l[name]
@@ -209,12 +209,12 @@ class MakeFile(object):
             return self.init_from_dict(y.decode_prof(lst))
         except Exception as e1:
             exc1 = e1
-        
+
         try:
             return self.init_from_parsed(await parse_makefile(lst))
         except Exception as e2:
             exc2 = e2
-            
+
         try:
             return self.init_from_parsed(await parse_makefile(lst.decode('utf-8')))
         except Exception as e2:
@@ -236,7 +236,7 @@ class MakeFile(object):
         mk.__dict__.update(self.__dict__)
 
         return mk
-        
+
     def init_from_parsed(self, parsed):
         self.flags = parsed['flags']
         self.strings = []
@@ -244,7 +244,7 @@ class MakeFile(object):
         self.lst = [self.store_node(n) for n in parsed['lst']]
 
         return self
-        
+
     def cvt(self, l, name):
         return self.lst_to_nums(l.get(name, []))
 
@@ -256,12 +256,12 @@ class MakeFile(object):
             return self.str_to_num[s]
 
         k = len(self.strings)
-        
+
         self.strings.append(s)
         self.str_to_num[s] = k
 
         return k
-    
+
     def lst_to_nums(self, l):
         return [self.stn(s) for s in l]
 
@@ -275,7 +275,7 @@ class MakeFile(object):
         lst = [self.restore_node(x) for x in lst]
 
         mk.init_from_parsed({'lst': lst, 'flags': y.dc(self.flags)})
-        
+
         return mk
 
     def store_node(self, n):
@@ -289,7 +289,7 @@ class MakeFile(object):
 
         mk.flags = y.dc(mk.flags)
         mk.flags.update(args.shell_vars)
-        
+
         return await y.run_make_0(mk, args)
 
     async def build_kw(self, **kwargs):
@@ -304,11 +304,11 @@ class MakeFile(object):
 
         return await self.build(args)
 
-    
+
 def dumps_mk(mk):
     return y.encode_prof({'d': mk.lst, 's': mk.strings, 'f': mk.flags})
 
-    
+
 def loads_mk(t):
     return MakeFile().init_from_dict(y.decode_prof(t))
 
@@ -316,7 +316,7 @@ def loads_mk(t):
 async def open_mk_file(path, gen=None):
     if gen and path == 'gen':
         return await gen()
-    
+
     if path == '-':
         data = await y.offload(y.sys.stdin.read)
     elif path:

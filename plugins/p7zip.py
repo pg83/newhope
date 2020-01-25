@@ -13,7 +13,7 @@ def p7zip0():
         """,
         'extra': [
             {'os': 'linux', 'value': {'kind': 'subst', 'from': '{mk}', 'to': 'makefile.linux_amd64'}},
-            {'os': 'darwin', 'value': {'kind': 'subst', 'from': '{mk}', 'to': 'makefile.macosx_llvm_64bits'}},        
+            {'os': 'darwin', 'value': {'kind': 'subst', 'from': '{mk}', 'to': 'makefile.macosx_llvm_64bits'}},
         ],
         'version': '16.02',
         'meta': {

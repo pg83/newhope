@@ -15,7 +15,7 @@ def common_plugins(iface):
 
 def mf_function_holder(cc, cb, iface):
     yield y.EOP(y.ACCEPT())
-    
+
     lst_f = [
         y.common_plugins,
         y.FuncAggr(cb).on_new_data,
@@ -46,7 +46,7 @@ def aggr_flag(name, metas):
     except TypeError:
         return data
 
-    
+
 def join_metas(metas, merge=['flags']):
     return dict((x, aggr_flag(x, metas)) for x in merge) 
 

@@ -53,7 +53,7 @@ def score_tc(c, l, cpp):
 
         if 'clang' in st:
             s += 10
-            
+
         if 'clang++' in st:
             s += 20
 
@@ -69,7 +69,7 @@ def join_tc_meta(tcs):
         'provides': sum((x['meta']['provides'] for x in tcs), []),
     }
 
-    
+
 def join_toolchains(info, tcs):
     nodes = [x['node'] for x in tcs]
     res = {
@@ -83,7 +83,7 @@ def join_toolchains(info, tcs):
         },
         'deps': [y.store_node(x) for x in tcs],
     }
-    
+
     return y.fix_v2(res)
 
 

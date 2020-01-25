@@ -1,7 +1,7 @@
 def python_base(kind):
     version = '3.8.0'
     ver = '.'.join(version.split('.')[:2])
-    
+
     return {
         'code': """
             source fetch "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz" 1

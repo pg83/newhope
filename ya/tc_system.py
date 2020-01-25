@@ -145,7 +145,7 @@ def parse_clang(info):
                 n['meta'] = meta
 
                 yield n
-                
+
         for n in iter_nodes():
             yield {
                 'node': n,
@@ -160,7 +160,7 @@ def iter_darwin():
         for k in ('c', 'c++', 'linker'):
             meta = {'kind': [k, 'tool']}
             path = '/usr/bin/clang'
-            
+
             if k == 'c':
                 meta['provides'] = [
                     {'env': 'CC', 'value': '"' + path + '"'},
@@ -178,7 +178,7 @@ def iter_darwin():
                 meta['provides'] = [
                     {'env': 'LD', 'value': '"' + path + '"'},
                 ]
-                
+
             yield meta
 
     def do_iter():
@@ -193,7 +193,7 @@ def iter_darwin():
                     'target': y.current_host_platform(),
                 },
             }
-            
+
             yield {
                 'node': n,
                 'deps': [],
@@ -248,7 +248,7 @@ def parse_lld(info):
 
 def iter_system_tools():
     yield from iter_darwin()
-    
+
     for c in y.dc(iter_darwin()):
         try:
             c['data'] = c['data'].decode('utf-8')

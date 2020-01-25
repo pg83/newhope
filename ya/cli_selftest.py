@@ -24,7 +24,7 @@ def self_test4():
       async def ff(ctl):
          async def func(x):
             return x * x
-      
+  
          print await ctl.loop.map(func, range(0, 1000)).wait()
 
       y.print_all_threads()

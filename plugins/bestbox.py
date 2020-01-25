@@ -6,7 +6,7 @@ def bestbox0():
             mkdir -p $IDIR/bin
 
             cp $TOYBOX $IDIR/bin
-            cp $BUSYBOX $IDIR/bin            
+            cp $BUSYBOX $IDIR/bin
             cd $IDIR/bin
 
             for i in `./toybox`; do
@@ -16,7 +16,7 @@ def bestbox0():
             for x in `./busybox --list-full`; do
                 y=$(basename $x)
                 ln -fs busybox $y
-            done            
+            done
         """,
         'meta': {
             'kind': ['tool'],
@@ -39,7 +39,7 @@ def superbox0():
     data = y.dc(bestbox0())
     data['os'] = 'linux'
     data['meta']['provides'].append({'env': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'})
-    data['meta']['provides'].append({'env': 'DASH', 'value': '{pkgroot}/bin/dash'})    
+    data['meta']['provides'].append({'env': 'DASH', 'value': '{pkgroot}/bin/dash'})
     data['meta']['kind'].append({'os': 'linux', 'value': 'box'})
     data['meta']['depends'] += ['coreutils', 'dash']
     data['meta']['contains'] = ['bestbox', 'busybox', 'toybox', 'coreutils', 'dash']
@@ -47,7 +47,7 @@ def superbox0():
             cp "$COREUTILS" "$IDIR/bin/"
             cd "$IDIR/bin/"
             progs=$(./coreutils --help | tr '\\n' ' ' | sed -e 's/.*\[//' | sed -e 's/ Use: .*//') 
-        
+
             for i in $progs; do 
                 ln -fs coreutils $i
             done

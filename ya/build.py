@@ -2,7 +2,7 @@
 def lookup_pubsub(name):
     return {'pubsub': y.PubSubLoop}[name]()
 
-    
+
 def gen_unpack_node(pkg):
     mpkg = y.mgr_pkg_mark(pkg)
     vis_name = pkg[4:]
@@ -153,12 +153,12 @@ async def build_makefile(nodes, internal=False):
 
     def iter5_0():
         by_name = {}
-        
+
         yield y.build_scripts_run()
 
         for x in y.iter_workspace():
             yield x
-            
+
         for r in list(iter4()):
             res = y.print_one_node(r)
             do_apply_node(r, by_name)
@@ -172,21 +172,21 @@ async def build_makefile(nodes, internal=False):
                 'inputs': sorted(frozenset(by_name[name])),
                 'build': [],
             }
-            
+
     def iter5():
         by_out = {}
-        
+
         for l in iter5_0():
             k = l['output']
             id = y.burn(l)
-            
+
             if k in by_out:
                 assert by_out[k] == id
             else:
                 by_out[k] = id
 
                 yield l
-            
+
     if internal:
         def iter6():
             for cmd in iter5():
@@ -208,7 +208,7 @@ async def build_makefile(nodes, internal=False):
 
             if cmd['build']:
                 yield '\n\n'
-                        
+        
     res = ''
 
     for v in iter6():

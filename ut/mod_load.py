@@ -16,16 +16,16 @@ class Mod(dict):
       self.__yexec__ = self.exec_data
       self.__last_reindex__ = 0
       self.__sub__ = {}
-      
+  
       def get_log():
          log = self.y.logging.getLogger(self.__name__)
 
          self.__ylog__ = lambda: log
 
          return self.__ylog__()
-         
+ 
       self.__ylog__ = get_log
-      
+  
       try:
          self.y = loader.get_y()
       except Exception:
@@ -39,7 +39,7 @@ class Mod(dict):
 
    def vname(self):
       return self.__name__[len(self.__loader__.root_module().__name__) + 1:]
-      
+  
    def create_sub_module(self, name):
       if (pos := name.find('.')) > 0:
          return self.create_sub_module_0(name[:pos]).create_sub_module(name[pos + 1:])
@@ -51,7 +51,7 @@ class Mod(dict):
          self.__sub__[name] = Mod(self.full_name(name), self.__loader__)
 
       return self.__sub__[name]
-      
+  
    def self_exec(self):
       self.exec_text_part(self.pop('__ynext_part__', ''))
 
@@ -60,14 +60,14 @@ class Mod(dict):
 
    def set_next_part(self, text):
       if text:
-         self.__ynext_part__ = text         
+         self.__ynext_part__ = text 
 
    def exec_text_part(self, part):
       if not part.strip():
          return 
 
       code = self.ycompile(part, self.__file__.replace('.', '/') + '.py', 'exec', firstlineno=self.line_count())
-      
+  
       exec(code, self.__dict__)
 
       if self.__ytext__:
@@ -118,15 +118,15 @@ class Loader(object):
       self._order = []
       self._g = g
       self._preproc = preproc
-      
+  
       Mod(name, self)
-      
+  
    def root_module(self):
       return self._by_name[self._order[0]]
-      
+  
    def create_module(self, name):
       fname = self.root_module().full_name(name)
-      
+  
       if fname in self._by_name:
          return self._by_name[fname]
 
@@ -136,10 +136,10 @@ class Loader(object):
       mn = mod.__name__
 
       assert mn not in self._by_name
-      
+  
       self._order.append(mn)
       self._by_name[mn] = mod
-      
+  
       return mod
    
    def builtin_data(self, mod):
@@ -166,7 +166,7 @@ class Loader(object):
 
    def get_source(self, name):
       return self._by_name[name].text()
-      
+  
    def iter_modules(self):
       for k in self._order:
          yield self._by_name[k]

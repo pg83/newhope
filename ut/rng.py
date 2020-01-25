@@ -33,7 +33,7 @@ class PCGRandom(object):
             pass
 
         return res
-    
+
     def iter_float(self):
         while True:
             yield self.next_float()

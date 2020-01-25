@@ -57,7 +57,7 @@ def get_running():
 @y.main_entry_point
 async def cli_docker_list(arg):
     info = get_running()
-    
+
     def is_running(cont):
         try:
             return data_for_container(cont)['data'][-1] in info

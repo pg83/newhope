@@ -14,7 +14,7 @@ def iter_non_trivial_clusters(data, keyf):
 
 def fix_absolute_symlinks(d):
     y.info('fix absolute symlinks in', d)
-    
+
     def iter_links():
         for a, b, c in y.os.walk(d):
             for x in c:
@@ -34,7 +34,7 @@ def fix_absolute_symlinks(d):
 
 def prune_dir(d):
     y.info('prune', d)
-    
+
     def iter_files():
         for a, b, c in y.os.walk(d):
             for x in c:
@@ -52,7 +52,7 @@ def prune_dir(d):
             res += y.random.random()
 
         return res
-                
+
     files = list(iter_files())
     by_size = iter_non_trivial_clusters(files, smart_getsize)
 
@@ -67,20 +67,20 @@ def prune_dir(d):
     clusters = list(iter_clusters())
 
     y.os.chdir(d)
-    
+
     for c in clusters:
         c = sorted(c, key=lambda x: (len(x), x))
         fr = c[0][len(d) + 1:]
 
         for to in c[1:]:
             to = to[len(d) + 1:]
-            
+
             y.info(fr, '->', to)
-            
+
             y.os.unlink(to)
             y.os.symlink('../' * to.count('/') + fr, to)
 
-            
+
 @y.main_entry_point
 async def cli_cmd_prune(args):
     for a in args:

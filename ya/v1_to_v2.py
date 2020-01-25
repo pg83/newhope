@@ -30,7 +30,7 @@ def to_v2(data, info):
         compilers = []
     else:
         compilers = y.find_compilers(info)
-        
+
     return y.fix_v2({
         'node': node,
         'deps': list(itertools.chain(compilers, data.get('deps', [])))

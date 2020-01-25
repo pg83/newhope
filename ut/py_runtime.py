@@ -13,7 +13,7 @@ def monkey_patch():
 
     i.getmodule = my_get_module
 
-    
+
 monkey_patch()
 
 
@@ -38,7 +38,7 @@ patch_ssl()
 def my_eh(typ, val, tb):
     print(typ, val, tb)
 
-    
+
 class PGProfiler(object):
     def __init__(self):
         self.d = []
@@ -46,7 +46,7 @@ class PGProfiler(object):
         self.w = True
         self.t = y.threading.get_ident
         self.n = 0
-        
+
     def my_trace(self, frame, event, arg):
         if not self.w:
             return
@@ -55,7 +55,7 @@ class PGProfiler(object):
 
         lineno = frame.f_lineno
         path = frame.f_code.co_filename
-        
+
         self.d.append((self.get_id(lineno), self.get_id(path), self.get_id(self.t())))
 
         return self.my_trace
@@ -63,31 +63,31 @@ class PGProfiler(object):
     def heavy(self):
         lines = calc_text(frame, path)
         data ='\n'.join(lines[lineno-2:lineno + 1])
-                
+
         try:
             arg = str(arg)
         except Exception as e:
             arg = e
-            
+
         print(frame, event, arg, data)
-        
+
     def get_id(self, k):
         i = self.i
-        
+
         if k not in i:
             i[k] = len(i)
-            
+
         return i[k]
 
     def dumps(self):
         try:
             self.w = False
             res = {'d': self.d, 'i': self.i}
-            
+
             return y.encode_prof(res)
         finally:
             self.w = True
-            
+
     def loads(self, v):
         res = y.decode_prof(v)
 
@@ -97,7 +97,7 @@ class PGProfiler(object):
     def load_from_file(self, path):
         with open(path, 'r') as f:
             self.loads(f.buffer.read())
-        
+
     def show_stats(self):
         def iter_keys():
             for l, f, t in self.d:
@@ -113,19 +113,19 @@ class PGProfiler(object):
         def iter_nk():
             for k, v in d.items():
                 nk = str(i[k[1]]) + ':' + str(i[k[0]])
-                
+
                 yield nk, v
 
         res = sorted(list(iter_nk()), key=lambda x: -x[1])
-                
+
         for i, j in res:
             print(i, j)
-        
+
     def run(self, args):
         self.load_from_file(args[0])
         self.show_stats()
-    
-    
+
+
 def my_exept_hook(type, value, traceback):
     print(type, value, traceback)
 
@@ -135,7 +135,7 @@ def init():
     @y.main_entry_point
     async def cli_dev_profile(args):
         PGProfiler().run(args)
-        
+
     y.sys.excepthook = my_exept_hook
 
     if 'pg' in y.config.get('profile', ''):
@@ -152,7 +152,7 @@ def init():
 
         y.globals.trace_function = prof.my_trace
 
-    
+
 def iter_frames(frame=None):
     frame = frame or y.inspect.currentframe()
 
@@ -225,9 +225,9 @@ def iter_full_info(iter):
                         continue
 
                     yield i + ln - 1, l.replace('\t', '    ')
-                                        
+                        
             text = list(iter())
-            
+
         yield (fname, ln, func_name, text)
 
 
@@ -252,9 +252,9 @@ def format_trace(l):
 
     if not text:
         return
-        
+
     ss = max_substr(text)
-        
+
     l1 = text[0][0]
     l2 = text[-1][0]
 
@@ -267,7 +267,7 @@ def format_trace(l):
 def format_tbv(tb_line=''):
     value = y.sys.exc_info()[1]
     type = y.sys.exc_info()[0]
-    
+
     if tb_line:
         tb_line = ', ' + tb_line
 
@@ -299,7 +299,7 @@ def format_tbx(tb_line='', frame=None):
 
     def iter_fr():
         yield '{g}Traceback: {line}{}'.replace('{line}', tb_line)
-            
+
         for x in iter_full_info(list(iter_frame_info(iter_frames(frame or current_frame())))):
             for l in format_trace(x):
                 yield l
@@ -331,7 +331,7 @@ class AbortHandler(object):
 
     def handle(self):
         o = self.sys.stderr
-        
+
         try:
             try:
                 o.write(self.f1() + '\n')
@@ -341,6 +341,6 @@ class AbortHandler(object):
                 o.write(self.f2())
         finally:
             o.flush()
-            
-            
+
+
 y.globals.abort_handler = AbortHandler().handle

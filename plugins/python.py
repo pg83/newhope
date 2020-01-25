@@ -6,7 +6,7 @@ def python_base(kind):
             $(APPLY_EXTRA_PLAN_0)
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared --with-signal-module --with-system-expat --with-system-ffi || exit1
             ##echo "#define HAVE_PTH 1" >> pyconfig.h
-            ##echo "#undef HAVE_PTHREAD_H" >> pyconfig.h             
+            ##echo "#undef HAVE_PTHREAD_H" >> pyconfig.h 
             $YMAKE -j $NTHRS || exit 1
             $YMAKE install
 

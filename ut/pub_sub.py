@@ -21,13 +21,13 @@ def is_debug():
 
 def pretty_dumps(obj):
     cls = y.json.JSONEncoder
-            
+
     def default(o):
         try:
             o.__json__
         except AttributeError:
             return str(o)
-        
+
         return o.__json__()
 
     return cls(default=default, indent=4, sort_keys=True).encode(obj).replace('"', '').replace(',\n', '\n')
@@ -48,7 +48,7 @@ def guess_print_data(data):
             return data['name']
     except TypeError:
         pass
-    
+
     return str(data)
 
 
@@ -76,7 +76,7 @@ class PROVIDES(object):
 
     def __repr__(self):
         return str(self)
-    
+
 
 class EOP(object):
     __slots__ = ('extra')
@@ -94,7 +94,7 @@ class EOP(object):
 
     def __str__(self):
         return '(EOP (' + ', '.join([str(x) for x in self.iter_me()]) + '))'
-                
+
 
 class DATA(object):
     __slots__ = ('tags', 'data')
@@ -102,7 +102,7 @@ class DATA(object):
     def __init__(self, tags=[], data=None):
         self.tags = list_to_set(tags)
         self.data = data
-        
+
     def __str__(self):
         res = '(DATA {' + ', '.join(sorted(self.tags)) + '}, ' + guess_print_data(self.data) + ')'
 
@@ -126,7 +126,7 @@ def FIN():
 
 class ROW(object):
     __slots__ = ('producer', 'consumers', 'data', 'uid')
-            
+
     def __init__(self, producer, data):
         self.producer = producer
         self.consumers = {producer}
@@ -140,8 +140,8 @@ class ROW(object):
             'data': self.data,
             'uid': self.uid,
         })
-    
-    
+
+
 class FunBase(object):
     def __init__(self, f, parent, n):
         self.p = parent
@@ -152,7 +152,7 @@ class FunBase(object):
         self.active_x = True
         self.consumed_rows = 0
         self.produced = 0
-        
+
     @property
     def __name__(self):
         return self.f.__name__
@@ -160,16 +160,16 @@ class FunBase(object):
     @property
     def name(self):
         return self.__name__
-        
+
     @property
     def active(self):
         return self.active_x
-        
+
     def new_accept(self, tags):
         is_debug() and y.debug('new accept', self.f.__name__, tags)
 
         h1 = y.burn(self.accept)
-        
+
         if self.accept:
             self.accept.append(frozenset(self.accept.pop() | frozenset(tags)))
         else:
@@ -178,7 +178,7 @@ class FunBase(object):
         h2 = y.burn(self.accept)
 
         return h1 != h2
-            
+
     def deactivate(self):
         is_debug() and y.debug('deactivate', str(self))
         self.active_x = False
@@ -186,10 +186,10 @@ class FunBase(object):
     @property
     def unconsumed_rows(self):
         return len(self.inqueue)
-        
+
     def __str__(self):
         return str(self.__json__())
-        
+
     def __repr__(self):
         return str(self)
 
@@ -199,7 +199,7 @@ class FunBase(object):
                 return list(a[0])
 
             return []
-            
+
         return {
             'name': self.name,
             'accept': fmt_accept(self.accept),
@@ -211,24 +211,24 @@ class FunBase(object):
             'unconsumed': self.unconsumed_rows,
             'produced': self.produced,
         }
-    
+
     @property
     def iface(self):
         return self.p
-    
+
     def push(self, el):
         if self.accept_data(el):
             el.consumers.add(self.n)
             self.inqueue.append(el)
-            
+
             return True
 
         return False
-                
+
     def accept_data(self, el):
         if not self.active:
             return False
-        
+
         if self.n in el.consumers:
             return False
 
@@ -241,33 +241,33 @@ class FunBase(object):
                 self.consumed_rows += 1
             except IndexError:
                 return
-            
+
     def iter_data(self):
         for r in self.iter_data_full():
             yield r.data
-            
+
     def step_1(self):
         return list(self.step_01())
 
     def step_01(self):
         for d in self.step_0():
             yield ROW(self.n, d)
-            
+
     def step(self):
         return self.step_1()
 
-    
+
 class Iterator(FunBase):
     def __init__(self, f, parent, n):
         FunBase.__init__(self, f, parent, n)
         self.iter = f(self)
         self.stateful = False
         self.provides = frozenset()
-        
+
     def step_0(self):
         if not self.active:
             return
-        
+
         def iter_cmd(v):
             if cmd_name(v) == 'eop':
                 for x in v.iter_me():
@@ -276,12 +276,12 @@ class Iterator(FunBase):
                 yield EOP()
             else:
                 yield v
-                
+
         def iter_00():
             while True:
                 if self.stateful and not self.inqueue:
                     return
-                    
+    
                 for u in self.iter:
                     yield u
 
@@ -289,14 +289,14 @@ class Iterator(FunBase):
                     y.os.abort()
 
                 is_debug() and y.debug('rebuild iter for ', self.name)
-            
+
                 self.iter = self.f(self)
-                    
+    
         def iter_0():
             for u in iter_00():
                 for v in iter_cmd(u):
                     cm = cmd_name(v)
-                    
+    
                     if cm == 'eop':
                         return
                     elif cm == 'stateful':
@@ -305,7 +305,7 @@ class Iterator(FunBase):
                         self.provides = v.tags
                     elif cm == 'data':
                         self.produced += 1
-                        
+        
                         if not v.tags:
                             v.tags = self.provides
 
@@ -315,17 +315,17 @@ class Iterator(FunBase):
 
         yield from iter_0()
 
-            
+
 class Scheduler(Iterator):
     def __init__(self, f, parent, n):
         Iterator.__init__(self, f, parent, n)
-            
+
     async def step(self):
         is_debug() and y.debug('will call scheduler', str(self))
-        
+
         if self.active:
             s = self.p.funcs[0]
-            
+
             for x in self.p.funcs[1:]:
                 if x.active:
                     self.inqueue.extend(s.step_1())
@@ -333,7 +333,7 @@ class Scheduler(Iterator):
 
         return []
 
-            
+
 def kl_name(v):
     return v.__class__.__name__
 
@@ -349,18 +349,18 @@ def all_timers():
 def tout_to_teg(tout):
     return 'TIMER_' + str(int(10 * tout))
 
-            
+
 def timer(parent):
     timers = []
 
     yield EOP(ACCEPT())
-    
+
     for t in all_timers():
         timers.append((t, y.time.time()))
 
     for t in all_timers():
         yield DATA(['ps:trash'], {'tag': tout_to_teg(t)})
-        
+
     yield EOP()
 
     while True:
@@ -368,12 +368,12 @@ def timer(parent):
 
         tags = []
         now = y.time.time()
-    
+
         def iter_timers():
             for tout, begin in timers:
                 if begin + tout < now:
                     tags.append(tout_to_teg(tout))
-                    
+    
                     yield tout, now
                 else:
                     yield tout, begin
@@ -382,7 +382,7 @@ def timer(parent):
 
         for tag in tags:
             yield DATA([tag], {'now': now})
-        
+
         yield EOP()
 
 
@@ -396,7 +396,7 @@ def tresher(iface):
             yield ACCEPT(data['tag'])
 
     yield EOP()
-        
+
 
 class PubSubLoop(object):
     def __init__(self, ctl=None):
@@ -417,26 +417,26 @@ class PubSubLoop(object):
     @property
     def ctl(self):
         return self.ctl_ or y.async_loop
-        
+
     def activate(self, ns):
         self.active_ns.add(ns)
 
     def deactivate(self, ns):
         self.active_ns.remove(ns)
-        
+
     def is_active_ns(self, ns):
         return ns in self.active_ns
-        
+
     def run_ext_queue(self, iface):
         yield y.EOP(y.ACCEPT('ps:ext queue'))
 
         for i in iface.iter_data():
             while self.ext:
                 ev = self.ext.pop()
-                
+
                 yield y.EOP(DATA(ev['tags'], ev['data']))
 
-        
+
     def add_fun(self, ff, cls=Iterator):
         name = ff.__name__
 
@@ -474,7 +474,7 @@ class PubSubLoop(object):
 
         for c in coro:
             self.wrap_coro(c)
-        
+
         async def pub_sub_cycle(ctl):
             while self.active():
                 await self.step()
@@ -483,10 +483,10 @@ class PubSubLoop(object):
 
     def scheduler(self):
         return self.funcs[0]
-            
+
     async def step(self):
         s = self.scheduler()
-        
+
         await s.step()
 
     def rebuild_net(self):
@@ -500,25 +500,25 @@ class PubSubLoop(object):
         #is_debug() and y.debug('rebuild net', pretty_dumps(net))
 
         self.net = net
-        
+
     def scheduler_step(self, iface):
         is_debug() and y.debug('scheduler step in')
-        
+
         extra = []
-        
+
         def iter_0():
             if self.ext:
                 yield ROW(0, DATA(['ps:ext queue'], {}))
-                
+
             if y.random.random() < 0.1:
                 yield ROW(0, DATA(['ps:check state'], {}))
-                
+
             for row in list(iface.iter_data_full()):
                 yield row
-                    
+    
             for row in [x for x in extra]:
                 yield row
-        
+
         for row in iter_0():
             f = self.funcs[row.producer]
             c = row.data
@@ -535,14 +535,14 @@ class PubSubLoop(object):
                     self.rebuild_net()
             elif cn == 'data':
                 is_debug() and y.debug('new data', c)
-                
+
                 used = False
 
                 for tag in row.data.tags:
                     for f in self.net.get(tag, []):
                         if f.push(row):
                             is_debug() and y.debug(f.name, 'accept', row)
-                            
+            
                             used = True
 
                 if not used:
@@ -554,12 +554,12 @@ class PubSubLoop(object):
                 y.os.abort()
 
         is_debug() and y.debug('scheduler step out')
-        
+
         yield EOP()
 
     def on_ext_event(self, ev):
         self.ext.append(ev)
-        
+
     def wrap(self, f):
         self.add_fun(f)
 
@@ -568,7 +568,7 @@ class PubSubLoop(object):
     def wrap_coro(self, c):
         def wrapper_in(iface):
             outqueue = y.collections.deque()
-            
+
             async def wrapper(ctl):
                 async for x in c(ctl, y.deque_iter_async(iface.inqueue, sleep=ctl.sleep)):
                     outqueue.append(x)

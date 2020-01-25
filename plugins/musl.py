@@ -34,7 +34,7 @@ def musl_boot0():
        rm $IDIR/include/iconv.h
        source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/llvm-mirror/clang/master/lib/Headers/stdatomic.h"
     """
-    
+
     return musl_impl(code, [], [], ['tool'])
 
 
@@ -53,7 +53,7 @@ def musl0():
        rm $IDIR/include/iconv.h
        source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/llvm-mirror/clang/master/lib/Headers/stdatomic.h"
     """
-    
+
     res = y.dc(musl_impl(code, ['make-boot', 'mimalloc'], ['musl-boot'], ['library']))
 
     return res

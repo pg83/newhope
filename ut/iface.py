@@ -26,7 +26,7 @@ class IFaceSlave(dict):
 
     def lst(self):
         return (self.find_module, self.find_function)
-    
+
     def find(self, name):
         for f in self.lst():
             try:
@@ -37,16 +37,16 @@ class IFaceSlave(dict):
                 pass
             except ImportError:
                 pass
-            
+
         raise AttributeError(name)
-        
+
     def find_module(self, name):
         return self._pa.create_slave(self._mod.__sub__[name])
 
     def find_function(self, name):
         return self._mod[name]
 
-    
+
 class IFaceStd(IFaceSlave):
     def __init__(self, mod, parent):
         IFaceSlave.__init__(self, mod, parent)
@@ -55,7 +55,7 @@ class IFaceStd(IFaceSlave):
         ctx = dict()
         exec('from ' + self._mod.__name__ + ' import ' + name, ctx)
         return ctx[name]
-        
+
     def find_module_1(self, name):
         return self._pa.create_std(__import__(self._mod.__name__ + '.' + name))
 
@@ -69,22 +69,22 @@ class IFaceStd(IFaceSlave):
 
     def find_module_3(self, name):
         x = self._mod.__dict__[name]
-        
+
         if inspect.ismodule(x):
             return self._pa.create_std(x)
 
         raise AttributeError(name)
-        
+
     def find_function_1(self, name):
         return self._mod.__dict__[name]
-    
+
     def find_function_2(self, name):
         return self.import_from(name)
 
     def lst(self):
         return (self.find_module_2, self.find_module_1, self.find_module_3, self.find_function_1, self.find_function_2)
 
-    
+
 class IFace(dict):
     def __init__(self):
         self.__dict__ = self
@@ -105,31 +105,31 @@ class IFace(dict):
                 continue
 
             self.pop(k)
-        
+
     @property
     def stdout(self):
         return sys.stdout
-    
+
     @property
     def stderr(self):
         return sys.stderr
-        
+
     def spawn(self, coro, name=None, debug=True):
         return self.async_loop.spawn(coro, name=name, debug=debug)
-        
+
     async def offload(self, job):
         return await self.async_loop.offload(job)
-      
+  
     def last_msg(self, t):
         e = sys.stderr
         o = sys.stdout
-        
+
         sys.stderr = None
         sys.stdout = None
 
         o.flush()
         e.flush()
-        
+
         e.write(t)
         e.flush()
 
@@ -139,9 +139,9 @@ class IFace(dict):
             return sys.modules['copy']
         except KeyError:
             __import__('copy')
-            
+
         return sys.modules['copy']
-        
+
     def print_stats(self):
         for i, f in enumerate(self._l):
             y.xprint_w(i, self._cc[i])
@@ -167,13 +167,13 @@ class IFace(dict):
 
     def find_module(self, x):
         y = '.' + x
-        
+
         for mod in __loader__.iter_modules():
             if mod.__name__.endswith(y):
                 return self.create_slave(mod)
 
         raise AttributeError(x)
-            
+
     def fast_search(self, name):
         return __loader__._by_name[self._a[name]][name]
 
@@ -209,7 +209,7 @@ class IFace(dict):
                 pass
             except ImportError:
                 pass
-            
+
         raise AttributeError(name)
 
     def __getattr__(self, name):
@@ -287,25 +287,25 @@ def load_builtin_modules(builtin):
         'ut.args_parse',
         'ut.algo',
         'ut.at_exit',
-        'ut.err_handle',      
+        'ut.err_handle',  
         'ut.caches',
         'ut.pub_sub',
         'ut.cli',
         'ut.queues',
     )
-    
+
     for m in initial:
         __loader__.create_module(m)
 
     initial = set(initial)
-    
+
     for k in builtin:
         if k not in initial:
             if k.startswith('ya') or k.startswith('ut'):
                 __loader__.create_module(k)
                 initial.add(k)
 
-                
+
 def run_stage4_0(data):
     try:
         run_stage4_1(data)
@@ -324,13 +324,13 @@ def run_stage4_1(data):
 
     y.clear_cache()
     y.linecache.clearcache()
-    
+
     load_builtin_modules(y.globals.builtin_modules)
 
     data['async_loop'] = y.CoroLoop('main')
 
     y.init_logger(log_level=y.config.get('ll', 'info').upper())
-    
+
     y.debug('will run defer constructors')
     y.run_defer_constructors()
     y.debug('done')
@@ -338,7 +338,7 @@ def run_stage4_1(data):
     async def flush_streams():
         ctl = y.current_coro()
         ss = [y.stderr, y.stdout]
-        
+
         while True:
             try:
                 for s in ss:
@@ -356,7 +356,7 @@ def run_stage4_1(data):
                 y.shut_down(1)
             except SystemExit as e:
                 code = e.code
-                    
+    
                 if code is None:
                     code = 0
 

@@ -4,7 +4,7 @@ async def build_dot_script():
 
     return build_dot_script_0(mk)
 
-        
+
 def build_dot_script_0(mk):
     lst = mk.lst
 
@@ -13,7 +13,7 @@ def build_dot_script_0(mk):
 
     def iter():
         yield 'digraph G {'
-        
+
         for c in lst:
             if c.get('cmd'):
                 for a in mk.num_to_str(c['deps1']):

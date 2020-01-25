@@ -56,7 +56,7 @@ def platform_slice(vv, pl):
         for x in l:
             for y in do(x):
                 yield y
-    
+
     def do(v):
         if is_dict(v):
             try:
@@ -89,12 +89,12 @@ def is_compat(a, b):
 def meta_to_build(meta):
     def iter():
         kind = set(meta['kind'])
-        
+
         is_lib = 'library' in kind
         is_bin = 'tool' in kind
 
         yield 'export CMAKE_PREFIX_PATH="{pkgroot}:$CMAKE_PREFIX_PATH"'
-        
+
         if is_lib:
             yield 'export CPPFLAGS="$CPPFLAGS -I{pkgroot}/include"'
             yield 'export LDFLAGS="-L{pkgroot}/lib $LDFLAGS"'

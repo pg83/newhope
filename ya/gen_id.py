@@ -49,7 +49,7 @@ def to_pretty_name(t):
 
     if p < 0:
         return t
-    
+
     t = t[:p]
 
     return t

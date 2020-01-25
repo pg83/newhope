@@ -20,7 +20,7 @@ def log_lookup(name):
             elif msg == '%s':
                 msg = ' '.join(str(x) for x in args)
                 args = ()
-                
+
             return getattr(get_log(), name)(msg, *args, **kwargs)
 
         return func
@@ -45,17 +45,17 @@ class ColoredFormatter(y.logging.Formatter):
 
         self.styles = dls
         self.fmt = fmt
-        
+
     def format(self, record):
         res = self.fmt
         extra = record.__dict__
 
         if 'status' not in extra:
             extra['status'] = 'none'
-        
+
         if '_target' in extra:
             extra['target'] = extra.pop('_target')
-        
+
         colors = {
             'fail': '{br}',
             'done': '{bb}',
@@ -75,25 +75,25 @@ class ColoredFormatter(y.logging.Formatter):
             f = funcs['on_target']
 
             funcs['on_target'] = lambda k, v: f(k, v, color=c[2])
-            
+
             return replace(k, (c + s.upper() + '{}    ')[:10])
 
         def on_target(k, t, color='b'):
             return res.replace('{target}', '{' + color + '}' + t + '{}')
 
         funcs = dict((x.__name__, x) for x in (on_levelname, on_status, on_target))
-        
+
         for k in sorted(extra.keys()):
             res = funcs.get('on_' + k, replace)(k, str(extra[k]))
-        
+
         return res
-    
-    
+
+
 def init_logger(log_level='INFO'):
     if 'pip' in y.sys.argv:
         return
 
-    #y.logging.raiseExceptions = False        
+    #y.logging.raiseExceptions = False
     old_factory = y.logging.getLogRecordFactory()
 
     def record_factory(*args, **kwargs):
@@ -113,7 +113,7 @@ def init_logger(log_level='INFO'):
         return record
 
     y.logging.setLogRecordFactory(record_factory)
-    
+
     fmt = '{w}{g}%(thr){} | {m}%(asctime){} | {br}%(levelname){} | %(status) | {dw}%(msg){}{}'
 
     class Stream(object):
@@ -126,7 +126,7 @@ def init_logger(log_level='INFO'):
     @y.lookup
     def lookup(name):
         return {'log_stream': Stream()}[name]
-        
+
     screen_handler = y.logging.StreamHandler(stream=y.log_stream)
     screen_handler.setLevel(log_level)
     screen_handler.setFormatter(ColoredFormatter(fmt))

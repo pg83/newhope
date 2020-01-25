@@ -69,7 +69,7 @@ def iter_all_colors():
 
 
 CC = dict(iter_all_colors())
-            
+
 
 def get_color_ext(color, on_color=None, attrs=[]):
     res = CC[color_key(color, on_color)]
@@ -84,7 +84,7 @@ def iter_synonyms():
     for c in COLORS:
         if c == 'reset':
             continue
-        
+
         yield c[0], c
         yield c, c
 
@@ -101,7 +101,7 @@ def iter_combo():
 
             name = ''.join(aa + [s])
             b = [x for x in a]
-            
+
             yield name, c, b
             yield '{' + name + '}', c, b
 
@@ -113,7 +113,7 @@ def iter_full_table():
     for r in ('', 'rst', 'reset'):
         yield r, get_code(0)
         yield '{' + r + '}', get_code(0)
-        
+
 
 COLOR_TABLE = dict(iter_full_table())
 

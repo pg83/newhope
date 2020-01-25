@@ -2,10 +2,10 @@ def subst_some_values(v):
     def gen_some_subst(k, v):
         yield k, v
         yield '_' + k + '_', v.replace('.', '_').replace('-', '_')
-        
+
     if 'code' in v and '{' in v['code']:
         v = y.dc(v)
-        
+
         for x in ('version', 'name', 'num'):
             if x in v:
                 for p1, p2 in gen_some_subst(x, v[x]): 
@@ -19,7 +19,7 @@ def exec_plugin_code(iface):
 
     for data in iface.iter_data():
         code = data.data
-        
+
         if not code:
             yield y.FIN()
 
@@ -38,7 +38,7 @@ def exec_plugin_code(iface):
                 yield x
         except AttributeError:
             pass
-        
+
     yield y.EOP()
 
 
@@ -55,7 +55,7 @@ def ygenerator(where=None):
         }
 
         assert 'codec' not in new_f()
-        
+
         ev = y.ELEM({'func': descr})
 
         if where is not None:

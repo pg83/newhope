@@ -9,12 +9,12 @@ class StdIO(object):
         with stdio_lock:
             self.s.buffer.write(t.encode('utf-8'))
             self.s.buffer.flush()
-        
+
     def flush(self):
         with stdio_lock:
             self.s.flush()
 
-            
+
 @y.singleton
 def is_debug():
     return 'debug' in y.config.get('color', '')
@@ -25,10 +25,10 @@ class ColorStdIO(object):
         self.s = s
         self.p = ''
         self.f = {'strip_colors': not self.isatty()}
-            
+
     def isatty(self):
         return self.s.isatty()
-        
+
     def can_colorize(self, t):
         if len(t) > 100000:
             return False
@@ -38,7 +38,7 @@ class ColorStdIO(object):
     def colorize_0(self, t):
         #return t
         return y.process_color(t, '', self.f)
-    
+
     def colorize(self, t):
         if not self.can_colorize(t):
             return t
@@ -47,14 +47,14 @@ class ColorStdIO(object):
             return self.colorize_0(t)
         except IndexError:
             pass
-        
+
         def iter_lines():
             for l in t.split('\n'):
                 try:
                     yield self.colorize_0(l)
                 except IndexError:
                     yield l
-            
+
         return '\n'.join(iter_lines())
 
     def get_part(self):
@@ -62,11 +62,11 @@ class ColorStdIO(object):
             return self.p
         finally:
             self.p = ''
-                
+
     def write(self, t):
         if not t:
             return
-        
+
         with stdio_lock:
             if len(t) > 4096:
                 self.flush_impl()
@@ -83,13 +83,13 @@ class ColorStdIO(object):
                 self.s.buffer.write(self.colorize(p).encode('utf-8'))
             except AttributeError:
                 self.s.buffer.write(p)
-                
+
         self.s.buffer.flush()
         self.s.flush()
 
     def flush_impl(self):
         self.write_part(self.get_part())
-        
+
     def flush(self):
         with stdio_lock:
             self.flush_impl()
@@ -98,7 +98,7 @@ class ColorStdIO(object):
         self.flush()
 
         return self.s
-            
+
     def close(self):
         with stdio_lock:
             self.flush_impl()
@@ -110,8 +110,8 @@ class ColorStdIO(object):
     @property
     def encoding(self):
         return self.s.encoding
-    
-            
+
+
 @y.defer_constructor
 def init_stdio():
     y.sys.stdout = ColorStdIO(y.sys.stdout)

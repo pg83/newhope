@@ -51,7 +51,7 @@ class Func(object):
     @property
     def __name__(self):
         return str(self)
-    
+
     def __str__(self):
         return '<' + self.base  + '-' + str(self.i) + '-' + self.compact_kind() + '-' + self.data.info['target']['os'] + '>'
 
@@ -74,12 +74,12 @@ class Func(object):
     def is_tool(self):
         return 'tool' in self.kind
 
-    
+
     @property
     #@y.cached_method
     def kind(self):
         return self.x['kind']
-    
+
         res = self.slice(self.x['kind'])
 
         if res is None:
@@ -118,14 +118,14 @@ class Func(object):
             for x in self.depends():
                 yield x
                 yield from self.data.by_name[x].all_depends()
-                
+
         return frozenset(it())
-    
+
     @y.cached_method
     def dep_lib_list(self):
         def iter():
             print 'dep', self.__name__
-            
+
             for x in self.dep_list():
                 if self.data.by_name[x].is_library:
                     yield x
@@ -143,16 +143,16 @@ class Func(object):
 
     def extra_libs(self):
         return self.data.extra_libs()
-    
+
     @y.cached_method
     def dep_list(self):
-        def iter1():            
+        def iter1():
             yield from self.depends()
 
             for d in self.extra_libs():
                 if self.base in self.data.find_func(d).all_depends():
                     continue
-                
+
                 if self.base == d:
                     continue
 
@@ -160,7 +160,7 @@ class Func(object):
 
                 if not code:
                     continue
-                
+
                 if 'code' not in code:
                     continue
 
@@ -185,11 +185,11 @@ class Func(object):
     @property
     def f(self):
         return self.ff
-    
+
     @property
     def z(self):
         return self.zz
-    
+
     @y.cached_method
     def ff(self):
         return y.gen_func(self.run_func)
@@ -219,14 +219,14 @@ class SpecialFunc(Func):
 
     def depends(self):
         return self.data.by_kind[self.base]
-    
+
     @y.cached_method
     def contains(self):
         def it():
             for x in self.depends():
                 yield x
                 yield from self.data.by_name[x].contains()
-                            
+            
         return frozenset(it())
 
     @y.cached_method
@@ -276,7 +276,7 @@ class Solver(object):
     def iter_solvers(self, num):
         cur = self
         yield cur
-        
+
         for i in range(0, num - 1):
             cur = cur.next_solver()
             yield cur
@@ -335,7 +335,7 @@ class Data(object):
         def iter_deps():
             for d in deps:
                 f = self.func_by_num[d]
-                
+
                 if f.is_library:
                     yield d
                 elif f.base in contains:
@@ -344,7 +344,7 @@ class Data(object):
                     yield d
 
         return frozenset(iter_deps())
-    
+
     @property
     def special(self):
         return ['box']
@@ -354,7 +354,7 @@ class Data(object):
             for k in lst:
                 if k in self.dd or must_have:
                     yield self.dd[k][-1]
-                        
+        
         return list(iter())
 
     def prepare_funcs(self, num):
@@ -363,10 +363,10 @@ class Data(object):
         for func in solver.iter_infinity(num):
             func.i = len(self.func_by_num)
             self.func_by_num.append(func)
-            func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)                
+            func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)
             self.dd[func.base].append(func.i)
             func.codec = 'pg'
-            
+
     def find_first(self, name):
         return self.dd.get(name, [-1])[0]
 
@@ -375,7 +375,7 @@ class Data(object):
             y.info('not data for ', self.info)
 
             return
-            
+
         for v in [self.func_by_num[self.dd['box'][-1]]]:
             yield y.ELEM({'func': v.z})
 
@@ -386,7 +386,7 @@ class Data(object):
 
     def exec_seq(self):
         return list(y.execution_sequence(self.iter_deps()))
-    
+
     def out(self):
         for x in self.func_by_num:
             x.out_deps()
@@ -411,25 +411,25 @@ class Data(object):
 
     def find_func(self, name):
         return self.by_name[name]
-    
+
     def select_deps(self, name):
         return self.last_elements(self.full_deps(name))
 
     @y.cached_method
     def calc(self, deps):
         return [self.func_by_num[d].f() for d in deps]
-    
+
 
 def make_proper_permutation(iface, info):
     yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
 
     data = []
     init_0(data)
-    
+
     for row in iface.iter_data():
         if not row.data:
             break
-        
+
         data.append(row)
         yield y.EOP()
 
@@ -437,10 +437,10 @@ def make_proper_permutation(iface, info):
     dt = Data(info, [x.data for x in data])
     dt.prepare_funcs(2)
     dt.out()
-    
+
     for x in dt.register():
         yield x
-        
+
     yield y.FIN()
 
 
@@ -449,11 +449,11 @@ async def async_make_proper_permutation(iface, info):
 
     data = []
     init_0(data)
-    
+
     for row in iface.iter_data():
         if not row.data:
             break
-        
+
         data.append(row)
         yield y.EOP()
 
@@ -461,10 +461,10 @@ async def async_make_proper_permutation(iface, info):
     dt = Data(info, [x.data for x in data])
     dt.prepare_funcs(2)
     dt.out()
-    
+
     for x in dt.register():
         yield x
-        
+
     yield y.FIN()
 
 

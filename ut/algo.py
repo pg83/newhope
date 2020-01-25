@@ -79,23 +79,23 @@ class IncCounter(object):
             return next(it)
 
         func()
-        
+
         return func
 
 
 @y.singleton
 def inc_counter_holder():
     return IncCounter()
-    
+
 
 def inc_counter():
     return inc_counter_holder().inc_counter()
-    
+
 
 def compile_func(template, _async, name, mod_name):
     replaces = {
         True: {'[async]': 'async', '[await]': 'await', 'kind': 'async', '[sleep]': 'y.async_loop.sleep'},
-        False: {'[async] ': '', '[await] ': '', 'kind': 'sync', '[sleep]': 'y.time.sleep'},        
+        False: {'[async] ': '', '[await] ': '', 'kind': 'sync', '[sleep]': 'y.time.sleep'},
     }
 
     def subst(t):
@@ -103,7 +103,7 @@ def compile_func(template, _async, name, mod_name):
             t = t.replace(k, v)
 
         return t
-    
+
     template = subst(template)
     name = subst(name)
     mod_name = subst(mod_name)
@@ -119,7 +119,7 @@ def template_engine(func):
             True: 'async',
             False: 'sync',
         }
-        
+
         tmpl = func()
         mod_name = func.__module__ + '.' + subst[_async]
         name = func.__name__
@@ -166,7 +166,7 @@ def deque_iter():
     [async] def xsleep(v):
         if v > 0:
             [await] sleep(v)
-    
+
     while True:
         try:
             yield q.popleft()

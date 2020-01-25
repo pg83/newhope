@@ -1,7 +1,7 @@
 def find_tool_uncached_0(tool, path):
     for p in y.itertools.chain(path, y.os.environ['PATH'].split(':')):
         pp = y.os.path.join(p, tool)
-        
+
         if y.os.path.isfile(pp):
             yield pp
 

@@ -4,6 +4,33 @@ async def cli_misc_cleanup(arg):
    y.os.system("find . | grep '#' | xargs rm")
    y.os.system('find . | grep "\\.tmp" | xargs rm')
 
+   def fix1(data):
+      return data.replace('    \n', '\n')
+
+   fixers = [
+      fix1,
+   ]
+   
+   for a, b, c in y.os.walk('.'):
+      for x in c:
+         pp = y.os.path.join(a, x)
+
+         if pp.endswith('.py'):
+            with open(pp, 'r') as f:
+               orig = f.read()
+
+            data = orig
+   
+            for i in range(0, 2):
+               for j in fixers:
+                  data = j(data)
+
+            if data != orig:
+               with open(pp + '.$tmp', 'w') as f:
+                  f.write(data)
+
+               y.os.rename(pp + '.$tmp', pp)
+   
 
 @y.main_entry_point
 async def cli_misc_help(args):
@@ -14,10 +41,10 @@ async def cli_misc_help(args):
          allow += 'v'
 
       mep = y.main_entry_points()
-      
+  
       for name in mep:
          t, f = mep[name]
-         
+ 
          if t in allow:
             yield name.replace('_', ' ')
 
@@ -34,9 +61,9 @@ async def cli_misc_pip(args):
 
     def ff(a, b):
         return ff
-    
+
     signal.signal = ff
-    
+
     y.sys.argv = ['pip3'] + args
     y.sys.argv[0] = y.re.sub(r'(-script\.pyw?|\.exe)?$', '', y.sys.argv[0])
 
@@ -44,7 +71,7 @@ async def cli_misc_pip(args):
        from pip._internal.main import main
     except ImportError:
        from pip._internal import main
-       
+   
     y.sys.exit(main())
 
 

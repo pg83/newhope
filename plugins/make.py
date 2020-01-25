@@ -4,10 +4,10 @@ def make_impl(boot, deps, contains, kind):
             raise Exception('test')
 
         yield 'source fetch "http://mirror.lihnidos.org/GNU/ftp/gnu/make/make-{version}.tar.gz" 1'
-        
+
         if boot:
             yield 'export CPPFLAGS="-I./glob $CPPFLAGS"'
-            
+
         yield '$YSHELL ./configure --prefix=$IDIR --disable-load || exit 1'
 
         if boot:

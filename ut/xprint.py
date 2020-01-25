@@ -10,9 +10,9 @@ def xxformat(*args, **kwargs):
 
     if 'init' in kwargs:
         text = '{' + kwargs['init'] + '}' + text + '{}'
-    
+
     return text
-                
+
 
 def xxprint(*args, **kwargs):
     kwargs.pop('where', y.stderr).write(xxformat(*args, **kwargs) + '\n')
@@ -21,7 +21,7 @@ def xxprint(*args, **kwargs):
 @y.singleton
 def my_cm():
     return y.dc(y.COLOR_TABLE)
-    
+
 
 def process_color(text, init, kwargs):
     verbose = kwargs.get('verbose', y.verbose)
@@ -55,7 +55,7 @@ def process_color(text, init, kwargs):
 
             if c == '{}':
                 s.pop()
-                
+
                 yield ('c', s[-1])
             elif c in cm:
                 s.append(c)
@@ -63,9 +63,9 @@ def process_color(text, init, kwargs):
                 yield ('c', c)
             else:
                 yield ('t', c)
-                
+
     out_txt = (verbose and '/rc' in verbose) or ('txt' in y.config.get('color', ''))
-    
+
     def combine():
         s = [init or '']
         last = []
@@ -73,7 +73,7 @@ def process_color(text, init, kwargs):
         def join(l):
             if l[0][0] == 'c':
                 c = l[-1][1]
-                
+
                 if raw:
                     return {'color': c}
 
@@ -110,7 +110,7 @@ def process_color(text, init, kwargs):
 
     if raw:
         return list(combine())
-            
+
     return ''.join(combine())
 
 
@@ -121,7 +121,7 @@ def lookup(xp):
 
         def func(*args, **kwargs):
             xxprint(*args, init=color, **kwargs)
-        
+
         func.__name__ = xp
 
         return func
@@ -142,6 +142,6 @@ def run_color_test():
 {w}{g}345{} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}reschedule <coro entry_point, from <loop main>, suspended>{}{}
 {w}{g}9  {} | {b}18:32:34{} | {y}ut.coro     {} | {ds}D{} | {bs}<coro entry_point, from <loop main>, suspended> step in{}{}
 '''
-    
+
     y.sys.stderr.write(process_color(text.strip() + '\n', '', {'verbose': '/rc'}))
     y.sys.stderr.flush()

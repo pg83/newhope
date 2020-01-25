@@ -21,7 +21,7 @@ def load_list(ptr):
 
 def intern_struct(s):
     return intern_data({'s': s})
-        
+
 
 def load_struct(ptr):
     return load_data(ptr)['s']
@@ -129,7 +129,7 @@ if 1:
 
             return 'all ok, count = ' + str(len(self._v))
 
-        
+
 @y.defer_constructor
 def init():
     if y.config.get('adb'):
@@ -140,7 +140,7 @@ def init():
     for i in dir(v):
         if not i.startswith('__'):
             globals()[i] = eval('v.' + i)
-            
+
     if y.config.get('check_db'):
         y.atexit.register(v.check_db)
-        
+

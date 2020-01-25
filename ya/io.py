@@ -74,12 +74,12 @@ def prepare_tar_cmd(fr, to, codec=None):
 
     if codec == '7z':
         tot = to + '-tmp.7z'
-        
+
         yield ('(' + ' && '.join(iter_lines()) + ') && (mv {to} ' + to + ')').replace('{to}', tot)
     else:
         yield '((' + ' && '.join(iter_lines()) + ') > ' + to + '-tmp) && (mv ' + to + '-tmp ' + to + ')'
 
-        
+
 data1 = '''
 if test $2 -eq 1; then
     q=$(basename $1)
@@ -111,7 +111,7 @@ def prepare_untar_for_mf(fr, strip=0):
         return 'source untar_{codec} "{file}" {strip}'.format(codec=calc_mode(y.os.path.basename(fr)), file=fr, strip=strip)
     except Exception:
         return 'cp "{file}" .'.format(file=fr)
-    
+
 
 def prepare_untar_cmd(fr, to, extra='', rm_old=True, ext_mode=None):
     if (ext_mode and ext_mode == 'zp') or fr.endswith('.zip'):

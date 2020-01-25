@@ -17,7 +17,7 @@ def apply_fetch(lines, v):
             parts = l.split('"')
 
             assert len(parts) == 3
-            
+
             url = parts[1]
             bn = gen_fetch_cmd(url)
             vn = v['node']
@@ -38,12 +38,12 @@ def fix_v2(v, **kwargs):
 
     m = y.ensure_value('meta', n, {})
     f = y.ensure_value('flags', m, [])
-    
+
     m['flags'] = sorted(frozenset(f + n.pop('flags', [])))
 
     kind = y.ensure_value('kind', m, []) + n.pop('kind', [])
     m['kind'] = kind
-    
+
     if 'box' in kind:
         kind.append('tool')
 
@@ -52,7 +52,7 @@ def fix_v2(v, **kwargs):
 
     m['kind'] = sorted(frozenset(kind))
     f = m['flags']
-    
+
     if 'codec' in n:
         pass
     else:
@@ -64,7 +64,7 @@ def fix_v2(v, **kwargs):
     if 'url' in n:
         if 'pkg_full_name' not in n:
             n['pkg_full_name'] = y.calc_pkg_full_name(n['url'])
-    
+
     def iter_subst():
         for i, v in enumerate(n.get('extra', [])):
             if v['kind'] == 'file':
@@ -77,7 +77,7 @@ def fix_v2(v, **kwargs):
                 yield (v['from'], v['to'])
 
     subst = list(iter_subst())
-    
+
     for p in ('build', 'prepare'):
         if p in n:
             n[p] = [y.subst_kv_base(l, subst) for l in apply_fetch(n[p], v)]

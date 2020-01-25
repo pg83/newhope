@@ -28,7 +28,7 @@ class Preproc(object):
         self.d = Defines(l)
         self.r = []
         self.v = []
-        
+
     def run(self):
         for l in self.t.split('\n'):
             _, val = self.command(l)
@@ -38,7 +38,7 @@ class Preproc(object):
 
     def command(self, l):
         ll = l.strip()
-        
+
         if ll and ll[0] == '#':
             p = ll.find(' ')
 
@@ -55,7 +55,7 @@ class Preproc(object):
 
             data = ll[p + 1:]
             res = f(data) or ''
-            
+
             is_debug() and print(repr(cmd), repr(data), repr(fill + res), f.__name__)
 
             return True, fill + res
@@ -64,9 +64,9 @@ class Preproc(object):
 
     def do_define(self, l):
         x, y = l.split(' ', 1)
-        
+
         self.d[x] = eval(y, self.d)
-        
+
         return x + ' = ' + repr(self.d[x])
 
     def do_undef(self, l):
@@ -77,23 +77,23 @@ class Preproc(object):
     def do_if(self, l):
         self.v.append(False)
         return self.do_elif(l)
-        
+
     def do_elif(self, l):
         if not self.v[-1]:
             is_debug() and print(l, eval(l, self.d))
-            
+
             if eval(l, self.d):
                 self.v[-1] = True
-                
+
                 return 'if 1:'
-            
+
         return 'if 0:'
-    
+
     def do_else(self, l):
         if self.v[-1] == False:
             self.v[-1] = True
             return 'if 1:'
-        
+
         return 'if 0:'
 
     def do_endif(self, l):
@@ -103,7 +103,7 @@ class Preproc(object):
         if eval(l, self.d):
             is_debug() and print('will exclude ' + l)
             return 'if 0:'
-        
+
         is_debug() and print('will include ' + l)
         return 'if 1:'
 
@@ -112,7 +112,7 @@ class Preproc(object):
 
     def do_print_state(self, l):
         print '\n'.join(self.r)
-    
+
 
 @y.singleton
 def global_defines():
@@ -138,7 +138,7 @@ def preprocess_text(text, defines=global_defines()):
             return Preproc(defines, text).run()
         except Exception as e:
             raise Exception('shit happen while parsing ' + text) from e
-            
+
     return text
 
 

@@ -14,14 +14,14 @@ class PropertyDB(object):
 
         for k in list(self.images.keys()):
             self.images[k] = compactify(self.images[k])
-                
+
     def ensure(self, k, d):
         y.get_key(self.db, k, d)
 
     @property
     def images(self):
         return self.db['images']
-    
+
     @property
     def kv(self):
         return self.db['kv']

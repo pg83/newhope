@@ -16,7 +16,7 @@ def iter_workspace():
             'mkdir -p "$PD"',
         ],
     }
-    
+
     yield {
         'output': 'work_dir',
         'inputs': [],
@@ -26,7 +26,7 @@ def iter_workspace():
             'mkdir -p "$WD"',
         ],
     }
-    
+
     yield {
         'output': 'package_dir',
         'inputs': [],
@@ -35,7 +35,7 @@ def iter_workspace():
             'mkdir -p "$RD"',
         ],
     }
-    
+
     yield {
         'output': 'cache_dir',
         'inputs': [],
@@ -44,7 +44,7 @@ def iter_workspace():
             'mkdir -p "$MD"',
         ],
     }
-    
+
     yield {
         'output': 'source_dir',
         'inputs': [],
@@ -54,7 +54,7 @@ def iter_workspace():
             '(rm -rf $SD/upm || true) 2> /dev/null'
         ],
     }
-    
+
     yield {
         'output': 'release_upm',
         'inputs': ['source_dir'],

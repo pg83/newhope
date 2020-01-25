@@ -7,7 +7,7 @@ async def gen_full_dump(iter_cc):
 
 async def gen_mk_data(cc):
     funcs = []
-        
+
     await y.pubsub.run(init=[y.mf_function_holder_gen(cc, funcs.append)])
 
     return funcs
@@ -16,8 +16,8 @@ async def gen_mk_data(cc):
 async def main_makefile(iter_cc=None, internal=False):
     if not iter_cc:
         iter_cc = y.iter_cc
-        
+
     cc = list(iter_cc())
     portion = await gen_mk_data(cc)
-    
+
     return await y.build_makefile([x['code']() for x in portion], internal=internal)
