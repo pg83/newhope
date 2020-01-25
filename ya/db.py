@@ -13,7 +13,6 @@ def visit_nodes(nodes, debug=False):
 
         return False
 
-
     def do(k):
         if check_hash(k):
             return

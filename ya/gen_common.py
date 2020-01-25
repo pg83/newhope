@@ -6,7 +6,7 @@ def fix_user_data(iter):
 def common_plugins(iface):
     yield y.EOP(y.ACCEPT(), y.PROVIDES('mf:plugin'))
 
-    for el in sorted(y.globals.file_data, key=lambda x: y.burn([3, x['name']])):
+    for el in sorted(y.globals.file_data, key=lambda x: y.burn([4, x['name']])):
         if el['name'].startswith('pl/'):
             yield y.ELEM(y.dc(el))
 
@@ -16,17 +16,16 @@ def common_plugins(iface):
 def mf_function_holder(cc, cb, iface):
     yield y.EOP(y.ACCEPT())
 
-    lst_f = [
+    lst_f = [y.make_proper_permutation_gen(x) for x in cc] + [
         y.common_plugins,
         y.FuncAggr(cb).on_new_data,
         y.exec_plugin_code,
-    ] + [y.make_proper_permutation_gen(x) for x in cc]
+    ]
 
     for l in lst_f:
         yield y.DEFUN(l)
 
     yield y.FIN()
-    y.os.abort()
 
 
 def mf_function_holder_gen(cc, cb):
@@ -48,7 +47,7 @@ def aggr_flag(name, metas):
 
 
 def join_metas(metas, merge=['flags']):
-    return dict((x, aggr_flag(x, metas)) for x in merge) 
+    return dict((x, aggr_flag(x, metas)) for x in merge)
 
 
 def apply_meta(to, fr):

@@ -102,7 +102,7 @@ def build_descr(el):
 
             with open(s, 'w') as f:
                 f.write(data)
-    
+
     return pre + ' '.join([name] + flt_wl_1(sources) + flt_wl_1(list(flt_lib(cflags))) + flt_wl_1(list(flt_lib(ldflags)))) + after
 
 

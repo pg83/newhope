@@ -281,7 +281,7 @@ class Iterator(FunBase):
             while True:
                 if self.stateful and not self.inqueue:
                     return
-    
+
                 for u in self.iter:
                     yield u
 
@@ -291,12 +291,12 @@ class Iterator(FunBase):
                 is_debug() and y.debug('rebuild iter for ', self.name)
 
                 self.iter = self.f(self)
-    
+
         def iter_0():
             for u in iter_00():
                 for v in iter_cmd(u):
                     cm = cmd_name(v)
-    
+
                     if cm == 'eop':
                         return
                     elif cm == 'stateful':
@@ -305,7 +305,7 @@ class Iterator(FunBase):
                         self.provides = v.tags
                     elif cm == 'data':
                         self.produced += 1
-        
+
                         if not v.tags:
                             v.tags = self.provides
 
@@ -373,7 +373,7 @@ def timer(parent):
             for tout, begin in timers:
                 if begin + tout < now:
                     tags.append(tout_to_teg(tout))
-    
+
                     yield tout, now
                 else:
                     yield tout, begin
@@ -515,7 +515,7 @@ class PubSubLoop(object):
 
             for row in list(iface.iter_data_full()):
                 yield row
-    
+
             for row in [x for x in extra]:
                 yield row
 
@@ -542,7 +542,7 @@ class PubSubLoop(object):
                     for f in self.net.get(tag, []):
                         if f.push(row):
                             is_debug() and y.debug(f.name, 'accept', row)
-            
+
                             used = True
 
                 if not used:

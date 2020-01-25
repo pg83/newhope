@@ -57,7 +57,6 @@ async def cli_pkg_source(arg):
 
     async def find_func():
         funcs = await y.gen_mk_data(list(y.iter_cc()))
-        print funcs 
 
         def do():
             for d in funcs:
@@ -69,8 +68,6 @@ async def cli_pkg_source(arg):
         return dict(do())
 
     funcs = await find_func()
-
-    print funcs
 
     @y.lookup
     def lookup(name):

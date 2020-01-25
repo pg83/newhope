@@ -356,7 +356,7 @@ def run_stage4_1(data):
                 y.shut_down(1)
             except SystemExit as e:
                 code = e.code
-    
+
                 if code is None:
                     code = 0
 

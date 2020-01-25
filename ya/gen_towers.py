@@ -53,7 +53,7 @@ class Func(object):
         return str(self)
 
     def __str__(self):
-        return '<' + self.base  + '-' + str(self.i) + '-' + self.compact_kind() + '-' + self.data.info['target']['os'] + '>'
+        return '<' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + '-' + self.data.info['target']['os'] + '>'
 
     def compact_kind(self):
         res = ''
@@ -74,20 +74,9 @@ class Func(object):
     def is_tool(self):
         return 'tool' in self.kind
 
-
     @property
-    #@y.cached_method
     def kind(self):
-        return self.x['kind']
-
-        res = self.slice(self.x['kind'])
-
-        if res is None:
-            print self.base
-
-            return []
-
-        return res
+        return self.slice(self.x['kind']) or []
 
     def slice(self, data):
         y.platform_slice(data, self.data.info['target'])
@@ -108,7 +97,7 @@ class Func(object):
             return [self.do_subst(x) for x in self.code().get('meta', {}).get('depends', [])]
 
         return []
-   
+
     def depends(self):
         return self.raw_depends()
 
@@ -215,6 +204,7 @@ class Func(object):
 
 class SpecialFunc(Func):
     def __init__(self, x, data):
+        print 'special', x, data
         Func.__init__(self, x, data)
 
     def depends(self):
@@ -226,7 +216,7 @@ class SpecialFunc(Func):
             for x in self.depends():
                 yield x
                 yield from self.data.by_name[x].contains()
-            
+
         return frozenset(it())
 
     @y.cached_method
@@ -297,9 +287,10 @@ class Data(object):
 
         def iter_objects():
             for x in sorted(data, key=lambda x: x['func']['base']):
-                print 'fff', x
                 obj = self.create_object(x['func'])
-                print obj, obj.code()
+
+                print 'obj', obj, obj.code()
+
                 if obj.code():
                     yield obj
 
@@ -320,6 +311,8 @@ class Data(object):
         return ('make',)
 
     def create_object(self, x):
+        print 'create', x
+
         if x['base'] in self.special:
             return SpecialFunc(x, self)
 
@@ -354,7 +347,7 @@ class Data(object):
             for k in lst:
                 if k in self.dd or must_have:
                     yield self.dd[k][-1]
-        
+
         return list(iter())
 
     def prepare_funcs(self, num):
@@ -371,13 +364,16 @@ class Data(object):
         return self.dd.get(name, [-1])[0]
 
     def register(self):
-        if not self.dd['box']:
-            y.info('not data for ', self.info)
-
-            return
-
-        for v in [self.func_by_num[self.dd['box'][-1]]]:
+        for v in self.func_by_num:
             yield y.ELEM({'func': v.z})
+
+        #if not self.dd['box']:
+            #y.info('not data for ', self.info)
+
+            #return
+
+        #for v in [self.func_by_num[self.dd['box'][-1]]]:
+            #yield y.ELEM({'func': v.z})
 
     def iter_deps(self):
         for f in self.func_by_num:
@@ -427,13 +423,14 @@ def make_proper_permutation(iface, info):
     init_0(data)
 
     for row in iface.iter_data():
+        print info, row
+
         if not row.data:
             break
 
         data.append(row)
         yield y.EOP()
 
-    print 'zzzz', info, data
     dt = Data(info, [x.data for x in data])
     dt.prepare_funcs(2)
     dt.out()
@@ -457,7 +454,6 @@ async def async_make_proper_permutation(iface, info):
         data.append(row)
         yield y.EOP()
 
-    print 'zzz', info, data
     dt = Data(info, [x.data for x in data])
     dt.prepare_funcs(2)
     dt.out()

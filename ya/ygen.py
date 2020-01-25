@@ -8,7 +8,7 @@ def subst_some_values(v):
 
         for x in ('version', 'name', 'num'):
             if x in v:
-                for p1, p2 in gen_some_subst(x, v[x]): 
+                for p1, p2 in gen_some_subst(x, v[x]):
                     v['code'] = v['code'].replace('{' + p1 + '}', p2)
 
     return v
@@ -18,10 +18,12 @@ def exec_plugin_code(iface):
     yield y.EOP(y.ACCEPT('mf:plugin'), y.PROVIDES('mf:original'))
 
     for data in iface.iter_data():
+        print data
         code = data.data
 
         if not code:
             yield y.FIN()
+            print 'fin'
 
             return
 

@@ -16,7 +16,7 @@ class FuncAggr(object):
 
                 if len(self.v) == 2:
                     yield y.FIN()
-    
+
             yield y.EOP()
 
 

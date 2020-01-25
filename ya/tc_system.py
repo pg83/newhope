@@ -153,7 +153,6 @@ def parse_clang(info):
             }
 
 
-
 @y.singleton
 def iter_darwin():
     def iter_nodes():
@@ -248,6 +247,8 @@ def parse_lld(info):
 
 def iter_system_tools():
     yield from iter_darwin()
+
+    return 
 
     for c in y.dc(iter_darwin()):
         try:

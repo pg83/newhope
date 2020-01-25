@@ -18,11 +18,11 @@ def getuser():
 
 @y.singleton
 def user_home():
-   return y.os.path.expanduser('~')
+    return y.os.path.expanduser('~')
 
 
 def upm_root():
-   return user_home() + '/upm_root'
+    return user_home() + '/upm_root'
 
 
 @y.cached()

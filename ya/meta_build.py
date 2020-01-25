@@ -32,7 +32,7 @@ class Replace(Exception):
         self.value = v
 
 
-#@y.cached()
+# @y.cached()
 def is_compat_0(pl, k, v):
     return is_compat(pl, to_platform(k, v))
 
@@ -134,11 +134,10 @@ def meta_to_build(meta):
 
 @y.verbose_entry_point
 async def cli_test_pslice(args):
-    print args
+    print 
     pl = y.to_full_target(args[0])
     print pl
     data = [{'os': 'linux', 'value': lambda x: x}]
 
     print pl, data
     print y.platform_slice(pl, data)
-

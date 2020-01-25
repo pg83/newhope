@@ -84,7 +84,7 @@ class Builder(object):
                     yield y.FIN()
 
                     return
-    
+
                 if item.my_name == '_all':
                     yield CHANNEL({'action': 'finish', 'status': 'success'})
                     yield y.FIN()
@@ -108,7 +108,7 @@ class Builder(object):
                 @property
                 def n(self):
                     return {'deps1': self.deps1, 'deps2': self.deps2, 'cmd': []}
-    
+
                 @property
                 def my_name(self):
                     return '_all'
@@ -131,7 +131,7 @@ class Builder(object):
                         'message': 'build complete',
                         'target': self.my_name,
                     })
-    
+
                     return 0
 
             yield ItemAll()
@@ -334,7 +334,7 @@ class Item(ItemBase):
 
             for l in self.str_cmd:
                 yield l
-    
+
             yield '}'
             yield 'mainfun ' + ' '.join(y.itertools.chain(self.str_deps1, self.str_deps2))
 
@@ -431,7 +431,7 @@ class Item(ItemBase):
                 else:
                     stdo = sp.PIPE
                     stde = sp.STDOUT
-    
+
                 p = sp.Popen([self.shell, '-s'], stdout=stdo, stderr=stde, stdin=sp.PIPE, shell=False, env=env)
                 res, _ = p.communicate(input=input_bin)
                 res = res or ''

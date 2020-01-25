@@ -208,7 +208,7 @@ async def build_makefile(nodes, internal=False):
 
             if cmd['build']:
                 yield '\n\n'
-        
+
     res = ''
 
     for v in iter6():

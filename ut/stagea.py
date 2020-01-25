@@ -188,7 +188,7 @@ def thr_func(g):
             for w in x['data'].split():
                 for p in iter_prefix(w):
                     g.by_prefix[p].add(x['burn'])
-        
+
         ctx = {'_globals': g}
         exec(g.compile((g.by_name['ut/stage0.py']['data'] + '\nrun_stage0(_globals)\n'), 'ut/stage0.py', 'exec'), ctx)
         ctx.clear()

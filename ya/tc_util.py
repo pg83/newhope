@@ -50,7 +50,7 @@ def iter_all_targets():
             'os': 'linux',
         }
 
-        for libc in ('glibc', 'musl', 'uclibc'):
+        for libc in ('musl'):
             yield {
                 'arch': a,
                 'os': 'linux',
@@ -70,8 +70,6 @@ def rev_target_map():
 
     for x in iter_all_targets():
         res[small_repr(x)] = x
-
-    print res
 
     return res
 

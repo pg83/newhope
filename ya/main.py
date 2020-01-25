@@ -1,5 +1,5 @@
 async def gen_full_dump(iter_cc):
-    portion = await gen_mk_data(list(iter_cc))
+    portion = await gen_mk_data(list(iter_cc()))
     lst = [y.restore_node_node(d) for d in sorted(portion)]
 
     y.stdout.write(y.json.dumps(sorted(lst, key=lambda x: x['name']), indent=4, sort_keys=True))
@@ -13,10 +13,7 @@ async def gen_mk_data(cc):
     return funcs
 
 
-async def main_makefile(iter_cc=None, internal=False):
-    if not iter_cc:
-        iter_cc = y.iter_cc
-
+async def main_makefile(iter_cc, internal=False):
     cc = list(iter_cc())
     portion = await gen_mk_data(cc)
 

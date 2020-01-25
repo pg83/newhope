@@ -422,7 +422,7 @@ class Coro(collections.abc.Coroutine):
         while self.thread_id != i:
             await self.sched_yield()
             await self.create_sched_action(set_name(lambda x: coro_rescheduler(x, i), 'coro_rescheduler_' + str(i)))
-        
+
     @property
     def name(self):
         return self.n
