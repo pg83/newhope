@@ -2,6 +2,7 @@
 async def cli_misc_cleanup(arg):
    y.os.system("find . | grep '~' | xargs rm")
    y.os.system("find . | grep '#' | xargs rm")
+   y.os.system('find . | grep "\\.tmp" | xargs rm')
 
 
 @y.main_entry_point
