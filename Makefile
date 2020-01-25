@@ -46,6 +46,8 @@ clear:
 	./cli cleanup
 
 commit:
+	ssh-add ~/.ssh/id_rsa
+	ssh-add ~/.ssh/id_rsa_1
 	LC_ALL=C git status | grep 'Untracked files:' | wc -l | xargs 
 	git add -A
 	git commit -m "A"
