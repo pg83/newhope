@@ -1,0 +1,156 @@
+None2 = object()
+
+
+def is_dict(v):
+    return isinstance(v, dict)
+
+
+def is_list(v):
+    return isinstance(v, list)
+    
+
+def to_platform(k, v):
+    if k == 'os':
+        return {'os': v}
+
+    return v
+
+
+def get_platform(s):
+    if 'os' in s:
+        return {'os': s['os']}
+
+    if 'platform' in s:
+        return s
+
+
+class Replace(Exception):
+    def __init__(self, v):
+        self.value = v
+
+
+@y.cached()
+def is_compat_0(pl, k, v):
+    return is_compat(pl, to_platform(k, v))
+
+
+def VHelpM(object):
+    def t(self, v):
+        if is_list(v):
+            return 'l'
+        
+        if is_dict(v):
+            return  'd'
+        
+        return  'v'
+
+    def on_list(self, l, el):
+        raise Shit()
+
+    def on_dict(self, d, k, v):
+        raise Shit()
+
+    def on_value(self, v):
+        raise Shit()
+    
+    def run1(v):
+        c = self.t(v)
+
+        if c == 'l':
+            def do():
+                for l in v:
+                    res = self.on_list(v, l)
+
+                    if res:
+                        yield res
+
+            return list(do())
+        elif c == 'd':
+            def do():
+                for k, v in v.items():
+                    kk, vv = self.on_dict(v, k, v)
+
+                    if kk and vv:
+                        yield kk, vv
+
+            return dict(do())
+        else:
+            return self.on_value(v)
+
+    def run(self, v):
+        c = self.t(v)
+
+        if c == 'l':
+            res = [run1(y) for y in v]
+        elif c == 'd':
+            res = dict((run1(k), run1(y)) for k, y in v.items())
+        else:
+            res = run1(v)
+
+        return res
+            
+     
+class SubstPlatXX(VHelpM):
+    def __init__(self, pl):
+        self.pl = pl
+
+    def compatx(self, s):
+        pl = get_platform(s)
+
+        if not pl:
+            return True
+
+        return is_compat(self.pl, pl)
+
+    def on_list(self, l, v):
+        t = self.t(v)
+
+        if t == 'l':
+            return self.run(v)
+
+        if t == 'd':
+            return self.run(v)
+
+        return v
+
+    def on_dict(self, d, k, v):
+        d.clear()
+
+    def on_value(self, v):
+        return v
+
+    
+        
+def platform_slice(vv, pl):
+    return SubstPlatXX(pl).run(vv)
+
+            
+def is_compat(a, b):
+    for x in b:
+        if x not in a:
+            return False
+        
+        if a[x] != b[x]:
+            return False
+        
+    return False
+
+
+@y.verbose_entry_point
+async def cli_test_pslice(args): 
+    pl1 = {'os': 'lin'}
+    pl2 = {'os': 'linux'}
+    pl3 = {'os': 'darwin'}
+    
+    data1 = [1, 2, 3 ,4 ,5, '6']
+    data2 = ['c++', 'zlib', 'bzip2', 'xz', 'libarchive', {'os': 'linux1', 'value': 'kernel-h'}, 'expat', 'dl', 'make']
+    data3 = [{'os': 'linux', 'value': 'kernel-h'}, data2]
+    data4 = {'os': 'darwin', 'value': data3}
+    
+    pl = [pl1, pl2, pl3]
+    dt = [data1, data2, data3, data4]
+
+    for p in pl:
+        for d in dt:
+            print platform_slice(d, p), d, p
+            

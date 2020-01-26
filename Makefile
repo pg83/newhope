@@ -40,7 +40,7 @@ make:
 	./cli make -j16 -v
 
 make-debug:
-	./cli make -j16 -vm ll=debug
+	./cli make -j1 -vm ll=debug
 
 clear:
 	./cli cleanup

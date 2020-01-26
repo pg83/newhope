@@ -1,4 +1,4 @@
-@y.ygenerator()
+#@y.ygenerator()
 def kernel_h0():
     return {
         'os': 'linux',

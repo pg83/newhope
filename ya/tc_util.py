@@ -45,17 +45,18 @@ def subst_info(info):
 
 def iter_all_targets():
     for a in ('x86_64', 'aarch64', 'arm', 'armv7a', 'i686'):
-        yield {
-            'arch': a,
-            'os': 'linux',
-        }
-
-        for libc in ('musl'):
+        if 0:
             yield {
                 'arch': a,
                 'os': 'linux',
-                'libc': libc,
             }
+
+            for libc in ('musl'):
+                yield {
+                    'arch': a,
+                    'os': 'linux',
+                    'libc': libc,
+                }
 
     for a in ('x86_64',):
         yield {

@@ -19,12 +19,8 @@ libdl.cpp: dl.o
 libdl.a: libdl.o dl.o
 	(rm -rf libdl.a || true) && $(AR) q libdl.a libdl.o dl.o && $(RANLIB) libdl.a
 
-install: libdl.a test
-	./test && (mkdir -p $(DESTDIR)/lib || true) && (mkdir -p $(DESTDIR)/include || true) && cp libdl.a $(DESTDIR)/lib && cp dl.h $(DESTDIR)/include
-
-test: test.cpp libdl.a
-	$(CXX) -I. $(CXXFLAGS) $(MY_FLAGS) -L. $(LDFLAGS) $(LIBS) -Wl,--whole-archive -ldl test.cpp -o test
-
+install: libdl.a
+	(mkdir -p $(DESTDIR)/lib || true) && (mkdir -p $(DESTDIR)/include || true) && cp libdl.a $(DESTDIR)/lib && cp dl.h $(DESTDIR)/include
 clean:
 	rm *.o *.a libdl.cpp test
 

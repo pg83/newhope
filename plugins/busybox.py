@@ -1,4 +1,4 @@
-@y.ygenerator()
+#@y.ygenerator()
 def busybox0():
     return {
         'os': 'linux',
@@ -11,7 +11,7 @@ def busybox0():
         """,
         'version': '1.31.0',
         'meta': {
-            'kind': ['tool'],
+            'kind': [{'os': 'linux', 'value': 'tool'}],
             'provides': [
                 {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
             ],

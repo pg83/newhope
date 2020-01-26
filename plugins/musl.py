@@ -21,7 +21,7 @@ def musl_impl(code, deps, cont, kind):
     }
 
 
-@y.ygenerator()
+#@y.ygenerator()
 def musl_boot0():
     code = """
        source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
@@ -38,7 +38,7 @@ def musl_boot0():
     return musl_impl(code, [], [], ['tool'])
 
 
-@y.ygenerator()
+#@y.ygenerator()
 def musl0():
     code = """
        source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1

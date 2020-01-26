@@ -142,5 +142,4 @@ def preprocess_text(text, defines=global_defines()):
     return text
 
 
-#__loader__._preproc = lambda x: x
-#preprocess_text
+__loader__._preproc = preprocess_text

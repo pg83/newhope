@@ -248,8 +248,8 @@ def parse_lld(info):
 def iter_system_tools():
     yield from iter_darwin()
 
-    return 
-
+    return
+    
     for c in y.dc(iter_darwin()):
         try:
             c['data'] = c['data'].decode('utf-8')

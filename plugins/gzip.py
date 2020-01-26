@@ -10,6 +10,7 @@ def gzip0():
         'version': '1.10',
         'meta': {
             'kind': ['box', 'tool'],
+            'depends': ['slibtool'], 
             'provides': [
                 {'env': 'YGZIP', 'value': '{pkgroot}/bin/gzip'},
             ],

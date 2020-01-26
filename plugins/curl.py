@@ -11,9 +11,6 @@ def curl0():
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['openssl', 'libidn2', 'libmetalink'],
-            'configure': [
-                {'opt': '--with-secure-transport', 'os': 'darwin'},
-            ],
             'provides': [
                 {'env': 'CURL', 'value': '{pkgroot}/bin/curl'},
             ],

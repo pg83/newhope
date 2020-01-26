@@ -1,10 +1,6 @@
-def iter_cc():
-    host = y.current_host_platform()
-
-    yield {'host': host, 'target': host}
-   
-    #for t in y.iter_all_targets():
-        #yield {'host': y.dc(host), 'target': y.dc(t)}
+def iter_cc():   
+    for t in y.iter_all_targets():
+        yield {'host': y.dc(t), 'target': y.dc(t)}
 
 
 @y.main_entry_point

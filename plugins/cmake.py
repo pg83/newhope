@@ -20,10 +20,10 @@ def cmake0():
                 'bzip2',
                 'xz',
                 'libarchive',
-                {
-                    'os': 'linux',
-                    'value': 'kernel-h',
-                },
+                #{
+                #    'os': 'linux',
+                #    'value': 'kernel-h',
+                #},
                 'expat',
                 'dl',
             ],

@@ -15,6 +15,7 @@ def call_v2(func):
 
 @y.cached()
 def to_v2(data, info):
+    print data, info
     node = y.copy.copy(data)
     node.pop('deps', None)
 

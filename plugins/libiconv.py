@@ -20,12 +20,12 @@ def libiconv0():
                             '--with-iconv={pkgroot}',
                         ],
                     },
-                    'extra': [
-                        {
-                            'libs': '-framework CoreFoundation',
-                            'os': 'darwin',
-                        },
-                    ],
+                    #'extra': [
+                    #    {
+                    #        'libs': '-framework CoreFoundation',
+                    #        'os': 'darwin',
+                    #    },
+                    #],
                 },
                 {'lib': 'charset'},
             ],

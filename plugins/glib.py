@@ -13,12 +13,12 @@ def glib0():
         'version': '2.30.3',
         'meta': {
             'kind': ['library'],
-            'depends': ['iconv', 'intl', 'libffi', 'pkg-config-int', 'coreutils', 'python', 'zlib', 'dash', 'pcre'],
+            'depends': ['iconv', 'intl', 'libffi', 'pkg-config-int', 'coreutils', 'python', 'zlib', 'dash', 'pcre', 'slibtool'],
             'provides': [
                 {
                     'lib': 'glib-2.0', 
                     'extra': [
-                        {'libs': '-framework CoreServices -framework CoreFoundation', 'os': 'darwin'},
+                        {'libs': '-framework CoreServices -framework CoreFoundation'},
                         {'ipath': '{pkgroot}/include/glib-2.0'},
                         {'ipath': '{pkgroot}/lib/glib-2.0/include'},
                     ],

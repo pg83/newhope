@@ -1,4 +1,4 @@
-@y.ygenerator()
+#@y.ygenerator()
 def bestbox0():
     return {
         'os': 'linux',
@@ -34,7 +34,7 @@ def bestbox0():
     }
 
 
-@y.ygenerator()
+#@y.ygenerator()
 def superbox0():
     data = y.dc(bestbox0())
     data['os'] = 'linux'

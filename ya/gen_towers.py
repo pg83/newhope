@@ -33,7 +33,7 @@ class Func(object):
 
         x = s.get(x, x)
         x = s.get(x, x)
-
+        
         return x
 
     def __init__(self, x, data):
@@ -76,10 +76,10 @@ class Func(object):
 
     @property
     def kind(self):
-        return self.slice(self.x['kind']) or []
+        return self.x['kind']
 
     def slice(self, data):
-        y.platform_slice(data, self.data.info['target'])
+        return data
 
     @y.cached_method
     def code(self):
@@ -107,14 +107,12 @@ class Func(object):
             for x in self.depends():
                 yield x
                 yield from self.data.by_name[x].all_depends()
-
+                
         return frozenset(it())
 
     @y.cached_method
     def dep_lib_list(self):
         def iter():
-            print 'dep', self.__name__
-
             for x in self.dep_list():
                 if self.data.by_name[x].is_library:
                     yield x
@@ -133,7 +131,7 @@ class Func(object):
     def extra_libs(self):
         return self.data.extra_libs()
 
-    @y.cached_method
+    #@y.cached_method
     def dep_list(self):
         def iter1():
             yield from self.depends()
@@ -155,6 +153,8 @@ class Func(object):
 
                 yield d
 
+        print list(iter1())
+                
         return frozenset(iter1())
 
     @y.cached_method
@@ -204,7 +204,6 @@ class Func(object):
 
 class SpecialFunc(Func):
     def __init__(self, x, data):
-        print 'special', x, data
         Func.__init__(self, x, data)
 
     def depends(self):
@@ -221,7 +220,7 @@ class SpecialFunc(Func):
 
     @y.cached_method
     def f(self):
-        return self.z['code']()
+        return self.slice(self.z['code']())
 
     @property
     @y.cached_method
@@ -281,24 +280,22 @@ class Data(object):
     def __init__(self, info, data):
         self.info = info
 
+        print y.pretty_dumps(data)
+        
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
 
         def iter_objects():
             for x in sorted(data, key=lambda x: x['func']['base']):
-                obj = self.create_object(x['func'])
-
-                print 'obj', obj, obj.code()
-
-                if obj.code():
-                    yield obj
+                yield self.create_object(x['func'])
 
         self.data = list(iter_objects())
         self.by_name = dict((x.base, x) for x in self.data)
         self.by_kind = y.collections.defaultdict(list)
 
         for x in self.data:
+            print x.kind
             for k in x.kind:
                 self.by_kind[k].append(x.base)
 
@@ -311,8 +308,6 @@ class Data(object):
         return ('make',)
 
     def create_object(self, x):
-        print 'create', x
-
         if x['base'] in self.special:
             return SpecialFunc(x, self)
 
@@ -364,16 +359,8 @@ class Data(object):
         return self.dd.get(name, [-1])[0]
 
     def register(self):
-        for v in self.func_by_num:
+        for v in [self.func_by_num[self.last_elements(['box'], must_have=True)[0]]]:
             yield y.ELEM({'func': v.z})
-
-        #if not self.dd['box']:
-            #y.info('not data for ', self.info)
-
-            #return
-
-        #for v in [self.func_by_num[self.dd['box'][-1]]]:
-            #yield y.ELEM({'func': v.z})
 
     def iter_deps(self):
         for f in self.func_by_num:
@@ -423,37 +410,14 @@ def make_proper_permutation(iface, info):
     init_0(data)
 
     for row in iface.iter_data():
-        print info, row
-
         if not row.data:
             break
 
         data.append(row)
         yield y.EOP()
 
-    dt = Data(info, [x.data for x in data])
-    dt.prepare_funcs(2)
-    dt.out()
-
-    for x in dt.register():
-        yield x
-
-    yield y.FIN()
-
-
-async def async_make_proper_permutation(iface, info):
-    yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
-
-    data = []
-    init_0(data)
-
-    for row in iface.iter_data():
-        if not row.data:
-            break
-
-        data.append(row)
-        yield y.EOP()
-
+    print y.pretty_dumps(data)
+        
     dt = Data(info, [x.data for x in data])
     dt.prepare_funcs(2)
     dt.out()
@@ -469,16 +433,6 @@ def make_proper_permutation_gen(info):
         yield from make_proper_permutation(iface, info)
 
     func.__name__ = 'make_proper_permutation_' + y.small_repr(info)
-
-    return func
-
-
-def async_make_proper_permutation_gen(info):
-    async def func(iface):
-        async for x in async_make_proper_permutation(iface, info):
-            yield x
-
-    func.__name__ = 'async_make_proper_permutation_' + y.small_repr(info)
 
     return func
 

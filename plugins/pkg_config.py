@@ -23,9 +23,9 @@ def pkg_config_base(opts, deps, kind):
 
 @y.ygenerator()
 def pkg_config0():
-    return pkg_config_base([], ['iconv', 'glib'], ['box', 'tool'])
+    return pkg_config_base([], ['iconv', 'glib', 'slibtool'], ['box', 'tool'])
 
 
 @y.ygenerator()
 def pkg_config_int0():
-    return pkg_config_base(['--with-internal-glib'], ['iconv'], ['tool'])
+    return pkg_config_base(['--with-internal-glib'], ['iconv', 'slibtool'], ['tool'])
