@@ -107,7 +107,7 @@ class Func(object):
             for x in self.depends():
                 yield x
                 yield from self.data.by_name[x].all_depends()
-        
+
         return frozenset(it())
 
     @y.cached_method
@@ -154,7 +154,7 @@ class Func(object):
                 yield d
 
         print list(iter1())
-        
+
         return frozenset(iter1())
 
     @y.cached_method
