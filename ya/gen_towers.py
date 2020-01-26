@@ -33,7 +33,7 @@ class Func(object):
 
         x = s.get(x, x)
         x = s.get(x, x)
-        
+
         return x
 
     def __init__(self, x, data):
@@ -107,7 +107,7 @@ class Func(object):
             for x in self.depends():
                 yield x
                 yield from self.data.by_name[x].all_depends()
-                
+        
         return frozenset(it())
 
     @y.cached_method
@@ -154,7 +154,7 @@ class Func(object):
                 yield d
 
         print list(iter1())
-                
+        
         return frozenset(iter1())
 
     @y.cached_method
@@ -281,7 +281,7 @@ class Data(object):
         self.info = info
 
         print y.pretty_dumps(data)
-        
+
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
@@ -417,7 +417,7 @@ def make_proper_permutation(iface, info):
         yield y.EOP()
 
     print y.pretty_dumps(data)
-        
+
     dt = Data(info, [x.data for x in data])
     dt.prepare_funcs(2)
     dt.out()

@@ -7,8 +7,8 @@ def openssl0():
 #else
     flags = 'darwin64-x86_86-cc'
 #endif
-    
-    
+
+
     return {
         'code': """
             source fetch "https://www.openssl.org/source/old/{minver}/openssl-{version}.tar.gz" 1

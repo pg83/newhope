@@ -225,7 +225,7 @@ def iter_full_info(iter):
                         continue
 
                     yield i + ln - 1, l.replace('\t', '    ')
-        
+
             text = list(iter())
 
         yield (fname, ln, func_name, text)

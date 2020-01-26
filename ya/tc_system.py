@@ -249,7 +249,7 @@ def iter_system_tools():
     yield from iter_darwin()
 
     return
-    
+
     for c in y.dc(iter_darwin()):
         try:
             c['data'] = c['data'].decode('utf-8')
