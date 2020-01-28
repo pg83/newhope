@@ -13,7 +13,7 @@ def cmake0():
         """,
         'version': '3.16.1',
         'meta': {
-            'kind': ['box', 'tool'],
+            'kind': ['tool'],
             'depends': [
                 'c++',
                 'zlib',
@@ -26,6 +26,7 @@ def cmake0():
                 #},
                 'expat',
                 'dl',
+                'iconv',
             ],
             'provides': [
                 {'env': 'CMAKE', 'value': '{pkgroot}/bin/cmake'},

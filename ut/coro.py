@@ -1,10 +1,8 @@
 import time
 import queue
 import collections as cc
-import os
 import sys
 import collections.abc
-import random
 import heapq
 import threading
 import weakref
@@ -71,7 +69,7 @@ def is_debug(ctx=X):
 
 
 def gen_int_uid():
-    return int(random.random() * 100000000000)
+    return int(y.random.random() * 100000000000)
 
 
 class SchedAction(collections.abc.Awaitable):
@@ -741,4 +739,4 @@ class CoroLoop(object):
         return self.get_random_queue().offload
 
     def get_random_queue(self):
-        return random.choice(self.thrs)
+        return y.random.choice(self.thrs)

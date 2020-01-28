@@ -1,6 +1,6 @@
 def iter_cc():   
     for t in y.iter_all_targets():
-        yield {'host': y.dc(t), 'target': y.dc(t)}
+        yield y.dc(t)
 
 
 @y.main_entry_point

@@ -84,7 +84,7 @@ def fix_shell_vars(shell_vars):
     return [(remove_d(k), v) for k, v in shell_vars.items()]
 
 
-@y.cached()
+@y.cached
 def cached_file_list(where):
     try:
         return frozenset([x for x in y.os.listdir(where)])
@@ -92,7 +92,7 @@ def cached_file_list(where):
         return frozenset()
 
 
-@y.cached()
+@y.cached
 def find_tool_cached(tool, path):
     for p in path:
         if tool in cached_file_list(p):

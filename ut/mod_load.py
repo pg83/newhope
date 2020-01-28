@@ -35,7 +35,11 @@ class Mod(dict):
       self.exec_text_part(self.builtin_data())
 
    def ycompile(self, a, b, c, **kwargs):
-      return self.__loader__._g.compile('\n' * kwargs.get('firstlineno', 0) + a, b, c)
+      #print('--------------------' + b + '\n' + a)
+      ap = self.__loader__._preproc(a)
+      #print('+++++++++++++++++++\n' + ap)
+  
+      return self.__loader__._g.compile('\n' * kwargs.get('firstlineno', 0) + ap, b, c)
 
    def vname(self):
       return self.__name__[len(self.__loader__.root_module().__name__) + 1:]
@@ -145,7 +149,14 @@ class Loader(object):
    def builtin_data(self, mod):
       return self._builtin.get(mod.vname(), {}).get('data', '')
 
-   def exec_code(self, mod, data, module_name=None, **kwargs):
+   def exec_code(self, mod, data, module_name=None, arch={}, **kwargs):
+      if arch:
+         module_name = arch['os'] + '_' + arch['arch'] + '.' + module_name
+         data = '#define __OS__ "' + arch['os'].upper() + '"\n\n' + data
+         data = '#define __ARCH__ "' + arch['arch'].upper() + '"\n' + data
+         data = '#define __' + arch['arch'].upper() + '__ 1\n' + data
+         data = '#define __' + arch['os'].upper() + '__ 1\n' + data
+ 
       if module_name:
          m = self.create_module(module_name)
 

@@ -1,9 +1,3 @@
-import os
-import sys
-import base64
-import itertools
-
-
 def call_v2(func):
     data = func()
 
@@ -34,5 +28,5 @@ def to_v2(data, info):
 
     return y.fix_v2({
         'node': node,
-        'deps': list(itertools.chain(compilers, data.get('deps', [])))
+        'deps': list(y.itertools.chain(compilers, data.get('deps', [])))
     })

@@ -163,11 +163,7 @@ async def cli_test_green(args):
     await a2
 
 
-@y.verbose_entry_point
-async def cli_test_preproc(args):
-    test_preproc_x(args)
-
-/*
+test_0 = '''
 def test_preproc_x(args):
     #define X 1
 
@@ -225,4 +221,42 @@ def test_preproc_x(args):
     #else
         print('bad')
     #endif
-*/
+'''
+
+
+test_1 = '''
+#define __DARWIN__ 1
+#define __X86_64__ 1
+#define __ARCH__ "X86_64"
+#define __OS__ "DARWIN"
+
+#if defined(__LINUX__)
+
+@y.ygenerator()
+def busybox0():
+    return {
+        'os': 'linux',
+        'code': """
+            mkdir -p $IDIR/bin
+            cd $IDIR/bin
+            source fetch "https://www.busybox.net/downloads/binaries/{version}-defconfig-multiarch-musl/busybox-x86_64" 0
+            mv busybox-* busybox
+            chmod +x busybox
+        """,
+        'version': '1.31.0',
+        'meta': {
+            'kind': ['tool'],
+            'provides': [
+                {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
+            ],
+        },
+    }
+
+#endif
+'''
+
+@y.verbose_entry_point
+async def cli_test_preproc2(args):
+    for t in (tets_0, test_1):
+        print '------------------\n' + t + '\n'
+        print '++++++++++++++++++\n' + y.preprocess_text(t) + '\n'

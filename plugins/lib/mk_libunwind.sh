@@ -13,6 +13,7 @@ cxx_src="
 src/libunwind.cpp
 src/Unwind-EHABI.cpp
 src/Unwind-seh.cpp
+src/Unwind_AppleExtras.cpp
 "
 
 cc_srcs="
@@ -24,7 +25,10 @@ src/Unwind-sjlj.c
 asm_srcs="
 src/UnwindRegistersRestore.S
 src/UnwindRegistersSave.S
+unwind.c
 "
+
+echo 'extern *void_ZN9libunwind15Registers_arm646jumptoEv;' >> unwind.c
 
 for s in $cxx_src; do
     $CXX $CXXFLAGS -c $s -o obj/$(basename $s).o

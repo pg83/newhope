@@ -161,7 +161,7 @@ def iter_frames(frame=None):
         frame = frame.f_back
 
 
-@y.cached()
+@y.cached
 def text_from_file(path):
     return open(path).read().split('\n')
 

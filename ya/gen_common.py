@@ -3,21 +3,29 @@ def fix_user_data(iter):
         yield y.dc(f)
 
 
-def common_plugins(iface):
+def common_plugins(iface, cc):
     yield y.EOP(y.ACCEPT(), y.PROVIDES('mf:plugin'))
 
     for el in sorted(y.globals.file_data, key=lambda x: y.burn([4, x['name']])):
         if el['name'].startswith('pl/'):
-            yield y.ELEM(y.dc(el))
+            yield y.ELEM({'el': el, 'cc': cc})
 
     yield y.FIN()
+
+
+def common_plugins_gen(cc):
+    def cc_plugins(iface):
+        yield from common_plugins(iface, cc)
+
+    cc_plugins.__name__ = 'cc_plugins_' + y.small_repr(cc)
+
+    return cc_plugins
 
 
 def mf_function_holder(cc, cb, iface):
     yield y.EOP(y.ACCEPT())
 
-    lst_f = [y.make_proper_permutation_gen(x) for x in cc] + [
-        y.common_plugins,
+    lst_f = [y.make_proper_permutation] + [common_plugins_gen(x) for x in cc] + [
         y.FuncAggr(cb).on_new_data,
         y.exec_plugin_code,
     ]

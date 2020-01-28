@@ -25,7 +25,7 @@ def upm_root():
     return user_home() + '/upm_root'
 
 
-@y.cached()
+@y.cached
 def find_tool(name):
     return list(find_tool_uncached_0(name, []))
 

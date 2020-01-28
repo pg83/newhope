@@ -108,7 +108,7 @@ def score_toolchains(lst, info):
     return [join_toolchains(info, [x['c'], x['c++'], x['l']]) for x in toolchains]
 
 
-@y.cached()
+@y.cached
 def iterate_best_compilers(info):
     return score_toolchains(find_toolchain_by_cc(info), info)
 
@@ -132,7 +132,7 @@ def join_versions(deps):
     return '-'.join(iter_v())
 
 
-@y.cached()
+@y.cached
 def find_compiler_id(info):
     for x in find_compiler_x(info):
         return x
@@ -140,7 +140,7 @@ def find_compiler_id(info):
     raise Exception('shit happen %s' % info)
 
 
-@y.cached()
+@y.cached
 def find_compilers(info):
     def iter_compilers():
         if y.is_cross(info):

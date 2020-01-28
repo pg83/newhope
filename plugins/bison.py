@@ -1,4 +1,4 @@
-@y.ygenerator()
+≈ç@y.ygenerator()
 def bison0():
     return {
         'code': """
@@ -15,3 +15,4 @@ def bison0():
             'depends': ['c++', 'm4', 'iconv', 'intl', 'xz', 'perl5']
         },
     }
+

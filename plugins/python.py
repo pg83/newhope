@@ -36,7 +36,7 @@ def python_base(kind):
 
 @y.ygenerator()
 def python0():
-    return python_base(['box', 'tool'])
+    return python_base(['tool'])
 
 
 @y.ygenerator()

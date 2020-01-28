@@ -28,7 +28,7 @@ def set_profile(g):
         g.trace_function(*args)
 
     sys.settrace(trace)
-    threading.settrace(trace)
+    thread.settrace(trace)
 
 
 def set_sigint(g):
@@ -182,13 +182,6 @@ def thr_func(g):
     try:
         g.file_data = g.file_data or load_system(g.script_path)
         g.by_name = dict((x['name'], x) for x in g.file_data)
-        g.by_prefix = collections.defaultdict(set)
-
-        for i, x in enumerate(g.file_data):
-            for w in x['data'].split():
-                for p in iter_prefix(w):
-                    g.by_prefix[p].add(x['burn'])
-
         ctx = {'_globals': g}
         exec(g.compile((g.by_name['ut/stage0.py']['data'] + '\nrun_stage0(_globals)\n'), 'ut/stage0.py', 'exec'), ctx)
         ctx.clear()

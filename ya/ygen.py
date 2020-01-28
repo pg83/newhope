@@ -18,22 +18,21 @@ def exec_plugin_code(iface):
     yield y.EOP(y.ACCEPT('mf:plugin'), y.PROVIDES('mf:original'))
 
     for data in iface.iter_data():
-        print data
-        code = data.data
-
-        if not code:
+        if not data.data:
             yield y.FIN()
-            print 'fin'
+            y.os.abort()
 
-            return
-
+        code = data.data['el']
+        cc = data.data['cc']
         name = code['name']
         name = name.replace('/', '.')
 
         if name.endswith('.py'):
             name = name[:-3]
 
-        mod = __yexec__(code['data'], module_name=name)
+        y.xprint_blue('ygen', code, name, cc)
+
+        mod = __yexec__(code['data'], module_name=name, arch=cc)
 
         try:
             for x in mod.event:
@@ -47,13 +46,13 @@ def exec_plugin_code(iface):
 def ygenerator(where=None):
     def functor(func):
         base_name = func.__name__[:-1]
-        new_f = y.singleton(y.compose_simple(func, y.dc, subst_some_values))
-
+        new_f = y.compose_simple(func, y.dc, subst_some_values)
         descr = {
             'gen': 'human',
             'base': base_name.replace('_', '-'),
             'kind': new_f()['meta']['kind'],
             'code': new_f,
+            'module': func.__module__,
         }
 
         assert 'codec' not in new_f()

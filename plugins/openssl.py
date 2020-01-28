@@ -2,12 +2,20 @@
 def openssl0():
     version = '1.1.1c'
 
-#if linux
+/*
+#if defined(__LINUX__)
     flags = 'linux-x86_64-clang'
+    extra = ['kernel-h']
 #else
     flags = 'darwin64-x86_86-cc'
+    extra = []
 #endif
+*/
 
+    flags = 'darwin64-x86_86-cc'
+    extra = []
+
+    print flags, extra
 
     return {
         'code': """
@@ -19,12 +27,8 @@ def openssl0():
         'version': version,
         'meta': {
             'kind': ['library'],
-            'depends': [
+            'depends': extra + [
                 'perl5',
-                #{
-                #    'os': 'linux',
-                #    'value': 'kernel-h',
-                #},
                 'dl',
             ],
             'provides': [

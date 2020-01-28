@@ -1,6 +1,5 @@
 import sys
 import imp
-import threading
 import inspect
 
 
@@ -192,7 +191,6 @@ class IFace(dict):
         subst = {
             'xpath': 'run_xpath_simple',
             'Queue': 'queue',
-            'thread': 'threading',
         }
 
         name = subst.get(name, name)

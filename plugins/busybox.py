@@ -1,4 +1,6 @@
-#@y.ygenerator()
+#if defined(__LINUX__)
+
+@y.ygenerator()
 def busybox0():
     return {
         'os': 'linux',
@@ -11,9 +13,11 @@ def busybox0():
         """,
         'version': '1.31.0',
         'meta': {
-            'kind': [{'os': 'linux', 'value': 'tool'}],
+            'kind': ['tool'],
             'provides': [
                 {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
             ],
         },
     }
+
+#endif

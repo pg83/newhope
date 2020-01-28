@@ -1,3 +1,4 @@
+
 def default_key(*args, **kwargs):
     return y.struct_dump_bytes([args, kwargs])
 
@@ -84,10 +85,16 @@ def cached(f=None, key=default_key, copy=False):
     cf = get_copy_func(copy=copy)
 
     def functor(f):
-        try:
-            return get_cache_holder(f)(key, f, cf)
-        finally:
-            y.prompt('/test2')
+        if 'false' in y.config.get('cache', ''):
+            print('disable caching')
+            return f
+
+            try:
+                return get_cache_holder(f)(key, f, cf)
+            finally:
+                y.prompt('/test2')
+
+        return f
 
     if f:
         return functor(f)

@@ -1,3 +1,5 @@
+#if defined(__LINUX__)
+
 def musl_impl(code, deps, cont, kind):
     return {
         'os': 'linux',
@@ -21,7 +23,7 @@ def musl_impl(code, deps, cont, kind):
     }
 
 
-#@y.ygenerator()
+@y.ygenerator()
 def musl_boot0():
     code = """
        source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
@@ -38,7 +40,7 @@ def musl_boot0():
     return musl_impl(code, [], [], ['tool'])
 
 
-#@y.ygenerator()
+@y.ygenerator()
 def musl0():
     code = """
        source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
@@ -57,3 +59,5 @@ def musl0():
     res = y.dc(musl_impl(code, ['make-boot', 'mimalloc'], ['musl-boot'], ['library']))
 
     return res
+
+#endif

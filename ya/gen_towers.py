@@ -29,7 +29,7 @@ def subst_by_platform(os):
 
 class Func(object):
     def do_subst(self, x):
-        s = subst_by_platform(self.data.info['host']['os'])
+        s = subst_by_platform(self.data.info['os'])
 
         x = s.get(x, x)
         x = s.get(x, x)
@@ -53,7 +53,7 @@ class Func(object):
         return str(self)
 
     def __str__(self):
-        return '<' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + '-' + self.data.info['target']['os'] + '>'
+        return '<' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + '-' + self.data.info['os'] + '>'
 
     def compact_kind(self):
         res = ''
@@ -78,12 +78,9 @@ class Func(object):
     def kind(self):
         return self.x['kind']
 
-    def slice(self, data):
-        return data
-
     @y.cached_method
     def code(self):
-        return self.slice(self.x['code']())
+        return self.x['code']()
 
     @property
     def base(self):
@@ -152,8 +149,6 @@ class Func(object):
                     continue
 
                 yield d
-
-        print list(iter1())
 
         return frozenset(iter1())
 
@@ -280,8 +275,6 @@ class Data(object):
     def __init__(self, info, data):
         self.info = info
 
-        print y.pretty_dumps(data)
-
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
@@ -295,12 +288,11 @@ class Data(object):
         self.by_kind = y.collections.defaultdict(list)
 
         for x in self.data:
-            print x.kind
             for k in x.kind:
                 self.by_kind[k].append(x.base)
 
     def extra_libs(self):
-        tg = self.info['host']
+        tg = self.info
 
         if tg['os'] == 'linux':
             return ('make', 'musl', 'bestbox')
@@ -359,8 +351,10 @@ class Data(object):
         return self.dd.get(name, [-1])[0]
 
     def register(self):
-        for v in [self.func_by_num[self.last_elements(['box'], must_have=True)[0]]]:
-            yield y.ELEM({'func': v.z})
+        for v in self.func_by_num:
+            yield y.ELEM({'func', v.z})
+        #for v in [self.func_by_num[self.last_elements(['box'], must_have=True)[0]]]:
+            #yield y.ELEM({'func': v.z})
 
     def iter_deps(self):
         for f in self.func_by_num:
@@ -403,38 +397,44 @@ class Data(object):
         return [self.func_by_num[d].f() for d in deps]
 
 
-def make_proper_permutation(iface, info):
+def make_proper_permutation(iface):
     yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
 
-    data = []
-    init_0(data)
+    class State(object):
+        def __init__(self):
+            self.data = []
+            init_0(self.data)
+
+    by_module = y.collections.defaultdict(State)
 
     for row in iface.iter_data():
         if not row.data:
             break
 
-        data.append(row)
+        by_module[parse_arch(row.data['func']['module'])].data.append(row)
         yield y.EOP()
 
-    print y.pretty_dumps(data)
+    for mod, data in by_module.items():
+        print mod, data.data
 
-    dt = Data(info, [x.data for x in data])
-    dt.prepare_funcs(2)
-    dt.out()
+    for mod, data in by_module.items():
+        os, arch = mod.split('_', 1)
+        dt = Data({'os': os, 'arch': arch}, [x.data for x in data.data])
+        dt.prepare_funcs(2)
+        dt.out()
 
-    for x in dt.register():
-        yield x
+        for x in dt.register():
+            yield y.EOP(x)
 
     yield y.FIN()
 
 
-def make_proper_permutation_gen(info):
-    def func(iface):
-        yield from make_proper_permutation(iface, info)
+def parse_arch(s):
+    res = s.split('.')[1]
 
-    func.__name__ = 'make_proper_permutation_' + y.small_repr(info)
+    print res
 
-    return func
+    return res
 
 
 def init_0(where):

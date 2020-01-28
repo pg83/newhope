@@ -28,7 +28,7 @@ def visit_nodes(nodes, debug=False):
             yield z
 
 
-@y.cached()
+@y.cached
 def restore_node(ptr):
     res = y.load_list(ptr)
 
