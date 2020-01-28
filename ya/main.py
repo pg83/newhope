@@ -8,7 +8,8 @@ async def gen_full_dump(iter_cc):
 async def gen_mk_data(cc):
     funcs = []
 
-    await y.pubsub.run(init=[y.mf_function_holder_gen(cc, funcs.append)])
+    for c in cc:
+        await y.pubsub.run(init=[y.mk_funcs_gen(c, funcs.append)])
 
     return funcs
 

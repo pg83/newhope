@@ -1,9 +1,4 @@
-def fix_user_data(iter):
-    for f in iter:
-        yield y.dc(f)
-
-
-def common_plugins(iface, cc):
+def common_plugins(cc, iface):
     yield y.EOP(y.ACCEPT(), y.PROVIDES('mf:plugin'))
 
     for el in sorted(y.globals.file_data, key=lambda x: y.burn([4, x['name']])):
@@ -15,19 +10,19 @@ def common_plugins(iface, cc):
 
 def common_plugins_gen(cc):
     def cc_plugins(iface):
-        yield from common_plugins(iface, cc)
+        yield from common_plugins(cc, iface)
 
-    cc_plugins.__name__ = 'cc_plugins_' + y.small_repr(cc)
-
-    return cc_plugins
+    return y.make_name(cc_plugins, 'cc_plugin_' + y.small_repr(cc))
 
 
-def mf_function_holder(cc, cb, iface):
+def mk_funcs(cc, cb, iface):
     yield y.EOP(y.ACCEPT())
 
-    lst_f = [y.make_proper_permutation] + [common_plugins_gen(x) for x in cc] + [
-        y.FuncAggr(cb).on_new_data,
+    lst_f = [
+        common_plugins_gen(cc),
         y.exec_plugin_code,
+        y.gen_towers,
+        y.FuncAggr(cb).on_new_data,
     ]
 
     for l in lst_f:
@@ -36,13 +31,11 @@ def mf_function_holder(cc, cb, iface):
     yield y.FIN()
 
 
-def mf_function_holder_gen(cc, cb):
+def mk_funcs_gen(cc, cb):
     def func(iface):
-        yield from mf_function_holder(cc, cb, iface)
+        yield from mk_funcs(cc, cb, iface)
 
-    func.__name__ = 'mf_function_holder_generator_' + '_'.join(str(x) for x in cc)
-
-    return func
+    return y.set_name(func, 'mk_funcs_' + y.small_repr(cc))
 
 
 def aggr_flag(name, metas):

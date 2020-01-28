@@ -1,4 +1,4 @@
-≈ç@y.ygenerator()
+@y.ygenerator()
 def bison0():
     return {
         'code': """

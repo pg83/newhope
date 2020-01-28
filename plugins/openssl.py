@@ -1,21 +1,9 @@
+
 @y.ygenerator()
 def openssl0():
     version = '1.1.1c'
-
-/*
-#if defined(__LINUX__)
-    flags = 'linux-x86_64-clang'
-    extra = ['kernel-h']
-#else
-    flags = 'darwin64-x86_86-cc'
+    flags = 'linux-x86_64-cc'
     extra = []
-#endif
-*/
-
-    flags = 'darwin64-x86_86-cc'
-    extra = []
-
-    print flags, extra
 
     return {
         'code': """

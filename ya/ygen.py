@@ -30,7 +30,7 @@ def exec_plugin_code(iface):
         if name.endswith('.py'):
             name = name[:-3]
 
-        y.xprint_blue('ygen', code, name, cc)
+        y.xprint_blue('ygen', name, cc)
 
         mod = __yexec__(code['data'], module_name=name, arch=cc)
 
@@ -47,12 +47,14 @@ def ygenerator(where=None):
     def functor(func):
         base_name = func.__name__[:-1]
         new_f = y.compose_simple(func, y.dc, subst_some_values)
+
         descr = {
             'gen': 'human',
             'base': base_name.replace('_', '-'),
             'kind': new_f()['meta']['kind'],
             'code': new_f,
             'module': func.__module__,
+            'cc': y.to_full_target(func.__module__.split('.')[1])
         }
 
         assert 'codec' not in new_f()

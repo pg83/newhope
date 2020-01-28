@@ -1,7 +1,29 @@
 import sys
 import random
 
+/*
+def cons_to_name_xx(c):
+    if not c:
+        return 'nop'
 
+    try:
+        c = c['target']
+    except KeyError:
+        pass
+
+    res = ''
+
+    for k, f in (('os', 1), ('libc', 1), ('arch', 2)):
+        if k in c:
+            res += c[k][:f]
+
+    return res
+
+
+def small_repr_x(c):
+    return cons_to_name_xx(c)
+*/
+ 
 class Mod(dict):
    def __init__(self, name, loader):
       self.__dict__ = self
@@ -35,12 +57,10 @@ class Mod(dict):
       self.exec_text_part(self.builtin_data())
 
    def ycompile(self, a, b, c, **kwargs):
-      #print('--------------------' + b + '\n' + a)
-      ap = self.__loader__._preproc(a)
-      #print('+++++++++++++++++++\n' + ap)
-  
-      return self.__loader__._g.compile('\n' * kwargs.get('firstlineno', 0) + ap, b, c)
+      ap = self.__loader__._preproc(a, args=kwargs.get('args', {}))
 
+      return self.__loader__._g.compile('\n' * kwargs.get('firstlineno', 0) + ap, b, c)
+   
    def vname(self):
       return self.__name__[len(self.__loader__.root_module().__name__) + 1:]
   
@@ -66,11 +86,11 @@ class Mod(dict):
       if text:
          self.__ynext_part__ = text 
 
-   def exec_text_part(self, part):
+   def exec_text_part(self, part, args={}):
       if not part.strip():
-         return 
+         return
 
-      code = self.ycompile(part, self.__file__.replace('.', '/') + '.py', 'exec', firstlineno=self.line_count())
+      code = self.ycompile(part, self.__file__.replace('.', '/') + '.py', 'exec', firstlineno=self.line_count(), args=args)
   
       exec(code, self.__dict__)
 
@@ -115,13 +135,13 @@ class Mod(dict):
    
 
 class Loader(object):
-   def __init__(self, name, g, preproc=lambda x: x):
+   def __init__(self, name, g):
       self.__name__ = name
       self._by_name = {}
       self._builtin = g.builtin_modules
       self._order = []
       self._g = g
-      self._preproc = preproc
+      self._preproc = lambda text, **kwargs: text
   
       Mod(name, self)
   
@@ -150,18 +170,23 @@ class Loader(object):
       return self._builtin.get(mod.vname(), {}).get('data', '')
 
    def exec_code(self, mod, data, module_name=None, arch={}, **kwargs):
-      if arch:
-         module_name = arch['os'] + '_' + arch['arch'] + '.' + module_name
-         data = '#define __OS__ "' + arch['os'].upper() + '"\n\n' + data
-         data = '#define __ARCH__ "' + arch['arch'].upper() + '"\n' + data
-         data = '#define __' + arch['arch'].upper() + '__ 1\n' + data
-         data = '#define __' + arch['os'].upper() + '__ 1\n' + data
+      args = arch.copy()
+  
+      if args:
+         module_name = self.get_y().small_repr(args) + '.' + module_name
+ 
+         args.update({
+            '__OS__' : '"' + arch['os'].upper() + '"',
+            '__ARCH__': '"' + arch['arch'].upper() + '"',
+            '__' + arch['arch'].upper() + '__': '1',
+            '__' + arch['os'].upper() + '__':  '1',
+         })
  
       if module_name:
          m = self.create_module(module_name)
 
          if data != m.builtin_data():
-            m.exec_text_part(data)
+            m.exec_text_part(data, args=args)
 
          return m
 

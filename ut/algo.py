@@ -7,6 +7,12 @@ from marshal import loads, dumps
 isf = y.inspect.iscoroutinefunction
 
 
+def make_name(f, n):
+    f.__name__ = n
+
+    return f
+
+
 def uniq_list_3(l):
     return list(sorted(frozenset(l)))
 

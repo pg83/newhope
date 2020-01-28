@@ -1,6 +1,6 @@
 @y.verbose_entry_point
 async def cli_test_offload(args):
-    print await y.async_loop.offload(lambda: y.subprocess.check_output("ls -la", shell=True))
+    await y.async_loop.offload(lambda: y.subprocess.check_output("ls -la", shell=True))
 
 
 @y.verbose_entry_point
@@ -40,7 +40,7 @@ async def cli_test_queue(args):
     async def func1(ctl):
         while True:
             for i in range(0, 2000):
-                print await q.async_pop()
+                await q.async_pop()
                 await ctl.sched_yield()
                 q.push(int(y.random.random() * 1000))
                 q.push(int(y.random.random() * 1000))
@@ -48,7 +48,7 @@ async def cli_test_queue(args):
     async def func3(ctl):
         while True:
             for i in range(0, 500):
-                print await q.async_pop()
+                await q.async_pop()
                 await q.async_pop()
                 await ctl.sched_yield()
                 q.push(int(y.random.random() * 1000))
@@ -258,5 +258,6 @@ def busybox0():
 @y.verbose_entry_point
 async def cli_test_preproc2(args):
     for t in (tets_0, test_1):
-        print '------------------\n' + t + '\n'
-        print '++++++++++++++++++\n' + y.preprocess_text(t) + '\n'
+        y.xprint_red('------------------\n' + t + '\n')
+        y.xprint_green('++++++++++++++++++\n' + y.preprocess_text(t) + '\n')
+    

@@ -128,7 +128,7 @@ class Func(object):
     def extra_libs(self):
         return self.data.extra_libs()
 
-    #@y.cached_method
+    @y.cached_method
     def dep_list(self):
         def iter1():
             yield from self.depends()
@@ -351,10 +351,8 @@ class Data(object):
         return self.dd.get(name, [-1])[0]
 
     def register(self):
-        for v in self.func_by_num:
-            yield y.ELEM({'func', v.z})
-        #for v in [self.func_by_num[self.last_elements(['box'], must_have=True)[0]]]:
-            #yield y.ELEM({'func': v.z})
+        for v in [self.func_by_num[self.last_elements(['box'], must_have=True)[0]]]:
+            yield y.ELEM({'func': v.z})
 
     def iter_deps(self):
         for f in self.func_by_num:
@@ -367,7 +365,9 @@ class Data(object):
     def out(self):
         for x in self.func_by_num:
             x.out_deps()
-
+    
+        y.xprint_green('exec sequence', self.exec_seq())
+    
     def full_deps(self, name):
         return self.full_lib_deps(name) | self.full_tool_deps(name)
 
@@ -397,51 +397,37 @@ class Data(object):
         return [self.func_by_num[d].f() for d in deps]
 
 
-def make_proper_permutation(iface):
+def gen_towers(iface):
     yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
 
-    class State(object):
-        def __init__(self):
-            self.data = []
-            init_0(self.data)
-
-    by_module = y.collections.defaultdict(State)
+    data = []
 
     for row in iface.iter_data():
         if not row.data:
             break
 
-        by_module[parse_arch(row.data['func']['module'])].data.append(row)
+        data.append(row)
         yield y.EOP()
 
-    for mod, data in by_module.items():
-        print mod, data.data
+    cc = data[0].data['func']['cc']
+    dt = Data(cc, [x.data for x in data] + [box_0(cc)])
+    dt.prepare_funcs(2)
+    dt.out()
 
-    for mod, data in by_module.items():
-        os, arch = mod.split('_', 1)
-        dt = Data({'os': os, 'arch': arch}, [x.data for x in data.data])
-        dt.prepare_funcs(2)
-        dt.out()
-
-        for x in dt.register():
-            yield y.EOP(x)
+    for x in dt.register():
+        yield y.EOP(x)
 
     yield y.FIN()
 
 
-def parse_arch(s):
-    res = s.split('.')[1]
+def box_0(cc):
+    descr = {
+        'gen': 'human',
+        'base': 'box',
+        'kind': ['tool', 'special'],
+        'code': lambda: {},
+        'module': '',
+        'cc': cc,
+    }
 
-    print res
-
-    return res
-
-
-def init_0(where):
-    @y.ygenerator(where=where)
-    def box0():
-        return {
-            'meta': {
-                'kind': ['special', 'tool'],
-            },
-        }
+    return {'func': descr}

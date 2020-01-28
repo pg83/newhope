@@ -44,7 +44,12 @@ def subst_info(info):
 
 
 def iter_all_targets():
-    /*
+    for a in ('x86_64',):
+        yield {
+            'arch': a,
+            'os': 'darwin',
+        }
+
     for a in ('x86_64', 'aarch64', 'arm', 'armv7a', 'i686'):
         yield {
             'arch': a,
@@ -57,14 +62,8 @@ def iter_all_targets():
                 'os': 'linux',
                 'libc': libc,
             }
-*/
-    for a in ('x86_64',):
-        yield {
-            'arch': a,
-            'os': 'darwin',
-        }
 
-
+    
 @y.singleton
 def rev_target_map():
     res = {}
@@ -76,6 +75,8 @@ def rev_target_map():
 
 
 def to_full_target(name):
+    print name
+
     return rev_target_map()[name]
 
 

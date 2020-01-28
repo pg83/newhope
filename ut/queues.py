@@ -22,12 +22,10 @@ class QQ(object):
             except IndexError:
                 return self.c.append(c)
 
-            #print 'ZZZZZZZZZZZZZ', c, v
             c(v)
 
     def pop_0(self, fut):
         def cb(v):
-            #print 'XXXXXXXX', fut, v
             fut.set_result(v)
 
         self.c.append(cb)

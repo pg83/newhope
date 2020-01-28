@@ -89,7 +89,7 @@ class ColoredFormatter(y.logging.Formatter):
         return res
 
 
-def init_logger(log_level='INFO'):
+def init_logger(log_level='DEBUG'):
     if 'pip' in y.sys.argv:
         return
 

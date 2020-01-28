@@ -1,5 +1,7 @@
+#skip_preproc
+
 undefined = object()
-tokens = frozenset(['if', 'elif', 'else', 'endif', 'define', 'undef'])
+tokens = frozenset(['if', 'elif', 'else', 'endif', 'define', 'undef', 'print_stats'])
 
 
 def split_0(x):
@@ -21,8 +23,10 @@ def get_spaces(x):
 class Undefined(dict):
     def __init__(self, d):
         self.__dict__ = self
-        self.update(d)
 
+        for k, v in d.items(): 
+            self[k.upper()] = v
+        
         def defined(x):
             return x is not undefined
 
@@ -41,6 +45,8 @@ def r0(self, v, d):
         self._c._e._d.pop(d)
     elif v == 'error':
         raise Exception('shit happen')
+    elif v == 'print_stats':
+        y.xprint_white('stats', self._c._e._d)
     else:
         return False
 
@@ -188,7 +194,6 @@ class Root(object):
 class Preproc(object):
     def __init__(self, d):
         self._d = Undefined(d)
-        self._d['def'] = lambda x: (x in self._d)
         self._r = []
 
     def run(self, text):
@@ -213,7 +218,7 @@ class Preproc(object):
             def clone(self):
                 return Emit(self.skip, self._d, self.n + 1, self)
 
-        emit = Emit(False, Undefined(self._d), 0, None)
+        emit = Emit(False, self._d, 0, None)
 
         r = Root(Ctx(self.tokenize(text), emit))
         r.run()
@@ -245,40 +250,14 @@ class Preproc(object):
         for x in self._l:
             x.render(Emit())
 
-code = '''
-print x
-
-#define a 1
-
-a + b == c
-
-#define b 2
-
-#if defined(a)
-    #if defined(b)
-        print(a + b)
-    #else
-        print(bad)
-    #endif
-    print y
-#endif
-'''
-
-#Preproc({}).run(code)
-
-#with open('qw', 'r') as f:
-#    Preproc({}).run(f.read())
 
 def preprocess_text(text, args={}):
+    if '#skip_preproc' in text:
+        return text
+
     try:
-        res = Preproc(args).run(text)
-
-        return res
+        return Preproc(args).run(text)
     except Exception as e:
-        print('----------------------------------------------\n' + text)
-        print('++++++++++++++++++++++++++++++++++++++++++++++\n' + res)
-        raise e
-
-
+        raise Exception('can not parse + ' + text[:100]) from e
 
 __loader__._preproc = preprocess_text
