@@ -227,7 +227,7 @@ class Preproc(object):
 
             if ll and ll[0] == '#':
                 ll = ll[1:]
-        
+
                 try:
                     func, params = ll.split(' ', 1)
                 except ValueError:
@@ -270,24 +270,15 @@ a + b == c
 #    Preproc({}).run(f.read())
 
 def preprocess_text(text, args={}):
-    return Preproc(args).run(text)
+    try:
+        res = Preproc(args).run(text)
 
-if __name__ == '__main__':
-    import sys
+        return res
+    except Exception as e:
+        print('----------------------------------------------\n' + text)
+        print('++++++++++++++++++++++++++++++++++++++++++++++\n' + res)
+        raise e
 
-    for p in sys.argv[1:]:
-        print('process', p)
 
-        with open(p) as f:
-            data = f.read()
 
-        try:
-            ndata = preprocess_text(data)
-
-            if ndata.strip() != data.strip():
-                with open(p + '.xxx.py', 'w') as f:
-                    f.write(ndata)
-        except Exception as e:
-            print(e, data)
-else:
-    __loader__._preproc = preprocess_text
+__loader__._preproc = preprocess_text
