@@ -418,7 +418,6 @@ class Item(ItemBase):
 
         try:
             env = y.dc(self.env)
-            #naked = 'source init' not in input
             naked = False
 
             def fun():
