@@ -20,39 +20,17 @@ def small_repr(c):
     return cons_to_name_x(c)
 
 
-def small_repr_cons(c):
-    return small_repr(c.get('host', c['target'])) + '$' + small_repr(c['target'])
-
-
-def is_cross(cc):
-    if not cc:
-        return False
-
-    return small_repr(cc['host']) != small_repr(cc['target'])
-
-
-def subst_info(info):
-    info = y.dc(info)
-
-    if 'host' not in info:
-        info['host'] = current_host_platform()
-
-    if 'target' not in info:
-        info['target'] = y.dc(info['host'])
-
-    return info
-
-
-def iter_all_targets():
+def iter_all_targets_0():
     for a in ('x86_64',):
         yield {
             'arch': a,
             'os': 'darwin',
         }
 
-    for a in ('x86_64', 'aarch64', 'arm', 'armv7a', 'i686'):
+    for a in ('x86_64'):
         yield {
             'arch': a,
+            'libc': 'musl',
             'os': 'linux',
         }
 
@@ -63,7 +41,15 @@ def iter_all_targets():
                 'libc': libc,
             }
 
-    
+
+def iter_all_targets():
+    yield {
+        'arch': 'x86_64',
+        'libc': 'musl',
+        'os': 'linux',
+    }
+
+
 @y.singleton
 def rev_target_map():
     res = {}

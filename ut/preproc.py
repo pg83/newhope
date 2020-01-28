@@ -26,7 +26,7 @@ class Undefined(dict):
 
         for k, v in d.items(): 
             self[k.upper()] = v
-        
+
         def defined(x):
             return x is not undefined
 

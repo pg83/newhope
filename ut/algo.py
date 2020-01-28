@@ -153,7 +153,7 @@ class TOut(object):
         self.tout = 0
 
     def bad(self):
-        self.tout = min(self.tout * 1.2 + 0.001, 0.03)
+        self.tout = min(self.tout * 1.2 + 0.01, 0.03)
 
     def current(self):
         if self.tout < 0.01:

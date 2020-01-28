@@ -260,4 +260,4 @@ async def cli_test_preproc2(args):
     for t in (tets_0, test_1):
         y.xprint_red('------------------\n' + t + '\n')
         y.xprint_green('++++++++++++++++++\n' + y.preprocess_text(t) + '\n')
-    
+

@@ -9,7 +9,8 @@ async def gen_mk_data(cc):
     funcs = []
 
     for c in cc:
-        await y.pubsub.run(init=[y.mk_funcs_gen(c, funcs.append)])
+        y.xprint_white('start ', c)
+        await eval('y.pubsub_' + y.small_repr(c)).run(init=[y.mk_funcs_gen(c, funcs.append)])
 
     return funcs
 

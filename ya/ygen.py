@@ -40,7 +40,7 @@ def exec_plugin_code(iface):
         except AttributeError:
             pass
 
-    yield y.EOP()
+        yield y.EOP()
 
 
 def ygenerator(where=None):

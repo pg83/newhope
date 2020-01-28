@@ -92,14 +92,7 @@ def parse_clang(info):
     for t in filter_by_os(y.iter_all_targets(), info):
         c = {}
 
-        cc = {
-            'host': host,
-            'target': t,
-        }
-
-        is_cross_c = y.is_cross(cc)
-
-        c['constraint'] = cc
+        c['host'] = host
         c['version'] = extra['version']
         c['build'] = []
 
@@ -182,21 +175,18 @@ def iter_darwin():
 
     def do_iter():
         for meta in iter_nodes():
-            n = {
-                'name': '-'.join(['clang'] + meta['kind']),
-                'build': [],
-                'version': y.burn(meta),
-                'meta': meta,
-                'constraint': {
-                    'host': y.current_host_platform(),
-                    'target': y.current_host_platform(),
-                },
-            }
+            for t in y.iter_all_targets():
+                n = {
+                    'name': '-'.join(['clang'] + meta['kind'] + [y.burn(t)]),
+                    'version': y.burn(meta),
+                    'meta': meta,
+                    'host': t,
+                }
 
-            yield {
-                'node': n,
-                'deps': [],
-            }
+                yield y.dc({
+                    'node': n,
+                    'deps': [],
+                })
 
     return list(do_iter())
 
@@ -208,10 +198,7 @@ def parse_lld(info):
     for t in filter_by_os(y.iter_all_targets(), info):
         c = {}
 
-        c['constraint'] = {
-            'host': host,
-            'target': t,
-        }
+        c['host'] = host
 
         opts = extra + [
             '-fuse-ld=lld',

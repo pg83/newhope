@@ -1,6 +1,9 @@
 @y.lookup
 def lookup_pubsub(name):
-    return {'pubsub': y.PubSubLoop}[name]()
+    if name.startswith('pubsub_'):
+        return {name: y.PubSubLoop}[name]()
+
+    raise AttributeError(name)
 
 
 def gen_unpack_node(pkg):
@@ -43,7 +46,7 @@ def print_v3_node_2(n):
 def do_apply_node(root, by_name):
     node = root['node']
     nnn = node['name']
-    cc = node.get('constraint', {})
+    cc = node.get('host', {})
     pp = y.gen_pkg_path(root)
 
     def iter_groups():
@@ -51,7 +54,7 @@ def do_apply_node(root, by_name):
 
         cur = ''
 
-        for x in (nnn, y.small_repr(cc.get('host', {})), y.small_repr(cc.get('target', {}))):
+        for x in (nnn, y.small_repr(cc)):
             cur += '-'
             cur += x
 

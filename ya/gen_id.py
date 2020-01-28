@@ -1,11 +1,8 @@
-import os
-
-
 def calc_pkg_full_name(url):
     if url.endswith('download'):
-        url = os.path.dirname(url)
+        url = y.os.path.dirname(url)
 
-    return os.path.basename(url)
+    return y.os.path.basename(url)
 
 
 def remove_compressor_name(x):
@@ -19,7 +16,7 @@ def remove_compressor_name(x):
 def to_visible_name_0(pkg, good_id):
     def iter_parts():
         yield pkg['name'].replace('_', '')
-        yield y.small_repr(pkg.get('constraint'))
+        yield y.small_repr(pkg.get('host'))
         yield 'v4' + good_id[:10][2:]
         yield pkg['codec']
 

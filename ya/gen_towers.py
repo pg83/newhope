@@ -215,7 +215,7 @@ class SpecialFunc(Func):
 
     @y.cached_method
     def f(self):
-        return self.slice(self.z['code']())
+        return self.z['code']()
 
     @property
     @y.cached_method
@@ -365,9 +365,9 @@ class Data(object):
     def out(self):
         for x in self.func_by_num:
             x.out_deps()
-    
+
         y.xprint_green('exec sequence', self.exec_seq())
-    
+
     def full_deps(self, name):
         return self.full_lib_deps(name) | self.full_tool_deps(name)
 
@@ -410,12 +410,16 @@ def gen_towers(iface):
         yield y.EOP()
 
     cc = data[0].data['func']['cc']
+    print cc
     dt = Data(cc, [x.data for x in data] + [box_0(cc)])
     dt.prepare_funcs(2)
     dt.out()
 
-    for x in dt.register():
-        yield y.EOP(x)
+    try:
+        for x in dt.register():
+            yield x
+    except IndexError:
+        pass
 
     yield y.FIN()
 

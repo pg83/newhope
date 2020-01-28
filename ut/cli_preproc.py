@@ -13,7 +13,7 @@ def xcheck_file(pp, diff):
         else:
             y.xprint_magenta('-------------------------\n' + d)
             y.xprint_yellow('+++++++++++++++++++++++++++\n' + nd)
-                
+        
 
 
 @y.main_entry_point

@@ -17,24 +17,24 @@ def group_by_cc():
         assert x
         assert 'codec' in x['node']
 
-        k = y.small_repr_cons(x['node']['constraint'])
+        k = y.small_repr(x['node']['host'])
 
         if k in res:
             res[k].append(x)
         else:
             res[k] = [x]
 
-        res['cc:' + k] = x['node']['constraint']
+        res['cc:' + k] = x['node']['host']
 
     return res
 
 
 def find_toolchain_by_cc(cc):
-    return y.dc(group_by_cc()[y.small_repr_cons(cc)])
+    return y.dc(group_by_cc()[y.small_repr(cc)])
 
 
 @y.singleton
-def get_all_constraints():
+def get_all_tc():
     res = []
     cc = group_by_cc()
 
@@ -78,7 +78,7 @@ def join_toolchains(info, tcs):
             'prepare': sum((x.get('prepare', []) for x in nodes), []),
             'name': 'tc-' + '-'.join(x['name'] for x in nodes),
             'version': y.burn(nodes),
-            'constraint': info,
+            'host': info,
             'meta': join_tc_meta(nodes),
         },
         'deps': [y.store_node(x) for x in tcs],
@@ -117,7 +117,7 @@ def find_compiler_x(info):
     def do():
         for x in iterate_best_compilers(info):
             x = y.dc(x)
-            x['node']['constraint'] = info
+            x['node']['host'] = info
 
             yield y.store_node(x)
 
@@ -138,16 +138,3 @@ def find_compiler_id(info):
         return x
 
     raise Exception('shit happen %s' % info)
-
-
-@y.cached
-def find_compilers(info):
-    def iter_compilers():
-        if y.is_cross(info):
-            host = info['host']
-
-            yield find_compiler_id({'target': host, 'host': host})
-
-        yield find_compiler_id(info)
-
-    return list(iter_compilers())

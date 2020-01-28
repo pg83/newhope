@@ -7,6 +7,7 @@ DECORO = nt('DECORO', ['f'])
 SKIP = nt('SKIP', [])
 DEACT = nt('DEACT', [])
 STATEFUL = nt('STATEFUL', [])
+STOP = nt('STOP', [])
 
 
 @y.cached(key=lambda x: y.burn(x))
@@ -342,62 +343,6 @@ def cmd_name(v):
     return kl_name(v).lower()
 
 
-def all_timers():
-    return (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 4.0, 8.0, 16.0)
-
-
-def tout_to_teg(tout):
-    return 'TIMER_' + str(int(10 * tout))
-
-
-def timer(parent):
-    timers = []
-
-    yield EOP(ACCEPT())
-
-    for t in all_timers():
-        timers.append((t, y.time.time()))
-
-    for t in all_timers():
-        yield DATA(['ps:trash'], {'tag': tout_to_teg(t)})
-
-    yield EOP()
-
-    while True:
-        yield SKIP()
-
-        tags = []
-        now = y.time.time()
-
-        def iter_timers():
-            for tout, begin in timers:
-                if begin + tout < now:
-                    tags.append(tout_to_teg(tout))
-
-                    yield tout, now
-                else:
-                    yield tout, begin
-
-        timers = list(iter_timers())
-
-        for tag in tags:
-            yield DATA([tag], {'now': now})
-
-        yield EOP()
-
-
-def tresher(iface):
-    yield EOP(ACCEPT('ps:trash'))
-
-    for data in iface.iter_data():
-        data = data.data
-
-        if 'tag' in data:
-            yield ACCEPT(data['tag'])
-
-    yield EOP()
-
-
 class PubSubLoop(object):
     def __init__(self, ctl=None):
         self.ctl_ = ctl
@@ -450,7 +395,7 @@ class PubSubLoop(object):
     def state_checker(self, iface):
         yield EOP(ACCEPT('ps:check state'))
 
-        for row in iface.iter_data():
+        for row in iface.iter_data(): 
             if any(f.active for f in self.funcs[iface.n + 1:]):
                 break
 
@@ -524,7 +469,9 @@ class PubSubLoop(object):
             c = row.data
             cn = cmd_name(c)
 
-            if cn == 'deact':
+            if cn == 'stop':
+                raise StopIteration()
+            elif cn == 'deact':
                 f.deactivate()
             elif cn == 'defun':
                 self.add_fun(c.f)

@@ -1,0 +1,85 @@
+$MD/noarch-build-scripts-run-8b5fa/build: 
+	export PATH=$PATH:/bin:/usr/bin:/usr/local/bin; rm -rf "$MD/noarch-build-scripts-run-8b5fa" || true && mkdir -p "$MD/noarch-build-scripts-run-8b5fa" && cd "$MD/noarch-build-scripts-run-8b5fa"
+	echo "YWRkX3BhdGgoKSB7CiAgICBleHBvcnQgUEFUSD0iJDEiOiRQQVRICn0KCmFkZF9wYXRoICQxCg==" | (base64 -D -i - -o - || base64 -d) > add_path
+	echo "bG4gLXMgJFNUUklQIC4vc3RyaXAKZXhwb3J0IFBBVEg9IiQocHdkKTokUEFUSCIK" | (base64 -D -i - -o - || base64 -d) > add_strip
+	echo "c291cmNlX2FsbCgpIHsKICAgIHNoaWZ0CiAgICAKICAgIHZhcnM9JChlY2hvICRAIHwgdHIgJyAnICdcbicgfCBncmVwICcvYnVpbGQkJyB8IGdyZXAgLXYgJ2J1aWxkLXNjcmlwdHMnIHwgdHIgJ1xuJyAnICcpCiAgICAKICAgIGZvciBpIGluICR2YXJzCiAgICBkbwogICAgICAgIHNvdXJjZSAkaQogICAgZG9uZQp9Cgpzb3VyY2VfYWxsICRACg==" | (base64 -D -i - -o - || base64 -d) > all
+	echo "KGJhc2U2NCAtRCAtaSAtIC1vIC0gfHwgYmFzZTY0IC1kKSAyPiAvZGV2L251bGwK" | (base64 -D -i - -o - || base64 -d) > base64_decode
+	echo "Y2F0bigpIHsKICAgIG49MSAmJiBjYXQgJEAgfCB3aGlsZSByZWFkIGxpbmU7IGRvIGVjaG8gIiAgJG4gICRsaW5lIjsgbj0kKChuICsgMSkpOyBkb25lCn0KCmNhdG4gJEAK" | (base64 -D -i - -o - || base64 -d) > catn
+	echo "KGNhdCAkQCB8fCB0cnVlKSB8IChncmVwIC12ICdcKycgfHwgdHJ1ZSkgfCBmZ3JlcCAtbSAxIC1DIDIgLUYgLW4gLWUgJ2NvbW1hbmQgbm90IGZvdW5kJyAtZSAnRXJyb3I6JyAtZSAnQyBjb21waWxlciBjYW5ub3QgY3JlYXRlIGV4ZWN1dGFibGVzJyAtZSAnTm8gc3VjaCBmaWxlIG9yIGRpcmVjdG9yeScgLWUgJ0Vycm9yIGlzIG5vdCByZWNvdmVyYWJsZTogZXhpdGluZyBub3cnIC1lICdFcnJvciBvcGVuaW5nIGFyY2hpdmU6IEZhaWxlZCB0byBvcGVuJyAtZSAnVHJhY2ViYWNrJyAtZSAnRmlsZSBmb3JtYXQgbm90IHJlY29nbml6ZWQnIC1lICdCcm9rZW4gcGlwZSc=" | (base64 -D -i - -o - || base64 -d) > check_log
+	echo "Y2xlYW51cCgpIHsKICAgIHNvdXJjZSBybXJmICIkMS91c3IiCgogICAgZm9yIGkgaW4gIm1hbiIgImRvYyI7IGRvCiAgICAgICAgaWYgdGVzdCAtZCAiJDEvJGkiOyB0aGVuCiAgICAgICAgICAgIChta2RpciAiJDEvc2hhcmUiIHx8IHRydWUpIDI+IC9kZXYvbnVsbAoJICAgIG12IC1mICIkMS8kaSIgIiQxL3NoYXJlLyIKICAgICAgICBmaQogICAgZG9uZQp9CgpjbGVhbnVwICIkMSIK" | (base64 -D -i - -o - || base64 -d) > cleanup
+	echo "Y29weV9sb2coKSB7CiAgICAobWtkaXIgLXAgIiQyIikgJiYgKCh0b3VjaCAiJDEiKSAyPi9kZXYvbnVsbCAxPi9kZXYvbnVsbCkgJiYgKGNwICIkMSIgIiQyIikKfQoKY29weV9sb2cgIiQxIiAiJDIiCg==" | (base64 -D -i - -o - || base64 -d) > copy_log
+	echo "KGVjaG8gJEAgfCB0ciAtZCAnXG4nKQo=" | (base64 -D -i - -o - || base64 -d) > echon
+	echo "ZmV0Y2hfdXJsKCkgewogICAgY2QgJDMKICAgICgod2hpY2ggd2dldCAmJiB3Z2V0IC1PICQxICQyKSB8fCAod2hpY2ggY3VybCAmJiBjdXJsIC1zIC0tcmV0cnkgMyAtTCAtayAtbyAkMSAkMikgfHwgKHdoaWNoIGN1cmwgJiYgY3VybCAtcyAtLXJldHJ5IDMgLUwgLW8gJDEgJDIpKSAmJiBscyAtbGEKCiAgICBpZiB0ZXN0IC1mICIkMSI7IHRoZW4KICAgICAgICBmc3o9JChzb3VyY2UgZmlsZV9zaXplICIkMSIpCgogICAgICAgIGlmIHRlc3QgJGZzeiAtbHQgNTAwMDsgdGhlbgoJICAgZWNobyAnZmlsZSB0b28gc21hbGwnOyBleGl0IDI7CglmaQogICAgZWxzZQogICAgICAgIGVjaG8gIm5vIGZpbGUgJDEiOyBleGl0IDE7CiAgICBmaQp9CgpmZXRjaF91cmwgJEAK" | (base64 -D -i - -o - || base64 -d) > fetch_url
+	echo "ZWNobyAkMSB8IHRyICctJyAnXG4nIHwgdGFpbCAtbiAxCg==" | (base64 -D -i - -o - || base64 -d) > file_ext
+	echo "ZmlsZV9zaXplKCkgewogICAgZmlsZT0iJDEiCiAgICAoCiAgICAgICAgZHUgLS1hcHBhcmVudC1zaXplIC0tYmxvY2stc2l6ZT0xICIkZmlsZSIgMj4vZGV2L251bGwgfHwKICAgICAgICBnZHUgLS1hcHBhcmVudC1zaXplIC0tYmxvY2stc2l6ZT0xICIkZmlsZSIgMj4vZGV2L251bGwgfHwKICAgICAgICBmaW5kICIkZmlsZSIgLXByaW50ZiAiJXMiIDI+L2Rldi9udWxsIHx8CiAgICAgICAgZ2ZpbmQgIiRmaWxlIiAtcHJpbnRmICIlcyIgMj4vZGV2L251bGwgfHwKICAgICAgICBzdGF0IC0tcHJpbnRmPSIlcyIgIiRmaWxlIiAyPi9kZXYvbnVsbCB8fAogICAgICAgIHN0YXQgLWYleiAiJGZpbGUiIDI+L2Rldi9udWxsIHx8CiAgICAgICAgd2MgLWMgPCIkZmlsZSIgMj4vZGV2L251bGwKICAgICkgfCBhd2sgJ3twcmludCAkMX0nCn0KCmZpbGVfc2l6ZSAiJDEiCg==" | (base64 -D -i - -o - || base64 -d) > file_size
+	echo "c291cmNlIHdyaXRlX2J1aWxkX2ZpbGUgIiQxIgpzb3VyY2UgZm9vdGVyCg==" | (base64 -D -i - -o - || base64 -d) > fini
+	echo "bWFpbmZ1bigpIHsKICAgIGZpeF91bmlxKCkgewogICAgICAgIGZvciBpIGluICRAOyBkbwogICAgICAgICAgICBlY2hvICIkaSIKICAgICAgICBkb25lIHwgKHNvdXJjZSBjYXRuIHwgc29ydCAtYmsyIHwgdW5pcSAtZjEgfCBzb3J0IC1ibmsxIHwgYXdrICd7cHJpbnQgJDJ9JykgCiAgICB9CgogICAgKElGUz0iJDEiIGZpeF91bmlxICQyKSB8IHRyICdcbicgJDEgCn0KCm1haW5mdW4gIiQxIiAiJDIiCklGUz0iICIK" | (base64 -D -i - -o - || base64 -d) > fix_uniq
+	echo "KHNvdXJjZSBmaXhfdW5pcSAnIycgJChlY2hvICRAIHwgdHIgJyAnICcjJykpIHwgdHIgJyMnICcgJwo=" | (base64 -D -i - -o - || base64 -d) > fix_uniq_space
+	echo "Zm9yIGkgaW4gIiRCRElSL3J1bnRpbWUvb3V0LmxvZyIgIiRCRC9jb25maWcubG9nIjsgZG8KICAgIHNvdXJjZSBjb3B5X2xvZyAiJGkiICIkSURJUi9sb2ciICAgCmRvbmUKCmV4dD0kKHNvdXJjZSBmaWxlX2V4dCAiJFBLR0YiKQoKc291cmNlIHJtZGVsICIkSURJUi9saWIvIioubGEKc291cmNlIHBydW5lICIkSURJUiIKc291cmNlIGNsZWFudXAgIiRJRElSIgpzb3VyY2UgcHJlcGFyZV8iJGV4dCJfcGtnICIkSURJUiIgIiRQS0dGIgo=" | (base64 -D -i - -o - || base64 -d) > footer
+	echo "aW5pdCgpIHsKICAgIHNvdXJjZSBwcmVwYXJlX2VudiAiJChiYXNlbmFtZSAkMSkiICYmIHNvdXJjZSBhbGwgJEAgJiYgc291cmNlIHNldF9lbnYKfQoKaW5pdCAkQAo=" | (base64 -D -i - -o - || base64 -d) > init
+	echo "bWtjZCgpIHsKICAgIG1rZGlyIC1wICIkMSIKICAgIGNkICIkMSIKfQoKbWtjZCAkMQo=" | (base64 -D -i - -o - || base64 -d) > mkcd
+	echo "b25fZGFyd2luKCkgewogICAgc3lzY3RsIC1uIGh3Lm5jcHUKfQoKb25fbGludXgoKSB7CiAgICBjYXQgL3Byb2MvY3B1aW5mbyB8IGdyZXAgTUh6IHwgd2MgLWwKfQoKKG9uX2RhcndpbiB8fCBvbl9saW51eCkgMj4gL2Rldi9udWxsCg==" | (base64 -D -i - -o - || base64 -d) > num_cpu
+	echo "cm9vdD0kKGRpcm5hbWUgIiRZUEVSTCIpCnJvb3Q9JChkaXJuYW1lICIkcm9vdCIpCmV4cG9ydCBQRVJMNUxJQj0kKGVudiAtaSAiJFlQRVJMIiAtViAyPiYxIHwgdHIgJyAnICdcbicgfCBncmVwIHRvdyB8IHNlZCAtZSAncy8pXC4vLycgfCBzZWQgLWUgJ3MvLipcL2xpYi9saWIvJyB8IHdoaWxlIHJlYWQgbGluZTsgZG8gZWNobyAiJHJvb3QvJGxpbmUiOyBkb25lIHwgdHIgJ1xuJyAnOicpCmVjaG8gJFBFUkw1TElCCg==" | (base64 -D -i - -o - || base64 -d) > perl5_env
+	echo "KG1rZGlyIC1wICQoZGlybmFtZSAiJDIiKSAmJiBjZCAiJDEiICYmICgkWVRBUiAtdiAtY2YgLSAuIHwgJFk3WkEgYSAtc2kgIiQyIi10bXAuN3opKSAmJiAobXYgIiQyIi10bXAuN3ogIiQyIik=" | (base64 -D -i - -o - || base64 -d) > prepare_7z_pkg
+	echo "KChta2RpciAtcCAkKGRpcm5hbWUgIiQyIikgJiYgY2QgIiQxIiAmJiAoJFlUQVIgLXYgLWNmIC0gLiB8ICRZQlpJUDIgLWMpKSA+ICIkMiItdG1wKSAmJiAobXYgIiQyIi10bXAgIiQyIik=" | (base64 -D -i - -o - || base64 -d) > prepare_bz_pkg
+	echo "WU1ENT1gd2hpY2ggbWQ1IHx8IHdoaWNoIG1kNXN1bWAKCmV4cG9ydCBJRElSPSIkUEQvJDEiCmV4cG9ydCBCRElSPSIkV0QvJChzb3VyY2UgZWNob24gJDEgfCAkWU1ENSB8IHRyICcgJyAnXG4nIHwgaGVhZCAtbjEpIgpleHBvcnQgUEtHRj0iJFJELyQxIgoKZXhwb3J0IFRNUERJUj0iJEJESVIvdG1wIgpleHBvcnQgQkQ9IiRCRElSL3BsYXlncm91bmQiCgpmb3IgaSBpbiAiJElESVIiICIkQkRJUiI7IGRvCiAgICBzb3VyY2Ugcm1ta2NkICIkaSIKZG9uZQoKbWtkaXIgIiRJRElSL2xvZyIKbWtkaXIgIiRCRCIKbWtkaXIgIiRUTVBESVIiCgpzb3VyY2UgbWtjZCAiJEJESVIvcnVudGltZSIKCmV4ZWMgMj4gJEJESVIvcnVudGltZS9vdXQubG9nCmV4ZWMgMT4gJEJESVIvcnVudGltZS9vdXQubG9nCgplY2hvICRSVU5TSCB8IHNvdXJjZSBiYXNlNjRfZGVjb2RlID4gJEJESVIvcnVudGltZS9ydW4uc2gKdW5zZXQgUlVOU0gKCnRyYXAgImV4aXQgNSIgVEVSTQp0cmFwICJleGl0IDYiIElOVAoKZXhwb3J0IExDX0FMTD0iQyIKZXhwb3J0IExBTkc9IkMiCmV4cG9ydCBIT01FPSIvIgpleHBvcnQgUFdEPSIvIgoKY2QgJEJEIHx8IGNkIC8K" | (base64 -D -i - -o - || base64 -d) > prepare_env
+	echo "KChta2RpciAtcCAkKGRpcm5hbWUgIiQyIikgJiYgY2QgIiQxIiAmJiAoJFlUQVIgLXYgLWNmIC0gLiB8ICRZR1pJUCAtYykpID4gIiQyIi10bXApICYmIChtdiAiJDIiLXRtcCAiJDIiKQ==" | (base64 -D -i - -o - || base64 -d) > prepare_gz_pkg
+	echo "KChta2RpciAtcCAkKGRpcm5hbWUgIiQyIikgJiYgY2QgIiQxIiAmJiAoJFlUQVIgLXYgLWNmIC0gLiB8IChQWVRIT05IT01FPSAkU0QvdXBtIGNtZCBjb2RlYyAtYykpKSA+ICIkMiItdG1wKSAmJiAobXYgIiQyIi10bXAgIiQyIik=" | (base64 -D -i - -o - || base64 -d) > prepare_pg_pkg
+	echo "KChta2RpciAtcCAkKGRpcm5hbWUgIiQyIikgJiYgY2QgIiQxIiAmJiAoJFlUQVIgLXYgLWNmIC0gLiB8IGNhdCkpID4gIiQyIi10bXApICYmIChtdiAiJDIiLXRtcCAiJDIiKQ==" | (base64 -D -i - -o - || base64 -d) > prepare_tr_pkg
+	echo "KChta2RpciAtcCAkKGRpcm5hbWUgIiQyIikgJiYgY2QgIiQxIiAmJiAoJFlUQVIgLXYgLWNmIC0gLiB8ICRZWFogLXpjKSkgPiAiJDIiLXRtcCkgJiYgKG12ICIkMiItdG1wICIkMiIp" | (base64 -D -i - -o - || base64 -d) > prepare_xz_pkg
+	echo "" | (base64 -D -i - -o - || base64 -d) > prepare_zp_pkg
+	echo "cHJ1bmUoKSB7CiAgICBQWVRIT05IT01FPSAkU0QvdXBtIGNtZCBwcnVuZSAkQAp9CgpwcnVuZSAkQAo=" | (base64 -D -i - -o - || base64 -d) > prune
+	echo "cmVwbGFjZV9saW5lKCkgewogICAgaGVhZCAtbiAkKCgkMSAtIDEpKSAiJDIiID4gIiQzIgogICAgZWNobyAiJDQiID4+ICIkMyIgIAogICAgbGM9JChjYXQgIiQyIiB8IHdjIC1sKQogICAgdGM9JCgoJGxjIC0gJDEpKQogICAgdGFpbCAtbiAkdGMgIiQyIiA+PiAiJDMiCn0KCnJlcGxhY2VfbGluZSAiJDEiICIkMiIgIiQyLnRtcCIgIiQzIiAmJiBtdiAiJDIudG1wIiAiJDIiCg==" | (base64 -D -i - -o - || base64 -d) > replace_line
+	echo "cm1kZWwoKSB7CiAgICAocm0gLXJmICRAKSB8fCB0cnVlIDI+IC9kZXYvbnVsbAp9CgpybWRlbCAkQAo=" | (base64 -D -i - -o - || base64 -d) > rmdel
+	echo "cm1ta2NkKCkgewogICAgc291cmNlIHJtcmYgIiQxIgogICAgc291cmNlIG1rY2QgIiQxIgp9CgpybW1rY2QgIiQxIgo=" | (base64 -D -i - -o - || base64 -d) > rmmkcd
+	echo "cm1yZiAoKSB7CiAgICBzb3VyY2Ugcm1kZWwgIiQxIgp9CgpybXJmICIkMSIK" | (base64 -D -i - -o - || base64 -d) > rmrf
+	echo "c291cmNlICgpIHsKICAgIHM9JDEKICAgIHNoaWZ0CiAgICAuICRzICRACn0KCmV4cG9ydCBzb3VyY2UKCiNleHBvcnQgUElDPSItZlBJQyAtZnBpZSIKZXhwb3J0IFBJQz0iIgojZXhwb3J0IFBBVEg9IiRQQVRIOi9iaW46L3NiaW46L3Vzci9iaW46L3Vzci9sb2NhbC9iaW4iCmV4cG9ydCBDRkxBR1M9Ii1PMiAkUElDIC1waXBlIC1mbm8tYnVpbHRpbiAkQ0ZMQUdTIgpleHBvcnQgTERGTEFHUz0iJFBJQyAkTERGTEFHUyIKZXhwb3J0IE5DUFU9JChzb3VyY2UgbnVtX2NwdSkKI2V4cG9ydCBOVEhSPSQoKCROQ1BVIC8gMykpCmV4cG9ydCBOVEhSPSROQ1BVCmV4cG9ydCBOVEhSUz0kTlRIUgo=" | (base64 -D -i - -o - || base64 -d) > runtime
+	echo "ZXhwb3J0IENGTEFHUz0iJENGTEFHUyAkQ1BQRkxBR1MiCmV4cG9ydCBDWFhGTEFHUz0iJENYWEZMQUdTICRDRkxBR1MiCgpleHBvcnQgUEFUSD0iYHNvdXJjZSBmaXhfdW5pcSAnOicgJFBBVEhgIgpleHBvcnQgQ0ZMQUdTPSJgc291cmNlIGZpeF91bmlxX3NwYWNlICRDRkxBR1NgIgpleHBvcnQgTERGTEFHUz0iYHNvdXJjZSBmaXhfdW5pcV9zcGFjZSAkTERGTEFHU2AiCmV4cG9ydCBDWFhGTEFHUz0iYHNvdXJjZSBmaXhfdW5pcV9zcGFjZSAkQ1hYRkxBR1NgIgpleHBvcnQgQ1BQRkxBR1M9ImBzb3VyY2UgZml4X3VuaXFfc3BhY2UgJENQUEZMQUdTYCIKZXhwb3J0IExJQlM9ImBzb3VyY2UgZml4X3VuaXFfc3BhY2UgJExJQlNgIgoKZmluZF9maWxlKCkgewogICAgZm9yIGkgaW4gIiRAIjsgZG8KICAgICAgICBpZiB0ZXN0IC1mICIkaSI7IHRoZW4KCSAgICBzb3VyY2UgZWNob24gIiRpIgoKICAgICAgICAgICAgcmV0dXJuIDAKCWZpCgogICAgICAgIHdpPSQod2hpY2ggIiRpIikKCQogICAgICAgIGlmIHRlc3QgLWYgIiR3aSI7IHRoZW4KCSAgICBzb3VyY2UgZWNob24gIiR3aSIKCiAgICAgICAgICAgIHJldHVybiAwCglmaQogICAgZG9uZQoKICAgIHJldHVybiAxCn0KCmV4cG9ydCBZU0hFTEw9JChmaW5kX2ZpbGUgJFlTSEVMTCBkYXNoICRPVVRFUl9TSEVMTCBiYXNoKQpleHBvcnQgWU1BS0U9JChmaW5kX2ZpbGUgJFlNQUtFIGdtYWtlIG1ha2UpCmV4cG9ydCBZWFpDQVQ9JChmaW5kX2ZpbGUgJFlYWkNBVCB4emNhdCkKZXhwb3J0IFlUQVI9JChmaW5kX2ZpbGUgJFlUQVIgJFlHTlVUQVIgdGFyIGJzZHRhcikKZXhwb3J0IFlHWklQPSQoZmluZF9maWxlICRZR1pJUCBnemlwKQpleHBvcnQgWUJaSVAyPSQoZmluZF9maWxlICRZQlpJUDIgYnppcDIpCmV4cG9ydCBZVU5aSVA9JChmaW5kX2ZpbGUgJFlVTlpJUCB1bnppcCkKZXhwb3J0IFlDVVJMPSQoZmluZF9maWxlICRZQ1VSTCBjdXJsKQpleHBvcnQgWVdHRVQ9JChmaW5kX2ZpbGUgJFlXR0VUIHdnZXQpCmV4cG9ydCBZN1pBPSQoZmluZF9maWxlICRZN1pBIDd6YSkKCmV4cG9ydCBTSEVMTD0iJFlTSEVMTCIKCmVudgo=" | (base64 -D -i - -o - || base64 -d) > set_env
+	echo "ZG9fc3Vic3Rfc3RyaW5nKCkgewogICAgUFlUSE9OSE9NRT0gJFNEL3VwbSBjbWQgc3Vic3QgJEAKfQoKZG9fc3Vic3Rfc3RyaW5nICRACg==" | (base64 -D -i - -o - || base64 -d) > subst_string
+	echo "c291cmNlIHNldF9lbnYKCnVucGFjaygpIHsKICAgIHNvdXJjZSBybW1rY2QgIiRNRC8kMl90bXAiCiAgICBzb3VyY2UgdW50YXJfJDEgIiRSRC8kMiIgMAogICAgc291cmNlIHJtcmYgIiRNRC8kMiIKICAgIG12ICIkTUQvJDJfdG1wIiAiJE1ELyQyIgp9CgpleHQ9JChzb3VyY2UgZmlsZV9leHQgIiQxIikKdW5wYWNrICIkZXh0IiAiJDEiCg==" | (base64 -D -i - -o - || base64 -d) > unpackage
+	echo "JFk3WkEgeCAtc28gIiQxIiB8ICRZVEFSICAteGYgLQoKaWYgdGVzdCAkMiAtZXEgMTsgdGhlbgogICAgcT0kKGJhc2VuYW1lICQxKQogICAgcT0kKGVjaG8gJHEgfCB0ciAnXycgJy0nIHwgdHIgJy4nICctJyB8IHRyICctJyAnCicgfCBoZWFkIC1uIDEpCiAgICBtdiAuLyRxKiAuL3h4eAogICAgbXYgLi94eHgvKiAuLwogICAgcm0gLXJmIC4veHh4CmZpCg==" | (base64 -D -i - -o - || base64 -d) > untar_7z
+	echo "Y2F0ICIkMSIgfCAkWUJaSVAyIC1kYyB8ICRZVEFSICAteGYgLQoKaWYgdGVzdCAkMiAtZXEgMTsgdGhlbgogICAgcT0kKGJhc2VuYW1lICQxKQogICAgcT0kKGVjaG8gJHEgfCB0ciAnXycgJy0nIHwgdHIgJy4nICctJyB8IHRyICctJyAnCicgfCBoZWFkIC1uIDEpCiAgICBtdiAuLyRxKiAuL3h4eAogICAgbXYgLi94eHgvKiAuLwogICAgcm0gLXJmIC4veHh4CmZpCg==" | (base64 -D -i - -o - || base64 -d) > untar_bz
+	echo "Y2F0ICIkMSIgfCAkWUdaSVAgLWRjIHwgJFlUQVIgIC14ZiAtCgppZiB0ZXN0ICQyIC1lcSAxOyB0aGVuCiAgICBxPSQoYmFzZW5hbWUgJDEpCiAgICBxPSQoZWNobyAkcSB8IHRyICdfJyAnLScgfCB0ciAnLicgJy0nIHwgdHIgJy0nICcKJyB8IGhlYWQgLW4gMSkKICAgIG12IC4vJHEqIC4veHh4CiAgICBtdiAuL3h4eC8qIC4vCiAgICBybSAtcmYgLi94eHgKZmkK" | (base64 -D -i - -o - || base64 -d) > untar_gz
+	echo "Y2F0ICIkMSIgfCAoUFlUSE9OSE9NRT0gJFNEL3VwbSBjbWQgY29kZWMgLWQpIHwgJFlUQVIgIC14ZiAtCgppZiB0ZXN0ICQyIC1lcSAxOyB0aGVuCiAgICBxPSQoYmFzZW5hbWUgJDEpCiAgICBxPSQoZWNobyAkcSB8IHRyICdfJyAnLScgfCB0ciAnLicgJy0nIHwgdHIgJy0nICcKJyB8IGhlYWQgLW4gMSkKICAgIG12IC4vJHEqIC4veHh4CiAgICBtdiAuL3h4eC8qIC4vCiAgICBybSAtcmYgLi94eHgKZmkK" | (base64 -D -i - -o - || base64 -d) > untar_pg
+	echo "Y2F0ICIkMSIgfCAkWVRBUiAgLXhmIC0KCmlmIHRlc3QgJDIgLWVxIDE7IHRoZW4KICAgIHE9JChiYXNlbmFtZSAkMSkKICAgIHE9JChlY2hvICRxIHwgdHIgJ18nICctJyB8IHRyICcuJyAnLScgfCB0ciAnLScgJwonIHwgaGVhZCAtbiAxKQogICAgbXYgLi8kcSogLi94eHgKICAgIG12IC4veHh4LyogLi8KICAgIHJtIC1yZiAuL3h4eApmaQo=" | (base64 -D -i - -o - || base64 -d) > untar_tr
+	echo "Y2F0ICIkMSIgfCAkWVhaQ0FUIC1mIHwgJFlUQVIgIC14ZiAtCgppZiB0ZXN0ICQyIC1lcSAxOyB0aGVuCiAgICBxPSQoYmFzZW5hbWUgJDEpCiAgICBxPSQoZWNobyAkcSB8IHRyICdfJyAnLScgfCB0ciAnLicgJy0nIHwgdHIgJy0nICcKJyB8IGhlYWQgLW4gMSkKICAgIG12IC4vJHEqIC4veHh4CiAgICBtdiAuL3h4eC8qIC4vCiAgICBybSAtcmYgLi94eHgKZmkK" | (base64 -D -i - -o - || base64 -d) > untar_xz
+	echo "KCRZVU5aSVAgLW8gIiQxIiB8fCAkWTdaQSB4IC15ICIkMSIpIDI+IC9kZXYvbnVsbAoKaWYgdGVzdCAkMiAtZXEgMTsgdGhlbgogICAgcT0kKGJhc2VuYW1lICQxKQogICAgcT0kKGVjaG8gJHEgfCB0ciAnXycgJy0nIHwgdHIgJy4nICctJyB8IHRyICctJyAnCicgfCBoZWFkIC1uIDEpCiAgICBtdiAuLyRxKiAuL3h4eAogICAgbXYgLi94eHgvKiAuLwogICAgcm0gLXJmIC4veHh4CmZpCg==" | (base64 -D -i - -o - || base64 -d) > untar_zp
+	echo "KCRZVU5aSVAgLW8gIiQxIiB8fCAkWTdaQSB4IC15ICIkMSIpIDI+IC9kZXYvbnVsbAoKaWYgdGVzdCAkMiAtZXEgMTsgdGhlbgogICAgcT0kKGJhc2VuYW1lICQxKQogICAgcT0kKGVjaG8gJHEgfCB0ciAnXycgJy0nIHwgdHIgJy4nICctJyB8IHRyICctJyAnCicgfCBoZWFkIC1uIDEpCiAgICBtdiAuLyRxKiAuL3h4eAogICAgbXYgLi94eHgvKiAuLwogICAgcm0gLXJmIC4veHh4CmZpCg==" | (base64 -D -i - -o - || base64 -d) > untar_zp
+	echo "KGVjaG8gIiQxIiB8IHNvdXJjZSBiYXNlNjRfZGVjb2RlID4gIiRJRElSL2J1aWxkIikK" | (base64 -D -i - -o - || base64 -d) > write_build_file
+	echo "ZXhwb3J0IFBBVEg9IiRNRC9ub2FyY2gtYnVpbGQtc2NyaXB0cy1ydW4tOGI1ZmE6JFBBVEgiICYmIC4gcnVudGltZQ==" | (base64 -D -i - -o - || base64 -d) > build
+
+
+workspace: package_dir work_dir install_dir cache_dir source_dir release_upm 
+install_dir: 
+	export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+	rm -rf "$PD" 2> /dev/null || true
+	mkdir -p "$PD"
+
+
+work_dir: 
+	export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+	rm -rf "$WD" 2> /dev/null || true
+	mkdir -p "$WD"
+
+
+package_dir: 
+	export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+	mkdir -p "$RD"
+
+
+cache_dir: 
+	export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+	mkdir -p "$MD"
+
+
+source_dir: 
+	export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+	mkdir -p "$SD"
+	(rm -rf $SD/upm || true) 2> /dev/null
+
+
+release_upm: source_dir 
+	export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+	($UPM cmd release > $SD/upm.tmp) && chmod +x $SD/upm.tmp && $SD/upm.tmp help && mv $SD/upm.tmp $SD/upm
+
+

@@ -512,7 +512,7 @@ class Coro(collections.abc.Coroutine):
             except AttributeError:
                 pass
 
-            time.sleep(0.01)
+            time.sleep(0.03)
 
     @property
     def cr_await(self):
@@ -610,21 +610,18 @@ class ThreadLoop(object):
         is_debug(coro) and y.debug('reschedule', str(coro))
 
     def iter_thrs1(self):
-        if 0:
-            while True:
-                yield self.i
-                time.sleep(0.001)
+        yield self.i
 
         for i in range(0, 20):
             yield self.i + i
-            time.sleep(0)
+            time.sleep(0.02)
 
         c = self.i
 
         while True:
             yield c
 
-            time.sleep(0.001)
+            time.sleep(0.04)
 
             c = c + 1 + 5 * self.float_random()
 
@@ -700,8 +697,8 @@ class CoroLoop(object):
         self.ctx = cv.copy_context()
         self.name = name
         self.timer_queue = factory('timer')(self)
-        self.timers = [TimeScheduler(self, 'system_tc_' + str(i)) for i in range(0, 5)]
-        self.thrs = [ThreadLoop(self.ctx.copy(), i, name + '_' + str(i), self) for i in range(0, 20)]
+        self.timers = [TimeScheduler(self, 'system_tc_' + str(i)) for i in range(0, 2)]
+        self.thrs = [ThreadLoop(self.ctx.copy(), i, name + '_' + str(i), self) for i in range(0, 5)]
 
         for t in self.thrs:
             t.start()

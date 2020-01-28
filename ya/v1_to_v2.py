@@ -9,7 +9,6 @@ def call_v2(func):
 
 @y.cached()
 def to_v2(data, info):
-    print data, info
     node = y.copy.copy(data)
     node.pop('deps', None)
 
@@ -17,14 +16,14 @@ def to_v2(data, info):
     prepare = node.pop('prepare', '')
     full = '\n'.join((code, prepare))
 
-    node['constraint'] = info
+    node['host'] = info
     node['prepare'] = y.to_lines(prepare)
     node['build'] = y.to_lines(code)
 
     if all((y not in full) for y in ('#pragma cc', './configure', 'YMAKE', '$CC', '$CXX', 'gcc', 'clang')):
         compilers = []
     else:
-        compilers = y.find_compilers(info)
+        compilers = [y.find_compiler_id(info)]
 
     return y.fix_v2({
         'node': node,
