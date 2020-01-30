@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def zlib0():
     return {
         'code': """

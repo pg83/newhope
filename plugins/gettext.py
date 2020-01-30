@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def gettext0():
     opts = [
         '--with-included-libunistring',

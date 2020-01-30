@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def termcap0():
     return {
         'code': """

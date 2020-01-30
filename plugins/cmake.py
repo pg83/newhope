@@ -1,5 +1,11 @@
-@y.ygenerator()
+@y.package
 def cmake0():
+    extra = []
+
+    #if defined(__LINUX__)
+        extra = ['kernel-h']
+    #endif
+
     return {
         'code': """
              source fetch "https://github.com/Kitware/CMake/releases/download/v{version}/cmake-{version}.tar.gz" 1
@@ -20,14 +26,10 @@ def cmake0():
                 'bzip2',
                 'xz',
                 'libarchive',
-                #{
-                #    'os': 'linux',
-                #    'value': 'kernel-h',
-                #},
                 'expat',
                 'dl',
                 'iconv',
-            ],
+            ] + extra,
             'provides': [
                 {'env': 'CMAKE', 'value': '{pkgroot}/bin/cmake'},
             ],

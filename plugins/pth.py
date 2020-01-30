@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def pth0():
     return {
         'code': """

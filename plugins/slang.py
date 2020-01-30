@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def slang0():
     return {
         'code': """

@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def m40():
     return {
         'code': """

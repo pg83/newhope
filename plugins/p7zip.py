@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def p7zip0():
     return {
         'code': '''
@@ -13,9 +13,7 @@ def p7zip0():
         ''',
         'version': '16.02',
         'meta': {
-            'depends': [
-                'c++',
-            ],
+            'depends': ['c++'],
             'kind': ['box', 'tool', 'library'],
             'provides': [
                 {'env': 'Y7ZA', 'value': '{pkgroot}/bin/7za'},

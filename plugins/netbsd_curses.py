@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def netbsd_curses0():
     return {
         'code': """

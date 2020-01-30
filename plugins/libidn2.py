@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def libidn20():
     return {
         'code': """

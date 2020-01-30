@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def help2man0():
     return {
         'code': """

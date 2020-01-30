@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def libsigsegv0():
     return {
         'code': """

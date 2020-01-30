@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def glib0():
     return {
         'code': """

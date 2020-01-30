@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def quasar_m40():
     return {
         'code': """

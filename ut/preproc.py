@@ -10,16 +10,6 @@ def split_0(x):
     return a.strip(), b.strip()
 
 
-def get_spaces(x):
-    ch = ''
-
-    for ch in x:
-         if ch in ' \t':
-             res += ch
-
-    return ch
-
-
 class Undefined(dict):
     def __init__(self, d):
         self.__dict__ = self
@@ -46,7 +36,7 @@ def r0(self, v, d):
     elif v == 'error':
         raise Exception('shit happen')
     elif v == 'print_stats':
-        y.xprint_white('stats', self._c._e._d)
+        y.xprint_white('preprocessor stats', self._c._e._d)
     else:
         return False
 

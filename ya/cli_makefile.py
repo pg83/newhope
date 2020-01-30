@@ -25,7 +25,7 @@ async def cli_pkg_makefile(arg):
 
         async def main_func():
             if args.dot:
-                data = await y.build_dot_script()
+                data = await y.build_dot_script(iter_cc)
             elif args.shell:
                 data = await y.build_sh_script(args.shell)
             elif args.dump:

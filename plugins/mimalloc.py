@@ -1,5 +1,11 @@
-@y.ygenerator()
+@y.package
 def mimalloc0():
+    depends = []
+
+    #if defined(__LINUX__)
+        depends1 = ['musl-boot', 'kernel-h']
+    #endif
+
     return {
         'code': """
              source fetch "https://github.com/microsoft/mimalloc/archive/acb03c54971c4b0a43a6d17ea55a9d5feb88972f.zip" 0
@@ -13,16 +19,7 @@ def mimalloc0():
         'version': '',
         'meta': {
             'kind': ['library'],
-            'depends1': [
-                #{
-                #    'os': 'linux',
-                #    'value': 'musl-boot',
-                #},
-                #{
-                #    'os': 'linux',
-                #    'value': 'kernel-h'
-                #},
-            ],
+            'depends': depends,
             'provides': [
                 {'lib': 'mimalloc'},
             ],

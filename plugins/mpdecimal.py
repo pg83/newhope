@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def mpdecimal0():
     return {
         'code': """

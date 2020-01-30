@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def libunistring0():
     return {
         'code': """

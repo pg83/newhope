@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def compiler_rt0():
     return {
         'code': """

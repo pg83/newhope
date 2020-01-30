@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def dl0():
     return {
         'code': """

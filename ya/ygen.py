@@ -43,30 +43,23 @@ def exec_plugin_code(iface):
         yield y.EOP()
 
 
-def ygenerator(where=None):
-    def functor(func):
-        base_name = func.__name__[:-1]
-        new_f = y.compose_simple(func, y.dc, subst_some_values)
+def package(func):
+    base_name = func.__name__[:-1]
+    new_f = y.compose_simple(func, y.dc, subst_some_values)
 
-        descr = {
-            'gen': 'human',
-            'base': base_name.replace('_', '-'),
-            'kind': new_f()['meta']['kind'],
-            'code': new_f,
-            'module': func.__module__,
-            'cc': y.to_full_target(func.__module__.split('.')[1])
-        }
+    descr = {
+        'gen': 'human',
+        'base': base_name.replace('_', '-'),
+        'kind': new_f()['meta']['kind'],
+        'code': new_f,
+        'module': func.__module__,
+        'cc': y.to_full_target(func.__module__.split('.')[1])
+    }
 
-        assert 'codec' not in new_f()
+    assert 'codec' not in new_f()
 
-        ev = y.ELEM({'func': descr})
+    ev = y.ELEM({'func': descr})
+    fg = func.__globals__
+    fg['event'] = fg.get('event', []) + [ev]
 
-        if where is not None:
-            where.append(ev)
-        else:
-            fg = func.__globals__
-            fg['event'] = fg.get('event', []) + [ev]
-
-        return func
-
-    return functor
+    return func

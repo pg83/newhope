@@ -1,5 +1,13 @@
-@y.ygenerator()
+@y.package
 def libiconv0():
+    extra = []
+
+    #if defined(__DARWIN__)
+        extra = [
+            {'libs': '-framework CoreFoundation'}
+        ]
+    #endif
+
     return {
         'code': """
             source fetch "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-{version}.tar.gz" 1
@@ -20,12 +28,7 @@ def libiconv0():
                             '--with-iconv={pkgroot}',
                         ],
                     },
-                    #'extra': [
-                    #    {
-                    #        'libs': '-framework CoreFoundation',
-                    #        'os': 'darwin',
-                    #    },
-                    #],
+                    'extra': extra,
                 },
                 {'lib': 'charset'},
             ],

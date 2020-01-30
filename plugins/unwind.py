@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def libunwind0():
     return {
         'code': """
@@ -22,4 +22,3 @@ def libunwind0():
             ],
         },
     }
-

@@ -52,6 +52,6 @@ def python_base(kind):
     }
 
 
-@y.ygenerator()
+@y.package
 def python30():
     return python_base(['tool', 'box'])

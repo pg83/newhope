@@ -20,3 +20,11 @@ async def main_makefile(iter_cc, internal=False):
     portion = await gen_mk_data(cc)
 
     return await y.build_makefile([x['code']() for x in portion], internal=internal)
+
+
+async def build_dot_script(iter_cc):
+    data = await y.main_makefile(iter_cc, internal=True)
+    mk = y.MakeFile()
+    mk = await mk.init(data)
+
+    return y.build_dot_script_0(mk)

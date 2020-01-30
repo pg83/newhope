@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def libedit0():
     return {
         'code': """

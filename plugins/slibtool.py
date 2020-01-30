@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def slibtool0():
     return {
         'code': """

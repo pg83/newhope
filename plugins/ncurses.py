@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def ncurses0():
     return {
         'code': """

@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def readline0():
     return {
         'code': """
@@ -13,7 +13,6 @@ def readline0():
             'depends': ['ncurses', 'termcap'],
             'provides': [
                 {'lib': 'readline', 'configure': {'opts': ['--with-installed-readline={pkgroot}', '--with-readline={pkgroot}']}},
-                #{'lib': 'history'},
             ],
         },
     }

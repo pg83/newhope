@@ -150,7 +150,7 @@ def run_splitter(iface):
 
 
 for x in y.iter_all_targets():
-    run_splitter = eval('y.pubsub_' + y.small_repr(x) + '.wrap')(run_splitter)
+    eval('y.pubsub_' + y.small_repr(x) + '.wrap')(run_splitter)
 
 
 def pkg_splitter(arg, kind):

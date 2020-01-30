@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def gawk0():
     return {
         'code': """

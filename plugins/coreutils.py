@@ -21,11 +21,11 @@ def coreutils_impl(deps, kind):
     }
 
 
-@y.ygenerator()
+@y.package
 def coreutils0():
     return coreutils_impl(['openssl'], ['box'])
 
 
-@y.ygenerator()
+@y.package
 def coreutils_boot0():
     return coreutils_impl([], [])

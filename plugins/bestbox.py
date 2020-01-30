@@ -1,5 +1,5 @@
 #if defined(__LINUX__)
-    @y.ygenerator()
+    @y.package
     def bestbox0():
         return {
             'os': 'linux',
@@ -35,7 +35,7 @@
         }
 
 
-    @y.ygenerator()
+    @y.package
     def superbox0():
         data = y.dc(bestbox0())
         data['os'] = 'linux'

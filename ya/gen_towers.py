@@ -253,9 +253,13 @@ class Solver(object):
         return Solver(self._data, self._seed * 13 + 17)
 
     def iter_items(self):
+        print  'check solver...'
+
         for el in self._r():
             self._w(el['i'])
             yield el['x']
+
+        print 'all ok'
 
     def iter_solvers(self, num):
         cur = self
@@ -274,6 +278,7 @@ class Solver(object):
 class Data(object):
     def __init__(self, info, data):
         self.info = info
+        print self.info
 
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
@@ -292,10 +297,8 @@ class Data(object):
                 self.by_kind[k].append(x.base)
 
     def extra_libs(self):
-        tg = self.info
-
-        if tg['os'] == 'linux':
-            return ('make', 'musl', 'bestbox')
+        if False and self.info['os'] == 'linux':
+            return ('make',)
 
         return ('make',)
 
@@ -410,7 +413,6 @@ def gen_towers(iface):
         yield y.EOP()
 
     cc = data[0].data['func']['cc']
-    print cc
     dt = Data(cc, [x.data for x in data] + [box_0(cc)])
     dt.prepare_funcs(2)
     dt.out()
@@ -421,6 +423,8 @@ def gen_towers(iface):
     except IndexError:
         pass
 
+    print 'fin'
+
     yield y.FIN()
 
 
@@ -430,7 +434,6 @@ def box_0(cc):
         'base': 'box',
         'kind': ['tool', 'special'],
         'code': lambda: {},
-        'module': '',
         'cc': cc,
     }
 

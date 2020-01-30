@@ -1,4 +1,4 @@
-#@y.ygenerator()
+#@y.package
 def gettext_tiny0():
     return {
         'code': """

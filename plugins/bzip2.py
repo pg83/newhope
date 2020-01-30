@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def bzip20():
     return {
         'code': """

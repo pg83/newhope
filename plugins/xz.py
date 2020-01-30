@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def xz0():
     return {
         'code': """

@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def gzip0():
     return {
         'code': """

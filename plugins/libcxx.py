@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def libcxx0():
     return {
         'code': """

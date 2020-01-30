@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def sed0():
     return {
         'code': """

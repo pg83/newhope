@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def libcxxrt0():
     return {
         'code': """

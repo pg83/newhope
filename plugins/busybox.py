@@ -1,5 +1,5 @@
 #if defined(__LINUX__)
-    @y.ygenerator()
+    @y.package
     def busybox0():
         return {
             'os': 'linux',

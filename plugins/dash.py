@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def dash0():
     return {
         'code': """

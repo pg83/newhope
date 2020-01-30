@@ -1,5 +1,4 @@
-
-@y.ygenerator()
+@y.package
 def openssl0():
     version = '1.1.1c'
     flags = 'linux-x86_64-cc'

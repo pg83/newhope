@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def bash0():
     def do():
         yield '--disable-extended-glob-default'

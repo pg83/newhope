@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def ninja0():
     return {
         'code': """

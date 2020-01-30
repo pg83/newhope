@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def libarchive0():
     return {
         'code': """

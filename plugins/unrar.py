@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def unrar0():
     return {
         'code': """

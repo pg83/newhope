@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def perl50():
     return {
         'code': """

@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def asciidoc0():
     return {
         'code': """

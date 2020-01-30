@@ -1,4 +1,5 @@
-def python_base(kind):
+@y.package
+def python0():
     return {
         'code': """
             source fetch "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz" 1
@@ -23,7 +24,7 @@ def python_base(kind):
             {'kind': 'file', 'path': 'mk_staticpython.sh', 'data': y.builtin_data('data/mk_staticpython.sh')},
         ],
         'meta': {
-            'kind': kind,
+            'kind': ['tool'],
             'depends': ['ncurses', 'iconv', 'intl', 'zlib', 'pkg-config-int', 'libffi', 'readline', 'termcap', 'expat', 'sqlite3'],
             'provides': [
                 {'lib': 'python2.7'},
@@ -32,21 +33,3 @@ def python_base(kind):
             ],
         },
     }
-
-
-@y.ygenerator()
-def python0():
-    return python_base(['tool'])
-
-
-@y.ygenerator()
-def python_pth0():
-    r = y.dc(python_base(['tool']))
-
-    r['code'] = r['code'].replace('./configure', './configure --with-pth').replace('##', '')
-    r['meta']['depends'].append('pth')
-    r['meta']['env'] = [
-        ('PTH', '--with-pth'),
-    ]
-
-    return r

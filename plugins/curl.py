@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def curl0():
     return {
         'code': """

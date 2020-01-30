@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def grep0():
     return {
         'code': """

@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def pcre0():
     return {
         'code': """

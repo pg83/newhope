@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def expat0():
     return {
         'code': """

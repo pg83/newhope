@@ -1,4 +1,4 @@
-@y.ygenerator()
+@y.package
 def tar0():
     return {
         'code': """

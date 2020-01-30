@@ -57,9 +57,11 @@ class Mod(dict):
       self.exec_text_part(self.builtin_data())
 
    def ycompile(self, a, b, c, **kwargs):
-      ap = self.__loader__._preproc(a, args=kwargs.get('args', {}))
+      ap = '\n' * kwargs.get('firstlineno', 0) + self.__loader__._preproc(a, args=kwargs.get('args', {}))
 
-      return self.__loader__._g.compile('\n' * kwargs.get('firstlineno', 0) + ap, b, c)
+      print('-------------------------------------\n' + ap + '+++++++++++++++++++++++++++++++++++++++++\n')
+  
+      return self.__loader__._g.compile(ap, b, c)
    
    def vname(self):
       return self.__name__[len(self.__loader__.root_module().__name__) + 1:]
