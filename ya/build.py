@@ -1,11 +1,3 @@
-@y.lookup
-def lookup_pubsub(name):
-    if name.startswith('pubsub_'):
-        return {name: y.PubSubLoop}[name]()
-
-    raise AttributeError(name)
-
-
 def gen_unpack_node(pkg):
     mpkg = y.mgr_pkg_mark(pkg)
     vis_name = pkg[4:]

@@ -1,4 +1,4 @@
-def iter_cc():   
+def iter_all_cc():   
     for t in y.iter_all_targets():
         yield y.dc(t)
 
@@ -13,9 +13,18 @@ async def cli_pkg_makefile(arg):
     parser.add_argument('-I', '--internal', default=False, action='store_const', const=True, help='generte internal format')
     parser.add_argument('-T', '--dot', default=False, action='store_const', const=True, help='output dot graph')
     parser.add_argument('-F', '--dump', default=False, action='store_const', const=True, help='output full dump')
+    parser.add_argument('-O', '--os', default='', action='store', help='filter targets by os')
 
     args = parser.parse_args(arg)
-   
+
+    if args.os:
+        def iter_cc():
+            for t in iter_all_cc():
+                if t['os'] == args.os:
+                    yield y.dc(t)
+    else:
+        iter_cc = iter_all_cc
+    
     with y.defer_context() as defer:
         if args.output:
             f = open(args.output, 'w')
@@ -25,7 +34,7 @@ async def cli_pkg_makefile(arg):
 
         async def main_func():
             if args.dot:
-                data = await y.build_dot_script(iter_cc)
+                data = print(await y.build_dot_script(iter_cc))
             elif args.shell:
                 data = await y.build_sh_script(args.shell)
             elif args.dump:

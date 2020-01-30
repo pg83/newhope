@@ -43,7 +43,7 @@ def iter_all_targets_0():
 
 
 def iter_all_targets():
-    #yield {'os': 'darwin', 'arch': 'x86_64'}
+    yield {'os': 'darwin', 'arch': 'x86_64'}
     yield {'arch': 'x86_64', 'libc': 'musl', 'os': 'linux'}
 
 
@@ -59,11 +59,3 @@ def rev_target_map():
 
 def to_full_target(name):
     return rev_target_map()[name]
-
-
-def iter_all_arch():
-    yield from sorted(frozenset(x['arch'] for x in iter_all_targets()))
-
-
-def iter_all_os():
-    yield from sorted(frozenset(x['os'] for x in iter_all_targets()))

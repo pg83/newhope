@@ -35,7 +35,7 @@ def iter_darwin():
                         'value': '"--target=' + t['os'] + '-' + t['arch'] + '"',
                     }
                 ] + m['provides']
-        
+
                 n = {
                     'name': '-'.join(['clang'] + meta['kind'] + [y.burn(t)]),
                     'version': y.burn(meta),

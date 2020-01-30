@@ -10,5 +10,6 @@ def asciidoc0():
         'version': '8.6.9',
         'meta': {
             'kind': ['box', 'tool'],
+            'provides': [],
         }
     }

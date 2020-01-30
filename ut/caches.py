@@ -1,4 +1,3 @@
-
 def default_key(*args, **kwargs):
     return y.struct_dump_bytes([args, kwargs])
 
@@ -85,16 +84,7 @@ def cached(f=None, key=default_key, copy=False):
     cf = get_copy_func(copy=copy)
 
     def functor(f):
-        if 'false' in y.config.get('cache', ''):
-            print('disable caching')
-            return f
-
-            try:
-                return get_cache_holder(f)(key, f, cf)
-            finally:
-                y.prompt('/test2')
-
-        return f
+        return get_cache_holder(f)(key, f, cf)
 
     if f:
         return functor(f)
@@ -131,23 +121,19 @@ def compose_lisp(funcs):
     return wrapper
 
 
-def cached_method1(meth):
+def cached_method(meth):
     def wrapper(self, *args, **kwargs):
-        key = y.burn([meth.__name__, args, kwargs])[2:10]
-        d = self.__dict__
-
         try:
-            return d[key]
-        except KeyError:
-            d[key] = meth(self, *args, **kwargs)
+            self.__dict__['__cache__']
+        except Exception:
+            self.__dict__['__cache__'] = {}
 
-        return d[key]
+        d = self.__dict__['__cache__']
+        k = y.burn([args, kwargs, meth.__name__])[:8]
+
+        if k not in d:
+            d[k] = meth(self, *args, **kwargs)
+
+        return d[k]
 
     return wrapper
-
-
-def cached_method2(meth):
-    return y.cached(key=lambda self, *args: (id(self), args))(meth)
-
-
-cached_method = cached_method1

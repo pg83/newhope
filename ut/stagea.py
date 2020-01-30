@@ -162,7 +162,7 @@ def load_folders(folders, exts, where):
                 if parts[-1] == 'py':
                     data = fix_print(data)
 
-            yield {'name': name, 'path': path, 'data': data, 'burn': y_burn(data)}
+            yield {'name': name, 'data': data, 'burn': y_burn(data)}
 
 
 def load_system(where):

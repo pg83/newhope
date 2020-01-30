@@ -10,6 +10,10 @@ STATEFUL = nt('STATEFUL', [])
 STOP = nt('STOP', [])
 
 
+class StopPubSub(Exception):
+    pass
+
+
 @y.cached(key=lambda x: y.burn(x))
 def list_to_set(lst):
     return frozenset(lst)
@@ -286,9 +290,6 @@ class Iterator(FunBase):
                 for u in self.iter:
                     yield u
 
-                if self.stateful:
-                    y.os.abort()
-
                 is_debug() and y.debug('rebuild iter for ', self.name)
 
                 self.iter = self.f(self)
@@ -345,6 +346,7 @@ def cmd_name(v):
 
 class PubSubLoop(object):
     def __init__(self, ctl=None):
+        self.xrun = False
         self.ctl_ = ctl
         self.funcs = []
         self.net = {}
@@ -390,7 +392,7 @@ class PubSubLoop(object):
             self.funcs.append(cls(ff, self, len(self.funcs)))
 
     def active(self):
-        return any(x.active for x in self.funcs)
+        return any(x.active for x in self.funcs) and self.xrun
 
     def state_checker(self, iface):
         yield EOP(ACCEPT('ps:check state'))
@@ -424,7 +426,12 @@ class PubSubLoop(object):
             while self.active():
                 await self.step()
 
-        return await self.ctl.spawn(pub_sub_cycle, 'pub_sub_cycle')
+        try:
+            self.xrun = True
+
+            return await self.ctl.spawn(pub_sub_cycle, 'pub_sub_cycle')
+        finally:
+            self.xrun = False
 
     def scheduler(self):
         return self.funcs[0]
@@ -470,7 +477,7 @@ class PubSubLoop(object):
             cn = cmd_name(c)
 
             if cn == 'stop':
-                raise StopIteration()
+                self.xrun = False
             elif cn == 'deact':
                 f.deactivate()
             elif cn == 'defun':

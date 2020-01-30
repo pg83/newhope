@@ -3,7 +3,7 @@ def make_boot0():
     extra = []
 
     #if defined(__LINUX__)
-        extra1 = ['musl-boot']
+        extra = ['musl-boot']
     #endif
 
     code = '''

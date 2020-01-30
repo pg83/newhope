@@ -1,8 +1,15 @@
 def common_plugins(cc, iface):
     yield y.EOP(y.ACCEPT(), y.PROVIDES('mf:plugin'))
 
-    for el in sorted(y.globals.file_data, key=lambda x: y.burn([4, x['name']])):
+    fd = y.globals.file_data
+
+    for el in sorted(fd, key=lambda x: y.burn([5, x['name']])):
         if el['name'].startswith('pl/'):
+            el = y.dc(el)
+            el['name'] = cc['os'] + '/' + cc['arch'] + '/' + el['name']
+
+            print el
+
             yield y.ELEM({'el': el, 'cc': cc})
 
     yield y.FIN()

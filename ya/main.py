@@ -9,8 +9,11 @@ async def gen_mk_data(cc):
     funcs = []
 
     for c in cc:
-        y.xprint_white('start ', c)
-        await eval('y.pubsub_' + y.small_repr(c)).run(init=[y.mk_funcs_gen(c, funcs.append)])
+        loop = y.PubSubLoop()
+
+        await loop.run(init=[y.mk_funcs_gen(c, funcs.append)])
+
+    print funcs
 
     return funcs
 
@@ -23,8 +26,6 @@ async def main_makefile(iter_cc, internal=False):
 
 
 async def build_dot_script(iter_cc):
-    data = await y.main_makefile(iter_cc, internal=True)
-    mk = y.MakeFile()
-    mk = await mk.init(data)
+    mk = y.loads_mk(await y.main_makefile(iter_cc, internal=True))
 
     return y.build_dot_script_0(mk)

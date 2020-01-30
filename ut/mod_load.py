@@ -59,7 +59,7 @@ class Mod(dict):
    def ycompile(self, a, b, c, **kwargs):
       ap = '\n' * kwargs.get('firstlineno', 0) + self.__loader__._preproc(a, args=kwargs.get('args', {}))
 
-      print('-------------------------------------\n' + ap + '+++++++++++++++++++++++++++++++++++++++++\n')
+      # print('-------------------------------------\n' + ap + '+++++++++++++++++++++++++++++++++++++++++\n')
   
       return self.__loader__._g.compile(ap, b, c)
    
@@ -175,8 +175,6 @@ class Loader(object):
       args = arch.copy()
   
       if args:
-         module_name = self.get_y().small_repr(args) + '.' + module_name
- 
          args.update({
             '__OS__' : '"' + arch['os'].upper() + '"',
             '__ARCH__': '"' + arch['arch'].upper() + '"',

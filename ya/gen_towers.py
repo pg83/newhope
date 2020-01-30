@@ -208,6 +208,7 @@ class SpecialFunc(Func):
     def contains(self):
         def it():
             for x in self.depends():
+                print 'zzz', x
                 yield x
                 yield from self.data.by_name[x].contains()
 
@@ -297,8 +298,8 @@ class Data(object):
                 self.by_kind[k].append(x.base)
 
     def extra_libs(self):
-        if False and self.info['os'] == 'linux':
-            return ('make',)
+        if self.info['os'] == 'linux':
+            return ('make', 'musl-boot')
 
         return ('make',)
 
@@ -420,12 +421,12 @@ def gen_towers(iface):
     try:
         for x in dt.register():
             yield x
-    except IndexError:
-        pass
+    except IndexError as e:
+        print e
 
     print 'fin'
 
-    yield y.FIN()
+    yield y.STOP()
 
 
 def box_0(cc):

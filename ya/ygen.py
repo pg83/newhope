@@ -10,7 +10,7 @@ def subst_some_values(v):
             if x in v:
                 for p1, p2 in gen_some_subst(x, v[x]):
                     v['code'] = v['code'].replace('{' + p1 + '}', p2)
-
+    
     return v
 
 
@@ -32,7 +32,7 @@ def exec_plugin_code(iface):
 
         y.xprint_blue('ygen', name, cc)
 
-        mod = __yexec__(code['data'], module_name=name, arch=cc)
+        mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name)
 
         try:
             for x in mod.event:
@@ -40,25 +40,26 @@ def exec_plugin_code(iface):
         except AttributeError:
             pass
 
-        yield y.EOP()
+
+    yield y.EOP()
 
 
 def package(func):
     base_name = func.__name__[:-1]
-    new_f = y.compose_simple(func, y.dc, subst_some_values)
+    new_f = y.singleton(y.compose_simple(func, y.dc, subst_some_values))
 
     descr = {
         'gen': 'human',
         'base': base_name.replace('_', '-'),
         'kind': new_f()['meta']['kind'],
         'code': new_f,
-        'module': func.__module__,
         'cc': y.to_full_target(func.__module__.split('.')[1])
     }
 
-    assert 'codec' not in new_f()
+    print y.pretty_dumps([descr, new_f()])
 
     ev = y.ELEM({'func': descr})
+    print func, func.__module__
     fg = func.__globals__
     fg['event'] = fg.get('event', []) + [ev]
 

@@ -1,7 +1,7 @@
 #skip_preproc
 
 undefined = object()
-tokens = frozenset(['if', 'elif', 'else', 'endif', 'define', 'undef', 'print_stats'])
+tokens = frozenset(['if', 'elif', 'else', 'endif', 'define', 'undef', 'print_stats', 'error'])
 
 
 def split_0(x):
@@ -246,7 +246,12 @@ def preprocess_text(text, args={}):
         return text
 
     try:
-        return Preproc(args).run(text)
+        res = Preproc(args).run(text)
+
+        #print('++++++++++++++++++++++++++++++++++++++++\n', text)
+        #print('----------------------------------------\n', res)
+
+        return res
     except Exception as e:
         raise Exception('can not parse + ' + text[:100]) from e
 
