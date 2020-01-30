@@ -1,7 +1,7 @@
 #if defined(__LINUX__)
     def musl_boot0():
         return {
-            'code': code,
+            'code': '',
             'version': '1.1.24', 
             'extra': [
                 {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_musl.sh']['data']},
