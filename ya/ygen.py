@@ -10,7 +10,7 @@ def subst_some_values(v):
             if x in v:
                 for p1, p2 in gen_some_subst(x, v[x]):
                     v['code'] = v['code'].replace('{' + p1 + '}', p2)
-    
+
     return v
 
 

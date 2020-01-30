@@ -24,7 +24,7 @@ async def cli_pkg_makefile(arg):
                     yield y.dc(t)
     else:
         iter_cc = iter_all_cc
-    
+
     with y.defer_context() as defer:
         if args.output:
             f = open(args.output, 'w')
