@@ -8,8 +8,6 @@ def common_plugins(cc, iface):
             el = y.dc(el)
             el['name'] = cc['os'] + '/' + cc['arch'] + '/' + el['name']
 
-            print el
-
             yield y.ELEM({'el': el, 'cc': cc})
 
     yield y.FIN()

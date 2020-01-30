@@ -13,8 +13,6 @@ async def gen_mk_data(cc):
 
         await loop.run(init=[y.mk_funcs_gen(c, funcs.append)])
 
-    print funcs
-
     return funcs
 
 

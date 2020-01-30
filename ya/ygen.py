@@ -56,10 +56,7 @@ def package(func):
         'cc': y.to_full_target(func.__module__.split('.')[1])
     }
 
-    print y.pretty_dumps([descr, new_f()])
-
     ev = y.ELEM({'func': descr})
-    print func, func.__module__
     fg = func.__globals__
     fg['event'] = fg.get('event', []) + [ev]
 

@@ -208,7 +208,6 @@ class SpecialFunc(Func):
     def contains(self):
         def it():
             for x in self.depends():
-                print 'zzz', x
                 yield x
                 yield from self.data.by_name[x].contains()
 
@@ -254,13 +253,13 @@ class Solver(object):
         return Solver(self._data, self._seed * 13 + 17)
 
     def iter_items(self):
-        print  'check solver...'
+        y.info('run solver')
 
         for el in self._r():
             self._w(el['i'])
             yield el['x']
 
-        print 'all ok'
+        y.info('done')
 
     def iter_solvers(self, num):
         cur = self
@@ -279,7 +278,6 @@ class Solver(object):
 class Data(object):
     def __init__(self, info, data):
         self.info = info
-        print self.info
 
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
@@ -421,10 +419,8 @@ def gen_towers(iface):
     try:
         for x in dt.register():
             yield x
-    except IndexError as e:
-        print e
-
-    print 'fin'
+    except IndexError:
+        pass
 
     yield y.STOP()
 

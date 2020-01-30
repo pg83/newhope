@@ -31,3 +31,5 @@ source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/
             },
         }
 #endif
+
+#dump_result

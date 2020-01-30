@@ -248,8 +248,9 @@ def preprocess_text(text, args={}):
     try:
         res = Preproc(args).run(text)
 
-        #print('++++++++++++++++++++++++++++++++++++++++\n', text)
-        #print('----------------------------------------\n', res)
+        if '#dump_resutl' in text:
+            print('++++++++++++++++++++++++++++++++++++++++\n', text)
+            print('----------------------------------------\n', res)
 
         return res
     except Exception as e:
