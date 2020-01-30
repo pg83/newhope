@@ -66,7 +66,7 @@ class Func(object):
 
         if not res:
             return 'u'
-    
+
         return res
 
     @property
@@ -291,7 +291,7 @@ class Data(object):
                 res = self.create_object(x['func'])
 
                 y.info('will gen func', res.base)
-        
+
                 yield res
 
         self.data = list(iter_objects())
@@ -304,7 +304,7 @@ class Data(object):
 
     def extra_libs(self):
         if self.info['os'] == 'linux':
-            return ('make', 'musl')
+            return ('make', 'musl-boot')
 
         return ('make',)
 

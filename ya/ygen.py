@@ -32,7 +32,14 @@ def exec_plugin_code(iface):
 
         y.info('{bb}process plugin', name, cc, '{}')
 
-        mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name)
+        args = {
+            '__OS__' : '"' + cc['os'].upper() + '"',
+            '__ARCH__': '"' + cc['arch'].upper() + '"',
+            '__' + cc['arch'].upper() + '__': '1',
+            '__' + cc['os'].upper() + '__':  '1',
+        }
+
+        mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name, args=args)
         cnt = 0
 
         try:

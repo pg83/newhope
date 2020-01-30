@@ -242,17 +242,17 @@ class Preproc(object):
 
 
 def preprocess_text(text, args={}):
-    print('args =', args, file=y.sys.__stderr__)
-
-    args = {'__LINUX__': 1}
-
     if '#skip_preproc' in text:
+        return text
+
+    if not any(((chr(35) + token) in text) for token in tokens):
         return text
 
     try:
         res = Preproc(args).run(text)
+        txt = '-----------------------------------------\n' + text + '+++++++++++++++++++++++++++++++++++++++++\n' + res
 
-        print('-----------------------------------------\n' + text + '+++++++++++++++++++++++++++++++++++++++++\n' + res, file=y.sys.__stderr__)
+        print(txt, file=y.sys.__stderr__)
 
         return res
     except Exception as e:

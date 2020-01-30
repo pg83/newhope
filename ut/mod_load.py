@@ -32,10 +32,10 @@ class Mod(dict):
          pass
 
       self.__loader__.register_module(self)
-      self.exec_text_part(self.builtin_data())
+      self.exec_text_part(self.builtin_data(), args={})
 
-   def ycompile(self, a, b, c, **kwargs):
-      ap = '\n' * kwargs.get('firstlineno', 0) + self.__loader__._preproc(a, args=kwargs.get('args', {}))
+   def ycompile(self, a, b, c, firstlineno=0, args={}):
+      ap = '\n' * firstlineno + self.__loader__._preproc(a, args=args)
  
       return self.__loader__._g.compile(ap, b, c)
    
@@ -57,8 +57,8 @@ class Mod(dict):
    def self_exec(self):
       self.exec_text_part(self.pop('__ynext_part__', ''))
 
-   def exec_data(self, data, **kwargs):
-      return self.__loader__.exec_code(self, data, **kwargs)
+   def exec_data(self, data, module_name=None, args={}):
+      return self.__loader__.exec_code(self, data, module_name=module_name, args=args)
 
    def set_next_part(self, text):
       if text:
@@ -119,7 +119,11 @@ class Loader(object):
       self._builtin = g.builtin_modules
       self._order = []
       self._g = g
-      self._preproc = lambda text, **kwargs: text
+
+      def preproc(text, args={}):
+         return text
+  
+      self._preproc = preproc
   
       Mod(name, self)
   
@@ -147,17 +151,7 @@ class Loader(object):
    def builtin_data(self, mod):
       return self._builtin.get(mod.vname(), {}).get('data', '')
 
-   def exec_code(self, mod, data, module_name=None, arch={}, **kwargs):
-      args = {}
-  
-      if arch:
-         args.update({
-            '__OS__' : '"' + arch['os'].upper() + '"',
-            '__ARCH__': '"' + arch['arch'].upper() + '"',
-            '__' + arch['arch'].upper() + '__': '1',
-            '__' + arch['os'].upper() + '__':  '1',
-         })
- 
+   def exec_code(self, mod, data, module_name=None, args={}):
       if module_name:
          m = self.create_module(module_name)
 
@@ -166,7 +160,7 @@ class Loader(object):
 
          return m
 
-      mod.exec_text_part(data)
+      mod.exec_text_part(data, args=args)
 
       return mod
 

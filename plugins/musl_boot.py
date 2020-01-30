@@ -1,15 +1,3 @@
-code = """
-source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
-$(APPLY_EXTRA_PLAN_0)
-$(APPLY_EXTRA_PLAN_1)
-export CFLAGS="-Diconv=musl_iconv -Diconv_open=musl_iconv_open -Diconv_close=musl_iconv_close $CFLAGS"
-sh ./mk.sh x86_64 .
-SRC=$(pwd) BDIR=$BDIR/build IDIR=$IDIR CC=$CC sh run.sh
-(cd $IDIR/lib && ln -s libc.a libmuslc.a)
-rm $IDIR/include/iconv.h
-source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/llvm-mirror/clang/master/lib/Headers/stdatomic.h"
-"""
-
 #if defined(__LINUX__)
     def musl_boot0():
         return {
