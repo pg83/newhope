@@ -86,6 +86,8 @@ class ColoredFormatter(y.logging.Formatter):
         for k in sorted(extra.keys()):
             res = funcs.get('on_' + k, replace)(k, str(extra[k]))
 
+        res = res.replace('{bs}NONE{} | ', '')
+    
         return res
 
 

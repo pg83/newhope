@@ -1,4 +1,4 @@
-#@y.ygenerator()
+@y.package
 def git0():
     return {
         'code': """

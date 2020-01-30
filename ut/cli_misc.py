@@ -7,8 +7,12 @@ async def cli_misc_cleanup(arg):
    def fix1(data):
       return data.replace('    \n', '\n')
 
+   def fix2(data):
+      return data.replace("\t", '    ')
+   
    fixers = [
       fix1,
+      fix2,
    ]
    
    for a, b, c in y.os.walk('.'):

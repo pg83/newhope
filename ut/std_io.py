@@ -114,5 +114,21 @@ class ColorStdIO(object):
 
 @y.defer_constructor
 def init_stdio():
+    init_stdio_0()
+
+
+def init_stdio_0():
     y.sys.stdout = ColorStdIO(y.sys.stdout)
     y.sys.stderr = ColorStdIO(y.sys.stderr)
+
+
+@y.contextlib.contextmanager
+def without_color():
+    try:
+        y.sys.stdout = y.sys.__stdout__
+        y.sys.stderr = y.sys.__stderr__
+
+        yield
+    finally:
+        init_stdio()
+

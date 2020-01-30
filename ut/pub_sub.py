@@ -24,7 +24,7 @@ def is_debug():
     return 'debug' in y.config.get('pubsub', '')
 
 
-def pretty_dumps(obj):
+def pd(obj):
     cls = y.json.JSONEncoder
 
     def default(o):
@@ -448,8 +448,6 @@ class PubSubLoop(object):
             for a in f.accept:
                 for el in a:
                     net[el].append(f)
-
-        #is_debug() and y.debug('rebuild net', pretty_dumps(net))
 
         self.net = net
 

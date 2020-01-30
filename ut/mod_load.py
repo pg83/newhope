@@ -1,29 +1,7 @@
 import sys
 import random
 
-/*
-def cons_to_name_xx(c):
-    if not c:
-        return 'nop'
 
-    try:
-        c = c['target']
-    except KeyError:
-        pass
-
-    res = ''
-
-    for k, f in (('os', 1), ('libc', 1), ('arch', 2)):
-        if k in c:
-            res += c[k][:f]
-
-    return res
-
-
-def small_repr_x(c):
-    return cons_to_name_xx(c)
-*/
- 
 class Mod(dict):
    def __init__(self, name, loader):
       self.__dict__ = self
@@ -58,9 +36,7 @@ class Mod(dict):
 
    def ycompile(self, a, b, c, **kwargs):
       ap = '\n' * kwargs.get('firstlineno', 0) + self.__loader__._preproc(a, args=kwargs.get('args', {}))
-
-      # print('-------------------------------------\n' + ap + '+++++++++++++++++++++++++++++++++++++++++\n')
-  
+ 
       return self.__loader__._g.compile(ap, b, c)
    
    def vname(self):
@@ -172,9 +148,9 @@ class Loader(object):
       return self._builtin.get(mod.vname(), {}).get('data', '')
 
    def exec_code(self, mod, data, module_name=None, arch={}, **kwargs):
-      args = arch.copy()
+      args = {}
   
-      if args:
+      if arch:
          args.update({
             '__OS__' : '"' + arch['os'].upper() + '"',
             '__ARCH__': '"' + arch['arch'].upper() + '"',

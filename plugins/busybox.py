@@ -2,7 +2,6 @@
     @y.package
     def busybox0():
         return {
-            'os': 'linux',
             'code': """
                 mkdir -p $IDIR/bin
                 cd $IDIR/bin

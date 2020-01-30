@@ -3,7 +3,7 @@ def common_plugins(cc, iface):
 
     fd = y.globals.file_data
 
-    for el in sorted(fd, key=lambda x: y.burn([5, x['name']])):
+    for el in sorted(fd, key=lambda x: y.burn(x)):
         if el['name'].startswith('pl/'):
             el = y.dc(el)
             el['name'] = cc['os'] + '/' + cc['arch'] + '/' + el['name']

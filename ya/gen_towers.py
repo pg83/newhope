@@ -43,7 +43,7 @@ class Func(object):
         self.i = 0
 
     def out_deps(self):
-        y.xprint_db('{dr}' + str(self) + '{}', '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')
+        y.info('{dr}' + str(self) + '{}', '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')
 
     def contains(self):
         return self.code().get('meta', {}).get('contains', [])
@@ -53,7 +53,7 @@ class Func(object):
         return str(self)
 
     def __str__(self):
-        return '<' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + '-' + self.data.info['os'] + '>'
+        return '<' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + '-' + self.data.info['os'][:1] + '>'
 
     def compact_kind(self):
         res = ''
@@ -64,6 +64,9 @@ class Func(object):
         if self.is_library:
             res += 'l'
 
+        if not res:
+            return 'u'
+    
         return res
 
     @property
@@ -285,7 +288,11 @@ class Data(object):
 
         def iter_objects():
             for x in sorted(data, key=lambda x: x['func']['base']):
-                yield self.create_object(x['func'])
+                res = self.create_object(x['func'])
+
+                y.info('will gen func', res.base)
+        
+                yield res
 
         self.data = list(iter_objects())
         self.by_name = dict((x.base, x) for x in self.data)
@@ -297,7 +304,7 @@ class Data(object):
 
     def extra_libs(self):
         if self.info['os'] == 'linux':
-            return ('make', 'musl-boot')
+            return ('make', 'musl')
 
         return ('make',)
 
@@ -368,7 +375,7 @@ class Data(object):
         for x in self.func_by_num:
             x.out_deps()
 
-        y.xprint_green('exec sequence', self.exec_seq())
+        y.info('{bg}exec sequence', self.exec_seq(), '{}')
 
     def full_deps(self, name):
         return self.full_lib_deps(name) | self.full_tool_deps(name)
@@ -408,6 +415,8 @@ def gen_towers(iface):
         if not row.data:
             break
 
+        y.info('will gen func for', row.data['func']['base'])
+
         data.append(row)
         yield y.EOP()
 
@@ -416,11 +425,17 @@ def gen_towers(iface):
     dt.prepare_funcs(2)
     dt.out()
 
+    cnt = 0
+
     try:
         for x in dt.register():
+            cnt += 1
             yield x
     except IndexError:
         pass
+
+    if not cnt:
+        y.error('{br}no package detected in', data, '{}')
 
     yield y.STOP()
 

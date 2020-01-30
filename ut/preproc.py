@@ -242,18 +242,21 @@ class Preproc(object):
 
 
 def preprocess_text(text, args={}):
+    print('args =', args, file=y.sys.__stderr__)
+
+    args = {'__LINUX__': 1}
+
     if '#skip_preproc' in text:
         return text
 
     try:
         res = Preproc(args).run(text)
 
-        if '#dump_resutl' in text:
-            print('++++++++++++++++++++++++++++++++++++++++\n', text)
-            print('----------------------------------------\n', res)
+        print('-----------------------------------------\n' + text + '+++++++++++++++++++++++++++++++++++++++++\n' + res, file=y.sys.__stderr__)
 
         return res
     except Exception as e:
         raise Exception('can not parse + ' + text[:100]) from e
+
 
 __loader__._preproc = preprocess_text

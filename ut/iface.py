@@ -260,13 +260,14 @@ def prompt(l):
         frame = frame.f_back
 
         try:
-            from ptpython.repl import embed
+            with y.without_color():
+                from ptpython.repl import embed
 
-            embed(frame.f_globals, locals())
+                embed(frame.f_globals, frame.f_locals)
         except ImportError:
-            y.code.interact(local=frame.f_globals)
+            y.code.interact(local=frame.f_locals)
         except Exception as e:
-            y.debug('in prompt', e)
+            y.os.abort()
 
   
 def load_builtin_modules(builtin):

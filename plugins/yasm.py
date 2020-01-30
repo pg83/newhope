@@ -1,4 +1,4 @@
-#@y.ygenerator()
+@y.package
 def yasm0():
     return {
         'code': """
@@ -12,6 +12,6 @@ def yasm0():
         """,
         'version': '1.3.0',
         'meta': {
-            'kind': ['box', 'tool'],
+            'kind': ['tool'],
         },
     }

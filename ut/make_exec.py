@@ -165,7 +165,7 @@ class Builder(object):
                 item = el['x']
                 by_n[item.num] = el
 
-                is_debug() and y.debug('yield ready', y.pretty_dumps(item), 'in fly', fmt_in_fly(by_n))
+                is_debug() and y.debug('yield ready', y.pd(item), 'in fly', fmt_in_fly(by_n))
 
                 yield y.ELEM({'item': item})
                 yield y.EOP()

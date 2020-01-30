@@ -1,4 +1,4 @@
-coode = """
+code = """
 source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
 $(APPLY_EXTRA_PLAN_0)
 $(APPLY_EXTRA_PLAN_1)
@@ -13,7 +13,7 @@ source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/
 #if defined(__LINUX__)
     def musl_boot0():
         return {
-            'code': coode,
+            'code': code,
             'version': '1.1.24', 
             'extra': [
                 {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_musl.sh']['data']},
@@ -31,5 +31,3 @@ source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/
             },
         }
 #endif
-
-#dump_result

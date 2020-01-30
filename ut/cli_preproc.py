@@ -11,7 +11,7 @@ def xcheck_file(pp, diff):
             for l in y.difflib.unified_diff(nd, d, fromfile=pp, tofile=pp):
                 y.xprint_red(l)
         else:
-            y.xprint_magenta('-------------------------\n' + d)
+            y.xprint_magenta('---------------------------\n' + d)
             y.xprint_yellow('+++++++++++++++++++++++++++\n' + nd)
 
 

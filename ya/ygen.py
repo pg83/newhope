@@ -30,16 +30,20 @@ def exec_plugin_code(iface):
         if name.endswith('.py'):
             name = name[:-3]
 
-        y.xprint_blue('ygen', name, cc)
+        y.info('{bb}process plugin', name, cc, '{}')
 
         mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name)
+        cnt = 0
 
         try:
             for x in mod.event:
+                cnt += 1
                 yield x
         except AttributeError:
             pass
 
+        if not cnt:
+            y.error('{by}no package in', name, '{}')
 
     yield y.EOP()
 
