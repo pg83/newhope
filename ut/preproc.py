@@ -251,7 +251,7 @@ def preprocess_text(text, args={}):
         for k, v in args.items():
             if k.startswith('{'):
                 res = res.replace(k, v)
-    
+
         txt = '-----------------------------------------\n' + text + '+++++++++++++++++++++++++++++++++++++++++\n' + res
 
         print(txt, file=y.sys.__stderr__)
