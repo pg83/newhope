@@ -1,4 +1,4 @@
-#@y.package
+@y.package
 def gettext_tiny0():
     return {
         'code': """
@@ -9,7 +9,7 @@ def gettext_tiny0():
         """,
         'version': '55a2119d06403e05808d89eedc9e94a20e87cbd3',
         'meta': {
-            'kind': ['box', 'library', 'tool'],
+            'kind': ['library', 'tool'],
             'depends': ['iconv'],
             'provides': [
                 {'lib': 'intl', 'configure': {'opt': '--with-libintl-prefix={pkgroot}'}},

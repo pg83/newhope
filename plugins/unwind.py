@@ -16,7 +16,6 @@ def libunwind0():
         ],
         'meta': {
             'kind': ['library'],
-            'depends': [],
             'provides': [
                 {'lib': 'unwind'},
             ],

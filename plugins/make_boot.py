@@ -3,7 +3,7 @@ def make_boot0():
     extra = []
 
     #if defined(__LINUX__)
-        extra = ['musl-boot']
+        extra = ['musl-boot', 'bestbox']
     #endif
 
     code = '''
@@ -20,6 +20,7 @@ def make_boot0():
         'meta': {
             'kind': ['tool'],
             'depends': extra,
+            'undeps': ['make', 'musl'],
             'provides': [
                 {'env': 'YMAKE', 'value': '{pkgroot}/bin/make'},
             ],

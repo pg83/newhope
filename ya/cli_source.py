@@ -56,7 +56,7 @@ async def cli_pkg_source(arg):
     args.path = y.os.path.abspath(args.path)
 
     async def find_func():
-        funcs = await y.gen_mk_data(list(y.iter_cc()))
+        funcs = await y.gen_mk_data(list(y.iter_all_cc()))
 
         def do():
             for d in funcs:

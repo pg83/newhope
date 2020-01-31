@@ -2,7 +2,6 @@
     @y.package
     def bestbox0():
         return {
-            'os': 'linux',
             'code': """
                 mkdir -p $IDIR/bin
 
@@ -22,6 +21,7 @@
             'meta': {
                 'kind': ['tool'],
                 'depends': ['busybox', 'toybox'],
+                'undeps': ['make', 'musl'], 
                 'contains': ['busybox', 'toybox'],
                 'provides': [
                      {'env': 'YGZIP', 'value': '{pkgroot}/bin/gzip'},
@@ -33,7 +33,6 @@
                 ],
             },  
         }
-
 
     @y.package
     def superbox0():

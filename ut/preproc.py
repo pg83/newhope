@@ -245,11 +245,13 @@ def preprocess_text(text, args={}):
     if '#skip_preproc' in text:
         return text
 
-    if not any(((chr(35) + token) in text) for token in tokens):
-        return text
-
     try:
         res = Preproc(args).run(text)
+
+        for k, v in args.items():
+            if k.startswith('{'):
+                res = res.replace(k, v)
+    
         txt = '-----------------------------------------\n' + text + '+++++++++++++++++++++++++++++++++++++++++\n' + res
 
         print(txt, file=y.sys.__stderr__)

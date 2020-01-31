@@ -35,6 +35,8 @@ def exec_plugin_code(iface):
         args = {
             '__OS__' : '"' + cc['os'].upper() + '"',
             '__ARCH__': '"' + cc['arch'].upper() + '"',
+            '{arch}': cc['arch'],
+            '{os}': cc['os'],
             '__' + cc['arch'].upper() + '__': '1',
             '__' + cc['os'].upper() + '__':  '1',
         }

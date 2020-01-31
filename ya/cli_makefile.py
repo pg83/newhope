@@ -1,8 +1,3 @@
-def iter_all_cc():   
-    for t in y.iter_all_targets():
-        yield y.dc(t)
-
-
 @y.main_entry_point
 async def cli_pkg_makefile(arg):
     parser = y.argparse.ArgumentParser()
@@ -16,14 +11,7 @@ async def cli_pkg_makefile(arg):
     parser.add_argument('-O', '--os', default='', action='store', help='filter targets by os')
 
     args = parser.parse_args(arg)
-
-    if args.os:
-        def iter_cc():
-            for t in iter_all_cc():
-                if t['os'] == args.os:
-                    yield y.dc(t)
-    else:
-        iter_cc = iter_all_cc
+    iter_cc = y.iter_tcs(args.os)
 
     with y.defer_context() as defer:
         if args.output:

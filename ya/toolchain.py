@@ -9,6 +9,23 @@ def iter_all_tools():
     return list(do())
 
 
+def iter_all_cc():
+    for t in y.iter_all_targets():
+        yield y.dc(t)
+
+
+def iter_tcs(os):
+    if os:
+        def iter_cc():
+            for t in iter_all_cc():
+                if t['os'] == os:
+                    yield y.dc(t)
+    else:
+        iter_cc = iter_all_cc
+
+    return iter_cc
+
+
 @y.singleton
 def group_by_cc():
     res = {}

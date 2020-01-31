@@ -1,4 +1,5 @@
 #if defined(__LINUX__)
+    @y.package
     def musl0():
         return {
             'code': """
@@ -22,8 +23,9 @@
             ],
             'meta': {
                 'kind': ['library'],
-                #'contains': ['musl-boot'],
-                #'depends': ['bestbox', 'make-boot', 'mimalloc'],
+                'contains': ['musl-boot'],
+                'depends': ['bestbox', 'make-boot', 'mimalloc'],
+                'undeps': ['make', 'musl'],
                 'provides': [
                     {'lib': 'muslc'},
                     {'env': 'CPPFLAGS', 'value': '"$CPPFLAGS -I{pkgroot}/include"'},

@@ -3,7 +3,7 @@ def mimalloc0():
     depends = []
 
     #if defined(__LINUX__)
-        depends1 = ['musl-boot', 'kernel-h']
+        depends = ['musl-boot', 'kernel-h']
     #endif
 
     return {
@@ -19,7 +19,8 @@ def mimalloc0():
         'version': '',
         'meta': {
             'kind': ['library'],
-            'depends': depends,
+            'depends': depends + ['make-boot'],
+            'undeps': ['make', 'musl'],
             'provides': [
                 {'lib': 'mimalloc'},
             ],

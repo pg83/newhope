@@ -1,4 +1,4 @@
-@y.cached()
+@y.cached
 def gen_check_log(data):
     p1, p2, p3 = tuple(data.split('EOF'))
 

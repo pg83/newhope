@@ -1,4 +1,4 @@
-#@y.ygenerator()
+@y.package
 def yasm0():
     return {
         'code': """

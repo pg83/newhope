@@ -28,6 +28,7 @@ def subst_by_platform(os):
 
 
 class Func(object):
+    @y.cached_method
     def do_subst(self, x):
         s = subst_by_platform(self.data.info['os'])
 
@@ -48,12 +49,15 @@ class Func(object):
     def contains(self):
         return self.code().get('meta', {}).get('contains', [])
 
+    def undeps(self):
+        return self.raw_depends('undeps')
+
     @property
     def __name__(self):
         return str(self)
 
     def __str__(self):
-        return '<' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + '-' + self.data.info['os'][:1] + '>'
+        return '<' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + self.data.info['os'][:1] + '>'
 
     def compact_kind(self):
         res = ''
@@ -90,16 +94,15 @@ class Func(object):
         return self.x['base']
 
     @y.cached_method
-    def raw_depends(self):
+    def raw_depends(self, name):
         code = self.code()
 
         if code:
-            return [self.do_subst(x) for x in self.code().get('meta', {}).get('depends', [])]
-
-        return []
+            for x in self.code().get('meta', {}).get(name, []):
+                yield self.do_subst(x)
 
     def depends(self):
-        return self.raw_depends()
+        return list(self.raw_depends('depends'))
 
     @y.cached_method
     def all_depends(self):
@@ -114,6 +117,7 @@ class Func(object):
     def dep_lib_list(self):
         def iter():
             for x in self.dep_list():
+                print self.base
                 if self.data.by_name[x].is_library:
                     yield x
 
@@ -135,25 +139,9 @@ class Func(object):
     def dep_list(self):
         def iter1():
             yield from self.depends()
+            yield from self.extra_libs()
 
-            for d in self.extra_libs():
-                if self.base in self.data.find_func(d).all_depends():
-                    continue
-
-                if self.base == d:
-                    continue
-
-                code = self.code()
-
-                if not code:
-                    continue
-
-                if 'code' not in code:
-                    continue
-
-                yield d
-
-        return frozenset(iter1())
+        return frozenset(iter1()) - frozenset(self.undeps())
 
     @y.cached_method
     def run_func(self):
@@ -304,7 +292,7 @@ class Data(object):
 
     def extra_libs(self):
         if self.info['os'] == 'linux':
-            return ('make', 'musl-boot')
+            return ('make', 'musl')
 
         return ('make',)
 
