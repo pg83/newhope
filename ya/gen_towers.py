@@ -59,7 +59,7 @@ class Func(object):
         return str(self)
 
     def __str__(self):
-        return '<' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + self.data.info['os'][:1] + '>'
+        return '<' + self.gen + '-' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + self.data.info['os'][:1] + '>'
 
     def compact_kind(self):
         res = ''
@@ -176,7 +176,7 @@ class Func(object):
         return {
             'code': self.ff,
             'base': self.base,
-            'gen': 'tow',
+            'gen': self.gen,
             'kind': self.kind,
             'repacks': {},
             'info': self.data.info,
@@ -235,14 +235,15 @@ class SpecialFunc(Func):
 
 
 class Solver(object):
-    def __init__(self, data, seed=1):
+    def __init__(self, data, generation=0, seed=1):
+        self._generation = generation
         self._data = data
         self._seed = seed
         self._r, self._w = y.make_engine(self._data, ntn=lambda x: x.base, dep_list=lambda x: x.dep_list(), seed=self._seed)
         self.inc_count = ic()
 
     def next_solver(self):
-        return Solver(self._data, self._seed * 13 + 17)
+        return Solver(self._data, generation=(self._generation + 1), seed=(self._seed * 13 + 17))
 
     def iter_items(self):
         y.info('run solver')
@@ -253,18 +254,23 @@ class Solver(object):
 
         y.info('done')
 
-    def iter_solvers(self, num):
-        cur = self
-        yield cur
 
-        for i in range(0, num - 1):
-            cur = cur.next_solver()
-            yield cur
+class SolverWrap(object):
+    def __init__(self, data):
+        self._cur = Solver(data)
 
-    def iter_infinity(self, num):
-        for s in self.iter_solvers(num):
+    def iter_solvers(self):
+        while True:
+            yield self._cur
+            self._cur = self._cur.next_solver()
+
+    def iter_infinity(self):
+        for s in self.iter_solvers():
             for i in s.iter_items():
                 yield i.clone()
+
+    def generation(self):
+        return self._cur._generation
 
 
 class Data(object):
@@ -300,7 +306,7 @@ class Data(object):
 
             if self.info.get('libc') == 'uclibc':
                 yield 'uclibc'
-        
+
         return list(do())
 
     def create_object(self, x):
@@ -342,9 +348,17 @@ class Data(object):
         return list(iter())
 
     def prepare_funcs(self, num):
-        solver = Solver(self.data)
+        solver = SolverWrap(self.data)
 
-        for func in solver.iter_infinity(num):
+        for func in solver.iter_infinity():
+            if solver.generation() >= num:
+                return
+
+            if solver.generation() == num - 1:
+                func.gen = 'pkg'
+            else:
+                func.gen = 'tow'
+        
             func.i = len(self.func_by_num)
             self.func_by_num.append(func)
             func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)
@@ -355,7 +369,7 @@ class Data(object):
         return self.dd.get(name, [-1])[0]
 
     def register(self):
-        for v in [self.func_by_num[self.last_elements(['box'], must_have=True)[0]]]:
+        for v in [self.func_by_num[self.last_elements(['pcre'], must_have=True)[0]]]:
             yield y.ELEM({'func': v.z})
 
     def iter_deps(self):
@@ -417,7 +431,7 @@ def gen_towers(iface):
 
     cc = data[0].data['func']['cc']
     dt = Data(cc, [x.data for x in data] + [box_0(cc)])
-    dt.prepare_funcs(2)
+    dt.prepare_funcs(3)
     dt.out()
 
     cnt = 0
@@ -425,7 +439,7 @@ def gen_towers(iface):
     try:
         for x in dt.register():
             cnt += 1
-            yield x
+            yield x  
     except IndexError:
         pass
 

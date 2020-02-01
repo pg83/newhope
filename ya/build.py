@@ -191,13 +191,16 @@ async def build_makefile(nodes, kind):
                     'cmd': cmd['build'],
                 }
 
-        mk = y.MakeFile()
-        mk.init_from_parsed({'lst': list(iter6()), 'flags': {}})
-
-        if kind == 'internal':
-            mk = y.dumps_mk(mk)
+        if kind == 'data':
+            return list(iter6())
+        elif kind == 'internal':
+            mk = y.MakeFile()
     
-        return mk
+            mk.init_from_parsed({'lst': list(iter6()), 'flags': {}})
+    
+            return mk
+        else:
+            assert False
 
     assert kind == 'text'
 

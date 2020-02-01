@@ -26,7 +26,7 @@ async def cli_pkg_makefile(arg):
                     kind = 'internal'
                 else:
                     kind = 'text'
-            
+    
                 data = await y.main_makefile(iter_cc, kind=kind)
 
                 def func():
