@@ -1,13 +1,14 @@
 import lzma
+import zstd
 import marshal
 
 
 def decode_prof(data):
-    return marshal.loads(lzma.decompress(data))
+    return marshal.loads(zstd.decompress(data))
 
 
 def encode_prof(v):
-    return lzma.compress(marshal.dumps(v))
+    return zstd.compress(marshal.dumps(v), 5)
 
 
 class SimpleDB(object):

@@ -252,9 +252,8 @@ def preprocess_text(text, args={}):
             if k.startswith('{'):
                 res = res.replace(k, v)
 
-        txt = '-----------------------------------------\n' + text + '+++++++++++++++++++++++++++++++++++++++++\n' + res
-
-        print(txt, file=y.sys.__stderr__)
+        #txt = '-----------------------------------------\n' + text + '+++++++++++++++++++++++++++++++++++++++++\n' + res
+        #print(txt, file=y.sys.__stderr__)
 
         return res
     except Exception as e:

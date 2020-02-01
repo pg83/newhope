@@ -8,7 +8,7 @@ def iter_darwin():
             if k == 'c':
                 meta['provides'] = [
                     {'env': 'CC', 'value': '"' + path + '"'},
-                    {'env': 'CFLAGS', 'value': '"$TARGET $CFLAGS"'},
+                    {'env': 'CFLAGS', 'value': '"$CFLAGS"'},
                     {'env': 'AR', 'value': '"ar"'},
                     {'env': 'RANLIB', 'value': '"ranlib"'},
                     {'env': 'STRIP', 'value': '"strip"'},
@@ -29,12 +29,6 @@ def iter_darwin():
         for meta in iter_nodes():
             for t in y.iter_all_targets():
                 m = y.dc(meta)
-                m['provides'] = [
-                    {
-                        'env': 'TARGET',
-                        'value': '"--target=' + t['os'] + '-' + t['arch'] + '"',
-                    }
-                ] + m['provides']
 
                 n = {
                     'name': '-'.join(['clang'] + meta['kind'] + [y.burn(t)]),

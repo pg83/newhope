@@ -1,13 +1,15 @@
+#skip_preproc
+
 @y.package
 def libffi0():
     return {
         'code': """
              source fetch "https://sourceware.org/ftp/libffi/libffi-{version}.tar.gz" 1
 
-             sed -e '/^includesdir/ s/$(libdir).*$/$(includedir)/' \
+             $SED -e '/^includesdir/ s/$(libdir).*$/$(includedir)/' \
                  -i include/Makefile.in
 
-             sed -e '/^includedir/ s/=.*$/=@includedir@/' \
+             $SED -e '/^includedir/ s/=.*$/=@includedir@/' \
                  -e 's/^Cflags: -I${includedir}/Cflags:/' \
                  -i libffi.pc.in
 

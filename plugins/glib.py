@@ -13,7 +13,7 @@ def glib0():
         'version': '2.30.3',
         'meta': {
             'kind': ['library'],
-            'depends': ['iconv', 'intl', 'libffi', 'pkg-config-int', 'coreutils', 'python', 'zlib', 'dash', 'pcre', 'slibtool'],
+            'depends': ['iconv', 'intl', 'libffi', 'pkg-config-int', 'coreutils', 'python', 'zlib', 'dash', 'pcre'],
             'provides': [
                 {
                     'lib': 'glib-2.0', 

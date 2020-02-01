@@ -104,7 +104,7 @@ def replacer(data):
     return func
 
 
-async def build_makefile(nodes, internal=False):
+async def build_makefile(nodes, kind):
     by_noid = {}
 
     def iter1():
@@ -182,7 +182,7 @@ async def build_makefile(nodes, internal=False):
 
                 yield l
 
-    if internal:
+    if kind in ('internal', 'data'):
         def iter6():
             for cmd in iter5():
                 yield {
@@ -194,7 +194,12 @@ async def build_makefile(nodes, internal=False):
         mk = y.MakeFile()
         mk.init_from_parsed({'lst': list(iter6()), 'flags': {}})
 
-        return y.dumps_mk(mk)
+        if kind == 'internal':
+            mk = y.dumps_mk(mk)
+    
+        return mk
+
+    assert kind == 'text'
 
     def iter6():
         for cmd in iter5():

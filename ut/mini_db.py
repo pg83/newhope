@@ -141,7 +141,6 @@ def init():
         if not i.startswith('__'):
             globals()[i] = eval('v.' + i)
 
-    if 0:
-        if y.config.get('check_db'):
-            y.atexit.register(v.check_db)
+    if y.config.get('check_db'):
+        y.atexit.register(v.check_db)
 

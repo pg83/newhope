@@ -15,6 +15,7 @@ def subst_by_platform(os):
         'm4': 'quasar-m4',
         'termcap': 'ncurses',
         'ncurses': 'ncurses',
+        'libtool': 'libtool',
     }
 
     by_os = {
@@ -23,6 +24,7 @@ def subst_by_platform(os):
     }
 
     by_os['linux'].update({'ncurses': 'netbsd-curses'})
+    by_os['linux'].update({'libtool': 'slibtool'})
 
     return by_os[os]
 
@@ -117,7 +119,6 @@ class Func(object):
     def dep_lib_list(self):
         def iter():
             for x in self.dep_list():
-                print self.base
                 if self.data.by_name[x].is_library:
                     yield x
 
@@ -291,10 +292,16 @@ class Data(object):
                 self.by_kind[k].append(x.base)
 
     def extra_libs(self):
-        if self.info['os'] == 'linux':
-            return ('make', 'musl')
+        def do():
+            yield 'make'
 
-        return ('make',)
+            if self.info.get('libc') == 'musl':
+                yield 'musl'
+
+            if self.info.get('libc') == 'uclibc':
+                yield 'uclibc'
+        
+        return list(do())
 
     def create_object(self, x):
         if x['base'] in self.special:

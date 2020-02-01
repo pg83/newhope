@@ -1,5 +1,5 @@
 @y.package
-def coreutils0():
+def coreutils_boot0():
     return {
         'code': """
              source fetch "https://ftp.gnu.org/gnu/coreutils/coreutils-{version}.tar.xz" 1
@@ -13,8 +13,7 @@ def coreutils0():
         """,
         'version': '8.31',
         'meta': {
-            'kind': ['tool', 'box'],
-            'depends': ['iconv', 'intl', 'openssl'],
+            'kind': ['tool'],
             'provides': [
                 {'env': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'},
             ],

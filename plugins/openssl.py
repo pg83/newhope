@@ -1,7 +1,12 @@
 @y.package
 def openssl0():
     version = '1.1.1c'
-    flags = 'linux-x86_64-cc'
+
+    if '{os}' == 'linux':
+        flags = 'linux-x86_64-cc'
+    else:
+        flags = 'darwin64-x86_64-cc'
+
     extra = []
 
     return {

@@ -61,9 +61,7 @@ async def cli_pkg_make(arg):
     shell_vars = dict(iter_replaces())
 
     async def gen():
-        mk = await y.main_makefile(y.iter_all_cc, internal=True)
-
-        return y.loads_mk(mk)
+        return await y.main_makefile(y.iter_all_cc, kind='data')
 
     mk = await y.open_mk_file(args.path, gen)
 
