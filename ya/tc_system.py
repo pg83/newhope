@@ -51,7 +51,7 @@ def iter_linux():
         for k in ('c', 'c++', 'linker'):
             meta = {'kind': [k, 'tool']}
             path = '/usr/bin/clang'
-            
+
             if k == 'c':
                 meta['provides'] = [
                     {'env': 'CC', 'value': '"' + path + '"'},

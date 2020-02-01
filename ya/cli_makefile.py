@@ -23,7 +23,7 @@ async def cli_pkg_makefile(arg):
 
         async def main_func():
             data = await y.main_makefile(iter_cc, eval('y.' + args.distr)())
-                
+
             def func():
                 f.write(data)
                 f.flush()
