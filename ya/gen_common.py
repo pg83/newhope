@@ -20,13 +20,13 @@ def common_plugins_gen(cc):
     return y.make_name(cc_plugins, 'cc_plugin_' + y.small_repr(cc))
 
 
-def mk_funcs(cc, cb, iface):
+def mk_funcs(cc, cb, iface, distr):
     yield y.EOP(y.ACCEPT())
 
     lst_f = [
         common_plugins_gen(cc),
         y.exec_plugin_code,
-        y.gen_towers,
+        y.set_name(lambda x: y.gen_towers(x, distr), 'gen_towers_distr'),
         y.FuncAggr(cb).on_new_data,
     ]
 
@@ -36,9 +36,9 @@ def mk_funcs(cc, cb, iface):
     yield y.FIN()
 
 
-def mk_funcs_gen(cc, cb):
+def mk_funcs_gen(cc, cb, distr):
     def func(iface):
-        yield from mk_funcs(cc, cb, iface)
+        yield from mk_funcs(cc, cb, iface, distr)
 
     return y.set_name(func, 'mk_funcs_' + y.small_repr(cc))
 

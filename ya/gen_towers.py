@@ -186,7 +186,7 @@ class Func(object):
         return Func(self.x, self.data)
 
     def calc_deps(self):
-        return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(self.data.special, must_have=False))
+        return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(self.data.special + ['clang'], must_have=False))
 
 
 class SpecialFunc(Func):
@@ -354,8 +354,8 @@ class Data(object):
     def find_first(self, name):
         return self.dd.get(name, [-1])[0]
 
-    def register(self):
-        for v in [self.func_by_num[self.last_elements(['box'], must_have=True)[0]]]:
+    def register(self, distr):
+        for v in [self.func_by_num[x] for x in self.last_elements(distr, must_have=True)]:
             yield y.ELEM({'func': v.z})
 
     def iter_deps(self):
@@ -401,7 +401,7 @@ class Data(object):
         return [self.func_by_num[d].f() for d in deps]
 
 
-def gen_towers(iface):
+def gen_towers(iface, distr):
     yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
 
     data = []
@@ -423,7 +423,7 @@ def gen_towers(iface):
     cnt = 0
 
     try:
-        for x in dt.register():
+        for x in dt.register(distr):
             cnt += 1
             yield x
     except IndexError:
