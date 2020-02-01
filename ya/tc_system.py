@@ -69,7 +69,7 @@ def iter_linux():
             elif k == 'linker':
                 meta['provides'] = [
                     {'env': 'LD', 'value': '"' + path + '"'},
-                    {'env': 'LDFLAGS', 'value': '"-fuse-ld=/usr/bin/ld.lld $LDFLAGS"'},
+                    {'env': 'LDFLAGS', 'value': '"-static -all-static -nostdlib -fuse-ld=/usr/bin/ld.lld $LDFLAGS"'},
                 ]
 
             yield meta

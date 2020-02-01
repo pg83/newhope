@@ -1,4 +1,4 @@
-#if defined(__LINUX__)
+if '{os}' == 'linux':
     @y.package
     def musl0():
         return {
@@ -33,4 +33,4 @@
                 ],
             },
         }
-#endif
+

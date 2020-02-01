@@ -2,9 +2,8 @@
 def mimalloc0():
     depends = []
 
-    #if defined(__LINUX__)
+    if '{os}' == 'linux':
         depends = ['musl-boot', 'kernel-h']
-    #endif
 
     return {
         'code': """

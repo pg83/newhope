@@ -1,4 +1,4 @@
-#if defined(__LINUX__)
+if '{os}' == 'linux':
     @y.package
     def kernel_h0():
         return {
@@ -18,4 +18,3 @@
                 ],
             },
         }
-#endif

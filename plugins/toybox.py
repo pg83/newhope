@@ -1,4 +1,4 @@
-#if defined(__LINUX__)
+if '{os}' == 'linux':
     @y.package
     def toybox0():
         return {
@@ -18,4 +18,4 @@
                 ],
             },
         }
-#endif
+

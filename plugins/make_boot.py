@@ -2,9 +2,8 @@
 def make_boot0():
     extra = []
 
-    #if defined(__LINUX__)
+    if '{os}' == 'linux':
         extra = ['musl-boot', 'bestbox']
-    #endif
 
     code = '''
         source fetch "http://mirror.lihnidos.org/GNU/ftp/gnu/make/make-{version}.tar.gz" 1

@@ -1,4 +1,4 @@
-#if defined(__LINUX__)
+if '{os}' == 'linux':
     @y.package
     def musl_boot0():
         return {

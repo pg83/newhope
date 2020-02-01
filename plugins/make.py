@@ -8,17 +8,17 @@ def make0():
         $YMAKE install
     '''
 
+    extra = []
+
+    if '{os}' == 'linux':
+        extra = ['musl-boot']
+
     return {
         'code': code,
         'version': '4.2',
         'meta': {
             'kind': ['tool', 'box'],
-            'depends': [
-                'make-boot',
-                #if defined(__LINUX__)
-                    'musl-boot',
-                #endif
-            ],
+            'depends': ['make-boot'] + extra,
             'undeps': ['make', 'musl'],
             'contains': ['make-boot'],
             'provides': [

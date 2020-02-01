@@ -1,4 +1,4 @@
-@y.package
+#@y.package
 def yasm0():
     return {
         'code': """

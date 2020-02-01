@@ -1,5 +1,10 @@
 @y.package
 def libcxx0():
+    if '{os}' == 'linux':
+        sh = 'data/mk_libcxx.sh'
+    else:
+        sh = 'data/mk_libcxx_darwin.sh'
+
     return {
         'code': """
              #pragma cc
@@ -11,7 +16,7 @@ def libcxx0():
         """,
         'version': '9.0.0',
         'extra': [
-            {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_libcxx_darwin.sh']['data']},
+            {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name[sh]['data']},
         ],
         'meta': {
             'kind': ['library'],

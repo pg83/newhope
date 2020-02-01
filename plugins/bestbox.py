@@ -1,4 +1,4 @@
-#if defined(__LINUX__)
+if '{os}' == 'linux':
     @y.package
     def bestbox0():
         return {
@@ -58,4 +58,3 @@
         '''
 
         return data
-#endif

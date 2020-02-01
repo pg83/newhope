@@ -2,9 +2,8 @@
 def cmake0():
     extra = []
 
-    #if defined(__LINUX__)
+    if '{os}' == 'linux':
         extra = ['kernel-h']
-    #endif
 
     return {
         'code': """
