@@ -29,7 +29,7 @@ def exec_plugin_code(iface):
 
         if name.endswith('.py'):
             name = name[:-3]
-        
+
         mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name, args={'{arch}': cc['arch'], '{os}': cc['os']})
         cnt = 0
 
