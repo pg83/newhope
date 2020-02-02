@@ -384,7 +384,7 @@ class Item(ItemBase):
 
         def iter_lines():
             bdir = ''
-    
+
             for l in res.strip().split('\n'):
                 if 'export ' in l:
                     yield l
