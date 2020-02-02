@@ -1,5 +1,6 @@
-def python_base(kind):
-    version = '3.8.0'
+@y.package
+def python30():
+    version = '3.8.1'
     ver = '.'.join(version.split('.')[:2])
 
     return {
@@ -36,7 +37,7 @@ def python_base(kind):
             {'kind': 'file', 'path': 'mk_staticpython.sh', 'data': y.builtin_data('data/mk_staticpython.sh')},
         ],
         'meta': {
-            'kind': kind,
+            'kind': ['tool', 'box'],
             'depends': [
                 'ncurses', 'iconv', 'intl', 'zlib',
                 'pkg-config', 'libffi', 'readline',
@@ -50,8 +51,3 @@ def python_base(kind):
             ],
         },
     }
-
-
-@y.package
-def python30():
-    return python_base(['tool', 'box'])

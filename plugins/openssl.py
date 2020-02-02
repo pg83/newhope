@@ -22,12 +22,10 @@ def openssl0():
         'version': version,
         'meta': {
             'kind': ['library'],
-            'depends': extra + [
-                'perl5',
-                'dl',
-            ],
+            'depends': extra + ['perl5','dl'],
             'provides': [
-                {'lib': 'ssl'},
+                {'lib': 'ssl', 'configure': {'opts': ['--with-openssl={pkgroot}', '--with-openssldir={pkgroot}']}},
+                {'env': 'OPENSSL_INCLUDES', 'value': '{pkgroot}/include'},
             ],
         },
     }

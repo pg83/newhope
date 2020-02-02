@@ -1,7 +1,3 @@
-def common_distr():
-    return ['superbox', 'mc-slang', 'yash', 'bash', 'dash', 'p7zip', 'unrar', 'bsdtar', 'python3', 'xz', 'cmake']
-
-
 @y.main_entry_point
 async def cli_pkg_makefile(arg):
     parser = y.argparse.ArgumentParser()

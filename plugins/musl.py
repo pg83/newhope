@@ -14,7 +14,7 @@ if '{os}' == 'linux':
                 (cd $IDIR/lib && $AR q libc.a crt1.o crti.o crtn.o && rm *crt* && $RANLIB libc.a && ln -s libc.a libmuslc.a && rm libdl.a)
                 rm $IDIR/include/iconv.h
                 source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/llvm-mirror/clang/master/lib/Headers/stdatomic.h"
-                '#include <sys/sysmacros.h>' > "$IDIR/include/mkdev.h"
+                echo '#include <sys/sysmacros.h>' > "$IDIR/include/sys/mkdev.h"
             """,
             'version': '1.1.24', 
             'extra': [

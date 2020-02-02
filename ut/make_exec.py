@@ -383,9 +383,17 @@ class Item(ItemBase):
         retcode, res, input = await self.run_cmd_0(ctl)
 
         def iter_lines():
+            bdir = ''
+    
             for l in res.strip().split('\n'):
                 if 'export ' in l:
                     yield l
+
+                    if 'BDIR' in l:
+                        bdir = l.split('=')[1]
+
+            if bdir:
+                yield '{br}./cli debug ' + bdir + '{}'
 
         msg = {
             'output': '\n'.join(iter_lines()),

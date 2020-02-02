@@ -21,7 +21,7 @@ def libffi0():
             'depends': ['sed'],
             'provides': [
                 {'lib': 'ffi'},
-                {'env': 'LIBFFI_CFLAGS', 'value': '{pkgroot}/include'},
+                {'env': 'LIBFFI_CFLAGS', 'value': '-I/{pkgroot}/include'},
             ],
         },
     }
