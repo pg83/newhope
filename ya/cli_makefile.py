@@ -1,5 +1,5 @@
 def common_distr():
-    return ['mc-slang', 'yash', 'bash', 'clang']
+    return ['superbox', 'mc-slang', 'yash', 'bash', 'dash', 'p7zip', 'unrar', 'bsdtar', 'python3', 'xz', 'cmake']
 
 
 @y.main_entry_point

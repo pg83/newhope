@@ -186,7 +186,7 @@ class Func(object):
         return Func(self.x, self.data)
 
     def calc_deps(self):
-        return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(self.data.special + ['clang'], must_have=False))
+        return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(self.data.special, must_have=False))
 
 
 class SpecialFunc(Func):
@@ -355,7 +355,7 @@ class Data(object):
                 return
 
             if solver.generation() == num - 1:
-                func.gen = 'pkg'
+                func.gen = ''
             else:
                 func.gen = 'tow'
 

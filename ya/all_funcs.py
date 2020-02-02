@@ -14,7 +14,12 @@ class FuncAggr(object):
 
 
 def gen_package_name(x):
-    res = '-'.join((x['gen'], x['base']))
+    res = x['gen']
+
+    if res:
+        res += '-'
+
+    res = x['base']
 
     if 'num' in x:
         res += str(x['num'])
