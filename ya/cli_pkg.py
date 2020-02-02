@@ -32,7 +32,7 @@ async def cli_pkg_sync_repo(args_):
                     y.shutil.copyfile(y.os.path.join(fr, x), z + '.tmp')
                     y.os.rename(z + '.tmp', z)
 
-    
+
         index = []
 
         y.info('will write index')

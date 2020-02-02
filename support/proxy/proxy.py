@@ -13,7 +13,7 @@ app2 = Bottle()
 
 
 def gen_id():
-    return str(int(random.random() * 10000000))
+    return str(int(random.random() * 100000000000000000))
 
 
 requests = collections.deque()
