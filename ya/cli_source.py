@@ -1,6 +1,6 @@
 @y.main_entry_point
 async def cli_pkg_source(arg):
-    lst = await y.main_makefile(y.iter_all_cc, kind='data')
+    lst = await y.main_makefile(y.iter_all_cc, y.common_distr(), kind='data')
     nodes = []
     by_rdep = y.collections.defaultdict(set)
 

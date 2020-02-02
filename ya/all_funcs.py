@@ -19,7 +19,7 @@ def gen_package_name(x):
     if res:
         res += '-'
 
-    res = x['base']
+    res += x['base']
 
     if 'num' in x:
         res += str(x['num'])
