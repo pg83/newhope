@@ -29,19 +29,8 @@ def exec_plugin_code(iface):
 
         if name.endswith('.py'):
             name = name[:-3]
-
-        y.info('{bb}process plugin', name, cc, '{}')
-
-        args = {
-            '__OS__' : '"' + cc['os'].upper() + '"',
-            '__ARCH__': '"' + cc['arch'].upper() + '"',
-            '{arch}': cc['arch'],
-            '{os}': cc['os'],
-            '__' + cc['arch'].upper() + '__': '1',
-            '__' + cc['os'].upper() + '__':  '1',
-        }
-
-        mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name, args=args)
+                
+        mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name, args={'{arch}': cc['arch'], '{os}': cc['os']})
         cnt = 0
 
         try:

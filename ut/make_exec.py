@@ -418,7 +418,7 @@ class Item(ItemBase):
 
         try:
             env = y.dc(self.env)
-            naked = True
+            naked = False
 
             def fun():
                 input_bin = input.encode('utf-8')
