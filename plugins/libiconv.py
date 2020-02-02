@@ -2,8 +2,10 @@
 def libiconv0():
     extra = []
 
-    if '{os}' == 'linux':
-        extra = [{'libs': '-framework CoreFoundation'}]
+    if '{os}' == 'darwin':
+        extra = [
+            {'libs': '-framework CoreFoundation'}
+        ]
 
     return {
         'code': """

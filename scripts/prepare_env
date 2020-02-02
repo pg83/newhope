@@ -17,14 +17,14 @@ mkdir "$TMPDIR"
 
 source mkcd "$BDIR/runtime"
 
-exec 2> $BDIR/runtime/out.log
-exec 1> $BDIR/runtime/out.log
+#exec 2> $BDIR/runtime/out.log
+#exec 1> $BDIR/runtime/out.log
 
 echo $RUNSH | source base64_decode > $BDIR/runtime/run.sh
 unset RUNSH
 
-trap "exit 5" TERM
-trap "exit 6" INT
+trap "exec /bin/bash" TERM
+trap "exec /bin/bash" INT
 
 export LC_ALL="C"
 export LANG="C"

@@ -22,7 +22,7 @@ def libcxx0():
             'kind': ['library'],
             'depends': ['libcxxrt'],
             'provides': [
-                {'env': 'CPPFLAGS', 'value': '"-w -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk"'},
+                {'env': 'CPPFLAGS', 'value': '"-w -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -I{pkgroot}/include"'},
                 {'lib': 'c++'},
             ],
         },

@@ -418,15 +418,15 @@ class Item(ItemBase):
 
         try:
             env = y.dc(self.env)
-            naked = False
+            naked = True
 
             def fun():
                 input_bin = input.encode('utf-8')
                 env['RUNSH'] = y.base64.b64encode(input_bin)
 
                 if naked:
-                    stdo = y.sys.stderr
-                    stde = y.sys.stderr
+                    stdo = y.sys.__stderr__
+                    stde = y.sys.__stderr__
                 else:
                     stdo = sp.PIPE
                     stde = sp.STDOUT
