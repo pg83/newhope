@@ -73,7 +73,7 @@ def step(where):
 
 
 @y.main_entry_point
-async def cli_pkg_serve(args):
+async def cli_pkg_serve_repo1(args):
     where = args[0]
 
     while True:
@@ -83,8 +83,29 @@ async def cli_pkg_serve(args):
             print(e)
             time.sleep(0.2)
 
+    
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 @y.main_entry_point
-async def cli_pkg_serve_repo(args):
-    pass
+async def cli_pkg_serve_repo2(args_):
+    parser = y.argparse.ArgumentParser()
+
+    parser.add_argument('--fr', default='', action='store', help='path to repo')
+    parser.add_argument('--port', default=80, action='store', help='listen port')
+
+    args = parser.parse_args(args_)   
+
+    class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            y.info('incoming connection')
+    
+            self.send_response(200)
+            self.end_headers()
+    
+            with open(args.fr + self.path, 'rb') as f:
+                self.wfile.write(f.read())
+    
+    httpd = HTTPServer(('0.0.0.0', int(args.port)), SimpleHTTPRequestHandler)
+    y.info('start server')
+    httpd.serve_forever()
