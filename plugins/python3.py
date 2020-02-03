@@ -9,10 +9,12 @@ def python30():
             export PYTHONHOME=
             $(APPLY_EXTRA_PLAN_0)
             $(APPLY_EXTRA_PLAN_1)
+
             cat Setup | sed -e 's/OPENSSL_INCLUDES/$OPENSSL_INCLUDES/' | sed -e 's/LIBFFI_CFLAGS/$LIBFFI_CFLAGS/' > tmp
             cp tmp Modules/Setup
+
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --with-system-libmpdec --enable-static --disable-shared --with-signal-module --with-system-ffi || exit1
-            
+    
             $YMAKE -j $NTHRS || exit 1
             PY=`which ./python.exe || which ./python`
             $PY ./fix.py patch ./setup.py
@@ -35,7 +37,11 @@ def python30():
         """.replace('{ver}', ver),
         'version': version,
         'extra': [
+<<<<<<< HEAD
             {'kind': 'file', 'path': 'Setup', 'data': y.builtin_data('data/Setup.local')},
+=======
+            {'kind': 'file', 'path': 'Setup.tmpl', 'data': y.builtin_data('data/Setup.local')},
+>>>>>>> 95a86acefd55872d5ceebcd9d9de6c90e03364c5
             {'kind': 'file', 'path': 'fix.py', 'data': y.builtin_data('data/python3_bc.py')},
             {'kind': 'file', 'path': 'find_modules.py', 'data': y.builtin_data('data/find_modules.py')},
             {'kind': 'file', 'path': 'mk_staticpython.sh', 'data': y.builtin_data('data/mk_staticpython.sh')},
