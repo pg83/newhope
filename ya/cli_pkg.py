@@ -83,3 +83,8 @@ async def cli_pkg_serve(args):
             print(e)
             time.sleep(0.2)
 
+
+
+@y.main_entry_point
+async def cli_pkg_serve_repo(args):
+    pass

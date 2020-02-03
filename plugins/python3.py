@@ -9,6 +9,7 @@ def python30():
             export PYTHONHOME=
             $(APPLY_EXTRA_PLAN_0)
             $(APPLY_EXTRA_PLAN_1)
+            mv Setup.tmpl Modules/Setup
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --with-system-libmpdec --enable-static --disable-shared --with-signal-module --with-system-ffi || exit1
             $YMAKE -j $NTHRS || exit 1
             PY=`which ./python.exe || which ./python`
@@ -31,7 +32,7 @@ def python30():
         """.replace('{ver}', ver),
         'version': version,
         'extra': [
-            {'kind': 'file', 'path': 'Modules/Setup', 'data': y.builtin_data('data/Setup.local')},
+            {'kind': 'file', 'path': 'Setup.tmpl', 'data': y.builtin_data('data/Setup.local')},
             {'kind': 'file', 'path': 'fix.py', 'data': y.builtin_data('data/python3_bc.py')},
             {'kind': 'file', 'path': 'find_modules.py', 'data': y.builtin_data('data/find_modules.py')},
             {'kind': 'file', 'path': 'mk_staticpython.sh', 'data': y.builtin_data('data/mk_staticpython.sh')},
