@@ -1,7 +1,7 @@
 #!/sbin/openrc-run
 
-name="serve repos, down side"
-command="/usr/bin/python3.8.1"
-command_args="/root/newhope/cli pkg serve /media/storage/pkg_repo"
+name="serve repos"
+command="/usr/bin/python3.8"
+command_args="/root/newhope/cli pkg serve repo2 --fr /media/storage/pkg_repo"
 command_background=true
 pidfile="/run/server.pid"
