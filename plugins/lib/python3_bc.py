@@ -1,5 +1,6 @@
 import json
 import sys
+import os
 
 
 patch = """
@@ -42,7 +43,7 @@ def build_descr(el):
     cflags = []
     ldflags = []
 
-    cflags.extend(el['extra_compile_args'])
+    cflags.extend(el['extra_compile_args'] + [os.environ['LIBFFI_CFLAGS']])
     ldflags.extend(el['extra_link_args'])
 
     def fix_inc(i):
