@@ -1,7 +1,7 @@
 #!/sbin/openrc-run
 
 name="serve repos"
-command="/usr/bin/python3.8"
-command_args="/root/newhope/cli pkg serve repo2 --fr /media/storage/pkg_repo"
+command="/root/newhope/cli"
+command_args="pkg serve repo --fr /media/storage/pkg_repo"
 command_background=true
 pidfile="/run/server.pid"

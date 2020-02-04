@@ -116,7 +116,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 @y.main_entry_point
-async def cli_pkg_serve_repo2(args_):
+async def cli_pkg_serve_repo(args_):
     parser = y.argparse.ArgumentParser()
 
     parser.add_argument('--fr', default='', action='store', help='path to repo')

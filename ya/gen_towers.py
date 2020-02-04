@@ -357,7 +357,7 @@ class Data(object):
             if solver.generation() == num - 1:
                 func.gen = ''
             else:
-                func.gen = 'tow'
+                func.gen = 'tow' + str(solver.generation())
 
             func.i = len(self.func_by_num)
             self.func_by_num.append(func)
