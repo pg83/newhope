@@ -89,7 +89,7 @@ def join_tc_meta(tcs):
 
 def join_toolchains(info, tcs):
     nodes = [x['node'] for x in tcs]
-    
+
     res = {
         'node': {
             'build': [],
