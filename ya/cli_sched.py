@@ -22,7 +22,7 @@ def func(code):
                 y.warning('in scheduler:', e)
 
             y.time.sleep(1)
-    
+
     return do
 
 

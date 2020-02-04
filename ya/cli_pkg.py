@@ -95,7 +95,7 @@ async def cli_pkg_sync_repo(args_):
         with open(args.to + '/index', 'w') as f:
             f.buffer.write(y.encode_prof(index))
 
-    
+
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 

@@ -355,7 +355,7 @@ class Data(object):
                 return
 
             if solver.generation() == num - 1:
-                func.gen = ''
+                func.gen = 'pkg'
             else:
                 func.gen = 'tow' + str(solver.generation())
 
@@ -431,7 +431,7 @@ def gen_towers(iface, distr):
 
     cc = data[0].data['func']['cc']
     dt = Data(cc, [x.data for x in data] + [box_0(cc)])
-    dt.prepare_funcs(3)
+    dt.prepare_funcs(4)
     dt.out()
 
     cnt = 0
