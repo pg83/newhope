@@ -30,7 +30,7 @@ def iter_darwin():
             m = y.dc(meta)
 
             n = {
-                'name': '-'.join(['clang'] + meta['kind'] + [y.burn(t)]),
+                'name': '-'.join(['clang'] + meta['kind']),
                 'version': y.burn(meta),
                 'meta': m,
                 'host': {'os': 'darwin', 'arch': 'x86_64'},
@@ -81,7 +81,7 @@ def iter_linux():
 
                 for libc in ('uclibc', 'musl', 'glibc'):
                     n = {
-                        'name': '-'.join(['clang'] + meta['kind'] + [y.burn(t)]),
+                        'name': '-'.join(['clang'] + meta['kind'] + [libc]),
                         'version': y.burn(meta),
                         'meta': m,
                         'host': {'os': 'linux', 'arch': 'x86_64', 'libc': libc},
