@@ -12,17 +12,26 @@ async def cli_pkg_search(args_):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('--fr', default='http://192.168.1.78', action='store', help='output repo')
-    p.add_argument('--list-dev', default=False, action='store_true', help='list dev packages')
+    p.add_argument('--list-all', default=False, action='store_true', help='list dev packages')
     p.add_argument('pkg', nargs=y.argparse.REMAINDER)
 
     args = p.parse_args(args_)
+
+    for p in search_pkgs(args):
+        y.info(p['path'], 'build at', p['ts'])
+
+
+def search_pkgs(args):
     index = fetch_url_data(args.fr + '/index')
-   
+    host = y.small_repr({'os': y.platform.system().lower(), 'arch': y.platform.machine()})
+
     def flt_index():
         for i in index:
-            if False and not args.list_dev:
+            if not args.list_all:
                 if i['path'].startswith('tow-'):
-                    pass
+                    y.debug('skip', i['path'])
+                elif host not in i['path']:
+                    y.debug('skip', i['path'])
                 else:
                     yield i
             else:
@@ -33,13 +42,10 @@ async def cli_pkg_search(args_):
 
     for i in index:
         for p in args.pkg:
-            if p in i['path']:
+            if '-' + p + '-' in i['path']:
                 by_time.append(i)
 
-    by_time = sorted(by_time, key=lambda x: x['ts'])
-
-    for p in by_time:
-        print p['path']
+    return sorted(by_time, key=lambda x: x['ts'])
 
 
 @y.main_entry_point
