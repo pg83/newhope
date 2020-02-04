@@ -3,9 +3,9 @@ import time
 import urllib.request as urllib2
 
 
-def fetch_index():
+def fetch_index(fr):
+    ulli
     
-
 
 @y.main_entry_point
 async def cli_pkg_add(args):
