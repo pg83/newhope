@@ -47,6 +47,7 @@ def group_by_cc():
 
 
 def find_toolchain_by_cc(cc):
+    print cc
     return y.dc(group_by_cc()[y.small_repr(cc)])
 
 

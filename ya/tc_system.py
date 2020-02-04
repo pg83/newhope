@@ -76,22 +76,21 @@ def iter_linux():
 
     def do_iter():
         for meta in iter_nodes():
-            for t in y.iter_all_targets():
-                m = y.dc(meta)
-
-                for libc in ('uclibc', 'musl', 'glibc'):
-                    n = {
-                        'name': '-'.join(['clang'] + meta['kind'] + [libc]),
-                        'version': y.burn(meta),
-                        'meta': m,
-                        'host': {'os': 'linux', 'arch': 'x86_64', 'libc': libc},
-                        'target': t,
-                    }
-
-                    yield y.dc({
-                        'node': n,
-                        'deps': [],
-                    })
+            m = y.dc(meta)
+            
+            for libc in ('uclibc', 'musl', 'glibc'):
+                n = {
+                    'name': '-'.join(['clang'] + meta['kind'] + [libc]),
+                    'version': y.burn(meta),
+                    'meta': m,
+                    'host': {'os': 'linux', 'arch': 'x86_64'},
+                    'target': {'os': 'linux', 'arch': 'x86_64', 'libc': libc},
+                }
+                
+                yield y.dc({
+                    'node': n,
+                    'deps': [],
+                })
 
     return list(do_iter())
 
