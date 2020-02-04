@@ -27,7 +27,7 @@ async def cli_pkg_search(args_):
                     yield i
             else:
                 yield i
-        
+
     index = list(flt_index())
     by_time = []
 
