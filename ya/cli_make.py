@@ -1,5 +1,5 @@
 @y.main_entry_point
-async def cli_pkg_make(arg):
+async def cli_dev_make(arg):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('-j', '--threads', default=1, action='store', help='set num threads')

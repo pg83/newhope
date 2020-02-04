@@ -1,4 +1,4 @@
-@y.main_entry_point
+@y.verbose_entry_point
 async def cli_cmd_subst(args):
     assert len(args) == 3
 

@@ -48,7 +48,7 @@ def search_pkgs(args):
     return sorted(by_time, key=lambda x: x['ts'])
 
 
-@y.main_entry_point
+@y.verbose_entry_point
 async def cli_pkg_sync_repo(args_):
     parser = y.argparse.ArgumentParser()
 
@@ -112,7 +112,7 @@ def step(where):
         urllib2.urlopen('http://138.68.80.104:81/' + data['id'], data=dt).read()
 
 
-@y.main_entry_point
+@y.verbose_entry_point
 async def cli_pkg_serve_repo1(args):
     where = args[0]
 
@@ -127,7 +127,7 @@ async def cli_pkg_serve_repo1(args):
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
-@y.main_entry_point
+@y.verbose_entry_point
 async def cli_pkg_serve_repo2(args_):
     parser = y.argparse.ArgumentParser()
 

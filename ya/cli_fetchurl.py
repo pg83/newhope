@@ -1,4 +1,4 @@
-@y.main_entry_point
+@y.verbose_entry_point
 async def cli_cmd_fetch(args):
     if len(args) > 1:
         url = args[0]

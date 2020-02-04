@@ -81,7 +81,7 @@ def prune_dir(d):
             y.os.symlink('../' * to.count('/') + fr, to)
 
 
-@y.main_entry_point
+@y.verbose_entry_point
 async def cli_cmd_prune(args):
     for a in args:
         fix_absolute_symlinks(a)
