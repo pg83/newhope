@@ -28,7 +28,7 @@ def iter_darwin():
     def do_iter():
         for meta in iter_nodes():
             m = y.dc(meta)
-            
+
             n = {
                 'name': '-'.join(['clang'] + meta['kind'] + [y.burn(t)]),
                 'version': y.burn(meta),
@@ -36,7 +36,7 @@ def iter_darwin():
                 'host': {'os': 'darwin', 'arch': 'x86_64'},
                 'target': {'os': 'darwin', 'arch': 'x86_64'},
             }
-            
+
             yield y.dc({
                 'node': n,
                 'deps': [],
