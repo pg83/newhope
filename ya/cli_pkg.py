@@ -48,7 +48,7 @@ def search_pkgs(args):
     return sorted(by_time, key=lambda x: x['ts'])
 
 
-@y.main_entry_point
+@y.verbose_entry_point
 async def cli_pkg_sync_repo(args_):
     parser = y.argparse.ArgumentParser()
 

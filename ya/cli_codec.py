@@ -1,6 +1,6 @@
 import os
 
-@y.main_entry_point
+@y.verbose_entry_point
 async def cli_cmd_codec(args):
     with y.without_color():
         so = y.sys.stdout

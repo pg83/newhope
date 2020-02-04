@@ -20,31 +20,20 @@ def small_repr(c):
     return cons_to_name_x(c)
 
 
-def iter_all_targets_0():
+def iter_all_targets():
     for a in ('x86_64',):
         yield {
             'arch': a,
             'os': 'darwin',
         }
 
-    for a in ('x86_64'):
-        yield {
-            'arch': a,
-            'libc': 'musl',
-            'os': 'linux',
-        }
-
+    for a in ('x86_64',):
         for libc in ('musl'):
             yield {
                 'arch': a,
                 'os': 'linux',
                 'libc': libc,
             }
-
-
-def iter_all_targets():
-    yield {'os': 'darwin', 'arch': 'x86_64'}
-    yield {'arch': 'x86_64', 'libc': 'musl', 'os': 'linux'}
 
 
 @y.singleton

@@ -1,5 +1,5 @@
 @y.main_entry_point
-async def cli_pkg_makefile(arg):
+async def cli_dev_makefile(arg):
     parser = y.argparse.ArgumentParser()
    
     parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
