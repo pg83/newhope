@@ -47,7 +47,6 @@ def group_by_cc():
 
 
 def find_toolchain_by_cc(cc):
-    print cc
     return y.dc(group_by_cc()[y.small_repr(cc)])
 
 
@@ -90,6 +89,7 @@ def join_tc_meta(tcs):
 
 def join_toolchains(info, tcs):
     nodes = [x['node'] for x in tcs]
+
     res = {
         'node': {
             'build': [],
@@ -142,12 +142,12 @@ def find_compiler_x(info):
     return list(do())[:10]
 
 
-def join_versions(deps):
-    def iter_v():
-        for d in deps:
-            yield y.restore_node_node(d)['version']
-
-    return '-'.join(iter_v())
+#def join_versions(deps):
+#    def iter_v():
+#        for d in deps:
+#            yield y.restore_node_node(d)['version']
+#
+#    return '-'.join(iter_v())
 
 
 @y.cached

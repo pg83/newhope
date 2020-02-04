@@ -28,7 +28,7 @@ def iter_all_targets():
         }
 
     for a in ('x86_64',):
-        for libc in ('musl'):
+        for libc in ('musl',):
             yield {
                 'arch': a,
                 'os': 'linux',

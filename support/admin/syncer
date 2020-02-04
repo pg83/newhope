@@ -1,7 +1,0 @@
-#!/sbin/openrc-run
-
-name="sync build ad prod repos"
-command="/root/newhope/cli"
-command_args="pkg sync repo --fr /media/build/dev/r --to /media/storage/pkg_repo"
-command_background=true
-pidfile="/run/syncer.pid"

@@ -16,9 +16,6 @@ async def cli_dev_make(arg):
     args = p.parse_args(arg)
     local = not args.production
 
-    if local and args.install_dir:
-        raise Exception('do not do this, kids, at home')
-
     def calc_root():
         if args.root:
             return args.root
@@ -52,6 +49,9 @@ async def cli_dev_make(arg):
         if args.production:
             yield ('$PD', '/private')
 
+        if args.install_dir:
+            yield ('$PD', args.install_dir)
+    
         yield ('$PREFIX', root)
         yield ('$UPM', y.globals.script_path)
 
