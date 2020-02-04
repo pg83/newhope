@@ -7,6 +7,10 @@ def fetch_url_data(fr):
     return y.decode_prof(y.fetch_data(fr))
 
 
+async def cli_pkg_init(args_)
+    p.add_argument('--fr', default='http://index.samokhvalov.xyz', action='store', help='output repo')
+    p.add_argument('--distro', default='common_distro', action='atore', help='initial repo content')
+
 @y.main_entry_point
 async def cli_pkg_search(args_):
     p = y.argparse.ArgumentParser()
@@ -65,35 +69,33 @@ async def cli_pkg_sync_repo(args_):
     except OSError:
         pass
 
-    if True:
-        for fr in args.fr:
-            for x in y.os.listdir(fr):
-                z = y.os.path.join(args.to, x)
+    for fr in args.fr:
+        for x in y.os.listdir(fr):
+            z = y.os.path.join(args.to, x)
 
-                if y.os.path.isfile(z):
-                    y.info('already exists', z)
-                else:
-                    y.info('copy file ', x, ' to ', z)
-                    y.shutil.copyfile(y.os.path.join(fr, x), z + '.tmp')
-                    y.os.rename(z + '.tmp', z)
+            if y.os.path.isfile(z):
+                y.info('already exists', z)
+            else:
+                y.info('copy file ', x, ' to ', z)
+                y.shutil.copyfile(y.os.path.join(fr, x), z + '.tmp')
+                y.os.rename(z + '.tmp', z)
 
+    index = []
 
-        index = []
+    y.info('will write index')
 
-        y.info('will write index')
+    for f in sorted(y.os.listdir(args.to)):
+        if len(f) > 10:
+            p = y.os.path.join(args.to, f)
 
-        for f in sorted(y.os.listdir(args.to)):
-            if len(f) > 10:
-                p = y.os.path.join(args.to, f)
+            if f.endswith('-tmp'):
+                y.os.unlink(p)
+                continue
 
-                if f.endswith('-tmp'):
-                    y.os.unlink(p)
-                    continue
+            index.append({'path': f, 'length': y.os.path.getsize(p), 'ts': int(1000000 * y.os.path.getmtime(p))})
 
-                index.append({'path': f, 'length': y.os.path.getsize(p), 'ts': int(1000000 * y.os.path.getmtime(p))})
-
-        with open(args.to + '/index', 'w') as f:
-            f.buffer.write(y.encode_prof(index))
+    with open(args.to + '/index', 'w') as f:
+        f.buffer.write(y.encode_prof(index))
 
     
 from http.server import HTTPServer, BaseHTTPRequestHandler

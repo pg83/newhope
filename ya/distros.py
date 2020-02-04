@@ -14,4 +14,18 @@ def common_distr():
         'curl',
         'bzip2',
         'openssl',
+        'gzip',
+        'grep',
+        'gawk',
+        'sed',
+        'sqlite3',
+        'file',
     ]
+
+
+def distr_by_name(name):
+    return eval('y.' + name + '_distr')
+
+
+def all_distros():
+    return common_distr()
