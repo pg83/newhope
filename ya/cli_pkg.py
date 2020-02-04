@@ -3,11 +3,20 @@ import time
 import urllib.request as urllib2
 
 
+def fetch_index(fr):
+    ulli
+    
+
 @y.main_entry_point
 async def cli_pkg_add(args):
-    pass
+    parser = y.argparse.ArgumentParser()
 
+    parser.add_argument('--fr', default=[], action='append', help='input repo')
+    parser.add_argument('--to', default='', action='store', help='output repo')
 
+    args = parser.parse_args(args_)
+
+    
 @y.main_entry_point
 async def cli_pkg_sync_repo(args_):
     parser = y.argparse.ArgumentParser()
