@@ -11,7 +11,7 @@ def fetch_url_data(fr):
 async def cli_pkg_search(args_):
     p = y.argparse.ArgumentParser()
 
-    p.add_argument('--fr', default='http://192.168.1.78', action='store', help='output repo')
+    p.add_argument('--fr', default='http://index.samokhvalov.xyz', action='store', help='output repo')
     p.add_argument('--list-all', default=False, action='store_true', help='list dev packages')
     p.add_argument('pkg', nargs=y.argparse.REMAINDER)
 
@@ -28,7 +28,7 @@ def search_pkgs(args):
     def flt_index():
         for i in index:
             if not args.list_all:
-                if i['path'].startswith('tow-'):
+                if i['path'].startswith('tow'):
                     y.debug('skip', i['path'])
                 elif host not in i['path']:
                     y.debug('skip', i['path'])
@@ -95,7 +95,7 @@ async def cli_pkg_sync_repo(args_):
         with open(args.to + '/index', 'w') as f:
             f.buffer.write(y.encode_prof(index))
 
-            
+    
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 

@@ -77,7 +77,7 @@ def iter_linux():
     def do_iter():
         for meta in iter_nodes():
             m = y.dc(meta)
-            
+    
             for libc in ('uclibc', 'musl', 'glibc'):
                 n = {
                     'name': '-'.join(['clang'] + meta['kind'] + [libc]),
@@ -86,7 +86,7 @@ def iter_linux():
                     'host': {'os': 'linux', 'arch': 'x86_64'},
                     'target': {'os': 'linux', 'arch': 'x86_64', 'libc': libc},
                 }
-                
+        
                 yield y.dc({
                     'node': n,
                     'deps': [],
