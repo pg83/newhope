@@ -117,7 +117,7 @@ async def cli_pkg_serve_repo1(args):
             print(e)
             time.sleep(0.2)
 
-    
+
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
@@ -133,13 +133,13 @@ async def cli_pkg_serve_repo2(args_):
     class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         def do_GET(self):
             y.info('incoming connection')
-    
+
             self.send_response(200)
             self.end_headers()
-    
+
             with open(args.fr + self.path, 'rb') as f:
                 self.wfile.write(f.read())
-    
+
     httpd = HTTPServer(('0.0.0.0', int(args.port)), SimpleHTTPRequestHandler)
     y.info('start server')
     httpd.serve_forever()
