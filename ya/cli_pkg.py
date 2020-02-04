@@ -11,6 +11,7 @@ async def cli_pkg_init(args_)
     p.add_argument('--fr', default='http://index.samokhvalov.xyz', action='store', help='output repo')
     p.add_argument('--distro', default='common_distro', action='atore', help='initial repo content')
 
+    
 @y.main_entry_point
 async def cli_pkg_search(args_):
     p = y.argparse.ArgumentParser()
@@ -97,7 +98,7 @@ async def cli_pkg_sync_repo(args_):
     with open(args.to + '/index', 'w') as f:
         f.buffer.write(y.encode_prof(index))
 
-    
+
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 

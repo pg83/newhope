@@ -14,12 +14,16 @@ def common_distr():
         'curl',
         'bzip2',
         'openssl',
-        'gzip',
-        'grep',
-        'gawk',
-        'sed',
         'sqlite3',
+        'diffutils',
         'file',
+        'gawk',
+        'grep',
+        'gzip',
+        'make',
+        'ninja',
+        'pkg-config',
+        'sed',
     ]
 
 

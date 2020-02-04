@@ -51,7 +51,7 @@ async def cli_dev_make(arg):
 
         if args.install_dir:
             yield ('$PD', args.install_dir)
-    
+
         yield ('$PREFIX', root)
         yield ('$UPM', y.globals.script_path)
 
