@@ -5,7 +5,7 @@ import urllib.request as urllib2
 
 def fetch_url_data(fr):
     return y.decode_prof(y.fetch_data(fr))
-    
+
 
 @y.main_entry_point
 async def cli_pkg_search(args_):
@@ -14,7 +14,7 @@ async def cli_pkg_search(args_):
     p.add_argument('--fr', default='http://192.168.1.78', action='store', help='output repo')
     p.add_argument('--list-dev', default=False, action='store_true', help='list dev packages')
     p.add_argument('pkg', nargs=y.argparse.REMAINDER)
-    
+
     args = p.parse_args(args_)
     index = fetch_url_data(args.fr + '/index')
    
@@ -27,10 +27,10 @@ async def cli_pkg_search(args_):
                     yield i
             else:
                 yield i
-                
+        
     index = list(flt_index())
     by_time = []
-    
+
     for i in index:
         for p in args.pkg:
             if p in i['path']:
@@ -40,8 +40,8 @@ async def cli_pkg_search(args_):
 
     for p in by_time:
         print p['path']
-    
-    
+
+
 @y.main_entry_point
 async def cli_pkg_sync_repo(args_):
     parser = y.argparse.ArgumentParser()
