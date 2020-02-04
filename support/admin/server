@@ -1,7 +1,0 @@
-#!/sbin/openrc-run
-
-name="serve repos"
-command="/root/newhope/cli"
-command_args="pkg serve repo --fr /media/storage/pkg_repo"
-command_background=true
-pidfile="/run/server.pid"

@@ -83,7 +83,7 @@ def iter_linux():
                     'name': '-'.join(['clang'] + meta['kind'] + [libc]),
                     'version': y.burn(meta),
                     'meta': m,
-                    'host': {'os': 'linux', 'arch': 'x86_64'},
+                    'host': {'os': 'linux', 'arch': 'x86_64', 'libc': libc},
                     'target': {'os': 'linux', 'arch': 'x86_64', 'libc': libc},
                 }
                 

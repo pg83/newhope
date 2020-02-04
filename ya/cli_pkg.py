@@ -65,7 +65,7 @@ async def cli_pkg_sync_repo(args_):
     except OSError:
         pass
 
-    while True:
+    if True:
         for fr in args.fr:
             for x in y.os.listdir(fr):
                 z = y.os.path.join(args.to, x)

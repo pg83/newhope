@@ -1,5 +1,5 @@
 LC_ALL=C
-THRS?=5
+THRS?=3
 
 tests: test_coro test_self test_pslic test_offload test_ctx test_queue test_pubsub test_template test_wait test_green	test_preproc
 
