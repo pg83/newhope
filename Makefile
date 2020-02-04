@@ -40,7 +40,7 @@ make:
 	./cli make -j16 -v
 
 make-debug:
-	./cli make -j1 -vm ll=debug
+	./cli make --install-dir /pkg -j1 -vm ll=debug
 
 linux:
 	./cli makefile --os linux | ./cli make -f - -j$(THRS)
