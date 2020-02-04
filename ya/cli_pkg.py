@@ -7,50 +7,32 @@ def fetch_url_data(fr):
     return y.decode_prof(y.fetch_data(fr))
 
 
-async def cli_pkg_init(args_)
-    p.add_argument('--fr', default='http://index.samokhvalov.xyz', action='store', help='output repo')
-    p.add_argument('--distro', default='common_distro', action='atore', help='initial repo content')
+@y.main_entry_point
+async def cli_pkg_init(args_):
+    p = y.argparse.ArgumentParser()
 
-    
+    p.add_argument('--fr', default='http://index.samokhvalov.xyz', action='store', help='output repo')
+    p.add_argument('--distro', default='common', action='store', help='initial repo content')
+    p.add_argument('--barebone', default=False, action='store_const', const=True, help='prepare structure for barebone install')
+
+    args = p.parse_args(args_)
+
+    assert not args.barebone
+
+
 @y.main_entry_point
 async def cli_pkg_search(args_):
     p = y.argparse.ArgumentParser()
 
-    p.add_argument('--fr', default='http://index.samokhvalov.xyz', action='store', help='output repo')
+    p.add_argument('--target', default='lmx8', action='store', help='shorter form of target info')
+    p.add_argument('--where', default='/', action='store', help='where to find installation')
     p.add_argument('--list-all', default=False, action='store_true', help='list dev packages')
     p.add_argument('pkg', nargs=y.argparse.REMAINDER)
 
     args = p.parse_args(args_)
 
-    for p in search_pkgs(args):
+    for p in y.PkgMngr(args.target, args.where).search_pkgs(args.pkg, list_all=args.list_all):
         y.info(p['path'], 'build at', p['ts'])
-
-
-def search_pkgs(args):
-    index = fetch_url_data(args.fr + '/index')
-    host = y.small_repr({'os': y.platform.system().lower(), 'arch': y.platform.machine()})
-
-    def flt_index():
-        for i in index:
-            if not args.list_all:
-                if i['path'].startswith('tow'):
-                    y.debug('skip', i['path'])
-                elif host not in i['path']:
-                    y.debug('skip', i['path'])
-                else:
-                    yield i
-            else:
-                yield i
-
-    index = list(flt_index())
-    by_time = []
-
-    for i in index:
-        for p in args.pkg:
-            if '-' + p + '-' in i['path']:
-                by_time.append(i)
-
-    return sorted(by_time, key=lambda x: x['ts'])
 
 
 @y.verbose_entry_point
