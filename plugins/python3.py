@@ -10,10 +10,10 @@ def python30():
             $(APPLY_EXTRA_PLAN_0)
             $(APPLY_EXTRA_PLAN_1)
 
-            cat Setup | sed -e 's/OPENSSL_INCLUDES/$OPENSSL_INCLUDES/' | sed -e 's/LIBFFI_CFLAGS/$LIBFFI_CFLAGS/' > tmp
+            cat Setup | sed -e 's/OPENSSL_INCLUDE/$OPENSSL_INCLUDES/' | sed -e 's/LIBFFI_CFLAGS/$LIBFFI_CFLAGS/' > tmp
             cp tmp Modules/Setup
 
-            $YSHELL ./configure $COFLAGS --prefix=$IDIR --with-system-libmpdec --enable-static --disable-shared --with-signal-module --with-system-ffi || exit1
+            $YSHELL ./configure $COFLAGS --prefix=$IDIR --with-system-libmpdec --enable-static --disable-shared --with-signal-module || exit1
 
             $YMAKE -j $NTHRS || exit 1
             PY=`which ./python.exe || which ./python`

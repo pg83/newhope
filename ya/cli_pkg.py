@@ -112,18 +112,6 @@ def step(where):
         urllib2.urlopen('http://138.68.80.104:81/' + data['id'], data=dt).read()
 
 
-@y.verbose_entry_point
-async def cli_pkg_serve_repo1(args):
-    where = args[0]
-
-    while True:
-        try:
-            step(where)
-        except Exception as e:
-            print(e)
-            time.sleep(0.2)
-
-
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
@@ -140,11 +128,14 @@ async def cli_pkg_serve_repo2(args_):
         def do_GET(self):
             y.info('incoming connection')
 
+            with open(args.fr + self.path, 'rb') as f:
+                data = f.read()
+
             self.send_response(200)
+            self.send_header('content-length', str(len(data)))
             self.end_headers()
 
-            with open(args.fr + self.path, 'rb') as f:
-                self.wfile.write(f.read())
+            self.wfile.write(data)
 
     httpd = HTTPServer(('0.0.0.0', int(args.port)), SimpleHTTPRequestHandler)
     y.info('start server')
