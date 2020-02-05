@@ -35,6 +35,19 @@ async def cli_pkg_search(args_):
         y.info(p['path'], 'build at', p['ts'])
 
 
+@y.main_entry_point
+async def cli_pkg_add(args_):
+    p = y.argparse.ArgumentParser()
+
+    p.add_argument('--where', default='/', action='store', help='where to find installation')
+    p.add_argument('pkg', nargs=y.argparse.REMAINDER)
+
+    args = p.parse_args(args_)
+
+    for p in y.PkgMngr(args.target, args.where).search_pkgs(args.pkg, list_all=args.list_all):
+        y.info(p['path'], 'build at', p['ts'])
+
+        
 @y.verbose_entry_point
 async def cli_pkg_sync_repo(args_):
     parser = y.argparse.ArgumentParser()

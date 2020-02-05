@@ -14,6 +14,7 @@ def libarchive0():
             'provides': [
                 {'lib': 'archive'},
                 {'env': 'YTAR', 'value': '{pkgroot}/bin/bsdtar'},
+                {'env': 'YBSDTAR', 'value': '{pkgroot}/bin/bsdtar'},
             ],
         },
     }

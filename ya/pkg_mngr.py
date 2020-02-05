@@ -18,6 +18,12 @@ class PkgMngr(object):
         self.path = path
         self.info = info
 
+    def get_dir(self, *args):
+        return y.os.path.join(self.path, *args)
+
+    def get_dir_simple(self, args):
+        return (self.path + args).replace('//', '/')
+        
     def list_dir(self, path):
         where = y.os.path.join(self.path, path)
 
@@ -52,6 +58,7 @@ class PkgMngr(object):
             y.info('will fetch', f)
     
             for x in y.decode_prof(y.fetch_data(f)):
+                x['index'] = f
                 yield x
 
     def collect_indices(self):
@@ -61,7 +68,7 @@ class PkgMngr(object):
         def flt_index():
             for i in self.collect_indices():
                 if list_all:
-                    yield i  
+                    yield i
                 elif i['path'].startswith('tow'):
                     y.debug('skip', i['path'], 'skip dev path')
                 elif self.info not in i['path']:
@@ -78,3 +85,25 @@ class PkgMngr(object):
                     by_time.append(i)
 
         return sorted(by_time, key=lambda x: x['ts'])
+
+    def pkg_list(self, pkgs):
+        dd = {}
+        
+        for l in self.search_pkgs(pkgs):
+            p1, p2 = l['path'].split('-v5')
+            dd[p1] = l
+            
+        if len(dd) != pkgs:
+            raise Exception('not all packages found')
+
+        return dd.values()
+    
+    @y.contextlib.contextmanager
+    def open_db():
+        with y.open_simple_db(y.os.path.join(self.path, 'etc', 'db', 'sys.db')) as db:
+            yield PropertyDB(db)
+    
+    def install(self, pkg):
+        lst = self.pkg_list(pkgs)
+        
+        print lst

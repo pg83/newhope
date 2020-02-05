@@ -3,8 +3,8 @@ source_all() {
     
     vars=$(echo $@ | tr ' ' '\n' | grep '/build$' | grep -v 'build-scripts' | tr '\n' ' ')
     
-    for i in $vars
-    do
+    for i in $vars; do
+        echo "source $i"
         source $i
     done
 }

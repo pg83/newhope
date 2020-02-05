@@ -11,7 +11,7 @@ def bash0():
             export LIBS="$LDFLAGS $LIBS"
             source fetch "https://ftp.gnu.org/gnu/bash/bash-{version}.tar.gz" 1
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --without-bash-malloc --disable-nls  {extra}
-            $YMAKE -j $NTHRS
+            $YMAKE LIBS_FOR_BUILD="$LIBS" -j $NTHRS
             $YMAKE install
         """.replace('{extra}', ' '.join(do())),
         'version': '5.0',

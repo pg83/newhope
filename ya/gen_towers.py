@@ -189,6 +189,26 @@ class Func(object):
         return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(self.data.special, must_have=False))
 
 
+class AllFunc(Func):
+    def __init__(self, deps, data):
+        def func():
+            return {
+                'meta': {
+                    'depends': deps
+                },
+            }
+        
+        x = {
+            'kind': ['all'],
+            'code': func,
+            'base': 'all',
+        }
+
+        self.gen = 'all'
+        
+        Func.__init__(self, x, data)
+        
+
 class SpecialFunc(Func):
     def __init__(self, x, data):
         Func.__init__(self, x, data)
@@ -274,9 +294,10 @@ class SolverWrap(object):
 
 
 class Data(object):
-    def __init__(self, info, data):
+    def __init__(self, distr, info, data):
         self.info = info
-
+        self.distr = distr
+        
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
@@ -293,6 +314,8 @@ class Data(object):
         self.by_name = dict((x.base, x) for x in self.data)
         self.by_kind = y.collections.defaultdict(list)
 
+        self.by_name['all'] = AllFunc(self.distr, self)
+        
         for x in self.data:
             for k in x.kind:
                 self.by_kind[k].append(x.base)
@@ -351,26 +374,30 @@ class Data(object):
         solver = SolverWrap(self.data)
 
         for func in solver.iter_infinity():
-            if solver.generation() >= num:
-                return
-
+            if solver.generation() >= num:       
+                return self.add_func(self.by_name['all'])
+                
             if solver.generation() == num - 1:
-                func.gen = 'pkg'
+                func.gen = ''
             else:
                 func.gen = 'tow' + str(solver.generation())
 
-            func.i = len(self.func_by_num)
-            self.func_by_num.append(func)
-            func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)
-            self.dd[func.base].append(func.i)
-            func.codec = 'pg'
+            self.add_func(func)
+
+    def add_func(self, func):
+        func.i = len(self.func_by_num)
+        self.func_by_num.append(func)
+        func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)
+        self.dd[func.base].append(func.i)
+        func.codec = 'pg'
 
     def find_first(self, name):
         return self.dd.get(name, [-1])[0]
 
-    def register(self, distr):
-        for v in [self.func_by_num[x] for x in self.last_elements(distr, must_have=True)]:
-            yield y.ELEM({'func': v.z})
+    def register(self):
+        v = self.func_by_num[-1]
+        print v
+        yield y.ELEM({'func': v.z})
 
     def iter_deps(self):
         for f in self.func_by_num:
@@ -430,14 +457,14 @@ def gen_towers(iface, distr):
         yield y.EOP()
 
     cc = data[0].data['func']['cc']
-    dt = Data(cc, [x.data for x in data] + [box_0(cc)])
-    dt.prepare_funcs(4)
+    dt = Data(distr, cc, [x.data for x in data] + [box_0(cc)])
+    dt.prepare_funcs(3)
     dt.out()
 
     cnt = 0
 
     try:
-        for x in dt.register(distr):
+        for x in dt.register():
             cnt += 1
             yield x  
     except IndexError:

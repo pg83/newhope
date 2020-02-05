@@ -16,9 +16,6 @@ class FuncAggr(object):
 def gen_package_name(x):
     res = x['gen']
 
-    if res == 'tow2':
-        res = ''
-
     if res:
         res += '-'
 

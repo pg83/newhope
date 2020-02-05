@@ -2,8 +2,9 @@
 def bsdtar0():
     return {
         'code': '''
-             cp -R $(dirname $YTAR)/bin $IDIR/
-             cf $IDIR/bin
+             mkdir "$IDIR/bin"
+             cp "$YBSDTAR" "$IDIR/bin"
+             cd "$IDIR/bin"
              ln -s bsdtar tar
         ''',
         'meta': {

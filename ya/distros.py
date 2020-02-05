@@ -1,9 +1,9 @@
 def common_distr():
     return [
+        'base',
         'superbox',
         'mc-slang',
         'yash',
-        'bash',
         'dash',
         'p7zip',
         'unrar',
