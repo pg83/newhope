@@ -15,7 +15,9 @@ def small_distr():
 
 def common_distr():
     return [
+        '@small',
         'mc-slang',
+        'mc-ncurses',
         'yash',
         'p7zip',
         'unrar',

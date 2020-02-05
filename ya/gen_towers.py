@@ -376,7 +376,7 @@ class Data(object):
         for func in solver.iter_infinity():
             if solver.generation() >= num:   
                 return self.add_func(self.by_name['all'])
-        
+
             if solver.generation() == num - 1:
                 func.gen = ''
             else:

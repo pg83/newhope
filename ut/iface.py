@@ -97,7 +97,7 @@ class IFace(dict):
         self.add_lookup(lambda x: self.find_module(x))
         self.add_lookup(lambda x: self.create_std(sys.modules[x]))
         self.add_lookup(lambda x: self.create_std(__import__(x)))
-        
+
     def clear_cache(self):
         for k in list(self.keys()):
             if k.startswith('_'):

@@ -3,7 +3,7 @@ def base0():
     return {
         'code': """
             cd $IDIR
-            mkdir -p etc etc/alt/ etc/upm/sources etc/upm/db pkg pkg/cache srv bin 
+            mkdir -p etc etc/alt/ etc/upm pkg pkg/cache srv bin dev
             touch pkg/profile
             echo '. ../pkg/profile' > etc/profile
             ln -s etc/alt/sh bin/sh 

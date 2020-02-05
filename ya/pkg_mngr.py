@@ -5,13 +5,28 @@ class InstPropertyDB(object):
         if 'inst' not in db:
             db['inst'] = []
 
+        if 'idx' not in db:
+            db['idx'] = []
+
     def inst(self):
         return self.db['inst']
 
     def set_inst(self, v):
         self.db['inst'] = v
-        
-            
+
+    def target(self):
+        return self.db['target']
+
+    def set_target(self, target):
+        self.db['target'] = target
+
+    def add_index_file(self, f):
+        self.db['idx'].append(f)
+
+    def index_files(self):
+        return self.db['idx']
+
+    
 def find_file(pattern):
     p = y.os.path.abspath(y.os.getcwd())
 
@@ -36,17 +51,21 @@ def find_file(pattern):
 
 class PkgMngr(object):
     def __init__(self, info=None, path=None):
+        trf = 'etc/upm/sys.db'
+
         if not info:
             try:
                 if path:
-                    tgpath = y.os.path.join(path, 'etc/upm/target')
+                    tgpath = y.os.path.join(path, trf)
                 else:
-                    tgpath = find_file('etc/upm/target')
-            
-                with open(tgpath, 'r') as f:
-                    info = f.read().strip()
+                    tgpath = find_file(trf)
 
-                path = y.os.path.abspath(tgpath)[:-15]
+                self.path = y.os.path.abspath(tgpath)[:-len(trf)]
+        
+                with self.open_db() as db:
+                    info = db.target()
+
+                path = self.path
             except OSError:
                 pass
 
@@ -56,8 +75,6 @@ class PkgMngr(object):
         self.path = path
         self.info = info
 
-        print self.path, self.info
-
     def get_dir(self, *args):
         return y.os.path.join(self.path, *args)
 
@@ -66,9 +83,6 @@ class PkgMngr(object):
 
     def upm_dir(self):
         return self.etc_dir() + '/upm'
-
-    def target_file(self):
-        return self.upm_dir() + '/target'
 
     def get_dir_simple(self, args):
         return (self.path + args).replace('//', '/')
@@ -86,7 +100,7 @@ class PkgMngr(object):
                     yield x
 
         return list(do())
-                    
+            
     def list_dir(self, path):
         where = y.os.path.join(self.path, path)
 
@@ -99,19 +113,8 @@ class PkgMngr(object):
             yield x, y.os.path.join(x, where)
 
     def get_index_files_0(self):
-        for p in sorted([p for x, p in self.list_dir('/etc/upm')]):
-            y.info('will read', p, 'for index links')
-
-            with open(p, 'r') as f:
-                for x in f.read().split('\n'):
-                    x = x.strip()
-
-                    if x:
-                        y.info('got', x)
-        
-                        yield x
-
-        yield 'http://index.samokhvalov.xyz/index'
+        with self.open_db() as db:
+            yield from db.index_files()
 
     def get_index_files(self):
         return list(self.get_index_files_0())
@@ -136,7 +139,7 @@ class PkgMngr(object):
 
     def resolve_groups(self, pkgs):
         return y.uniq_list_x(self.resolve_groups_0(pkgs))
-                
+        
     def search_pkgs(self, pkgs, list_all=False):
         def flt_index():
             for i in self.collect_indices():
@@ -166,15 +169,17 @@ class PkgMngr(object):
         for l in self.search_pkgs(pkgs):
             p1, p2 = l['path'].split('-v5')
             dd[p1] = l
-    
-        if len(dd) != len(pkgs):
-            raise Exception('not all packages found ' + str(frozenset(dd.keys()) - frozenset(pkgs)))
+
+        diff = frozenset([x.split('-')[0] for x in pkgs]) - frozenset([x.split('-')[0] for x in dd.keys()])
+
+        if diff:
+            raise Exception('not all packages found ' + str(diff))
 
         return list(dd.values())
 
     @y.contextlib.contextmanager
     def open_db(self):
-        with y.open_simple_db(y.os.path.join(self.path, 'etc', 'upm', 'db', 'sys.db')) as db:
+        with y.open_simple_db(y.os.path.join(self.path, 'etc', 'upm', 'sys.db')) as db:
             yield InstPropertyDB(db)
 
     def install(self, pkgs):
@@ -185,7 +190,7 @@ class PkgMngr(object):
                 self.apply_db(db)
         except Exception as e:
             y.error('in install: ', e)
-            
+    
             self.revert_changes()
 
             raise
@@ -193,11 +198,11 @@ class PkgMngr(object):
     def revert_changes(self):
         with self.open_db() as db:
             self.apply_db(db)
-            
+    
     def apply_db(self, db):
         y.info('apply actual changes')
         self.actual_install(db.inst())
-    
+
     def actual_install(self, pkgs):
         lst = self.pkg_list(pkgs)
 
@@ -206,9 +211,9 @@ class PkgMngr(object):
 
             if y.os.path.isdir(ppath):
                 y.info('skip', ppath)
-                
+        
                 continue
-            
+    
             data = self.fetch_package(p)
             path = y.os.path.join(self.pkg_cache_dir(), p['path']) + '.tar'
 
@@ -217,21 +222,19 @@ class PkgMngr(object):
 
             ppath_tmp = self.pkg_dir() + '/.' + p['path']
             ppath = self.pkg_dir() + '/' + p['path']
-    
+
             y.os.makedirs(ppath_tmp)
             y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
 
         ap = self.all_packs()
 
         with open(self.pkg_dir() + '/path', 'w') as f:
-            f.write('export PATH=' + ':'.join([(self.pkg_dir() + x) for x in ap]))
-        
+            f.write('export PATH=' + ':'.join([('/pkg/' + x + '/bin') for x in ap]))
+
         for x in frozenset(ap) - frozenset([x['path'] for x in lst]):
             y.warning('remove stale package', x)
             y.shutil.rmtree(y.os.path.join(self.pkg_dir(), x))
 
-        
-            
 
     def fetch_package(self, pkg):
         y.info('will fetch package{br}', pkg['path'], '{}')
@@ -244,6 +247,10 @@ class PkgMngr(object):
         except OSError:
             pass
 
+        with self.open_db() as db:
+            db.set_target(self.info)
+            db.add_index_file('http://index.samokhvalov.xyz/index')
+    
         base = self.pkg_list(['base'])[0]
 
         y.os.chdir(self.path)
@@ -251,6 +258,3 @@ class PkgMngr(object):
         with open(base['path'] + '.tar', 'wb') as f:
             f.write(y.decode_prof(self.fetch_package(base)))
             y.os.system('tar -xf *.tar && rm -rf log base* build')
-
-        with open(self.target_file(), 'w') as f:
-            f.write(self.info)
