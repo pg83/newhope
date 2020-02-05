@@ -9,7 +9,13 @@ def box0():
                       (cd $(dirname $i) && $YTAR -v -cf - .) | (cd $IDIR/ && $YTAR -v -Uxf -)
                  done
              }
+
              copy_many $@
+
+             rm -rf $IDIR/include
+             rm -rf $IDIR/share
+             rm -rf $IDIR/lib
+             rm -rf $IDIR/tools 
         ''',
         'meta': {
             'kind': ['tool'],

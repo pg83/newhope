@@ -100,7 +100,7 @@ class PkgMngr(object):
                     yield x
 
         return list(do())
-    
+
     def list_dir(self, path):
         where = y.os.path.join(self.path, path)
 
