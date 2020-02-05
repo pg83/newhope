@@ -51,7 +51,12 @@ async def cli_pkg_add(args_):
     y.PkgMngr(path=args.where).install(args.pkg)
 
 
+@y.main_entry_point
+async def cli_pkg_showdb(args_):
+   with y.PkgMngr().open_db() as db:
+       print db.db
 
+    
 @y.verbose_entry_point
 async def cli_pkg_sync_repo(args_):
     parser = y.argparse.ArgumentParser()

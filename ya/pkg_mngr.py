@@ -1,3 +1,17 @@
+class InstPropertyDB(object):
+    def __init__(self, db):
+        self.db = db
+
+        if 'inst' not in db:
+            db['inst'] = []
+
+    def inst(self):
+        return self.db['inst']
+
+    def set_inst(self, v):
+        self.db['inst'] = v
+        
+            
 def find_file(pattern):
     p = y.os.path.abspath(y.os.getcwd())
 
@@ -65,6 +79,14 @@ class PkgMngr(object):
     def pkg_dir(self):
         return self.get_dir('pkg')
 
+    def all_packs(self):
+        def do():
+            for x, _ in self.list_dir(self.pkg_dir()):
+                if '-v5' in x:
+                    yield x
+
+        return list(do())
+                    
     def list_dir(self, path):
         where = y.os.path.join(self.path, path)
 
@@ -105,6 +127,16 @@ class PkgMngr(object):
     def collect_indices(self):
         return list(self.collect_indices_0())
 
+    def resolve_groups_0(self, pkgs):
+        for g in pkgs:
+            if g[0] == '@':
+                yield from self.resolve_groups_0(y.distr_by_name(g[1:])())
+            else:
+                yield g
+
+    def resolve_groups(self, pkgs):
+        return y.uniq_list_x(self.resolve_groups_0(pkgs))
+                
     def search_pkgs(self, pkgs, list_all=False):
         def flt_index():
             for i in self.collect_indices():
@@ -128,6 +160,7 @@ class PkgMngr(object):
         return sorted(by_time, key=lambda x: x['ts'])
 
     def pkg_list(self, pkgs):
+        pkgs = self.resolve_groups(pkgs)
         dd = {}
 
         for l in self.search_pkgs(pkgs):
@@ -135,19 +168,47 @@ class PkgMngr(object):
             dd[p1] = l
     
         if len(dd) != len(pkgs):
-            raise Exception('not all packages found ' + str(dd))
+            raise Exception('not all packages found ' + str(frozenset(dd.keys()) - frozenset(pkgs)))
 
         return list(dd.values())
 
     @y.contextlib.contextmanager
-    def open_db():
-        with y.open_simple_db(y.os.path.join(self.path, 'etc', 'db', 'sys.db')) as db:
-            yield PropertyDB(db)
+    def open_db(self):
+        with y.open_simple_db(y.os.path.join(self.path, 'etc', 'upm', 'db', 'sys.db')) as db:
+            yield InstPropertyDB(db)
 
     def install(self, pkgs):
+        try:
+            with self.open_db() as db:
+                y.info('write next state')
+                db.set_inst(y.uniq_list_x(db.inst() + pkgs))
+                self.apply_db(db)
+        except Exception as e:
+            y.error('in install: ', e)
+            
+            self.revert_changes()
+
+            raise
+
+    def revert_changes(self):
+        with self.open_db() as db:
+            self.apply_db(db)
+            
+    def apply_db(self, db):
+        y.info('apply actual changes')
+        self.actual_install(db.inst())
+    
+    def actual_install(self, pkgs):
         lst = self.pkg_list(pkgs)
 
         for p in lst:
+            ppath = self.pkg_dir() + '/' + p['path']
+
+            if y.os.path.isdir(ppath):
+                y.info('skip', ppath)
+                
+                continue
+            
             data = self.fetch_package(p)
             path = y.os.path.join(self.pkg_cache_dir(), p['path']) + '.tar'
 
@@ -159,7 +220,18 @@ class PkgMngr(object):
     
             y.os.makedirs(ppath_tmp)
             y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
+
+        ap = self.all_packs()
+
+        with open(self.pkg_dir() + '/path', 'w') as f:
+            f.write('export PATH=' + ':'.join([(self.pkg_dir() + x) for x in ap]))
         
+        for x in frozenset(ap) - frozenset([x['path'] for x in lst]):
+            y.warning('remove stale package', x)
+            y.shutil.rmtree(y.os.path.join(self.pkg_dir(), x))
+
+        
+            
 
     def fetch_package(self, pkg):
         y.info('will fetch package{br}', pkg['path'], '{}')
