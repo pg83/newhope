@@ -12,20 +12,24 @@ async def cli_pkg_init(args_):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('--fr', default='http://index.samokhvalov.xyz', action='store', help='output repo')
-    p.add_argument('--distro', default='common', action='store', help='initial repo content')
     p.add_argument('--barebone', default=False, action='store_const', const=True, help='prepare structure for barebone install')
+    p.add_argument('--where', default='.', action='store', help='where to find installation')
+    p.add_argument('--target', default='lmx8', action='store', help='shorter form of target info')
 
     args = p.parse_args(args_)
+    where = y.os.path.abspath(args.where)
 
     assert not args.barebone
+
+    y.PkgMngr(args.target, where).init_place()
 
 
 @y.main_entry_point
 async def cli_pkg_search(args_):
     p = y.argparse.ArgumentParser()
 
-    p.add_argument('--target', default='lmx8', action='store', help='shorter form of target info')
-    p.add_argument('--where', default='/', action='store', help='where to find installation')
+    p.add_argument('--target', default=None, action='store', help='shorter form of target info')
+    p.add_argument('--where', default=None, action='store', help='where to find installation')
     p.add_argument('--list-all', default=False, action='store_true', help='list dev packages')
     p.add_argument('pkg', nargs=y.argparse.REMAINDER)
 
@@ -39,15 +43,15 @@ async def cli_pkg_search(args_):
 async def cli_pkg_add(args_):
     p = y.argparse.ArgumentParser()
 
-    p.add_argument('--where', default='/', action='store', help='where to find installation')
+    p.add_argument('--where', default=None, action='store', help='where to find installation')
     p.add_argument('pkg', nargs=y.argparse.REMAINDER)
 
     args = p.parse_args(args_)
 
-    for p in y.PkgMngr(args.target, args.where).search_pkgs(args.pkg, list_all=args.list_all):
-        y.info(p['path'], 'build at', p['ts'])
+    y.PkgMngr(path=args.where).install(args.pkg)
 
-        
+
+
 @y.verbose_entry_point
 async def cli_pkg_sync_repo(args_):
     parser = y.argparse.ArgumentParser()

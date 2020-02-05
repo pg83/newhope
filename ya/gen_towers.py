@@ -197,7 +197,7 @@ class AllFunc(Func):
                     'depends': deps
                 },
             }
-        
+
         x = {
             'kind': ['all'],
             'code': func,
@@ -205,9 +205,9 @@ class AllFunc(Func):
         }
 
         self.gen = 'all'
-        
+
         Func.__init__(self, x, data)
-        
+
 
 class SpecialFunc(Func):
     def __init__(self, x, data):
@@ -297,7 +297,7 @@ class Data(object):
     def __init__(self, distr, info, data):
         self.info = info
         self.distr = distr
-        
+
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
@@ -315,7 +315,7 @@ class Data(object):
         self.by_kind = y.collections.defaultdict(list)
 
         self.by_name['all'] = AllFunc(self.distr, self)
-        
+
         for x in self.data:
             for k in x.kind:
                 self.by_kind[k].append(x.base)
@@ -374,9 +374,9 @@ class Data(object):
         solver = SolverWrap(self.data)
 
         for func in solver.iter_infinity():
-            if solver.generation() >= num:       
+            if solver.generation() >= num:   
                 return self.add_func(self.by_name['all'])
-                
+        
             if solver.generation() == num - 1:
                 func.gen = ''
             else:
