@@ -100,7 +100,7 @@ class PkgMngr(object):
                     yield x
 
         return list(do())
-    
+
     def list_dir(self, path):
         where = y.os.path.join(self.path, path)
 
@@ -223,7 +223,12 @@ class PkgMngr(object):
             ppath_tmp = self.pkg_dir() + '/.' + p['path']
             ppath = self.pkg_dir() + '/' + p['path']
 
-            y.os.makedirs(ppath_tmp)
+            try:
+                y.os.makedirs(ppath_tmp)
+            except OSError:
+                y.shutil.rmtree(ppath_tmp)
+                y.os.makedirs(ppath_tmp)
+        
             y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
 
         ap = self.all_packs()
