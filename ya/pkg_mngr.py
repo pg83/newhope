@@ -26,7 +26,7 @@ class InstPropertyDB(object):
     def index_files(self):
         return self.db['idx']
 
-    
+
 def find_file(pattern):
     p = y.os.path.abspath(y.os.getcwd())
 
@@ -61,7 +61,7 @@ class PkgMngr(object):
                     tgpath = find_file(trf)
 
                 self.path = y.os.path.abspath(tgpath)[:-len(trf)]
-        
+
                 with self.open_db() as db:
                     info = db.target()
 
@@ -100,7 +100,7 @@ class PkgMngr(object):
                     yield x
 
         return list(do())
-            
+    
     def list_dir(self, path):
         where = y.os.path.join(self.path, path)
 
@@ -139,7 +139,7 @@ class PkgMngr(object):
 
     def resolve_groups(self, pkgs):
         return y.uniq_list_x(self.resolve_groups_0(pkgs))
-        
+
     def search_pkgs(self, pkgs, list_all=False):
         def flt_index():
             for i in self.collect_indices():
@@ -190,7 +190,7 @@ class PkgMngr(object):
                 self.apply_db(db)
         except Exception as e:
             y.error('in install: ', e)
-    
+
             self.revert_changes()
 
             raise
@@ -198,7 +198,7 @@ class PkgMngr(object):
     def revert_changes(self):
         with self.open_db() as db:
             self.apply_db(db)
-    
+
     def apply_db(self, db):
         y.info('apply actual changes')
         self.actual_install(db.inst())
@@ -211,9 +211,9 @@ class PkgMngr(object):
 
             if y.os.path.isdir(ppath):
                 y.info('skip', ppath)
-        
+
                 continue
-    
+
             data = self.fetch_package(p)
             path = y.os.path.join(self.pkg_cache_dir(), p['path']) + '.tar'
 
@@ -250,7 +250,7 @@ class PkgMngr(object):
         with self.open_db() as db:
             db.set_target(self.info)
             db.add_index_file('http://index.samokhvalov.xyz/index')
-    
+
         base = self.pkg_list(['base'])[0]
 
         y.os.chdir(self.path)

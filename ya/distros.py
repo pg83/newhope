@@ -1,6 +1,8 @@
 def small_distr():
     return [
-        'superbox',
+        'busybox',
+        'toybox',
+        'coreutils',
         'dash',
         'xz',
         'curl',
@@ -15,7 +17,6 @@ def small_distr():
 
 def common_distr():
     return [
-        '@small',
         'mc-slang',
         'mc-ncurses',
         'yash',

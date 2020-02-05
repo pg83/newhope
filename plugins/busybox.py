@@ -8,6 +8,11 @@ if '{os}' == 'linux':
                 source fetch "https://www.busybox.net/downloads/binaries/{version}-defconfig-multiarch-musl/busybox-{arch}" 0
                 mv busybox-* busybox
                 chmod +x busybox
+
+                for x in `./busybox --list-full`; do
+                    y=$(basename $x)
+                    ln -fs busybox $y
+                done
             """,
             'version': '1.31.0',
             'meta': {

@@ -21,7 +21,7 @@ if '{os}' == 'linux':
             ],
             'meta': {
             'kind': ['tool'],
-                'depends': ['bestbox'],
+                'depends': ['busybox', 'toybox'],
                 'undeps': ['musl', 'make'],
                 'provides': [
                     {'lib': 'muslc'},

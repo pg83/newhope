@@ -186,7 +186,7 @@ class Func(object):
         return Func(self.x, self.data)
 
     def calc_deps(self):
-        return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(self.data.special, must_have=False))
+        return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(['box'], must_have=False))
 
 
 class AllFunc(Func):
@@ -207,51 +207,6 @@ class AllFunc(Func):
         self.gen = 'all'
 
         Func.__init__(self, x, data)
-
-
-class SpecialFunc(Func):
-    def __init__(self, x, data):
-        Func.__init__(self, x, data)
-
-    def depends(self):
-        return self.data.by_kind[self.base]
-
-    @y.cached_method
-    def contains(self):
-        def it():
-            for x in self.depends():
-                yield x
-                yield from self.data.by_name[x].contains()
-
-        return frozenset(it())
-
-    @y.cached_method
-    def f(self):
-        return self.z['code']()
-
-    @property
-    @y.cached_method
-    def z(self):
-        return {
-            'code': y.pkg_splitter(self.zz, 'run'),
-            'base': self.base,
-            'gen': 'tow',
-            'kind': self.kind + ['split', 'run'],
-            'info': self.data.info,
-            'repacks': {},
-        }
-
-    @y.cached_method
-    def c(self):
-        f = y.join_funcs(lambda: self.data.calc(self.deps), ex_code='(cd $IDIR/bin && (rm python* pydoc* || true)) 2> /dev/null')
-
-        return y.restore_node(f())
-
-    def clone(self):
-        return SpecialFunc(self.x, self.data)
-
-    def calc_deps(self):
-        return self.data.last_elements(self.depends())
 
 
 class Solver(object):
@@ -333,9 +288,6 @@ class Data(object):
         return list(do())
 
     def create_object(self, x):
-        if x['base'] in self.special:
-            return SpecialFunc(x, self)
-
         return Func(x, self)
 
     def optimize(self, deps):
@@ -357,10 +309,6 @@ class Data(object):
                     yield d
 
         return frozenset(iter_deps())
-
-    @property
-    def special(self):
-        return ['box']
 
     def last_elements(self, lst, must_have=True):
         def iter():
@@ -457,7 +405,7 @@ def gen_towers(iface, distr):
         yield y.EOP()
 
     cc = data[0].data['func']['cc']
-    dt = Data(distr, cc, [x.data for x in data] + [box_0(cc)])
+    dt = Data(distr, cc, [x.data for x in data])
     dt.prepare_funcs(3)
     dt.out()
 
@@ -474,15 +422,3 @@ def gen_towers(iface, distr):
         y.error('{br}no package detected in', data, '{}')
 
     yield y.STOP()
-
-
-def box_0(cc):
-    descr = {
-        'gen': 'human',
-        'base': 'box',
-        'kind': ['tool', 'special'],
-        'code': lambda: {},
-        'cc': cc,
-    }
-
-    return {'func': descr}

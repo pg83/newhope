@@ -8,6 +8,10 @@ if '{os}' == 'linux':
                 source fetch "http://www.landley.net/toybox/downloads/binaries/{version}/toybox-{arch}" 0
                 cp toybox-* toybox
                 chmod +x toybox
+
+                for i in `./toybox`; do
+                    ln -fs toybox $i
+                done
             ''',
             'version': '0.8.1',
             'meta': {

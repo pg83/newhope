@@ -10,6 +10,13 @@ def coreutils0():
              echo >> 'int main() {}' >> src/libstdbuf.c
              $YMAKE -j $NTHRS
              $YMAKE install
+
+             cd "$IDIR/bin/"
+             progs=$(./coreutils --help | tr '\\n' ' ' | sed -e 's/.*\[//' | sed -e 's/ Use: .*//')
+
+             for i in $progs; do
+                 ln -fs coreutils $i
+             done
         """,
         'version': '8.31',
         'meta': {
