@@ -39,7 +39,6 @@ def box0():
                 'ninja',
                 'p7zip',
                 'pkg-config',
-                'python3',
                 'm4',
                 'sed',
                 'sqlite3',

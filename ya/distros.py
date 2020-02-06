@@ -39,4 +39,4 @@ def distr_by_name(name):
 
 
 def all_distros():
-    return small_distr() + common_distr()
+    return small_distr() + common_distr() + ['base']
