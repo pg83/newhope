@@ -158,13 +158,15 @@ class PkgMngr(object):
         for i in index:
             for p in pkgs:
                 if i['path'].startswith(p + '-' + self.info):
+                    i['join'] = p
                     by_time.append(i)
-
-        return sorted(by_time, key=lambda x: x['ts'])
+                    
+        return by_time
 
     def pkg_list(self, pkgs):
         pkgs = self.resolve_groups(pkgs)
         dd = {}
+        by_num = dict((x, i) for i, x in enumerate(pkgs))
 
         for l in self.search_pkgs(pkgs):
             p1, p2 = l['path'].split('-v5')
@@ -175,7 +177,7 @@ class PkgMngr(object):
         if diff:
             raise Exception('not all packages found ' + str(diff))
 
-        return list(dd.values())
+        return sorted(dd.values(), key=lambda x: by_num[x['join']])
 
     @y.contextlib.contextmanager
     def open_db(self):
@@ -188,10 +190,10 @@ class PkgMngr(object):
 
         self.modify(do)
 
-    def delete(self, pkgs):
+    def delete_x(self, pkgs):
+        pkgs = frozenset(pkgs)
+        
         def do(inst):
-            pkgs = frozenset(pkgs)
-
             for i in inst:
                 if i not in pkgs:
                     yield i
@@ -202,7 +204,7 @@ class PkgMngr(object):
         try:
             with self.open_db() as db:
                 y.info('write next state')
-                db.set_inst(func(list(db.inst())))
+                db.set_inst(list(func(db.inst())))
                 self.apply_db(db)
         except Exception as e:
             try:
