@@ -50,7 +50,7 @@ async def cli_pkg_add(args_):
 
     y.PkgMngr(path=args.where).install(args.pkg)
 
-    
+
 @y.main_entry_point
 async def cli_pkg_del(args_):
     p = y.argparse.ArgumentParser()
@@ -62,7 +62,7 @@ async def cli_pkg_del(args_):
 
     y.PkgMngr(path=args.where).delete(args.pkg)
 
-    
+
 @y.main_entry_point
 async def cli_pkg_update(args_):
     p = y.argparse.ArgumentParser()

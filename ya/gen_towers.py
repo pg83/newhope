@@ -59,7 +59,16 @@ class Func(object):
         return str(self)
 
     def __str__(self):
-        return '<' + self.gen + '-' + self.base + '-' + str(self.i) + '-' + self.compact_kind() + self.data.info['os'][:1] + '>'
+        def iter_parts():
+            if self.gen:
+                yield self.gen
+
+            yield self.base
+            yield str(self.i)
+            yield  self.compact_kind() + self.data.info['os'][:1]
+        
+
+        return '<' + '-'.join(iter_parts())+ '>'
 
     def compact_kind(self):
         res = ''

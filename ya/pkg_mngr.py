@@ -197,7 +197,7 @@ class PkgMngr(object):
                     yield i
 
         self.modify(do)
-        
+
     def modify(self, func):
         try:
             with self.open_db() as db:
