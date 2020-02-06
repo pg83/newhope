@@ -22,4 +22,11 @@ if '{os}' == 'linux':
                 ],
             },
         }
-
+else:
+    @y.package
+    def    toybox0():
+        return {
+            'meta': {
+                'kind':    ['tool']
+            }
+        }

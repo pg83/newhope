@@ -20,7 +20,7 @@ def small_distr():
 
 def common_distr():
     return [
-        '@small'
+        '@small',
         'mc-slang',
         'mc-ncurses',
         'p7zip',
@@ -35,20 +35,20 @@ def common_distr():
 
 
 def distr_by_name(name):
-    return y.find(name + '_distr')
+    return y.find(name + '_distr')()
 
 
-def resolve_distr_0(name):
-    if name[0] == '@':
-        yield from resolve_distr_0(name[1:])
+def resolve_packs(packs):
+    for p in packs:
+        if p[0] == '@':
+            yield from resolve_packs(distr_by_name(p[1:]))
+        else:
+            yield p
 
-    for x in distr_by_name(name):
-        yield from resolve_distr_0(x)
-
-
-def resolve_distr(name):
-    return list(resolve_distr_0())
-
-
-def all_distros():
+    
+def all_packs_0():
     return common_distr() + ['base']
+
+
+def all_distro_packs():
+    return list(resolve_packs(all_packs_0()))

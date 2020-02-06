@@ -52,6 +52,14 @@ async def cli_pkg_add(args_):
 
 
 @y.main_entry_point
+async def cli_pkg_update(args_):
+    p = y.argparse.ArgumentParser()
+    p.add_argument('--where', default=None, action='store', help='where to find installation')
+    args = p.parse_args(args_)
+
+    y.PkgMngr(path=args.where).install([])
+
+@y.main_entry_point
 async def cli_pkg_showdb(args_):
    with y.PkgMngr().open_db() as db:
        print db.db
