@@ -2,7 +2,7 @@
 def glib0():
     if '{os}' == 'darwin':
         extra = [
-            {'libs': '-framework CoreServices -framework CoreFoundation'}
+            {'env': 'GLIB_LIBS', 'value': '"-framework CoreServices -framework CoreFoundation"'},
         ]
     else:
         extra = []
@@ -21,13 +21,9 @@ def glib0():
             'kind': ['library'],
             'depends': ['iconv', 'intl', 'libffi', 'pkg-config-int', 'coreutils', 'python', 'zlib', 'dash', 'pcre2'],
             'provides': [
-                {
-                    'lib': 'glib-2.0', 
-                    'extra': extra + [
-                        {'ipath': '{pkgroot}/include/glib-2.0'},
-                        {'ipath': '{pkgroot}/lib/glib-2.0/include'},
-                    ],
-                },
-            ],
+                {'lib': 'glib-2.0'},
+                {'env': 'GLIB_CFLAGS', 'value': '"-I{pkgroot}/include/glib-2.0 -I{pkgroot}/lib/glib-2.0/include"'},
+                {'env': 'CPPFLAGS', 'value': '"-I{pkgroot}/include/glib-2.0 -I{pkgroot}/lib/glib-2.0/include $CPPFLAGS"'},
+            ] + extra,
         },
     }
