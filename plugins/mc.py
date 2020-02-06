@@ -2,6 +2,7 @@ def mc(gui):
     return {
         'code': """
              source fetch "http://ftp.midnight-commander.org/mc-{version}.tar.xz" 1
+             export LDFLAGS="$LDFLAGS $LIBS"
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static --with-screen={gui}  || exit 1
              $YMAKE -j $NTHRS
              echo 'al install:' > doc/hlp/Makefile

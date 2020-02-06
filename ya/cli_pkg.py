@@ -64,7 +64,7 @@ async def cli_pkg_del(args_):
 
 
 @y.main_entry_point
-async def cli_pkg_update(args_):
+async def cli_pkg_up(args_):
     p = y.argparse.ArgumentParser()
     p.add_argument('--where', default=None, action='store', help='where to find installation')
     args = p.parse_args(args_)

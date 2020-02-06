@@ -3,6 +3,7 @@ def tini_distr():
         'toybox',
         'busybox',
         'coreutils',
+        'yash',
     ]
 
 
@@ -10,7 +11,6 @@ def small_distr():
     return [
         '@tini',
         'dash',
-        'yash',
         'xz',
         'curl',
         'gzip',
