@@ -51,4 +51,4 @@ def resolve_distr(name):
 
 
 def all_distros():
-    return common_distr()
+    return common_distr() + ['base']
