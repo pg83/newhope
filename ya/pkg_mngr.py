@@ -228,7 +228,7 @@ class PkgMngr(object):
             except OSError:
                 y.shutil.rmtree(ppath_tmp)
                 y.os.makedirs(ppath_tmp)
-        
+
             y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
 
         ap = self.all_packs()
