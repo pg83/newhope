@@ -189,11 +189,11 @@ class PkgMngr(object):
                 db.set_inst(y.uniq_list_x(db.inst() + pkgs))
                 self.apply_db(db)
         except Exception as e:
-            y.error('in install: ', e)
-
-            self.revert_changes()
-
-            raise
+            try:
+                y.error('in install: ', e)
+                self.revert_changes()
+            finally:
+                raise e
 
     def revert_changes(self):
         with self.open_db() as db:
