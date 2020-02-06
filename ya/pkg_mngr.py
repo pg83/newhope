@@ -157,7 +157,7 @@ class PkgMngr(object):
 
         for i in index:
             for p in pkgs:
-                if i['path'].startswith(p + '-'):
+                if i['path'].startswith(p + '-' + self.info):
                     by_time.append(i)
 
         return sorted(by_time, key=lambda x: x['ts'])
