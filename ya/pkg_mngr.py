@@ -183,10 +183,26 @@ class PkgMngr(object):
             yield InstPropertyDB(db)
 
     def install(self, pkgs):
+        def do(inst):
+            return y.uniq_list_x(inst + pkgs)
+
+        self.modify(do)
+
+    def delete(self, pkgs):
+        def do(inst):
+            pkgs = frozenset(pkgs)
+
+            for i in inst:
+                if i not in pkgs:
+                    yield i
+
+        self.modify(do)
+        
+    def modify(self, func):
         try:
             with self.open_db() as db:
                 y.info('write next state')
-                db.set_inst(y.uniq_list_x(db.inst() + pkgs))
+                db.set_inst(func(list(db.inst())))
                 self.apply_db(db)
         except Exception as e:
             try:
