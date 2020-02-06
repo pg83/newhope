@@ -60,7 +60,7 @@ async def cli_pkg_del(args_):
 
     args = p.parse_args(args_)
 
-    y.PkgMngr(path=args.where).delete(args.pkg)
+    y.PkgMngr(path=args.where).delete_x(args.pkg)
 
 
 @y.main_entry_point

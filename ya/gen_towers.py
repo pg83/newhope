@@ -66,7 +66,7 @@ class Func(object):
             yield self.base
             yield str(self.i)
             yield  self.compact_kind() + self.data.info['os'][:1]
-        
+
 
         return '<' + '-'.join(iter_parts())+ '>'
 
