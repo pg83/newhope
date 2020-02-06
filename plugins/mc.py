@@ -22,4 +22,4 @@ def mc_slang0():
 
 @y.package
 def mc_ncurses0():
-    return mc('ncurses')
+    return mc('ncurses-real')

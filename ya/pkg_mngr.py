@@ -205,10 +205,12 @@ class PkgMngr(object):
                 db.set_inst(func(list(db.inst())))
                 self.apply_db(db)
         except Exception as e:
-            y.error('in modify db: ', e)
-            self.revert_changes()
-            raise
-        
+            try:
+                y.error('in install: ', e)
+                self.revert_changes()
+            finally:
+                raise e
+
     def revert_changes(self):
         with self.open_db() as db:
             self.apply_db(db)

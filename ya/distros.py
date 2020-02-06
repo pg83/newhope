@@ -45,7 +45,7 @@ def resolve_packs(packs):
         else:
             yield p
 
-    
+
 def all_packs_0():
     return common_distr() + ['base']
 

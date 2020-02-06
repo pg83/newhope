@@ -16,8 +16,7 @@ def openssl0():
             export CFLAGS=$(echo "$CFLAGS" | sed -e 's/isysroot/I/')
 
             $YPERL ./Configure {flags} no-asm threads no-shared no-dso no-hw no-tests no-engine --prefix=$IDIR --openssldir=$IDIR -w -std=c99 -D_GNU_SOURCE=1 $CFLAGS $LDFLAGS $LIBS
-            $YMAKE -j $NTHRS
-            $YMAKE -j $NTHRS
+            ($YMAKE -j $NTHRS) || ($YMAKE -j $NTHRS) || ($YMAKE -j $NTHRS) 
             $YMAKE install
         """.replace('{minver}', version[:-1]).replace('{flags}', flags),
         'version': version,
