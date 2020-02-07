@@ -200,10 +200,13 @@ class Func(object):
         else:
             bg = self.data.box_by_gen.get(self.g - 1)
 
-            if bg is None:
-                extra = []
+            if False:
+                if bg is None:
+                    extra = []
+                else:
+                    extra = [bg.i]
             else:
-                extra = [bg.i]
+                extra = []
 
         return self.data.optimize(self.data.select_deps(self.base) + extra)
 
@@ -392,7 +395,7 @@ class Data(object):
             if pg != g:
                 self.calc_new_deps(g)
                 pg = g
-    
+
             if g >= num:
                 break
 

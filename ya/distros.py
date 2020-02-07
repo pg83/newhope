@@ -31,6 +31,7 @@ def common_distr():
         'mc-ncurses',
         'p7zip-run',
         'python3',
+        'upm',
         'cmake',
         'openssl',
         'sqlite3-run',

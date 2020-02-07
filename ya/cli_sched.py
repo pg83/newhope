@@ -7,7 +7,7 @@ BUILD = [
     ['echo | tr -d "\n"'],
     ['/media/build/repo/upm pkg sync repo --fr /media/build/upm_root/r --fr /media/build/repo/r --to /media/storage/pkg_repo && sleep 5'],
     ['/usr/bin/timeout 10m /media/build/repo/upm pkg serve repo --fr /media/storage/pkg_repo'],
-    ['cd /media/build/repo && ./upm makefile --os linux -v | ./upm make --root /media/build/repo --install-dir /pkg -j3 -f -']
+    ['cd /media/build/repo && ./upm makefile --os linux -v | ./upm make --root /media/build/repo --install-dir /pkg -j7 -f -']
 ]
 
 
