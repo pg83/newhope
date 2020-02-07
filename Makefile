@@ -56,4 +56,10 @@ commit:
 	git commit -m "A"
 	git push
 
+merge:
+	ssh-add ~/.ssh/id_rsa_1
+	git add -A
+	git commit -m "A"
+	git pull
+
 all: tests make make-debug clear
