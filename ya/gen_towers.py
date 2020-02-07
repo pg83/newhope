@@ -65,7 +65,7 @@ class Func(object):
 
             yield self.base
             yield str(self.i)
-            yield  self.compact_kind() + self.data.info['os'][:1]
+            yield self.compact_kind() + self.data.info['os'][:1]
 
 
         return '<' + '-'.join(iter_parts())+ '>'
@@ -197,7 +197,49 @@ class Func(object):
     def calc_deps(self):
         return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(['box'], must_have=False))
 
+    
+class SplitFunc(Func):
+    def __init__(self, func, split):
+        self._func = func
+        self._split = split
+        self.i = 0
 
+    def raw_depends(self, kind):
+        return {
+            'depends': [self._func.base],
+            'undeps': list(self._func.undeps()) + ['musl', 'mimalloc', 'make'],
+        }.get(kind, {})
+        
+    @property
+    def gen(self):
+        return self._func.gen
+        
+    @property
+    def data(self):
+        return self._func.data
+
+    @property
+    def x(self):
+        return self._func.x
+    
+    def contains(self):
+        return []
+
+    def undeps(self):
+        return []
+    
+    @property
+    def code(self):
+        return y.pkg_splitter(self.zz, split)['code']
+
+    @property
+    def base(self):
+        return self._func.base + '-' + self._split
+
+    def clone(self):
+        return SplitFunc(self._func.clone(), self._split)
+    
+    
 class AllFunc(Func):
     def __init__(self, deps, data):
         def func():
@@ -262,6 +304,7 @@ class Data(object):
         self.info = info
         self.distr = distr
 
+        self.by_name = {}
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
@@ -275,14 +318,7 @@ class Data(object):
                 yield res
 
         self.data = list(iter_objects())
-        self.by_name = dict((x.base, x) for x in self.data)
-        self.by_kind = y.collections.defaultdict(list)
-
         self.by_name['all'] = AllFunc(self.distr, self)
-
-        for x in self.data:
-            for k in x.kind:
-                self.by_kind[k].append(x.base)
 
     def extra_libs(self):
         def do():
@@ -298,7 +334,7 @@ class Data(object):
 
     def create_object(self, x):
         return Func(x, self)
-
+    
     def optimize(self, deps):
         def it():
             for i in deps:
@@ -332,7 +368,7 @@ class Data(object):
 
         for func in solver.iter_infinity():
             if solver.generation() >= num:   
-                return self.add_func(self.by_name['all'])
+                break
 
             if solver.generation() == num - 1:
                 func.gen = ''
@@ -340,11 +376,18 @@ class Data(object):
                 func.gen = 'tow' + str(solver.generation())
 
             self.add_func(func)
+            self.add_func(SplitFunc(func, 'run'))
 
+        self.add_func(self.by_name['all'])
+            
+        for func in self.func_by_num:
+            print 'calc deps', func
+            func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)
+            
     def add_func(self, func):
+        self.by_name[func.base] = func
         func.i = len(self.func_by_num)
         self.func_by_num.append(func)
-        func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)
         self.dd[func.base].append(func.i)
         func.codec = 'pg'
 
@@ -366,6 +409,7 @@ class Data(object):
 
     def out(self):
         for x in self.func_by_num:
+            print x
             x.out_deps()
 
         y.info('{bg}exec sequence', self.exec_seq(), '{}')
