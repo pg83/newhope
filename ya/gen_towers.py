@@ -379,11 +379,11 @@ class Data(object):
             self.add_func(SplitFunc(func, 'run'))
 
         self.add_func(self.by_name['all'])
-    
+
         for func in self.func_by_num:
             print 'calc deps', func
             func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)
-    
+
     def add_func(self, func):
         self.by_name[func.base] = func
         func.i = len(self.func_by_num)

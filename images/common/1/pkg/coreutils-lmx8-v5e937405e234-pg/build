@@ -1,3 +1,0 @@
-export CMAKE_PREFIX_PATH="$MD/coreutils-lmx8-v5e937405e234-pg:$CMAKE_PREFIX_PATH"
-export PATH="$MD/coreutils-lmx8-v5e937405e234-pg/bin:$PATH"
-export COREUTILS=$MD/coreutils-lmx8-v5e937405e234-pg/bin/coreutils

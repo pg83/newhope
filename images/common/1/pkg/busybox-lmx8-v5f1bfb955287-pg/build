@@ -1,3 +1,0 @@
-export CMAKE_PREFIX_PATH="$MD/busybox-lmx8-v5f1bfb955287-pg:$CMAKE_PREFIX_PATH"
-export PATH="$MD/busybox-lmx8-v5f1bfb955287-pg/bin:$PATH"
-export BUSYBOX=$MD/busybox-lmx8-v5f1bfb955287-pg/bin/busybox

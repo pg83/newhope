@@ -160,7 +160,7 @@ class PkgMngr(object):
                 if i['path'].startswith(p + '-' + self.info):
                     i['join'] = p
                     by_time.append(i)
-    
+
         return by_time
 
     def pkg_list(self, pkgs):
