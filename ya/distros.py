@@ -3,6 +3,7 @@ def tini_distr():
         'toybox',
         'busybox',
         'coreutils',
+        'yash',
     ]
 
 
@@ -11,7 +12,6 @@ def small_distr():
         '@tini',
         'man-db',
         'dash',
-        'yash',
         'xz',
         'curl',
         'gzip',
