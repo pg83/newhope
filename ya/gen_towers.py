@@ -195,7 +195,17 @@ class Func(object):
         return Func(self.x, self.data)
 
     def calc_deps(self):
-        return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(['box'], must_have=False))
+        if self.base == 'box':
+            extra = []
+        else:
+            bg = self.data.box_by_gen.get(self.g - 1)
+
+            if bg is None:
+                extra = []
+            else:
+                extra = [bg.i]
+
+        return self.data.optimize(self.data.select_deps(self.base) + extra)
 
 
 class SplitFunc(Func):
@@ -203,12 +213,6 @@ class SplitFunc(Func):
         self._func = func
         self._split = split
         self.i = 0
-
-    def raw_depends(self, kind):
-        return {
-            'depends': [self._func.base],
-            'undeps': list(self._func.undeps()) + ['musl', 'mimalloc', 'make'],
-        }.get(kind, {})
 
     @property
     def gen(self):
@@ -219,18 +223,21 @@ class SplitFunc(Func):
         return self._func.data
 
     @property
-    def x(self):
-        return self._func.x
+    def kind(self):
+        return self._func.kind + [self._split]
+
+    def depends(self):
+        return [self._func.base]
 
     def contains(self):
         return []
 
     def undeps(self):
-        return []
+        return ['musl', 'mimalloc', 'make']
 
-    @property
-    def code(self):
-        return y.pkg_splitter(self.zz, split)['code']
+    @y.cached_method
+    def ff(self):
+        return y.pkg_splitter(self._func.zz, self._split)()
 
     @property
     def base(self):
@@ -239,6 +246,17 @@ class SplitFunc(Func):
     def clone(self):
         return SplitFunc(self._func.clone(), self._split)
 
+    @property
+    @y.cached_method
+    def zz(self):
+        return {
+            'code': self.ff,
+        'base': self.base,
+            'gen': self.gen,
+            'kind': self.kind,
+            'repacks': {},
+        'info': self.data.info,
+    }
 
 class AllFunc(Func):
     def __init__(self, deps, data):
@@ -303,8 +321,9 @@ class Data(object):
     def __init__(self, distr, info, data):
         self.info = info
         self.distr = distr
-
+        self.new_funcs = []
         self.by_name = {}
+        self.box_by_gen = {}
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
@@ -365,26 +384,41 @@ class Data(object):
 
     def prepare_funcs(self, num):
         solver = SolverWrap(self.data)
+        pg = -1
 
         for func in solver.iter_infinity():
-            if solver.generation() >= num:   
+            g = solver.generation()
+
+            if pg != g:
+                self.calc_new_deps(g)
+                pg = g
+            
+            if g >= num:
                 break
 
-            if solver.generation() == num - 1:
+            if g == num - 1:
                 func.gen = ''
             else:
-                func.gen = 'tow' + str(solver.generation())
+                func.gen = 'tow' + str(g)
 
-            self.add_func(func)
-            self.add_func(SplitFunc(func, 'run'))
+            self.add_func(func, g)
+            self.add_func(SplitFunc(func, 'run'), g)
 
-        self.add_func(self.by_name['all'])
+        self.add_func(self.by_name['all'], g)
+        self.calc_new_deps(g)
 
-        for func in self.func_by_num:
-            print 'calc deps', func
-            func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)
+    def calc_new_deps(self, g):
+        for func in self.new_funcs:
+            func.deps = sorted(func.calc_deps(), key=lambda x: -x)
+    
+        self.new_funcs = []
+    
+    def add_func(self, func, g):
+        if func.base == 'box-run':
+            self.box_by_gen[g] = func
 
-    def add_func(self, func):
+        func.g = g
+        self.new_funcs.append(func)
         self.by_name[func.base] = func
         func.i = len(self.func_by_num)
         self.func_by_num.append(func)
@@ -396,7 +430,6 @@ class Data(object):
 
     def register(self):
         v = self.func_by_num[-1]
-        print v
         yield y.ELEM({'func': v.z})
 
     def iter_deps(self):
@@ -409,7 +442,6 @@ class Data(object):
 
     def out(self):
         for x in self.func_by_num:
-            print x
             x.out_deps()
 
         y.info('{bg}exec sequence', self.exec_seq(), '{}')
