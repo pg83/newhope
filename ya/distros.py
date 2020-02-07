@@ -12,7 +12,7 @@ def small_distr():
         '@tini',
         'dash-run',
         'xz-run',
-        'curl-run',
+        'curl',
         'gzip-run',
         'bzip2-run',
         'unrar-run',

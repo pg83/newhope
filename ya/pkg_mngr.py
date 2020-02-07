@@ -163,6 +163,9 @@ class PkgMngr(object):
 
         return by_time
 
+    def pkg_unv_name(self, full_name):
+        return full_name.split('-' + self.info)[0]
+    
     def pkg_list(self, pkgs):
         pkgs = self.resolve_groups(pkgs)
         dd = {}
@@ -172,7 +175,7 @@ class PkgMngr(object):
             p1, p2 = l['path'].split('-v5')
             dd[p1] = l
 
-        diff = frozenset([x.split('-')[0] for x in pkgs]) - frozenset([x.split('-')[0] for x in dd.keys()])
+        diff = frozenset([self.pkg_unv_name(x) for x in pkgs]) - frozenset([self.pkg_unv_name(x) for x in dd.keys()])
 
         if diff:
             raise Exception('not all packages found ' + str(diff))

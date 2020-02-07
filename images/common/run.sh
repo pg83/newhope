@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec docker run -ti --mount type=bind,src=/,dst=/srv $@ /pkg/yash-lmx8-v5fc4af980df8-pg/bin/yash
+exec docker run -ti --mount type=bind,src=/,dst=/srv $@ /pkg/yash-run-lmx8-v567bdf817cb7-pg/bin/yash -l --rcfile /etc/profile
