@@ -10,7 +10,6 @@ def tini_distr():
 def small_distr():
     return [
         '@tini',
-        #'man-db',
         'dash-run',
         'xz-run',
         'curl-run',
