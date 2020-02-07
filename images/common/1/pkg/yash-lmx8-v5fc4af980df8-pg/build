@@ -1,0 +1,4 @@
+export CMAKE_PREFIX_PATH="$MD/yash-lmx8-v5fc4af980df8-pg:$CMAKE_PREFIX_PATH"
+export PATH="$MD/yash-lmx8-v5fc4af980df8-pg/bin:$PATH"
+export YSHELL_OPT=$MD/yash-lmx8-v5fc4af980df8-pg/bin/yash
+export YASH=$MD/yash-lmx8-v5fc4af980df8-pg/bin/yash

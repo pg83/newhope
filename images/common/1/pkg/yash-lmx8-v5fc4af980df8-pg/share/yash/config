@@ -1,0 +1,11 @@
+# share/config: created by Makefile
+prefix='/pkg/yash-lmx8-v5fc4af980df8-pg'
+exec_prefix='/pkg/yash-lmx8-v5fc4af980df8-pg'
+bindir='/pkg/yash-lmx8-v5fc4af980df8-pg/bin'
+datarootdir='/pkg/yash-lmx8-v5fc4af980df8-pg/share'
+datadir='/pkg/yash-lmx8-v5fc4af980df8-pg/share'
+yashdatadir='/pkg/yash-lmx8-v5fc4af980df8-pg/share/yash'
+localedir='/pkg/yash-lmx8-v5fc4af980df8-pg/share/locale'
+mandir='/pkg/yash-lmx8-v5fc4af980df8-pg/share/man'
+docdir='/pkg/yash-lmx8-v5fc4af980df8-pg/share/doc/yash'
+htmldir='/pkg/yash-lmx8-v5fc4af980df8-pg/share/doc/yash'

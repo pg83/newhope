@@ -1,0 +1,3 @@
+export CMAKE_PREFIX_PATH="$MD/toybox-lmx8-v5b2c3e7e9884-pg:$CMAKE_PREFIX_PATH"
+export PATH="$MD/toybox-lmx8-v5b2c3e7e9884-pg/bin:$PATH"
+export TOYBOX=$MD/toybox-lmx8-v5b2c3e7e9884-pg/bin/toybox

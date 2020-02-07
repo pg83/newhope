@@ -197,7 +197,7 @@ class Func(object):
     def calc_deps(self):
         return self.data.optimize(self.data.select_deps(self.base) + self.data.last_elements(['box'], must_have=False))
 
-    
+
 class SplitFunc(Func):
     def __init__(self, func, split):
         self._func = func
@@ -209,11 +209,11 @@ class SplitFunc(Func):
             'depends': [self._func.base],
             'undeps': list(self._func.undeps()) + ['musl', 'mimalloc', 'make'],
         }.get(kind, {})
-        
+
     @property
     def gen(self):
         return self._func.gen
-        
+
     @property
     def data(self):
         return self._func.data
@@ -221,13 +221,13 @@ class SplitFunc(Func):
     @property
     def x(self):
         return self._func.x
-    
+
     def contains(self):
         return []
 
     def undeps(self):
         return []
-    
+
     @property
     def code(self):
         return y.pkg_splitter(self.zz, split)['code']
@@ -238,8 +238,8 @@ class SplitFunc(Func):
 
     def clone(self):
         return SplitFunc(self._func.clone(), self._split)
-    
-    
+
+
 class AllFunc(Func):
     def __init__(self, deps, data):
         def func():
@@ -334,7 +334,7 @@ class Data(object):
 
     def create_object(self, x):
         return Func(x, self)
-    
+
     def optimize(self, deps):
         def it():
             for i in deps:
@@ -379,11 +379,11 @@ class Data(object):
             self.add_func(SplitFunc(func, 'run'))
 
         self.add_func(self.by_name['all'])
-            
+    
         for func in self.func_by_num:
             print 'calc deps', func
             func.deps = sorted(frozenset(func.calc_deps()), key=lambda x: -x)
-            
+    
     def add_func(self, func):
         self.by_name[func.base] = func
         func.i = len(self.func_by_num)
