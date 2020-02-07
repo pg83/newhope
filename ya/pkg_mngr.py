@@ -165,7 +165,7 @@ class PkgMngr(object):
 
     def pkg_unv_name(self, full_name):
         return full_name.split('-' + self.info)[0]
-    
+
     def pkg_list(self, pkgs):
         pkgs = self.resolve_groups(pkgs)
         dd = {}
