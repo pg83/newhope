@@ -392,7 +392,7 @@ class Data(object):
             if pg != g:
                 self.calc_new_deps(g)
                 pg = g
-    
+
             if g >= num:
                 break
 
