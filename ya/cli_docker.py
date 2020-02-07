@@ -1,11 +1,11 @@
 def build_docker(cwd):
     f = cwd + '/build.sh'
-    
+
     if y.os.path.isfile(f):
         cmd = [f]
     else:
         cmd = ['docker build .']
-        
+
     data = y.subprocess.check_output(cmd, cwd=cwd, shell=True, env=y.os.environ).decode('utf-8')
     lines = data.split('\n')
     line = lines[len(lines) - 2]

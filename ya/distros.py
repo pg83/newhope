@@ -1,27 +1,27 @@
 def tini_distr():
     return [
-        'toybox',
-        'busybox',
-        'coreutils',
-        'yash',
+        'toybox-run',
+        'busybox-run',
+        'coreutils-run',
+        'yash-run',
     ]
 
 
 def small_distr():
     return [
         '@tini',
-        'dash',
-        'xz',
-        'curl',
-        'gzip',
-        'bzip2',
-        'unrar',
+        'dash-run',
+        'xz-run',
+        'curl-run',
+        'gzip-run',
+        'bzip2-run',
+        'unrar-run',
         'gawk',
-        'grep',
-        'make',
-        'sed',
-        'bsdtar',
-        'file',
+        'grep-run',
+        'make-run',
+        'sed-run',
+        'bsdtar-run',
+        'file-run',
     ]
 
 def common_distr():
@@ -29,13 +29,13 @@ def common_distr():
         '@small',
         'mc-slang',
         'mc-ncurses',
-        'p7zip',
+        'p7zip-run',
         'python3',
         'cmake',
         'openssl',
-        'sqlite3',
-        'diffutils',
-        'ninja',
+        'sqlite3-run',
+        'diffutils-run',
+        'ninja-run',
         'pkg-config',
     ]
 

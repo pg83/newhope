@@ -46,6 +46,6 @@ def box0():
                 'unrar',
                 'xz',
                 'yash',
-            ]
+            ],
         }
     }

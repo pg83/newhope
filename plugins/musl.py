@@ -25,7 +25,7 @@ if '{os}' == 'linux':
             'meta': {
                 'kind': ['library'],
                 'contains': ['musl-boot'],
-                'depends': ['toybox', 'busybox', 'make-boot', 'mimalloc'],
+                'depends': ['busybox', 'make-boot', 'mimalloc'],
                 'undeps': ['make', 'musl'],
                 'provides': [
                     {'lib': 'muslc'},
