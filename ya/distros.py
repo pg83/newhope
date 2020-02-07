@@ -9,6 +9,7 @@ def tini_distr():
 def small_distr():
     return [
         '@tini',
+        'man-db',
         'dash',
         'yash',
         'xz',

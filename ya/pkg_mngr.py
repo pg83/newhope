@@ -251,7 +251,7 @@ class PkgMngr(object):
 
         ap = self.all_packs()
 
-        with open(self.pkg_dir() + '/path', 'w') as f:
+        with open(self.pkg_dir() + '/profile', 'w') as f:
             f.write('export PATH=' + ':'.join([('/pkg/' + x + '/bin') for x in ap]))
 
         for x in frozenset(ap) - frozenset([x['path'] for x in lst]):

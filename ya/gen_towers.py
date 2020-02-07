@@ -14,7 +14,7 @@ def subst_by_platform(os):
         'c++': 'libcxx',
         'm4': 'quasar-m4',
         'termcap': 'ncurses',
-        'ncurses': 'ncurses',
+        'ncurses': 'ncurses-real',
         'libtool': 'libtool',
     }
 

@@ -2,7 +2,7 @@ set +x
 
 SRC="$2"
 ARCH="$1"
-OPT="-std=c99 -nostdinc -ffreestanding -D_XOPEN_SOURCE=700 -fno-stack-protector -fomit-frame-pointer -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -fdata-sections -fpie -fpic"
+OPT="-std=c99 -nostdinc -ffreestanding -D_XOPEN_SOURCE=700 -fno-stack-protector -fomit-frame-pointer -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -fdata-sections"
 CFLAGS="$PIC $OPT -I\$SRC/arch/$ARCH -I\$SRC/arch/generic -I\$SRC/src/include -I\$SRC/src/internal -I\$IDIR/include $CFLAGS"
 marker="\$IDIR/include/version.h"
 
