@@ -392,7 +392,7 @@ class Data(object):
             if pg != g:
                 self.calc_new_deps(g)
                 pg = g
-            
+    
             if g >= num:
                 break
 
@@ -410,9 +410,9 @@ class Data(object):
     def calc_new_deps(self, g):
         for func in self.new_funcs:
             func.deps = sorted(func.calc_deps(), key=lambda x: -x)
-    
+
         self.new_funcs = []
-    
+
     def add_func(self, func, g):
         if func.base == 'box-run':
             self.box_by_gen[g] = func
