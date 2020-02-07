@@ -75,6 +75,9 @@ class PkgMngr(object):
         self.path = path
         self.info = info
 
+    def subst_packs(self, p1, p2):
+        return frozenset(self.pkg_unv_name(x) for x in p1) - frozenset(self.pkg_unv_name(x) for x in p2)
+
     def get_dir(self, *args):
         return y.os.path.join(self.path, *args)
 
@@ -175,7 +178,7 @@ class PkgMngr(object):
             p1, p2 = l['path'].split('-v5')
             dd[p1] = l
 
-        diff = frozenset([self.pkg_unv_name(x) for x in pkgs]) - frozenset([self.pkg_unv_name(x) for x in dd.keys()])
+        diff = self.subst_packs(pkgs, dd.keys())
 
         if diff:
             raise Exception('not all packages found ' + str(diff))
@@ -257,7 +260,7 @@ class PkgMngr(object):
         with open(self.pkg_dir() + '/profile', 'w') as f:
             f.write('export PATH=' + ':'.join([('/pkg/' + x + '/bin') for x in ap]))
 
-        for x in frozenset(ap) - frozenset([x['path'] for x in lst]):
+        for x in self.subst_packs(ap, [x['path'] for x in lst]):
             y.warning('remove stale package', x)
             y.shutil.rmtree(y.os.path.join(self.pkg_dir(), x))
 
