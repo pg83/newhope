@@ -207,7 +207,7 @@ class Func(object):
                     extra = [bg.i]
             else:
                 extra = []
-        
+
         return self.data.optimize(self.data.select_deps(self.base) + extra)
 
 
