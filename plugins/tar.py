@@ -9,8 +9,8 @@ def tar0():
         """,
         'version': '1.32',
         'meta': {
-            'kind': ['box', 'tool'],
-            'depends': ['iconv', 'intl', 'gzip', 'bzip2', 'xz', 'unrar'],
+            'kind': ['tool'],
+            'depends': ['iconv', 'intl', 'gzip', 'bzip2', 'xz', 'unrar', 'busybox'],
             'provides': [
                 {'env': 'YGNUTAR', 'value': '{pkgroot}/bin/tar'},
             ],

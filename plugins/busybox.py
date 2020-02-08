@@ -17,7 +17,7 @@ if '{os}' == 'linux':
             'version': '1.31.0',
             'meta': {
                 'kind': ['tool'],
-                'undeps': ['make', 'musl'],
+                'undeps': ['make', 'musl', 'busybox'],
                 'provides': [
                     {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
                 ],
@@ -28,6 +28,7 @@ else:
     def busybox0():
         return {
             'meta': {
-                'kind': ['tool']
+                'kind': ['tool'],
+                'undeps': ['busybox'],
             }
         }

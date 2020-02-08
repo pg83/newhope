@@ -21,7 +21,7 @@ def perl50():
         'version': '5.30.1',
         'meta': {
             'kind': ['tool'],
-            'depends': ['iconv', 'zlib', 'coreutils-boot'],
+            'depends': ['iconv', 'zlib', 'coreutils-boot', 'dl'],
             'provides': [
                 {'env': 'YPERL', 'value': '{pkgroot}/bin/perl'},
             ],

@@ -1,5 +1,5 @@
 ENTRY = [
-    'exec unshare --fork --pid --kill-child /usr/bin/timeout 4h /media/build/upm cmd scheduler BUILD'
+    'exec nice -n 20 unshare --fork --pid --kill-child /usr/bin/timeout 4h /media/build/upm cmd scheduler BUILD'
 ]
 
 BUILD = [

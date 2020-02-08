@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/home/pg83/newhope/cli cmd scheduler

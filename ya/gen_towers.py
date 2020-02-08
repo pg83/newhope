@@ -254,12 +254,12 @@ class SplitFunc(Func):
     def zz(self):
         return {
             'code': self.ff,
-        'base': self.base,
+            'base': self.base,
             'gen': self.gen,
             'kind': self.kind,
             'repacks': {},
-        'info': self.data.info,
-    }
+            'info': self.data.info,
+        }
 
 class AllFunc(Func):
     def __init__(self, deps, data):
@@ -345,6 +345,7 @@ class Data(object):
     def extra_libs(self):
         def do():
             yield 'make'
+            yield 'busybox'
 
             if self.info.get('libc') == 'musl':
                 yield 'musl'

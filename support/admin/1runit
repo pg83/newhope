@@ -1,0 +1,3 @@
+#!/bin/sh
+
+flock --verbose -n -x /etc/runit/lock runsvdir /etc/runit/ >& /tmp/runit &
