@@ -41,6 +41,12 @@ def common_distr():
     ]
 
 
+def dev_distr():
+    return [
+        'clang',
+    ]
+
+
 def distr_by_name(name):
     return y.find(name + '_distr')()
 
@@ -54,7 +60,7 @@ def resolve_packs(packs):
 
 
 def all_packs_0():
-    return common_distr() + ['base']
+    return common_distr() + dev_distr() + ['base']
 
 
 def all_distro_packs():
