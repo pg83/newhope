@@ -1,13 +1,13 @@
 ENTRY = [
-    'exec unshare --fork --pid --kill-child /usr/bin/timeout 4h /media/build/repo/upm cmd scheduler BUILD'
+    'exec unshare --fork --pid --kill-child /usr/bin/timeout 4h /media/build/upm cmd scheduler BUILD'
 ]
 
 BUILD = [
-    ['cd /tmp && echo "start cycle" && /root/newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build/repo && echo "done cycle" && sleep 8'],
+    ['cd /tmp && echo "start cycle" && /home/pg83/newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build && echo "done cycle" && sleep 8'],
     ['echo | tr -d "\n"'],
-    ['/media/build/repo/upm pkg sync repo --fr /media/build/upm_root/r --fr /media/build/repo/r --to /media/storage/pkg_repo && sleep 5'],
-    ['/usr/bin/timeout 10m /media/build/repo/upm pkg serve repo --fr /media/storage/pkg_repo'],
-    ['cd /media/build/repo && ./upm makefile --os linux -v | ./upm make --root /media/build/repo --install-dir /pkg -j7 -f -']
+    ['/media/build/upm pkg sync repo --fr /home/pg83/upm_root/r --fr /media/build/r --to /media/storage && sleep 5'],
+    ['/usr/bin/timeout 10m /media/build/upm pkg serve repo --fr /media/storage'],
+    ['cd /media/build && ./upm makefile --os linux -v | ./upm make --root /media/build --install-dir /pkg -j5 -f -']
 ]
 
 
