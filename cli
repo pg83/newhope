@@ -8,8 +8,12 @@ import gc
 import hashlib
 import marshal
 
-#gc.set_debug(gc.DEBUG_LEAK)
 
+try:
+    __file__
+except Exception:
+    __file__ = 'upm'
+    
 
 def check_ver():
     vi = sys.version_info

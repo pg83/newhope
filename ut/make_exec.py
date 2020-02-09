@@ -448,7 +448,7 @@ class Item(ItemBase):
 
             res, retcode = await ctl.loop.offload(y.set_name(fun, 'fun_' + y.sanitize_string(self.my_name)))
             res = res.strip()
-    
+
             if not res:
                 res = y.build_run_sh(self.n)
 

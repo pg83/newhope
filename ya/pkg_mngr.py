@@ -9,12 +9,12 @@ class Fetcher(object):
 class HTTPFetcher(Fetcher):
     def __init__(self, root):
         self._root = root
-        
+
     def fetch(self, path):
         p = y.os.path.join(self._root, path)
-        
+
         y.info('will fetch{bg}', p, '{}')
-        
+
         return y.fetch_data(p)
 
 
@@ -26,7 +26,7 @@ class LocalFetcher(Fetcher):
         p = y.os.path.join(self._root, path)
 
         y.info('will fetch {br}', p, '{}')
-        
+
         with open(p, 'wb') as f:
             return f.read()
 
@@ -36,7 +36,7 @@ def get_fetcher(path):
         return HTTPFetcher(path)
 
     return LocalFetcher(path)
-        
+
 
 class InstPropertyDB(object):
     def __init__(self, db):
@@ -50,10 +50,10 @@ class InstPropertyDB(object):
             db['idx'] = []
 
         self.add_index_file([])
-            
+    
     def restore_state(self):
         self.db = y.marshal.loads(self.state)
-            
+    
     def inst(self):
         return self.db['inst']
 
@@ -170,7 +170,7 @@ class PkgMngr(object):
 
     def collect_indices_0(self):
         cnt = 0
-        
+
         for f in self.get_index_files():
             try:
                 yield from get_fetcher(f).fetch_index()
@@ -180,7 +180,7 @@ class PkgMngr(object):
 
         if not cnt:
             raise Exception('all sources dead')
-                
+        
     def collect_indices(self):
         return list(self.collect_indices_0())
 
@@ -268,7 +268,7 @@ class PkgMngr(object):
                 db.restore_state()
             finally:
                 raise e
-            
+    
     def apply_db(self, db):
         y.info('apply actual changes')
         self.actual_install(db.inst())
@@ -335,4 +335,4 @@ class PkgMngr(object):
     def add_indexes(self, indexes):
         with self.open_db() as db:
             db.add_index_file(indexes)
-            
+    
