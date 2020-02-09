@@ -16,7 +16,7 @@ def generate_data(cc, cb, distr):
     for el in common_plugins(cc):
         for func in y.exec_plugin_code(el):
             tow.on_data(func)
-    
+
     for x in tow.gen_funcs():
         cb(x['func'])
 
