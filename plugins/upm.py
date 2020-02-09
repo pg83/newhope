@@ -8,10 +8,10 @@ def upm0():
              $PYTHON3 ./cli release > upm
              $(APPLY_EXTRA_PLAN_0)
              $(APPLY_EXTRA_PLAN_1)
-             $YSHELL ./freeze.sh $PYTHON3 ./upm     
+             $YSHELL ./freeze.sh $PYTHON3 ./upm 
              mv upm $IDIR/bin/ && chmod +x $IDIR/bin/upm  
         """,
-        'version': '3dc11b867a938cd8e081201fd7c619fbd469c7fe',
+        'version': '7cd99ba832b4d1be8f88ee1c07ae346377caa312',
         'meta': {
             'kind': ['tool'],
             'depends': ['python3'],

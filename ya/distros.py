@@ -12,20 +12,19 @@ def small_distr():
         '@tini',
         'dash-run',
         'xz-run',
-        'curl',
+        'curl-run',
         'gzip-run',
         'bzip2-run',
         'unrar-run',
-        'gawk',
+        'gawk-run',
         'grep-run',
         'make-run',
         'sed-run',
         'bsdtar-run',
         'file-run',
-        #'man-db',
-        'python3',
-        'upm',
+        'upm-run',
     ]
+
 
 def common_distr():
     return [

@@ -50,10 +50,10 @@ class InstPropertyDB(object):
             db['idx'] = []
 
         self.add_index_file([])
-    
+
     def restore_state(self):
         self.db = y.marshal.loads(self.state)
-    
+
     def inst(self):
         return self.db['inst']
 
@@ -180,7 +180,7 @@ class PkgMngr(object):
 
         if not cnt:
             raise Exception('all sources dead')
-        
+
     def collect_indices(self):
         return list(self.collect_indices_0())
 
@@ -268,7 +268,7 @@ class PkgMngr(object):
                 db.restore_state()
             finally:
                 raise e
-    
+
     def apply_db(self, db):
         y.info('apply actual changes')
         self.actual_install(db.inst())
@@ -335,4 +335,4 @@ class PkgMngr(object):
     def add_indexes(self, indexes):
         with self.open_db() as db:
             db.add_index_file(indexes)
-    
+
