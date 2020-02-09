@@ -23,6 +23,8 @@ def small_distr():
         'bsdtar-run',
         'file-run',
         #'man-db',
+        'python3',
+        'upm',
     ]
 
 def common_distr():
@@ -31,8 +33,6 @@ def common_distr():
         'mc-slang',
         'mc-ncurses',
         'p7zip-run',
-        'python3',
-        'upm',
         'cmake',
         'openssl',
         'sqlite3-run',
