@@ -1,6 +1,47 @@
+class Fetcher(object):
+    def fetch_index(self):
+        for x in y.decode_prof(self.fetch('index')):
+            x['index'] = self
+
+            yield x
+
+
+class HTTPFetcher(Fetcher):
+    def __init__(self, root):
+        self._root = root
+        
+    def fetch(self, path):
+        p = y.os.path.join(self._root, path)
+        
+        y.info('will fetch{bg}', p, '{}')
+        
+        return y.fetch_data(p)
+
+
+class LocalFetcher(Fetcher):
+    def __init__(self, root):
+        self._root = root
+
+    def fetch(self, path):
+        p = y.os.path.join(self._root, path)
+
+        y.info('will fetch {br}', p, '{}')
+        
+        with open(p, 'wb') as f:
+            return f.read()
+
+
+def get_fetcher(path):
+    if path.startswith('http'):
+        return HTTPFetcher(path)
+
+    return LocalFetcher(path)
+        
+
 class InstPropertyDB(object):
     def __init__(self, db):
         self.db = db
+        self.state = y.marshal.dumps(self.db)
 
         if 'inst' not in db:
             db['inst'] = []
@@ -8,6 +49,11 @@ class InstPropertyDB(object):
         if 'idx' not in db:
             db['idx'] = []
 
+        self.add_index_file([])
+            
+    def restore_state(self):
+        self.db = y.marshal.loads(self.state)
+            
     def inst(self):
         return self.db['inst']
 
@@ -21,7 +67,7 @@ class InstPropertyDB(object):
         self.db['target'] = target
 
     def add_index_file(self, f):
-        self.db['idx'].append(f)
+        self.db['idx'] = list(reversed(y.uniq_list_x(reversed(self.db['idx'] + f))))
 
     def index_files(self):
         return self.db['idx']
@@ -123,13 +169,18 @@ class PkgMngr(object):
         return list(self.get_index_files_0())
 
     def collect_indices_0(self):
+        cnt = 0
+        
         for f in self.get_index_files():
-            y.info('will fetch', f)
+            try:
+                yield from get_fetcher(f).fetch_index()
+                cnt += 1
+            except Exception as e:
+                y.warning('skip source', f)
 
-            for x in y.decode_prof(y.fetch_data(f)):
-                x['index'] = f
-                yield x
-
+        if not cnt:
+            raise Exception('all sources dead')
+                
     def collect_indices(self):
         return list(self.collect_indices_0())
 
@@ -214,15 +265,10 @@ class PkgMngr(object):
                 self.apply_db(db)
         except Exception as e:
             try:
-                y.error('in install: ', e)
-                self.revert_changes()
+                db.restore_state()
             finally:
                 raise e
-
-    def revert_changes(self):
-        with self.open_db() as db:
-            self.apply_db(db)
-
+            
     def apply_db(self, db):
         y.info('apply actual changes')
         self.actual_install(db.inst())
@@ -253,7 +299,7 @@ class PkgMngr(object):
                 y.shutil.rmtree(ppath_tmp)
                 y.os.makedirs(ppath_tmp)
 
-            y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
+            y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && ./install && mv ' + ppath_tmp + ' ' + ppath)
 
         ap = self.all_packs()
 
@@ -266,9 +312,7 @@ class PkgMngr(object):
 
 
     def fetch_package(self, pkg):
-        y.info('will fetch package{br}', pkg['path'], '{}')
-
-        return y.fetch_data(y.os.path.dirname(pkg['index']) + '/' + pkg['path'])
+        return pkg['index'].fetch(pkg['path'])
 
     def init_place(self):
         try:
@@ -278,7 +322,7 @@ class PkgMngr(object):
 
         with self.open_db() as db:
             db.set_target(self.info)
-            db.add_index_file('http://index.samokhvalov.xyz/index')
+            db.add_index_file(['http://index.samokhvalov.xyz'])
 
         base = self.pkg_list(['base'])[0]
 
@@ -287,3 +331,8 @@ class PkgMngr(object):
         with open(base['path'] + '.tar', 'wb') as f:
             f.write(y.decode_prof(self.fetch_package(base)))
             y.os.system('tar -xf *.tar && rm -rf log base* build')
+
+    def add_indexes(self, indexes):
+        with self.open_db() as db:
+            db.add_index_file(indexes)
+            

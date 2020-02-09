@@ -44,11 +44,15 @@ async def cli_pkg_add(args_):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('--where', default=None, action='store', help='where to find installation')
+    p.add_argument('--index', default=False, action='store_const', const=True, help='add index, not package')
     p.add_argument('pkg', nargs=y.argparse.REMAINDER)
 
     args = p.parse_args(args_)
 
-    y.PkgMngr(path=args.where).install(args.pkg)
+    if args.index:
+        y.PkgMngr(path=args.where).add_indexes(args.pkg)
+    else:
+        y.PkgMngr(path=args.where).install(args.pkg)
 
 
 @y.main_entry_point
