@@ -9,6 +9,6 @@ def man_db0():
         """,
         'meta': {
             'kind': ['tool'],
-            'depends': ['libpipeline', 'gdbm'],
+            'depends': ['libpipeline', 'gdbm', 'groff'],
         },
     }

@@ -1,20 +1,20 @@
 @y.package
-def groff0():
+def texinfo0():
     return {
         'code': """
-             source fetch "http://ftp.gnu.org/gnu/groff/groff-{version}.tar.gz" 1
+             source fetch "http://ftp.gnu.org/gnu/texinfo/texinfo-{version}.tar.xz" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared || exit 1
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '1.22.4',
+        'version': '6.7',
         'meta': {
             'kind': ['tool'],
             'depends': [
-                 'c++', 'texinfo',
+                 'c++',
             ],
             'provides': [
-                {'env': 'TROFF', 'value': '{pkgroot}/bin/troff'},
+                {'env': 'MAKEINFO', 'value': '{pkgroot}/bin/makeinfo'},
             ],
         }
     }

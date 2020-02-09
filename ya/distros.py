@@ -22,6 +22,7 @@ def small_distr():
         'sed-run',
         'bsdtar-run',
         'file-run',
+        #'man-db',
     ]
 
 def common_distr():
@@ -43,7 +44,7 @@ def common_distr():
 
 def dev_distr():
     return [
-        'clang',
+        #'clang',
     ]
 
 
