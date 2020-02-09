@@ -14,36 +14,27 @@ def subst_some_values(v):
     return v
 
 
-def exec_plugin_code(iface):
-    yield y.EOP(y.ACCEPT('mf:plugin'), y.PROVIDES('mf:original'))
+def exec_plugin_code(el):
+    code = el['el']
+    cc = el['cc']
+    name = code['name']
+    name = name.replace('/', '.')
+    
+    if name.endswith('.py'):
+        name = name[:-3]
 
-    for data in iface.iter_data():
-        if not data.data:
-            yield y.FIN()
-            y.os.abort()
+    mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name, args={'{arch}': cc['arch'], '{os}': cc['os']})
+    cnt = 0
 
-        code = data.data['el']
-        cc = data.data['cc']
-        name = code['name']
-        name = name.replace('/', '.')
+    try:
+        for x in mod.event:
+            cnt += 1
+            yield x
+    except AttributeError:
+        pass
 
-        if name.endswith('.py'):
-            name = name[:-3]
-
-        mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name, args={'{arch}': cc['arch'], '{os}': cc['os']})
-        cnt = 0
-
-        try:
-            for x in mod.event:
-                cnt += 1
-                yield x
-        except AttributeError:
-            pass
-
-        if not cnt:
-            y.error('{by}no package in', name, '{}')
-
-    yield y.EOP()
+    if not cnt:
+        y.error('{by}no package in', name, '{}')
 
 
 def package(func):
@@ -58,7 +49,7 @@ def package(func):
         'cc': y.to_full_target(func.__module__.split('.')[1])
     }
 
-    ev = y.ELEM({'func': descr})
+    ev = {'func': descr}
     fg = func.__globals__
     fg['event'] = fg.get('event', []) + [ev]
 

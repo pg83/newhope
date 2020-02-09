@@ -434,7 +434,7 @@ class Data(object):
 
     def register(self):
         v = self.func_by_num[-1]
-        yield y.ELEM({'func': v.z})
+        yield {'func': v.z}
 
     def iter_deps(self):
         for f in self.func_by_num:
@@ -479,35 +479,29 @@ class Data(object):
         return [self.func_by_num[d].f() for d in deps]
 
 
-def gen_towers(iface, distr):
-    yield y.EOP(y.ACCEPT('mf:original'), y.STATEFUL(), y.PROVIDES('mf:new functions'))
+class Tower(object):
+    def __init__(self, distr, cc):
+        self._distr = distr
+        self._data = []
+        self._cc = cc
+        
+    def on_data(self, data):
+        y.info('will gen func for', data['func']['base'])
+        self._data.append(data)
 
-    data = []
+    def gen_funcs(self):
+        dt = Data(self._distr, self._cc, [x for x in self._data])
+        dt.prepare_funcs(3)
+        dt.out()
+        
+        cnt = 0
 
-    for row in iface.iter_data():
-        if not row.data:
-            break
-
-        y.info('will gen func for', row.data['func']['base'])
-
-        data.append(row)
-        yield y.EOP()
-
-    cc = data[0].data['func']['cc']
-    dt = Data(distr, cc, [x.data for x in data])
-    dt.prepare_funcs(3)
-    dt.out()
-
-    cnt = 0
-
-    try:
-        for x in dt.register():
-            cnt += 1
-            yield x  
-    except IndexError:
-        pass
-
-    if not cnt:
-        y.error('{br}no package detected in', data, '{}')
-
-    yield y.STOP()
+        try:
+            for x in dt.register():
+                cnt += 1
+                yield x  
+        except IndexError:
+            pass
+    
+        if not cnt:
+            y.error('{br}no package detected in', data, '{}')
