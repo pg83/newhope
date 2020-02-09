@@ -19,7 +19,7 @@ def exec_plugin_code(el):
     cc = el['cc']
     name = code['name']
     name = name.replace('/', '.')
-    
+
     if name.endswith('.py'):
         name = name[:-3]
 

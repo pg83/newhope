@@ -406,7 +406,9 @@ class Data(object):
                 func.gen = 'tow' + str(g)
 
             self.add_func(func, g)
-            self.add_func(SplitFunc(func, 'run'), g)
+
+            for k in sorted(y.repacks().keys()):
+                self.add_func(SplitFunc(func, k), g)
 
         self.add_func(self.by_name['all'], g)
         self.calc_new_deps(g)
@@ -484,7 +486,7 @@ class Tower(object):
         self._distr = distr
         self._data = []
         self._cc = cc
-        
+
     def on_data(self, data):
         y.info('will gen func for', data['func']['base'])
         self._data.append(data)
@@ -493,7 +495,7 @@ class Tower(object):
         dt = Data(self._distr, self._cc, [x for x in self._data])
         dt.prepare_funcs(3)
         dt.out()
-        
+
         cnt = 0
 
         try:
@@ -502,6 +504,6 @@ class Tower(object):
                 yield x  
         except IndexError:
             pass
-    
+
         if not cnt:
             y.error('{br}no package detected in', data, '{}')

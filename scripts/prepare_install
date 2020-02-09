@@ -1,0 +1,2 @@
+echo >> "$IDIR/install" && chmod +x "$IDIR/install"
+source subst_string $IDIR/install '{pkgroot}' "/pkg/$TARG"
