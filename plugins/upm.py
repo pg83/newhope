@@ -7,7 +7,7 @@ def upm0():
              mkdir $IDIR/bin
              $PYTHON3 ./cli release > $IDIR/bin/upm && chmod +x $IDIR/bin/upm  
         """,
-        'version': '27c238c481f052b21726c6a6b9ee676ce540ca84',
+        'version': '3dc11b867a938cd8e081201fd7c619fbd469c7fe',
         'meta': {
             'kind': ['tool'],
             'depends': ['python3'],

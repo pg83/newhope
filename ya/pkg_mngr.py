@@ -164,7 +164,7 @@ class PkgMngr(object):
                     i['join'] = p
                     by_time.append(i)
 
-        return by_time
+        return sorted(by_time, key=lambda x: x['ts'])
 
     def pkg_unv_name(self, full_name):
         return full_name.split('-' + self.info)[0]
