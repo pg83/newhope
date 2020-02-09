@@ -23,7 +23,7 @@ def yash0():
             $YMAKE install
 
             echo '#!{pkgroot}/bin/yash' > $IDIR/install
-            echo 'ln -lf {pkgroot}/bin/yash /etc/alt/sh' >> $IDIR/install
+            echo 'ln -sf {pkgroot}/bin/yash /etc/alt/sh' >> $IDIR/install
          """.replace('{opts}', ' '.join(opts)),
         'version': '2.49',
         'meta': {

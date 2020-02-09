@@ -4,7 +4,6 @@ def common_plugins(cc):
     for el in sorted(fd, key=lambda x: y.burn(x)):
         if el['name'].startswith('pl/'):
             el = y.dc(el)
-            print el, cc
             el['name'] = cc['os'] + '/' + cc['arch'] + '/' + el['name']
 
             yield {'el': el, 'cc': cc}
