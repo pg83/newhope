@@ -332,6 +332,8 @@ class PkgMngr(object):
             f.write(y.decode_prof(self.fetch_package(base)))
             y.os.system('tar -xf *.tar && rm -rf log base* build')
 
+        self.install(['upm'])
+    
     def add_indexes(self, indexes):
         with self.open_db() as db:
             db.add_index_file(indexes)
