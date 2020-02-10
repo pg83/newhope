@@ -14,7 +14,12 @@ def fetch_data(url):
 
     for f in (fetch_1, fetch_2, fetch_1, fetch_3):
         try:
-            return f(url)
+            res = f(url)
+
+            if len(res) < 300:
+                raise Exception('too small responce')
+
+            return res
         except Exception as err:
             e = err
             y.xprint_r(e)

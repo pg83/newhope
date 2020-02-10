@@ -1,8 +1,10 @@
 @y.package
-def compiler_rt0():
+def crt0():
     return {
         'code': """
-             source fetch "http://releases.llvm.org/{version}/compiler-rt-{version}.src.tar.xz" 1
+             #pragma cc
+             source fetch "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/compiler-rt-{version}.src.tar.xz" 1
+             $(APPLY_EXTRA_PLAN_0)
              source mk.sh
              mkdir $IDIR/lib && cp libcompiler_rt.a $IDIR/lib
         """,

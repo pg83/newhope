@@ -2,7 +2,6 @@ if '{os}' == 'linux':
     @y.package
     def kernel_h0():
         return {
-            'os': 'linux',
             'code': """
                 source fetch "https://github.com/sabotage-linux/kernel-headers/archive/{version}.zip" 0
                 mv kernel* xxx && cd xxx

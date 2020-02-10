@@ -10,7 +10,7 @@ def libtommath0():
         'version': '1.2.0',
         'meta': {
             'kind': ['library'],
-            'depends': ['compiler_rt'],
+            'depends': ['crt'],
             'provides': [
                 {'lib': 'tommath'},
             ],

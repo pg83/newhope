@@ -372,7 +372,7 @@ class Item(ItemBase):
 
             for l in res.strip().split('\n'):
                 if 'export ' in l:
-                    yield l
+                    #yield l
 
                     if 'BDIR' in l:
                         bdir = l.split('=')[1]
@@ -432,8 +432,6 @@ class Item(ItemBase):
                 return (res, retcode)
 
             res, retcode = fun()
-
-            #print res.decode('utf-8'), retcode
 
             res = res.strip()
 

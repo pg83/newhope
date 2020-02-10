@@ -6,15 +6,25 @@ set -e
 
 ls ../lib/builtins/ | grep udiv* | while read line
 do
-    ${CC} ${CFLAGS} -c "../lib/builtins/$line" -o $line.o
+    $CC $CFLAGS -c "../lib/builtins/$line" -o $line.o
 done
 
 ls ../lib/builtins/ | grep umod* | while read line
 do
-    ${CC} ${CFLAGS} -c "../lib/builtins/$line" -o $line.o
+    $CC $CFLAGS -c "../lib/builtins/$line" -o $line.o
 done
 
-${AR} q libcompiler_rt.a *.o
+ls ../lib/builtins/ | grep mul* | while read line
+do
+    $CC $CFLAGS -c "../lib/builtins/$line" -o $line.o
+done
+
+ls ../lib/builtins/ | grep div* | while read line
+do
+    $CC $CFLAGS -c "../lib/builtins/$line" -o $line.o
+done
+
+$AR q libcompiler_rt.a *.o
 
 mv libcompiler_rt.a ..
 cd ..

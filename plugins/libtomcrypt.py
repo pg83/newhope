@@ -4,7 +4,7 @@ def libtomcrypt0():
         'code': '''
             source fetch "https://github.com/libtom/libtomcrypt/releases/download/v{version}/crypt-{version}.tar.xz" 0
             (mv lib* xxx && mv xxx/* ./)
-            $YMAKE -j $THRS
+            CFLAGS="$CFLAGS -DUSE_LTM -DLTM_DESC" $YMAKE -j $THRS
             $YMAKE DESTDIR=$IDIR LIBPATH=/lib INCPATH=/include install
         ''',
         'version': '1.18.2',
@@ -13,6 +13,7 @@ def libtomcrypt0():
             'depends': ['libtommath'],
             'provides': [
                 {'lib': 'tommath'},
+                {'env': 'CFLAGS', 'value': '"-DUSE_LTM -DLTM_DESC"'},
             ],
         }
     }

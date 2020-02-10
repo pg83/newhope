@@ -43,9 +43,11 @@ def common_distr():
     ]
 
 
-def dev_distr():
+def misc_distr():
     return [
-        #'clang',
+        'gnu-m4',
+        'python3-static',
+        #'clang'
     ]
 
 
@@ -62,7 +64,7 @@ def resolve_packs(packs):
 
 
 def all_packs_0():
-    return common_distr() + dev_distr() + ['base']
+    return common_distr() + misc_distr() + ['base']
 
 
 def all_distro_packs():

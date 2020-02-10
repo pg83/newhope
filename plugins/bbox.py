@@ -28,6 +28,7 @@ def box0():
         'xz',
         'yash',
         'psmisc',
+        'python3-static',
     ]
 
     lst_run = [x + '-run' for x in lst]

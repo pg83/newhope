@@ -9,4 +9,4 @@ SP="$PH"/lib/$(basename "$P")
 
 "$P" ./find_modules.py "$PH/lib/python3.8" > mods.py
 "$P" "$PH/tools/freeze/freeze.py" "$2" ./mods.py
-make -j
+make BASECPPFLAGS="$3"  -j
