@@ -14,6 +14,9 @@ def subst_some_values(v):
     return v
 
 
+plugin_code = {}
+
+
 def exec_plugin_code(el):
     code = el['el']
     cc = el['cc']
@@ -23,34 +26,35 @@ def exec_plugin_code(el):
     if name.endswith('.py'):
         name = name[:-3]
 
-    mod = __yexec__(code['data'], module_name=y.small_repr(cc) + '.' + name, args={'{arch}': cc['arch'], '{os}': cc['os']})
-    cnt = 0
+    args = {
+        '{arch}': cc['arch'],
+        '{os}': cc['os']
+    }
 
-    try:
-        for x in mod.event:
-            cnt += 1
-            yield x
-    except AttributeError:
-        pass
+    mod_name = y.small_repr(cc) + '.' + name
+    y.plugin_code[mod_name] = []
+    mod = __yexec__(code['data'], module_name=mod_name, args=args)
+    events = y.plugin_code.pop(mod_name)
 
-    if not cnt:
+    yield from events
+
+    if not events:
         y.error('{by}no package in', name, '{}')
 
 
 def package(func):
     base_name = func.__name__[:-1]
     new_f = y.singleton(y.compose_simple(func, y.dc, subst_some_values))
+    parts = func.__module__.split('.')
 
     descr = {
         'gen': 'human',
         'base': base_name.replace('_', '-'),
         'kind': new_f()['meta']['kind'],
         'code': new_f,
-        'cc': y.to_full_target(func.__module__.split('.')[1])
+        'cc': y.to_full_target(parts[1])
     }
 
-    ev = {'func': descr}
-    fg = func.__globals__
-    fg['event'] = fg.get('event', []) + [ev]
+    y.plugin_code['.'.join(parts[1:])].append(descr)
 
     return func

@@ -61,7 +61,7 @@ async def cli_dev_make(arg):
     shell_vars = dict(iter_replaces())
 
     async def gen():
-        return await y.main_makefile(y.iter_all_cc, kind='data')
+        return y.main_makefile(y.iter_all_cc, kind='data')
 
     mk = await y.open_mk_file(args.path, gen)
 

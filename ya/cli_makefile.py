@@ -17,7 +17,7 @@ async def cli_dev_makefile(arg):
             f = y.stdout
 
         async def main_func():
-            data = await y.main_makefile(iter_cc, y.all_distro_packs())
+            data = y.main_makefile(iter_cc, y.all_distro_packs())
 
             def func():
                 f.write(data)

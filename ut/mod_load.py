@@ -32,7 +32,7 @@ class Mod(dict):
          pass
 
       self.__loader__.register_module(self)
-      self.exec_text_part(self.builtin_data(), args={})
+      self.exec_text_part(self.builtin_data())
 
    def ycompile(self, a, b, c, firstlineno=0, args={}):
       ap = '\n' * firstlineno + self.__loader__._preproc(a, args=args)
@@ -57,18 +57,21 @@ class Mod(dict):
    def self_exec(self):
       self.exec_text_part(self.pop('__ynext_part__', ''))
 
-   def exec_data(self, data, module_name=None, args={}):
-      return self.__loader__.exec_code(self, data, module_name=module_name, args=args)
+   def exec_data(self, data, module_name=None, args={}, context={}):
+      return self.__loader__.exec_code(self, data, module_name=module_name, args=args, context=context)
 
    def set_next_part(self, text):
       if text:
          self.__ynext_part__ = text 
 
-   def exec_text_part(self, part, args={}):
+   def exec_text_part(self, part, args={}, context={}):
       if not part.strip():
          return
 
       code = self.ycompile(part, self.__file__.replace('.', '/') + '.py', 'exec', firstlineno=self.line_count(), args=args)
+
+      for k, v in context.items():
+         self[k] = v
   
       exec(code, self.__dict__)
 
@@ -151,16 +154,16 @@ class Loader(object):
    def builtin_data(self, mod):
       return self._builtin.get(mod.vname(), {}).get('data', '')
 
-   def exec_code(self, mod, data, module_name=None, args={}):
+   def exec_code(self, mod, data, module_name=None, args={}, context={}):
       if module_name:
          m = self.create_module(module_name)
 
          if data != m.builtin_data():
-            m.exec_text_part(data, args=args)
+            m.exec_text_part(data, args=args, context=context)
 
          return m
 
-      mod.exec_text_part(data, args=args)
+      mod.exec_text_part(data, args=args, context=context)
 
       return mod
 

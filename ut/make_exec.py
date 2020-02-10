@@ -145,13 +145,6 @@ class Builder(object):
                 return el
 
         rq, wq = y.make_engine(iter_data(), lambda x: x.deps1[0], dep_list=lambda x: sorted(frozenset(x.deps2)))
-
-        if 0:
-            while True:
-                for i in list(rq()):
-                    print str(i['x'])
-                    wq(i)
-
         by_n = {}
         complete = set()
 

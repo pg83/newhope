@@ -332,8 +332,8 @@ class Data(object):
         self.inc_count = ic()
 
         def iter_objects():
-            for x in sorted(data, key=lambda x: x['func']['base']):
-                res = self.create_object(x['func'])
+            for x in sorted(data, key=lambda x: x['base']):
+                res = self.create_object(x)
 
                 y.info('will gen func', res.base)
 
@@ -488,7 +488,7 @@ class Tower(object):
         self._cc = cc
 
     def on_data(self, data):
-        y.info('will gen func for', data['func']['base'])
+        y.info('will gen func for', data['base'])
         self._data.append(data)
 
     def gen_funcs(self):
@@ -501,9 +501,9 @@ class Tower(object):
         try:
             for x in dt.register():
                 cnt += 1
-                yield x  
+                yield x
         except IndexError:
             pass
 
         if not cnt:
-            y.error('{br}no package detected in', data, '{}')
+            y.error('{br}no package detected in', self._cc, '{}')

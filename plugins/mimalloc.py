@@ -15,7 +15,7 @@ def mimalloc0():
              mkdir $IDIR/lib
              mv libmimalloc.a $IDIR/lib/ 
         """,
-        'version': 'acb03c54971c4b0a43a6d17ea55a9d5feb88972f',
+        'version': '6a744a8549263696ef8d620006a0de2249e59b46',
         'meta': {
             'kind': ['library'],
             'depends': depends + ['make-boot'],

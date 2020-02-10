@@ -333,7 +333,10 @@ class PkgMngr(object):
             y.os.system('tar -xf *.tar && rm -rf log base* build')
 
         self.install(['upm'])
-    
+        upm = self.all_packs()[0]
+        y.os.chdir(self.path + '/bin')
+        y.os.symlink('../pkg/' + upm + '/bin/upm', 'upm')
+
     def add_indexes(self, indexes):
         with self.open_db() as db:
             db.add_index_file(indexes)

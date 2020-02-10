@@ -1,13 +1,11 @@
-def run_profile(func, really=False):
-    if not really:
-        return func
+def run_cc_profile(func):
+    f = func
 
-    @y.functools.wraps(func)
     def wrapper(*args, **kwargs):
-        p = y.cProfile.Profile()
+        p = y.profile.Profile()
 
         try:
-            return p.runcall(func, *args, **kwargs)
+            return p.runcall(f, *args, **kwargs)
         finally:
             @y.run_at_exit
             @y.singleton

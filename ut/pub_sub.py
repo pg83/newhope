@@ -536,3 +536,25 @@ class PubSubLoop(object):
         self.add_fun(y.set_name(wrapper_in, 'sync_' + c.__name__))
 
         return c
+
+    def wrap_thr(self, c):
+        def wrapper_in(iface):
+            outqueue = y.collections.deque()
+
+            def wrapper():
+                for x in c(y.deque_iter_sync(iface.inqueue, sleep=y.time.sleep)):
+                    outqueue.append(x)
+
+            hndl = y.threadin.Thread(target=wrapper)
+            hndl.daemon = True
+            hndl.start
+
+            while True:
+                try:
+                    yield outqueue.popleft()
+                except IndexError:
+                    yield EOP()
+
+        self.add_fun(y.set_name(wrapper_in, 'sync_' + c.__name__))
+
+        return c

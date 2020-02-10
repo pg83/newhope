@@ -104,7 +104,7 @@ def replacer(data):
     return func
 
 
-async def build_makefile(nodes, kind):
+def build_makefile(nodes, kind):
     by_noid = {}
 
     def iter1():

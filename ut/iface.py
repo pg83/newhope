@@ -291,6 +291,7 @@ def load_builtin_modules(builtin):
         'ut.pub_sub',
         'ut.cli',
         'ut.queues',
+        'ut.profiler',
     )
 
     for m in initial:
@@ -334,17 +335,16 @@ def run_stage4_1(data):
     y.run_defer_constructors()
     y.debug('done')
 
-    async def flush_streams():
-        ctl = y.current_coro()
+    def flush_streams():
         ss = [y.stderr, y.stdout]
 
         while True:
             try:
                 for s in ss:
-                    await ctl.sleep(0.1)
+                    y.time.sleep(0.1)
                     s.flush()
             except Exception as e:
-                y.debug('in flush streams', e)
+                y.os.abort()
 
     async def entry_point():
         try:
@@ -366,4 +366,7 @@ def run_stage4_1(data):
             y.shut_down(0)
 
     y.spawn(entry_point, debug=False)
-    y.spawn(flush_streams, debug=False)
+
+    t = y.threading.Thread(target=flush_streams)
+    t.daemon = True
+    t.start()

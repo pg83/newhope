@@ -7,6 +7,6 @@ PP=$(dirname "$P")
 PH=$(dirname "$PP")
 SP="$PH"/lib/$(basename "$P")
 
-"$P" ./find_modules.py "$SP" > mods.py
+"$P" ./find_modules.py "$PH/lib/python3.8" > mods.py
 "$P" "$PH/tools/freeze/freeze.py" "$2" ./mods.py
 make -j
