@@ -27,6 +27,7 @@ def box0():
         'unrar',
         'xz',
         'yash',
+        'psmisc',
     ]
 
     lst_run = [x + '-run' for x in lst]

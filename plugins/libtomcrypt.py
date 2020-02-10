@@ -2,9 +2,10 @@
 def libtomcrypt0():
     return {
         'code': '''
-            source fetch "https://github.com/libtom/libtomcrypt/releases/download/v{version}/crypt-{version}.tar.xz" 1
+            source fetch "https://github.com/libtom/libtomcrypt/releases/download/v{version}/crypt-{version}.tar.xz" 0
+            (mv lib* xxx && mv xxx/* ./)
             $YMAKE -j $THRS
-            $YMAKE DESTDIR=$IDIR install
+            $YMAKE DESTDIR=$IDIR LIBPATH=/lib INCPATH=/include install
         ''',
         'version': '1.18.2',
         'meta': {

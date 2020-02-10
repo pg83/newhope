@@ -23,6 +23,7 @@ def small_distr():
         'bsdtar-run',
         'file-run',
         'upm-run',
+        'psmisc-run',
     ]
 
 
@@ -38,6 +39,7 @@ def common_distr():
         'diffutils-run',
         'ninja-run',
         'pkg-config',
+        'dropbear',
     ]
 
 
