@@ -1,6 +1,6 @@
 @y.main_entry_point
 def cli_pkg_source(arg):
-    lst = y.main_makefile(y.iter_all_cc, y.all_distro_packs(), kind='data')
+    lst = y.main_makefile(y.iter_all_cc, y.all_distro_packs(), True, kind='data')
     nodes = []
     by_rdep = y.collections.defaultdict(set)
 

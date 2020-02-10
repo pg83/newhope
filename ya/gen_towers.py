@@ -200,7 +200,7 @@ class Func(object):
         else:
             bg = self.data.box_by_gen.get(self.g - 1)
 
-            if False:
+            if not self.data.flat:
                 if bg is None:
                     extra = []
                 else:
@@ -321,7 +321,8 @@ class SolverWrap(object):
 
 
 class Data(object):
-    def __init__(self, distr, info, data):
+    def __init__(self, distr, info, flat, data):
+        self.flat = flat
         self.info = info
         self.distr = distr
         self.new_funcs = []
@@ -482,17 +483,18 @@ class Data(object):
 
 
 class Tower(object):
-    def __init__(self, distr, cc):
+    def __init__(self, distr, cc, flat):
         self._distr = distr
         self._data = []
         self._cc = cc
+        self._flat = flat
 
     def on_data(self, data):
         y.info('will gen func for', data['base'])
         self._data.append(data)
 
     def gen_funcs(self):
-        dt = Data(self._distr, self._cc, [x for x in self._data])
+        dt = Data(self._distr, self._cc, self._flat, [x for x in self._data])
         dt.prepare_funcs(3)
         dt.out()
 

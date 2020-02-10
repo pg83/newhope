@@ -61,7 +61,7 @@ def cli_dev_make(arg):
     shell_vars = dict(iter_replaces())
 
     def gen():
-        return y.main_makefile(y.iter_all_cc, kind='data')
+        return y.main_makefile(y.iter_all_cc, True, kind='data')
 
     mk = y.open_mk_file(args.path, gen)
 
