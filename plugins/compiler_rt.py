@@ -2,13 +2,18 @@
 def compiler_rt0():
     return {
         'code': """
-             #pragma cc
-             source fetch "http://releases.llvm.org/9.0.0/compiler-rt-9.0.0.src.tar.xz" 1
+             source fetch "http://releases.llvm.org/{version}/compiler-rt-{version}.src.tar.xz" 1
+             source mk.sh
+             mkdir $IDIR/lib && cp libcompiler_rt.a $IDIR/lib
         """,
+        'extra': [
+            {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_crt.sh']['data']},
+        ],
+        'version': '9.0.1',
         'meta': {
             'kind': ['library'],
             'provides': [
-                {'lib': 'crt'},
+                {'lib': 'compiler_rt'},
             ],
         },
     }
