@@ -41,3 +41,4 @@ class PCGRandom(object):
     def iter_int(self):
         while True:
             yield self.next_random()
+

@@ -9,8 +9,8 @@ def common_plugins(cc):
             yield {'el': el, 'cc': cc}
 
 
-def generate_data(cc, cb, distr):
-    tow = y.Tower(distr, cc)
+def generate_data(cc, cb, distr, flat):
+    tow = y.Tower(distr, cc, flat)
 
     for el in common_plugins(cc):
         for func in y.exec_plugin_code(el):

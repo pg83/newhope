@@ -26,7 +26,13 @@ def subst_by_platform(os):
     by_os['linux'].update({'ncurses': 'netbsd-curses'})
     by_os['linux'].update({'libtool': 'slibtool'})
 
-    return by_os[os]
+    res = y.dc(by_os[os])
+
+    for k in list(res.keys()):
+        for s in y.repacks_keys():
+            res[k + '-' + s] = res[k] + '-' + s
+
+    return res
 
 
 class Func(object):
@@ -200,7 +206,7 @@ class Func(object):
         else:
             bg = self.data.box_by_gen.get(self.g - 1)
 
-            if False:
+            if not self.data.flat:
                 if bg is None:
                     extra = []
                 else:
@@ -321,7 +327,8 @@ class SolverWrap(object):
 
 
 class Data(object):
-    def __init__(self, distr, info, data):
+    def __init__(self, distr, info, flat, data):
+        self.flat = flat
         self.info = info
         self.distr = distr
         self.new_funcs = []
@@ -407,7 +414,7 @@ class Data(object):
 
             self.add_func(func, g)
 
-            for k in sorted(y.repacks().keys()):
+            for k in y.repacks_keys():
                 self.add_func(SplitFunc(func, k), g)
 
         self.add_func(self.by_name['all'], g)
@@ -420,7 +427,7 @@ class Data(object):
         self.new_funcs = []
 
     def add_func(self, func, g):
-        if func.base == 'box-run':
+        if func.base == 'box':
             self.box_by_gen[g] = func
 
         func.g = g
@@ -482,17 +489,18 @@ class Data(object):
 
 
 class Tower(object):
-    def __init__(self, distr, cc):
+    def __init__(self, distr, cc, flat):
         self._distr = distr
         self._data = []
         self._cc = cc
+        self._flat = flat
 
     def on_data(self, data):
         y.info('will gen func for', data['base'])
         self._data.append(data)
 
     def gen_funcs(self):
-        dt = Data(self._distr, self._cc, [x for x in self._data])
+        dt = Data(self._distr, self._cc, self._flat, [x for x in self._data])
         dt.prepare_funcs(3)
         dt.out()
 

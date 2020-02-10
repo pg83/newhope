@@ -18,8 +18,8 @@ mkdir "$TMPDIR"
 
 source mkcd "$BDIR/runtime"
 
-#exec 2>&1
-#exec 1> $BDIR/runtime/out.log
+exec 2>&1
+exec 1> $BDIR/runtime/out.log
 
 echo "export RUNSH=\"$RUNSH\"" > $BDIR/runtime/run.sh
 echo $RUNSH | source base64_decode >> $BDIR/runtime/run.sh
@@ -34,4 +34,3 @@ export HOME="/"
 export PWD="/"
 
 cd $BD || cd /
-

@@ -11,19 +11,34 @@ BUILD = [
 ]
 
 
-def func(code):
+def func(code_):
     def do():
+        code = code_
+
         while True:
             try:
                 y.info('will run', code)
-                y.subprocess.Popen(code, shell=True).communicate(input='')
-                y.info('done')
+
+                p = y.subprocess.Popen(code, shell=True)
+                retcode = p.wait()
+
+                y.info('done, with code', retcode)
             except Exception as e:
-                y.warning('in scheduler:', e)
+                y.warning('in scheduler:', y.traceback.format_exc())
 
             y.time.sleep(1)
 
     return do
+
+
+def wp():
+    while True:
+        try:
+            y.info('got something', y.os.waitpid(-1, 0))
+        except Exception as e:
+            y.warning('in process catch: s', e)
+
+        y.time.sleep(1)
 
 
 @y.verbose_entry_point
@@ -32,7 +47,7 @@ def cli_cmd_scheduler(args):
 
     y.info('code', code)
 
-    thrs = [y.threading.Thread(target=func(c)) for c in globals()[code]]
+    thrs = [y.threading.Thread(target=func(c)) for c in globals()[code]]  + [y.threading.Thread(target=wp)]
 
     for t in thrs:
         t.start()
