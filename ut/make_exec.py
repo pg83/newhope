@@ -434,7 +434,7 @@ class Item(ItemBase):
             res, retcode = fun()
 
             #print res.decode('utf-8'), retcode
-    
+
             res = res.strip()
 
             if not res:
