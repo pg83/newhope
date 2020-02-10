@@ -8,7 +8,7 @@ def fetch_url_data(fr):
 
 
 @y.main_entry_point
-async def cli_pkg_init(args_):
+def cli_pkg_init(args_):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('--fr', default='http://index.samokhvalov.xyz', action='store', help='output repo')
@@ -25,7 +25,7 @@ async def cli_pkg_init(args_):
 
 
 @y.main_entry_point
-async def cli_pkg_search(args_):
+def cli_pkg_search(args_):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('--target', default=None, action='store', help='shorter form of target info')
@@ -40,7 +40,7 @@ async def cli_pkg_search(args_):
 
 
 @y.main_entry_point
-async def cli_pkg_add(args_):
+def cli_pkg_add(args_):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('--where', default=None, action='store', help='where to find installation')
@@ -56,7 +56,7 @@ async def cli_pkg_add(args_):
 
 
 @y.main_entry_point
-async def cli_pkg_del(args_):
+def cli_pkg_del(args_):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('--where', default=None, action='store', help='where to find installation')
@@ -68,7 +68,7 @@ async def cli_pkg_del(args_):
 
 
 @y.main_entry_point
-async def cli_pkg_up(args_):
+def cli_pkg_up(args_):
     p = y.argparse.ArgumentParser()
     p.add_argument('--where', default=None, action='store', help='where to find installation')
     args = p.parse_args(args_)
@@ -76,13 +76,13 @@ async def cli_pkg_up(args_):
     y.PkgMngr(path=args.where).install([])
 
 @y.main_entry_point
-async def cli_pkg_showdb(args_):
+def cli_pkg_showdb(args_):
    with y.PkgMngr().open_db() as db:
        print db.db
 
 
 @y.verbose_entry_point
-async def cli_pkg_sync_repo(args_):
+def cli_pkg_sync_repo(args_):
     parser = y.argparse.ArgumentParser()
 
     parser.add_argument('--fr', default=[], action='append', help='input repo')
@@ -131,7 +131,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 @y.verbose_entry_point
-async def cli_pkg_serve_repo(args_):
+def cli_pkg_serve_repo(args_):
     parser = y.argparse.ArgumentParser()
 
     parser.add_argument('--fr', default='', action='store', help='path to repo')

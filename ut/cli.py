@@ -52,12 +52,12 @@ def register_entry_point(f):
             for k in funcs_by_prefix(prefix + '_'):
                 yield '    {bb}' + k.replace('_', ' ') + '{}'
 
-        async def func(mn, args):
+        def func(mn, args):
             if args:
                 nn = mn + '_' + args[0]
 
                 if nn in mep:
-                    return await mep[nn][1](args[1:])
+                    return mep[nn][1](args[1:])
             else:
                 print('\n'.join(it_help(mn)), file=y.stderr)
 
@@ -101,6 +101,6 @@ def init_1():
         y.run_at_exit(y.print_stats)
 
 
-async def run_main(args):
+def run_main(args):
     with y.without_gc(True):
-        return await y.get_entry_point(args[1])(args[2:])
+        return y.get_entry_point(args[1])(args[2:])

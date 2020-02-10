@@ -1,9 +1,9 @@
 @y.main_entry_point
-async def cli_dev_eval(args):
-   await run_eval(args)
+def cli_dev_eval(args):
+   run_eval(args)
 
 
-async def run_eval(args):
+def run_eval(args):
    repl = {
       'layers': 'y.gen_all_texts(only_print_layers=True)'
    }

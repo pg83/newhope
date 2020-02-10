@@ -1,7 +1,7 @@
 import os
 
 @y.verbose_entry_point
-async def cli_cmd_codec(args):
+def cli_cmd_codec(args):
     with y.without_color():
         so = y.sys.stdout
         si = y.sys.stdin
@@ -14,4 +14,3 @@ async def cli_cmd_codec(args):
             raise Exception('shit')
 
         so.flush()
-

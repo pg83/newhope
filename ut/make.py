@@ -15,15 +15,9 @@ def output_build_results(arg):
         y.info(arg['info']['message'], extra=arg['info']['extra'])
 
 
-async def run_make_0(mk, args):
-    async def do_run(build_results):
-        @y.lookup
-        def lookup(name):
-            return {'build_results': build_results}[name]
+def run_make_0(mk, args):
+    @y.lookup
+    def lookup(name):
+        return {'build_results': output_build_results}[name]
 
-        return await y.run_makefile(mk, args.targets, int(args.threads), pre_run=args.pre_run)
-
-    async def do_run_log():
-        return await do_run(output_build_results)
-
-    return await y.spawn(do_run_log)
+    return y.run_makefile(mk, args.targets, int(args.threads), pre_run=args.pre_run)

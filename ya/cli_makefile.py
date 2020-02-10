@@ -1,5 +1,5 @@
 @y.main_entry_point
-async def cli_dev_makefile(arg):
+def cli_dev_makefile(arg):
     parser = y.argparse.ArgumentParser()
    
     parser.add_argument('-o', '--output', default='', action='store', help='file to output, stdout by default')
@@ -16,13 +16,7 @@ async def cli_dev_makefile(arg):
         else:
             f = y.stdout
 
-        async def main_func():
-            data = y.main_makefile(iter_cc, y.all_distro_packs())
+        data = y.main_makefile(iter_cc, y.all_distro_packs())
 
-            def func():
-                f.write(data)
-                f.flush()
-
-            return await y.offload(func)
-
-        return await main_func()
+        f.write(data)
+        f.flush()

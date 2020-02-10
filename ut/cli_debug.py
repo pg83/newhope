@@ -1,5 +1,5 @@
 @y.main_entry_point
-async def cli_dev_debug(args):
+def cli_dev_debug(args):
     bdir = args[0] + '/runtime'
 
     if not y.os.path.isfile(bdir + '/copy.sh'):

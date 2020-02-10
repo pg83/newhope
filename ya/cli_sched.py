@@ -27,7 +27,7 @@ def func(code):
 
 
 @y.main_entry_point
-async def cli_cmd_scheduler(args):
+def cli_cmd_scheduler(args):
     code = (len(args) > 0 and args[0]) or 'ENTRY'
 
     y.info('code', code)
@@ -39,4 +39,3 @@ async def cli_cmd_scheduler(args):
 
     for t in thrs:
         t.join()
-

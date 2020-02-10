@@ -322,7 +322,7 @@ class Scheduler(Iterator):
     def __init__(self, f, parent, n):
         Iterator.__init__(self, f, parent, n)
 
-    async def step(self):
+    def step(self):
         is_debug() and y.debug('will call scheduler', str(self))
 
         if self.active:
@@ -345,9 +345,8 @@ def cmd_name(v):
 
 
 class PubSubLoop(object):
-    def __init__(self, ctl=None):
+    def __init__(self):
         self.xrun = False
-        self.ctl_ = ctl
         self.funcs = []
         self.net = {}
         self.by_name = set()
@@ -360,10 +359,6 @@ class PubSubLoop(object):
         self.add_fun(self.state_checker)
 
         self.activate('ps')
-
-    @property
-    def ctl(self):
-        return self.ctl_ or y.async_loop
 
     def activate(self, ns):
         self.active_ns.add(ns)
@@ -415,31 +410,26 @@ class PubSubLoop(object):
 
             yield EOP()
 
-    async def run(self, init=[], coro=[]):
+    def run(self, init=[], thrs=[]):
         for f in init:
             self.add_fun(f)
 
-        for c in coro:
-            self.wrap_coro(c)
-
-        async def pub_sub_cycle(ctl):
-            while self.active():
-                await self.step()
-
+        for t in thrs:
+            self.wrap_thr(t)
+    
         try:
             self.xrun = True
 
-            return await self.ctl.spawn(pub_sub_cycle, 'pub_sub_cycle')
+            while self.active():
+                self.step()
         finally:
             self.xrun = False
 
     def scheduler(self):
         return self.funcs[0]
 
-    async def step(self):
-        s = self.scheduler()
-
-        await s.step()
+    def step(self):
+        self.scheduler().step()
 
     def rebuild_net(self):
         net = y.collections.defaultdict(list)
@@ -517,26 +507,6 @@ class PubSubLoop(object):
 
         return f
 
-    def wrap_coro(self, c):
-        def wrapper_in(iface):
-            outqueue = y.collections.deque()
-
-            async def wrapper(ctl):
-                async for x in c(ctl, y.deque_iter_async(iface.inqueue, sleep=ctl.sleep)):
-                    outqueue.append(x)
-
-            hndl = self.ctl.spawn(wrapper, 'async_' + c.__name__)
-
-            while True:
-                try:
-                    yield outqueue.popleft()
-                except IndexError:
-                    yield EOP()
-
-        self.add_fun(y.set_name(wrapper_in, 'sync_' + c.__name__))
-
-        return c
-
     def wrap_thr(self, c):
         def wrapper_in(iface):
             outqueue = y.collections.deque()
@@ -545,9 +515,9 @@ class PubSubLoop(object):
                 for x in c(y.deque_iter_sync(iface.inqueue, sleep=y.time.sleep)):
                     outqueue.append(x)
 
-            hndl = y.threadin.Thread(target=wrapper)
+            hndl = y.threading.Thread(target=wrapper)
             hndl.daemon = True
-            hndl.start
+            hndl.start()
 
             while True:
                 try:
@@ -555,6 +525,6 @@ class PubSubLoop(object):
                 except IndexError:
                     yield EOP()
 
-        self.add_fun(y.set_name(wrapper_in, 'sync_' + c.__name__))
+        self.add_fun(y.make_name(wrapper_in, 'sync_' + c.__name__))
 
         return c

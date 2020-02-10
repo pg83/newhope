@@ -82,7 +82,7 @@ def prune_dir(d):
 
 
 @y.verbose_entry_point
-async def cli_cmd_prune(args):
+def cli_cmd_prune(args):
     for a in args:
         fix_absolute_symlinks(a)
         prune_dir(a)

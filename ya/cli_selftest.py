@@ -18,21 +18,8 @@ def self_test2():
    for color in y.color_map_func():
       y.xxprint('{color}color{}'.format(color=color))
 
-
-def self_test4():
-   with y.abort_on_error():
-      async def ff(ctl):
-         async def func(x):
-            return x * x
-  
-         await ctl.loop.map(func, range(0, 1000)).wait()
-
-      y.print_all_threads()
-      y.spawn(ff).wait_sync()
-
    
 def iter_all_tests():
-    yield self_test4
     yield self_test1
     yield self_test2
     yield self_test3

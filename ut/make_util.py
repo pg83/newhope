@@ -99,7 +99,7 @@ def find_tool_cached(tool, path):
             return p + '/' + tool
 
 
-async def parse_makefile(data):
+def parse_makefile(data):
     lst = []
     prev = None
     cprint = y.xprint_white
@@ -163,7 +163,7 @@ async def parse_makefile(data):
     return {'lst': lst, 'flags': shell_args}
 
 
-async def cheet(mk):
+def cheet(mk):
     @y.singleton
     def placeholder():
         bsp = mk.bsp()
@@ -204,19 +204,19 @@ class MakeArgs(dict):
 
 
 class MakeFile(object):
-    async def init(self, lst):
+    def init(self, lst):
         try:
             return self.init_from_dict(y.decode_prof(lst))
         except Exception as e1:
             exc1 = e1
 
         try:
-            return self.init_from_parsed(await parse_makefile(lst))
+            return self.init_from_parsed(parse_makefile(lst))
         except Exception as e2:
             exc2 = e2
 
         try:
-            return self.init_from_parsed(await parse_makefile(lst.decode('utf-8')))
+            return self.init_from_parsed(parse_makefile(lst.decode('utf-8')))
         except Exception as e2:
             exc2 = e2
 
@@ -268,7 +268,7 @@ class MakeFile(object):
     def nums_to_str(self, l):
         return [self.strings[s] for s in l]
 
-    async def select_targets(self, targets):
+    def select_targets(self, targets):
         mk = MakeFile()
 
         lst = select_targets(self.lst, self.lst_to_nums(sorted(targets)))
@@ -284,15 +284,15 @@ class MakeFile(object):
     def restore_node(self, n):
         return dict((k, self.nums_to_str(n[k])) for k in ('deps1', 'deps2', 'cmd'))
 
-    async def build(self, args):
+    def build(self, args):
         mk = self.clone()
 
         mk.flags = y.dc(mk.flags)
         mk.flags.update(args.shell_vars)
 
-        return await y.run_make_0(mk, args)
+        return y.run_make_0(mk, args)
 
-    async def build_kw(self, **kwargs):
+    def build_kw(self, **kwargs):
         args = MakeArgs()
 
         args.shell_vars = kwargs.pop('shell_vars', {})
@@ -302,7 +302,7 @@ class MakeFile(object):
 
         args.update(kwargs)
 
-        return await self.build(args)
+        return self.build(args)
 
 
 def dumps_mk(mk):
@@ -313,20 +313,20 @@ def loads_mk(t):
     return MakeFile().init_from_dict(y.decode_prof(t))
 
 
-async def open_mk_file(path, gen=None):
+def open_mk_file(path, gen=None):
     if gen and path == 'gen':
-        return await gen()
+        return gen()
 
     if path == '-':
-        data = await y.offload(y.sys.stdin.read)
+        data = y.sys.stdin.read()
     elif path:
         with open(path, 'r') as f:
-            data = await y.offload(f.buffer.read)
+            data = f.buffer.read()
     else:
-        data = await y.offload(y.sys.stdin.read)
+        data = y.sys.stdin.read()
 
     mk = MakeFile()
 
-    await mk.init(data)
+    mk.init(data)
 
     return mk

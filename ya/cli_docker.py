@@ -20,7 +20,7 @@ def path_to_images():
 
 
 @y.main_entry_point
-async def cli_docker_build(args):
+def cli_docker_build(args):
     assert args, 'empty arguments'
 
     path = path_to_images()
@@ -43,7 +43,7 @@ def data_for_container(cont):
 
 
 @y.main_entry_point
-async def cli_docker_run(arg):
+def cli_docker_run(arg):
    assert arg, 'empty arguments'
 
    cont = arg[0]
@@ -62,7 +62,7 @@ def get_running():
    
    
 @y.main_entry_point
-async def cli_docker_list(arg):
+def cli_docker_list(arg):
     info = get_running()
 
     def is_running(cont):
@@ -81,7 +81,7 @@ async def cli_docker_list(arg):
 
 
 @y.main_entry_point
-async def cli_docker_shell(arg):
+def cli_docker_shell(arg):
     assert arg, 'empty arguments'
 
     cont = arg[0]

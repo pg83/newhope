@@ -1,5 +1,5 @@
 @y.verbose_entry_point
-async def cli_cmd_release(args):
+def cli_cmd_release(args):
    data = {'file_data': y.globals.file_data, 'script_path': y.globals.script_path, 'compile_cache': y.globals.cache}
    data = y.marshal.dumps(data)
    data = y.lzma.compress(data)

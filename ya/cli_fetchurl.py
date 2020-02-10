@@ -1,5 +1,5 @@
 @y.verbose_entry_point
-async def cli_cmd_fetch(args):
+def cli_cmd_fetch(args):
     if len(args) > 1:
         url = args[0]
         path = args[1]

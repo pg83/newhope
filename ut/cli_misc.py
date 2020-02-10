@@ -1,5 +1,5 @@
 @y.verbose_entry_point
-async def cli_misc_cleanup(arg):
+def cli_misc_cleanup(arg):
    y.os.system("find . | grep '~' | xargs rm")
    y.os.system("find . | grep '#' | xargs rm")
    y.os.system('find . | grep "\\.tmp" | xargs rm')
@@ -37,7 +37,7 @@ async def cli_misc_cleanup(arg):
    
 
 @y.main_entry_point
-async def cli_misc_help(args):
+def cli_misc_help(args):
    def iter_funcs():
       allow = 'm'
 
@@ -60,7 +60,7 @@ async def cli_misc_help(args):
 
 
 @y.main_entry_point
-async def cli_misc_pip(args):
+def cli_misc_pip(args):
     import signal
 
     def ff(a, b):
@@ -80,7 +80,7 @@ async def cli_misc_pip(args):
 
 
 @y.main_entry_point
-async def cli_dev_repl(args):
+def cli_dev_repl(args):
    frame = y.inspect.currentframe()
    frame = frame.f_back
 

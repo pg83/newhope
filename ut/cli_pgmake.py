@@ -1,5 +1,5 @@
 @y.verbose_entry_point
-async def cli_cmd_pgmake(args):
+def cli_cmd_pgmake(args):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
@@ -8,7 +8,7 @@ async def cli_cmd_pgmake(args):
     p.add_argument('targets', nargs=y.argparse.REMAINDER)
 
     args = p.parse_args(args)
-    mk = await y.open_mk_file(args.path)
+    mk = y.open_mk_file(args.path)
 
     def iter_vars():
         for i in args.set:
@@ -16,4 +16,4 @@ async def cli_cmd_pgmake(args):
 
             yield '$' + k, v
 
-    await mk.build_kw(shell_vars=dict(iter_vars()), threads=args.threads, targets=args.targets, pre_run=[])
+    mk.build_kw(shell_vars=dict(iter_vars()), threads=args.threads, targets=args.targets, pre_run=[])

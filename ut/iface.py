@@ -113,12 +113,6 @@ class IFace(dict):
     def stderr(self):
         return sys.stderr
 
-    def spawn(self, coro, name=None, debug=True):
-        return self.async_loop.spawn(coro, name=name, debug=debug)
-
-    async def offload(self, job):
-        return await self.async_loop.offload(job)
-  
     def last_msg(self, t):
         e = sys.stderr
         o = sys.stdout
@@ -327,8 +321,6 @@ def run_stage4_1(data):
 
     load_builtin_modules(y.globals.builtin_modules)
 
-    data['async_loop'] = y.CoroLoop('main')
-
     y.init_logger(log_level=y.config.get('ll', 'info').upper())
 
     y.debug('will run defer constructors')
@@ -346,10 +338,10 @@ def run_stage4_1(data):
             except Exception as e:
                 y.os.abort()
 
-    async def entry_point():
+    def entry_point():
         try:
             try:
-                return await y.run_main(data.pop('args'))
+                return y.run_main(data.pop('args'))
             except AssertionError as e:
                 print('{br}' + str(e) + '{}', file=y.stderr)
                 y.shut_down(1)
@@ -364,9 +356,9 @@ def run_stage4_1(data):
                 y.os.abort()
         finally:
             y.shut_down(0)
-
-    y.spawn(entry_point, debug=False)
-
+    
     t = y.threading.Thread(target=flush_streams)
     t.daemon = True
     t.start()
+
+    entry_point()

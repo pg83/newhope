@@ -1,5 +1,5 @@
 @y.verbose_entry_point
-async def cli_cmd_subst(args):
+def cli_cmd_subst(args):
     assert len(args) == 3
 
     path = args[0]

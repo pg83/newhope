@@ -1,5 +1,5 @@
 @y.main_entry_point
-async def cli_dev_make(arg):
+def cli_dev_make(arg):
     p = y.argparse.ArgumentParser()
 
     p.add_argument('-j', '--threads', default=1, action='store', help='set num threads')
@@ -60,10 +60,10 @@ async def cli_dev_make(arg):
 
     shell_vars = dict(iter_replaces())
 
-    async def gen():
+    def gen():
         return y.main_makefile(y.iter_all_cc, kind='data')
 
-    mk = await y.open_mk_file(args.path, gen)
+    mk = y.open_mk_file(args.path, gen)
 
     if int(args.threads):
         if not args.targets:
@@ -72,6 +72,6 @@ async def cli_dev_make(arg):
         args.pre_run = ['workspace']
         args.shell_vars = shell_vars
 
-        return await mk.build(args)
+        return mk.build(args)
 
     return 0
