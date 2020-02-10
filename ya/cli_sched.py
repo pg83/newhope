@@ -26,7 +26,7 @@ def func(code):
     return do
 
 
-@y.main_entry_point
+@y.verbose_entry_point
 def cli_cmd_scheduler(args):
     code = (len(args) > 0 and args[0]) or 'ENTRY'
 

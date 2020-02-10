@@ -1,16 +1,44 @@
+def build_index(where):
+    y.info('build index file for {bb}', where, '{}')
+
+    index = []
+
+    for f in sorted(y.os.listdir(where)):
+        if len(f) > 10:
+            p = y.os.path.join(where, f)
+
+            if f.endswith('-tmp'):
+                continue
+
+            if f.startswith('.'):
+                continue
+    
+            index.append({'path': f, 'length': y.os.path.getsize(p), 'ts': int(1000000000 * y.os.path.getmtime(p))})
+
+    return index
+
+
 class Fetcher(object):
     def fetch_index(self):
-        for x in y.decode_prof(self.fetch('index')):
+        for x in self.do_fetch_index():
             x['index'] = self
 
             yield x
+
+    def fetch(self, name):
+        assert name != 'index'
+
+        return self.do_fetch(name)
 
 
 class HTTPFetcher(Fetcher):
     def __init__(self, root):
         self._root = root
 
-    def fetch(self, path):
+    def do_fetch_index(self):
+        return y.decode_prof(self.do_fetch('index'))
+
+    def do_fetch(self, path):
         p = y.os.path.join(self._root, path)
 
         y.info('will fetch{bg}', p, '{}')
@@ -22,12 +50,15 @@ class LocalFetcher(Fetcher):
     def __init__(self, root):
         self._root = root
 
-    def fetch(self, path):
+    def do_fetch_index(self):
+        return y.build_index(self._root)
+
+    def do_fetch(self, path):
         p = y.os.path.join(self._root, path)
 
         y.info('will fetch {br}', p, '{}')
 
-        with open(p, 'wb') as f:
+        with open(p, 'rb') as f:
             return f.read()
 
 
@@ -312,6 +343,8 @@ class PkgMngr(object):
 
 
     def fetch_package(self, pkg):
+        print pkg
+
         return pkg['index'].fetch(pkg['path'])
 
     def init_place(self):
@@ -322,7 +355,7 @@ class PkgMngr(object):
 
         with self.open_db() as db:
             db.set_target(self.info)
-            db.add_index_file(['http://index.samokhvalov.xyz'])
+            db.add_index_file(['http://index.samokhvalov.xyz', y.upm_root() + '/r'])
 
         base = self.pkg_list(['base'])[0]
 
