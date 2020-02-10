@@ -416,7 +416,7 @@ class PubSubLoop(object):
 
         for t in thrs:
             self.wrap_thr(t)
-    
+
         try:
             self.xrun = True
 

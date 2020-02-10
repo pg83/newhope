@@ -356,7 +356,7 @@ def run_stage4_1(data):
                 y.os.abort()
         finally:
             y.shut_down(0)
-    
+
     t = y.threading.Thread(target=flush_streams)
     t.daemon = True
     t.start()
