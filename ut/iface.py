@@ -327,38 +327,20 @@ def run_stage4_1(data):
     y.run_defer_constructors()
     y.debug('done')
 
-    def flush_streams():
-        ss = [y.stderr, y.stdout]
-
-        while True:
-            try:
-                for s in ss:
-                    y.time.sleep(0.1)
-                    s.flush()
-            except Exception as e:
-                y.os.abort()
-
-    def entry_point():
+    try:
         try:
-            try:
-                return y.run_main(data.pop('args'))
-            except AssertionError as e:
-                print('{br}' + str(e) + '{}', file=y.stderr)
-                y.shut_down(1)
-            except SystemExit as e:
-                code = e.code
+            return y.run_main(data.pop('args'))
+        except AssertionError as e:
+            print('{br}' + str(e) + '{}', file=y.stderr)
+            y.shut_down(1)
+        except SystemExit as e:
+            code = e.code
 
-                if code is None:
-                    code = 0
+            if code is None:
+                code = 0
 
-                y.shut_down(retcode=code)
-            except:
-                y.os.abort()
-        finally:
-            y.shut_down(0)
-
-    t = y.threading.Thread(target=flush_streams)
-    t.daemon = True
-    t.start()
-
-    entry_point()
+            y.shut_down(retcode=code)
+        except:
+            y.os.abort()
+    finally:
+        y.shut_down(0)

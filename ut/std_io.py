@@ -25,6 +25,17 @@ class ColorStdIO(object):
         self.s = s
         self.p = ''
         self.f = {'strip_colors': not self.isatty()}
+        self.t = y.threading.Thread(target=self.flush_periodicaly)
+        self.t.damon = True
+        self.t.start()
+
+    def flush_periodicaly(self):
+        while True:
+            try:
+                y.time.sleep(0.2 * y.random.random())
+                self.flush()
+            except Exception as e:
+                y.os.abort()
 
     def isatty(self):
         return self.s.isatty()
