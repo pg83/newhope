@@ -12,7 +12,7 @@ def build_index(where):
 
             if f.startswith('.'):
                 continue
-    
+
             index.append({'path': f, 'length': y.os.path.getsize(p), 'ts': int(1000000000 * y.os.path.getmtime(p))})
 
     return index
