@@ -26,7 +26,13 @@ def subst_by_platform(os):
     by_os['linux'].update({'ncurses': 'netbsd-curses'})
     by_os['linux'].update({'libtool': 'slibtool'})
 
-    return by_os[os]
+    res = y.dc(by_os[os])
+
+    for k in list(res.keys()):
+        for s in y.repacks_keys():
+            res[k + '-' + s] = res[k] + '-' + s
+
+    return res
 
 
 class Func(object):
@@ -408,7 +414,7 @@ class Data(object):
 
             self.add_func(func, g)
 
-            for k in sorted(y.repacks().keys()):
+            for k in y.repacks_keys():
                 self.add_func(SplitFunc(func, k), g)
 
         self.add_func(self.by_name['all'], g)
@@ -421,7 +427,7 @@ class Data(object):
         self.new_funcs = []
 
     def add_func(self, func, g):
-        if func.base == 'box-run':
+        if func.base == 'box':
             self.box_by_gen[g] = func
 
         func.g = g

@@ -30,6 +30,11 @@ def repacks():
     return dict(iter())
 
 
+@y.singleton
+def repacks_keys():
+    return sorted(list(repacks().keys()))
+
+
 def split_run_meta(m):
     m = y.dc(m)
 
