@@ -55,7 +55,7 @@ def select_targets(lst, targets):
         for t in targets:
             yield from visit(by_link[t])
 
-    return [lst[x] for x in sorted(frozenset(iter()))]
+    return [lst[x] for x in y.uniq_list_x(iter())]
 
 
 def subst_vars(d, shell_vars):
@@ -271,7 +271,7 @@ class MakeFile(object):
     def select_targets(self, targets):
         mk = MakeFile()
 
-        lst = select_targets(self.lst, self.lst_to_nums(sorted(targets)))
+        lst = select_targets(self.lst, self.lst_to_nums(targets))
         lst = [self.restore_node(x) for x in lst]
 
         mk.init_from_parsed({'lst': lst, 'flags': y.dc(self.flags)})

@@ -12,17 +12,20 @@ def openssl0():
     return {
         'code': """
             source fetch "https://www.openssl.org/source/old/{minver}/openssl-{version}.tar.gz" 1
-
-            export CFLAGS=$(echo "$CFLAGS" | sed -e 's/isysroot/I/')
-
-            $YPERL ./Configure {flags} no-asm threads no-shared no-dso no-hw no-tests no-engine --prefix=$IDIR --openssldir=$IDIR -w -std=c99 -D_GNU_SOURCE=1 $CFLAGS $LDFLAGS $LIBS
-            ($YMAKE -j $NTHRS) || ($YMAKE -j $NTHRS) || ($YMAKE -j $NTHRS) 
+            export CFLAGS="$(echo "$CFLAGS" | $SED -e 's/isysroot/I/')"
+            export PATH="$(pwd):$PATH"
+            $(APPLY_EXTRA_PLAN_0)
+            $YPERL ./Configure {flags} no-asm threads no-shared no-dso no-hw no-tests no-engine --prefix=$IDIR --openssldir=$IDIR -w -std=c99 -D_GNU_SOURCE=1 $CFLAGS $LDFLAGS $LIBS || exit 1
+            ($YMAKE -j $NTHRS) || ($YMAKE -j $NTHRS) || ($YMAKE -j $NTHRS)
             $YMAKE install
         """.replace('{minver}', version[:-1]).replace('{flags}', flags),
         'version': version,
+        'extra': [
+            {'kind': 'file', 'path': 'pod2html', 'data': y.builtin_data('data/pod2html')},
+        ],
         'meta': {
             'kind': ['library'],
-            'depends': extra + ['perl5','dl'],
+            'depends': extra + ['perl5','dl', 'sed', 'busybox', 'coreutils-boot'],
             'provides': [
                 {'lib': 'ssl', 'configure': {'opts': ['--with-openssl={pkgroot}', '--with-openssldir={pkgroot}']}},
                 {'env': 'OPENSSL_INCLUDES', 'value': '-I{pkgroot}/include'},

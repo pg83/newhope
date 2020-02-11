@@ -1,5 +1,5 @@
 ENTRY = [
-    'exec nice -n 20 unshare --fork --pid --kill-child /usr/bin/timeout 4h /media/build/upm cmd scheduler BUILD'
+    'exec nice -n 20 unshare --fork --pid --kill-child /media/build/upm cmd scheduler BUILD'
 ]
 
 BUILD = [
@@ -7,7 +7,8 @@ BUILD = [
     ['echo | tr -d "\n"'],
     ['/media/build/upm pkg sync repo --fr /home/pg83/upm_root/r --fr /media/build/r --to /media/storage && sleep 5'],
     ['/usr/bin/timeout 10m /media/build/upm pkg serve repo --fr /media/storage'],
-    ['cd /media/build && ./upm makefile --os linux -v | ./upm make --root /media/build --install-dir /pkg -j5 -f -']
+    ['cd /media/build && ./upm makefile --os linux -v | ./upm make --root /media/build --install-dir /pkg -j5 -f -'],
+    ['cd /media/storage && (find . | grep "\-tmp" | xargs rm) && sleep 1200']
 ]
 
 
@@ -34,7 +35,7 @@ def func(code_):
 def wp():
     while True:
         try:
-            y.info('got something', y.os.waitpid(-1, 0))
+            y.info('got something', y.os.waitpid(0, y.os.WNOHANG))
         except Exception as e:
             y.warning('in process catch: s', e)
 
@@ -43,6 +44,8 @@ def wp():
 
 @y.verbose_entry_point
 def cli_cmd_scheduler(args):
+    y.signal.alarm(4 * 3600)
+
     code = (len(args) > 0 and args[0]) or 'ENTRY'
 
     y.info('code', code)

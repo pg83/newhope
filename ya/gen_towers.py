@@ -128,7 +128,7 @@ class Func(object):
                 yield x
                 yield from self.data.by_name[x].all_depends()
 
-        return frozenset(it())
+        return y.uniq_list_x(it())
 
     @y.cached_method
     def dep_lib_list(self):
@@ -137,7 +137,7 @@ class Func(object):
                 if self.data.by_name[x].is_library:
                     yield x
 
-        return frozenset(iter())
+        return y.uniq_list_x(iter())
 
     @y.cached_method
     def dep_tool_list(self):
@@ -146,18 +146,25 @@ class Func(object):
                 if not self.data.by_name[x].is_library:
                     yield x
 
-        return frozenset(iter())
+        return y.uniq_list_x(iter())
 
     def extra_libs(self):
         return self.data.extra_libs()
 
     @y.cached_method
     def dep_list(self):
-        def iter1():
+        not_to = frozenset(self.undeps())
+
+        def iter_1():
             yield from self.depends()
             yield from self.extra_libs()
 
-        return frozenset(iter1()) - frozenset(self.undeps())
+        def iter_2():
+            for x in iter_1():
+                if x not in not_to:
+                    yield x
+        
+        return y.uniq_list_x(iter_2())
 
     @y.cached_method
     def run_func(self):
@@ -200,21 +207,22 @@ class Func(object):
     def clone(self):
         return Func(self.x, self.data)
 
-    def calc_deps(self):
+    def calc_extra(self):
         if self.base == 'box':
-            extra = []
-        else:
-            bg = self.data.box_by_gen.get(self.g - 1)
+            return []
 
-            if not self.data.flat:
-                if bg is None:
-                    extra = []
-                else:
-                    extra = [bg.i]
-            else:
-                extra = []
+        if self.data.flat:
+            return []
 
-        return self.data.optimize(self.data.select_deps(self.base) + extra)
+        bg = self.data.box_by_gen.get(self.g - 1)
+
+        if bg is None:
+            return  []
+    
+        return [bg.i]
+
+    def calc_deps(self):
+        return self.data.optimize(self.data.select_deps(self.base) + self.calc_extra(), self)
 
 
 class SplitFunc(Func):
@@ -233,7 +241,7 @@ class SplitFunc(Func):
 
     @property
     def kind(self):
-        return self._func.kind + [self._split]
+        return self._func.kind + [self._split, 'split']
 
     def depends(self):
         return [self._func.base]
@@ -246,7 +254,7 @@ class SplitFunc(Func):
 
     @y.cached_method
     def ff(self):
-        return y.pkg_splitter(self._func.zz, self._split)()
+        return y.store_node(y.fix_pkg_name(y.pkg_splitter(self._func.zz, self._split), self.zz))
 
     @property
     def base(self):
@@ -266,6 +274,10 @@ class SplitFunc(Func):
             'repacks': {},
             'info': self.data.info,
         }
+
+    def calc_deps(self):
+        return [self._func.i] + self._func.calc_extra()
+
 
 class AllFunc(Func):
     def __init__(self, deps, data):
@@ -365,7 +377,7 @@ class Data(object):
     def create_object(self, x):
         return Func(x, self)
 
-    def optimize(self, deps):
+    def optimize(self, deps, what):
         def it():
             for i in deps:
                 yield from self.func_by_num[i].contains()
@@ -379,11 +391,12 @@ class Data(object):
                 if f.is_library:
                     yield d
                 elif f.base in contains:
-                    pass
+                    if what.base.startswith(f.base):
+                        yield d
                 else:
                     yield d
 
-        return frozenset(iter_deps())
+        return y.uniq_list_x(iter_deps())
 
     def last_elements(self, lst, must_have=True):
         def iter():
@@ -422,7 +435,7 @@ class Data(object):
 
     def calc_new_deps(self, g):
         for func in self.new_funcs:
-            func.deps = sorted(func.calc_deps(), key=lambda x: -x)
+            func.deps = func.calc_deps()
 
         self.new_funcs = []
 
@@ -431,12 +444,13 @@ class Data(object):
             self.box_by_gen[g] = func
 
         func.g = g
+        func.i = len(self.func_by_num)
+        func.codec = 'pg'
+
         self.new_funcs.append(func)
         self.by_name[func.base] = func
-        func.i = len(self.func_by_num)
         self.func_by_num.append(func)
         self.dd[func.base].append(func.i)
-        func.codec = 'pg'
 
     def find_first(self, name):
         return self.dd.get(name, [-1])[0]
@@ -457,10 +471,10 @@ class Data(object):
         for x in self.func_by_num:
             x.out_deps()
 
-        y.info('{bg}exec sequence', self.exec_seq(), '{}')
+        y.info('{bg}exec sequence', str(self.exec_seq())[:100] + '...', '{}')
 
     def full_deps(self, name):
-        return self.full_lib_deps(name) | self.full_tool_deps(name)
+        return y.uniq_list_x(self.full_lib_deps(name) + self.full_tool_deps(name))
 
     @y.cached_method
     def full_lib_deps(self, name):
@@ -471,11 +485,11 @@ class Data(object):
                 yield y
                 yield from self.full_lib_deps(y)
 
-        return frozenset(iter_lst())
+        return y.uniq_list_x(iter_lst())
 
     @y.cached_method
     def full_tool_deps(self, name):
-        return frozenset(self.by_name[name].dep_tool_list())
+        return y.uniq_list_x(self.by_name[name].dep_tool_list())
 
     def find_func(self, name):
         return self.by_name[name]

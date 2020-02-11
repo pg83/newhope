@@ -24,7 +24,7 @@ def aggr_flag(name, metas):
     data = sum((m.get(name, []) for m in metas), [])
 
     try:
-        return sorted(frozenset(data))
+        return y.uniq_list_x(data)
     except TypeError:
         return data
 
@@ -35,3 +35,42 @@ def join_metas(metas, merge=['flags']):
 
 def apply_meta(to, fr):
     to.update(join_metas([to, fr]))
+
+
+def gen_mk_data(cc, distr, flat):
+    funcs = []
+
+    for c in cc:
+        generate_data(c, funcs.append, distr, flat)
+
+    return funcs
+
+
+def main_makefile(iter_cc, distr, flat, kind='text'):
+    cc = list(iter_cc())
+    portion = gen_mk_data(cc, distr, flat)
+
+    return y.build_makefile([x['code']() for x in portion], kind=kind)
+
+
+def gen_package_name(x):
+    res = x['gen']
+
+    if res:
+        res += '-'
+
+    res += x['base']
+
+    if 'num' in x:
+        res += str(x['num'])
+
+    return res
+
+
+def fix_pkg_name(res, descr):
+    res = y.dc(res)
+
+    res['node']['name'] = gen_package_name(descr)
+    res['node']['gen'] = descr['gen']
+
+    return res

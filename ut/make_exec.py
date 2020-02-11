@@ -27,6 +27,15 @@ def CHANNEL(data):
     return y.DATA(tags=['mk:channel'], data=data)
 
 
+def iter_deque(q):
+    while True:
+        try:
+            yield q.popleft()
+        except IndexError:
+            yield None
+    
+
+
 class Builder(object):
     def __init__(self, mk, threads, check):
         self.check = check
@@ -53,136 +62,71 @@ class Builder(object):
     def resolve_path(self, d):
         return y.subst_vars(self.mk.strings[d], self.shell_vars)
 
-    def runner(self, inq):
-        yield y.EOP(y.ACCEPT('mk:build', 'mk:channel'), y.PROVIDES('mk:ready'))
+    def runner(self, item):
+        item.run_cmd()
 
-        for el in inq:
-            el = el.data.data
+        return item
 
-            is_debug() and y.debug('got', str(el))
+    def iter_data(self):
+        yield from self.lst
 
-            if el.get('action', '') == 'finish':
-                yield y.FIN()
+        lstl = len(self.lst)
+        deps = sum([x.deps1 for x in self.lst], [])
 
-                return
+        class ItemAll(object):
+            @property
+            def n(self):
+                return {'deps1': self.deps1, 'deps2': self.deps2, 'cmd': []}
 
-            if (item := el.pop('item', None)) is not None:
-                is_debug() and y.debug('run cmd', item)
-                retcode = item.run_cmd()
-                is_debug() and y.debug('done run cmd', item, retcode)
+            @property
+            def my_name(self):
+                return '_all'
 
-                if retcode:
-                    yield CHANNEL({'action': 'finish', 'status': 'failure'})
-                    yield y.FIN()
+            @property
+            def deps1(self):
+                return [self.num]
 
-                    return
+            @property
+            def deps2(self):
+                return deps
 
-                if item.my_name == '_all':
-                    yield CHANNEL({'action': 'finish', 'status': 'success'})
-                    yield y.FIN()
+            @property
+            def num(self):
+                return lstl + 100000
+    
+            def run_cmd(self):
+                y.build_results({
+                    'status': 'fini',
+                    'message': 'build complete',
+                    'target': self.my_name,
+                })
 
-                    return
+                return 0
 
-                yield y.EOP(y.ELEM({'ready': item}))
-            else:
-                yield y.EOP()
-
-        assert False
+        yield ItemAll()
 
     def producer(self, inq):
-        def iter_data():
-            yield from self.lst
-
-            lstl = len(self.lst)
-            deps = sum([x.deps1 for x in self.lst], [])
-
-            class ItemAll(object):
-                @property
-                def n(self):
-                    return {'deps1': self.deps1, 'deps2': self.deps2, 'cmd': []}
-
-                @property
-                def my_name(self):
-                    return '_all'
-
-                @property
-                def deps1(self):
-                    return [self.num]
-
-                @property
-                def deps2(self):
-                    return deps
-
-                @property
-                def num(self):
-                    return lstl + 100000
-
-                def run_cmd(self):
-                    y.build_results({
-                        'status': 'fini',
-                        'message': 'build complete',
-                        'target': self.my_name,
-                    })
-
-                    return 0
-
-            yield ItemAll()
-
-        def next_el():
-            is_debug() and y.debug('wait next el')
-
-            for el in inq:
-                el = el.data.data
-                is_debug() and y.debug('got', el)
-                return el
-
-        rq, wq = y.make_engine(iter_data(), lambda x: x.deps1[0], dep_list=lambda x: sorted(frozenset(x.deps2)))
+        rq, wq = y.make_engine(self.iter_data(), lambda x: x.deps1[0], dep_list=lambda x: sorted(frozenset(x.deps2)))
         by_n = {}
-        complete = set()
+        cnt = len(self.lst) + 1
 
-        yield y.EOP(y.ACCEPT('mk:ready', 'mk:channel'), y.PROVIDES('mk:build'))
-
-        def fmt_in_fly(data):
-            return '(' + ', '.join([x['x'].my_name for x in data.values()]) + ')'
-
-        while True:
-            for i, el in enumerate(rq()):
+        while cnt:
+            for el in rq():
                 item = el['x']
+                assert item.num not in by_n
                 by_n[item.num] = el
 
-                is_debug() and y.debug('yield ready', y.pd(item), 'in fly', fmt_in_fly(by_n))
+                yield item
 
-                yield y.ELEM({'item': item})
-                yield y.EOP()
+            for ready in inq:
+                wq(by_n.pop(ready.num)['i'])
+                cnt -= 1
 
-            yield y.EOP()
-
-            el = next_el()
-
-            if el.get('action', '') == 'finish':
-                yield y.FIN()
-
-                return
-
-            if (item := el.get('ready')) is not None:
-                key = y.burn(item.n)
-                assert key not in complete
-                complete.add(key)
-                wq(by_n.pop(item.num)['i'])
-                is_debug() and y.debug('got complete', item, 'in fly', fmt_in_fly(by_n))
-
-        assert False
-
+                break
+    
     def run(self):
-        p = y.PubSubLoop()
-
-        def iter_workers():
-            yield y.make_name(wrap_gen(self.producer), 'producer_0')
-
-            for i in range(0, self.threads):
-                yield y.make_name(wrap_gen(self.runner), 'runner_' + str(i))
-
-        return p.run(thrs=list(iter_workers()))
+        pq = y.ProducerQueue(self.threads, self.producer, self.runner)
+        pq.run()
 
 
 def item_factory(n, p, i):
@@ -372,8 +316,6 @@ class Item(ItemBase):
 
             for l in res.strip().split('\n'):
                 if 'export ' in l:
-                    #yield l
-
                     if 'BDIR' in l:
                         bdir = l.split('=')[1]
 
@@ -416,7 +358,9 @@ class Item(ItemBase):
             def fun():
                 input_bin = input.encode('utf-8')
                 env['RUNSH'] = y.base64.b64encode(input_bin)
-                env['REDIRECT'] = "yes"
+
+                if not naked:
+                    env['REDIRECT'] = "yes"
 
                 if naked:
                     stdo = y.sys.__stderr__
@@ -433,7 +377,6 @@ class Item(ItemBase):
                 return (res, retcode)
 
             res, retcode = fun()
-
             res = res.strip()
 
             if not res:

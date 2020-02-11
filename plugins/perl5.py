@@ -12,7 +12,7 @@ def perl50():
             export PATH="$(pwd):$PATH"
 
             ./Configure -des -Accflags="$CFLAGS" -Aldflags="$LDFLAGS $LIBS" -Dusethreads -Duse64bitall -Dprefix=$IDIR -Duseperlio -Uusesfio -Duseshrplib=false -Dusedl=false -Dcc="$CC -Duserelocatableinc $CFLAGS $LDFLAGS $LIBS" || true
-            $YMAKE -j $NTHRS
+            $YMAKE -j $NTHRS || $YMAKE -j $NTHRS  
             $YMAKE install
         """,
         'prepare': """
@@ -24,6 +24,7 @@ def perl50():
             'depends': ['iconv', 'zlib', 'coreutils-boot', 'dl'],
             'provides': [
                 {'env': 'YPERL', 'value': '{pkgroot}/bin/perl'},
+                {'env': 'POD2HTML', 'value': '{pkgroot}/bin/pod2html'},
             ],
         },
     }

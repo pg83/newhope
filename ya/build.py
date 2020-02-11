@@ -164,7 +164,7 @@ def build_makefile(nodes, kind):
         for name in sorted(by_name.keys()):
             yield {
                 'output': name,
-                'inputs': sorted(frozenset(by_name[name])),
+                'inputs': y.uniq_list_x(by_name[name]),
                 'build': [],
             }
 

@@ -83,3 +83,10 @@ def fix_v2(v, **kwargs):
             n[p] = [y.subst_kv_base(l, subst) for l in apply_fetch(n[p], v)]
 
     return v
+
+
+def subst_kv_base(data, *iterables):
+    for k, v in y.itertools.chain(*iterables):
+        data = data.replace(k, v)
+
+    return data

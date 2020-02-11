@@ -100,15 +100,6 @@ def init_logger(log_level='DEBUG'):
 
     def record_factory(*args, **kwargs):
         record = old_factory(*args, **kwargs)
-
-        try:
-            record.thr = str(y.current_coro().thread_id)
-
-            if len(record.thr) == 1:
-                record.thr = '0' + record.thr
-        except Exception:
-            record.thr = '##'
-
         record.asctime = datetime.datetime.fromtimestamp(int(y.time.time())).strftime('%H:%M:%S')
         record.name = record.name[:10]
 
@@ -116,7 +107,7 @@ def init_logger(log_level='DEBUG'):
 
     y.logging.setLogRecordFactory(record_factory)
 
-    fmt = '{w}{g}%(thr){} | {m}%(asctime){} | {br}%(levelname){} | %(status) | {dw}%(msg){}{}'
+    fmt = '{w}{m}%(asctime){} | {br}%(levelname){} | %(status) | {dw}%(msg){}{}'
 
     class Stream(object):
         def write(self, t):

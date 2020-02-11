@@ -85,19 +85,11 @@ class SplitKind(object):
         self.p = parent
         self.k = kind
 
-        self.d = {
-            'gen': self.p.arg['gen'],
-            'base': self.p.arg['base'] + '-' + self.k,
-            'kind': ['split', self.k],
-            'code': self.run,
-            'info': self.p.arg['info'],
-        }
-
     @y.cached_method
     def run(self):
         return y.store_node(self.code())
 
-    def split_part(self):
+    def split_part(self): 
         res = {
             'code': self.p.repacks[self.k]['code'],
             'kind': {'dev': ['library'], 'run': ['tool']}.get(self.k, []),
@@ -111,7 +103,7 @@ class SplitKind(object):
         return res, self.p.arg['info']
 
     def code(self):
-        return y.fix_pkg_name(y.fix_v2(y.to_v2(*self.split_part())), self.d)
+        return y.fix_v2(y.to_v2(*self.split_part()))
 
 
 class Splitter(object):
@@ -128,9 +120,9 @@ class Splitter(object):
     def meta(self):
         return self.node().get('meta', {})
 
-    def gen(self, kind):
-        return SplitKind(self, kind).d
+    def gen_code(self, kind):
+        return SplitKind(self, kind).code()
 
 
 def pkg_splitter(arg, kind):
-    return Splitter(arg, repacks()).gen(kind)['code']
+    return Splitter(arg, repacks()).gen_code(kind)

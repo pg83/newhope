@@ -49,7 +49,9 @@ def box0():
              rm -rf $IDIR/include
              rm -rf $IDIR/share
              rm -rf $IDIR/lib
-             rm -rf $IDIR/tools 
+             rm -rf $IDIR/tools
+             cd $IDIR/bin
+             ln -sf bsdtar tar 
         ''',
         'meta': {
             'kind': ['tool'],
