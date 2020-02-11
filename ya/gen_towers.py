@@ -25,7 +25,7 @@ def subst_by_platform(os):
     by_os['linux'].update({'ncurses': 'netbsd-curses'})
     by_os['linux'].update({'libtool': 'slibtool'})
     by_os['linux'].update({'m4': 'quasar-m4'})
-    
+
     res = y.dc(by_os[os])
 
     for k in list(res.keys()):

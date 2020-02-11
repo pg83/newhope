@@ -18,8 +18,10 @@ mkdir "$TMPDIR"
 
 source mkcd "$BDIR/runtime"
 
-exec 2>&1
-exec 1> $BDIR/runtime/out.log
+if test -n "$REDIRECT"; then
+    exec 2>&1
+    exec 1> $BDIR/runtime/out.log
+fi
 
 echo "export RUNSH=\"$RUNSH\"" > $BDIR/runtime/run.sh
 echo $RUNSH | source base64_decode >> $BDIR/runtime/run.sh

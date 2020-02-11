@@ -24,6 +24,9 @@ def small_distr():
         'file-run',
         'upm-run',
         'psmisc-run',
+        'bc-run',
+        'p7zip-run',
+        'diffutils-run',
     ]
 
 
@@ -32,13 +35,10 @@ def common_distr():
         '@small',
         'mc-slang',
         'mc-ncurses',
-        'p7zip-run',
         'cmake',
         'openssl',
         'sqlite3-run',
-        'diffutils-run',
         'ninja-run',
-        'pkg-config',
         'dropbear',
     ]
 
@@ -47,6 +47,7 @@ def misc_distr():
     return [
         'gnu-m4',
         'python3-static',
+        'pkg-config',
         #'clang'
     ]
 

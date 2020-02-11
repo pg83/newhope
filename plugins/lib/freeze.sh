@@ -1,6 +1,6 @@
 #!/bin/sh
 
-rm -rf *.c *.o Makefile >& /dev/null
+rm -rf *.c *.o Makefile 2> /dev/null
 
 P="$1"
 PP=$(dirname "$P")

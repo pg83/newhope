@@ -416,6 +416,7 @@ class Item(ItemBase):
             def fun():
                 input_bin = input.encode('utf-8')
                 env['RUNSH'] = y.base64.b64encode(input_bin)
+                env['REDIRECT'] = "yes"
 
                 if naked:
                     stdo = y.sys.__stderr__
