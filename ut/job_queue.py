@@ -44,7 +44,7 @@ class JobQueue(object):
     def join(self):
         for t in self._t:
             t.join()
-    
+
 
 @y.verbose_entry_point
 def cli_test_jobqueue(args):
@@ -74,7 +74,7 @@ def iter_deque(q):
         except IndexError:
             yield None
 
-    
+
 class ProducerQueue(object):
     def __init__(self, numthrs, prod, cons):
         self._jq = JobQueue(numthrs)
@@ -90,7 +90,7 @@ class ProducerQueue(object):
                     q.append(self._jq.get())
                 else:
                     yield el
-            
+    
         def wrap(el):
             return lambda: self._c(el)
 
@@ -111,20 +111,20 @@ def cli_test_prodqueue(args):
             }
 
             lst.append(el)
-    
+
         for l in lst:
             yield l
 
         sun = 0
         cnt = 0
-    
+
         for l in lst:
             for el in q:
                 break
-            
+    
             sun += el
             cnt += 1
-    
+
         print sun, cnt
 
     def cons(el):

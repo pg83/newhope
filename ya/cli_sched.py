@@ -35,7 +35,8 @@ def func(code_):
 def wp():
     while True:
         try:
-            y.info('got something', y.os.waitpid(0, y.os.WNOHANG))
+            for i in range(0, 10):
+                y.info('got something', y.os.waitpid(0, y.os.WNOHANG))
         except Exception as e:
             y.warning('in process catch: s', e)
 

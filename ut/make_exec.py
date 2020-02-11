@@ -33,7 +33,7 @@ def iter_deque(q):
             yield q.popleft()
         except IndexError:
             yield None
-    
+
 
 
 class Builder(object):
@@ -93,7 +93,7 @@ class Builder(object):
             @property
             def num(self):
                 return lstl + 100000
-    
+
             def run_cmd(self):
                 y.build_results({
                     'status': 'fini',
@@ -123,7 +123,7 @@ class Builder(object):
                 cnt -= 1
 
                 break
-    
+
     def run(self):
         pq = y.ProducerQueue(self.threads, self.producer, self.runner)
         pq.run()

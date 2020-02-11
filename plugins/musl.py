@@ -29,7 +29,6 @@ if '{os}' == 'linux':
                 'undeps': ['make', 'musl'],
                 'provides': [
                     {'lib': 'muslc'},
-                    {'env': 'CPPFLAGS', 'value': '"$CPPFLAGS -I{pkgroot}/include"'},
                     {'env': 'CFLAGS', 'value': '"-w $CFLAGS"'},
                 ],
             },

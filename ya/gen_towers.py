@@ -163,7 +163,7 @@ class Func(object):
             for x in iter_1():
                 if x not in not_to:
                     yield x
-        
+
         return y.uniq_list_x(iter_2())
 
     @y.cached_method
@@ -218,7 +218,7 @@ class Func(object):
 
         if bg is None:
             return  []
-    
+
         return [bg.i]
 
     def calc_deps(self):

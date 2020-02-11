@@ -9,8 +9,16 @@ def perl50():
             ln -s $AR ./ar
             ln -s $NM ./nm
             ln -s $CC ./gcc
+
             export PATH="$(pwd):$PATH"
 
+            echo > empty.c
+            $CC -c empty.c -o empty.o
+            $AR q libdl.a empty.o
+
+            export LDFLAGS="-L$(pwd) $LDFLAGS"
+
+            export CXXFLAGS="$CFLAGS $CXXFLAGS"
             ./Configure -des -Accflags="$CFLAGS" -Aldflags="$LDFLAGS $LIBS" -Dusethreads -Duse64bitall -Dprefix=$IDIR -Duseperlio -Uusesfio -Duseshrplib=false -Dusedl=false -Dcc="$CC -Duserelocatableinc $CFLAGS $LDFLAGS $LIBS" || true
             $YMAKE -j $NTHRS || $YMAKE -j $NTHRS  
             $YMAKE install
@@ -21,7 +29,7 @@ def perl50():
         'version': '5.30.1',
         'meta': {
             'kind': ['tool'],
-            'depends': ['iconv', 'zlib', 'coreutils-boot', 'dl'],
+            'depends': ['iconv', 'zlib', 'coreutils-boot'],
             'provides': [
                 {'env': 'YPERL', 'value': '{pkgroot}/bin/perl'},
                 {'env': 'POD2HTML', 'value': '{pkgroot}/bin/pod2html'},
