@@ -12,7 +12,7 @@ def openssl0():
     return {
         'code': """
             source fetch "https://www.openssl.org/source/old/{minver}/openssl-{version}.tar.gz" 1
-            export CFLAGS="$(echo "$CFLAGS" | $SED -e 's/isysroot/I/')"
+            export CFLAGS="$(echo $CFLAGS | $SED -e 's/isysroot/I/')"
             export PATH="$(pwd):$PATH"
             $(APPLY_EXTRA_PLAN_0)
             $YPERL ./Configure {flags} no-asm threads no-shared no-dso no-hw no-tests no-engine --prefix=$IDIR --openssldir=$IDIR -w -std=c99 -D_GNU_SOURCE=1 $CFLAGS $LDFLAGS $LIBS || exit 1

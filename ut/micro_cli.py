@@ -107,18 +107,6 @@ async def cli_test_pubsub(args):
 
 
 @y.verbose_entry_point
-async def cli_test_template(args):
-    d = y.collections.deque([1, 2, 3])
-
-    if args[0] == 'sync':
-        for i in y.deque_iter_sync(d):
-            print(i)
-    else:
-        async for i in y.deque_iter_async(d):
-            print(i)
-
-
-@y.verbose_entry_point
 async def cli_misc_timeout(args):
     import os
 

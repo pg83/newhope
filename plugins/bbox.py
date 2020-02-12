@@ -39,7 +39,11 @@ def box0():
              copy_many() {
                  shift
                  shift
-                 for i in $@; do
+         
+                 no_busybox="$(echo $@ | tr ' ' '\n' | grep -v busybox)"
+                 busybox="$(echo $@ | tr ' ' '\n' | grep busybox)"
+         
+                 for i in $no_busybox $busybox; do
                       (cd $(dirname $i) && $YTAR -v -cf - .) | (cd $IDIR/ && $YTAR -v -Uxf -)
                  done
              }

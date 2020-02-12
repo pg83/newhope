@@ -5,10 +5,10 @@ def fetch_data(url):
         return urllib2.urlopen(url).read()
 
     def fetch_2(url):
-        return y.subprocess.check_output(['curl -s -S --retry 3 -L -k -o - ' + url], shell=True)
+        return y.subprocess.check_output(['curl -s -S --retry 3 -L -k -o - ' + url + ' 2> /dev/null'], shell=True)
 
     def fetch_3(url):
-        return y.subprocess.check_output(['curl -s -S --retry 3 -L -o - ' + url], shell=True)
+        return y.subprocess.check_output(['curl -s -S --retry 3 -L -o - ' + url + ' 2> /dev/null'], shell=True)
 
     e = None
 
@@ -22,7 +22,7 @@ def fetch_data(url):
             return res
         except Exception as err:
             e = err
-            y.xprint_r(e)
+            y.warning(url + ':{br}', err, '{}')
 
     if e:
         raise e

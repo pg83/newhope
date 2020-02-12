@@ -24,6 +24,7 @@ audio:x:11:
 EOF
 
             ln -s etc/alt/sh bin/sh 
+            echo 'nameserver 8.8.8.8' > /etc/resolv.conf
         """,
         'meta': {
             'kind': [],

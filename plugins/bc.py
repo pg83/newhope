@@ -4,6 +4,7 @@ def bc0():
         'code': """
              source fetch "https://github.com/gavinhoward/bc/releases/download/{version}/bc-{version}.tar.xz" 1
              export LDFLAGS="$LDFLAGS $LIBS"
+             export CFLAGS="$CFLAGS $LDFLAGS"
              $YSHELL ./configure.sh --prefix "$IDIR" -O3
              $YMAKE -j $THRS
              $YMAKE DESTDIR=$IDIR BINDIR=/bin install   

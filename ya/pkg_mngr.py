@@ -79,16 +79,18 @@ class InstPropertyDB(object):
         self.db = db
         self.state = y.marshal.dumps(self.db)
 
-        if 'inst' not in db:
-            db['inst'] = []
-
-        if 'idx' not in db:
-            db['idx'] = []
+        y.ensure_value('inst', db, [])
+        y.ensure_value('idx', db, [])
 
         self.add_index_file([])
 
     def restore_state(self):
-        self.db = y.marshal.loads(self.state)
+        y.warning('restore db state cause prev errors')
+
+        old = y.marshal.loads(self.state)
+
+        self.db.clear()
+        self.db.update(old)
 
     def inst(self):
         return self.db['inst']
@@ -294,16 +296,18 @@ class PkgMngr(object):
         self.modify(do)
 
     def modify(self, func):
-        try:
-            with self.open_db() as db:
+        with self.open_db() as db:
+            try:
                 y.info('write next state')
                 db.set_inst(list(func(db.inst())))
                 self.apply_db(db)
-        except Exception as e:
-            try:
-                db.restore_state()
-            finally:
-                raise e
+            except Exception as e:
+                try:
+                    db.restore_state()
+                    print db.db
+                    self.apply_db(db)
+                finally:
+                    raise e
 
     def apply_db(self, db):
         y.info('apply actual changes')
@@ -382,4 +386,3 @@ class PkgMngr(object):
     def add_indexes(self, indexes):
         with self.open_db() as db:
             db.add_index_file(indexes)
-
