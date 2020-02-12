@@ -217,7 +217,13 @@ class Func(object):
         bg = self.data.box_by_gen.get(self.g - 1)
 
         if bg is None:
-            return  []
+            res = self.data.busybox()
+
+            if self.i in res:
+                return []
+
+            return res
+    
 
         return [bg.i]
 
@@ -364,7 +370,6 @@ class Data(object):
     def extra_libs(self):
         def do():
             yield 'make'
-            yield 'busybox'
 
             if self.info.get('libc') == 'musl':
                 yield 'musl'
@@ -373,6 +378,9 @@ class Data(object):
                 yield 'uclibc'
 
         return list(do())
+
+    def busybox(self):
+        return self.last_elements(['busybox'], must_have=False)
 
     def create_object(self, x):
         return Func(x, self)
