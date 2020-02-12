@@ -20,4 +20,4 @@ def run_make_0(mk, args):
     def lookup(name):
         return {'build_results': output_build_results}[name]
 
-    return y.run_makefile(mk, args.targets, int(args.threads), pre_run=args.pre_run)
+    return y.run_makefile(mk, args.targets, int(args.threads), pre_run=args.pre_run, naked=args.naked)

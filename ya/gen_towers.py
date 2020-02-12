@@ -435,7 +435,7 @@ class Data(object):
 
     def calc_new_deps(self, g):
         for func in self.new_funcs:
-            func.deps = func.calc_deps()
+            func.deps = sorted(func.calc_deps(), key=lambda x: -x)
 
         self.new_funcs = []
 

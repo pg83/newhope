@@ -71,6 +71,7 @@ def cli_dev_make(arg):
 
         args.pre_run = ['workspace']
         args.shell_vars = shell_vars
+        args.naked = args.proxy
 
         return mk.build(args)
 

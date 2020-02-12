@@ -3,16 +3,16 @@ def is_debug():
     return 'debug' in y.config.get('make', '')
 
 
-def run_makefile(mk, targets, threads, pre_run=[]):
+def run_makefile(mk, targets, threads, pre_run=[], naked=False):
     y.cheet(mk)
 
     if pre_run:
-        run_par_build(mk.select_targets(pre_run), 1, False)
+        run_par_build(mk.select_targets(pre_run), 1, False, naked)
 
     if targets:
         mk = mk.select_targets(targets)
 
-    return run_par_build(mk, threads, True)
+    return run_par_build(mk, threads, True, naked)
 
 
 def wrap_gen(func):
@@ -37,9 +37,10 @@ def iter_deque(q):
 
 
 class Builder(object):
-    def __init__(self, mk, threads, check):
+    def __init__(self, mk, threads, check, naked):
         self.check = check
         self.mk = mk
+        self.naked = naked
         self.threads = threads
         self.lst = [item_factory(x, self, n) for n, x in enumerate(mk.lst)]
 
@@ -353,7 +354,7 @@ class Item(ItemBase):
 
         try:
             env = y.dc(self.env)
-            naked = False
+            naked = self.p.naked
 
             def fun():
                 input_bin = input.encode('utf-8')
@@ -397,10 +398,10 @@ class Item(ItemBase):
         return retcode, '\n'.join(y.super_decode(o.strip()) for o in out), input
 
 
-def run_par_build(mk, threads, check):
+def run_par_build(mk, threads, check, naked):
     y.info('{br}start build{}')
 
     try:
-        return Builder(mk, threads, check).run()
+        return Builder(mk, threads, check, naked).run()
     finally:
         y.info('{br}end build{}')

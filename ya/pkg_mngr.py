@@ -31,6 +31,11 @@ class Fetcher(object):
         return self.do_fetch(name)
 
 
+def safe_symlink(fr, to):
+    y.os.symlink(fr, to + '.tmp')
+    y.os.rename(to + '.tmp', to)
+
+
 class HTTPFetcher(Fetcher):
     def __init__(self, root):
         self._root = root
@@ -330,7 +335,7 @@ class PkgMngr(object):
                 y.shutil.rmtree(ppath_tmp)
                 y.os.makedirs(ppath_tmp)
 
-            y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && ./install && mv ' + ppath_tmp + ' ' + ppath)
+            y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
 
         ap = self.all_packs()
 
@@ -365,10 +370,14 @@ class PkgMngr(object):
             f.write(y.decode_prof(self.fetch_package(base)))
             y.os.system('tar -xf *.tar && rm -rf log base* build')
 
-        self.install(['upm'])
-        upm = self.all_packs()[0]
+        self.install(['upm', 'yash', 'bsdtar'])
+        packs = sorted(self.all_packs())
+
         y.os.chdir(self.path + '/bin')
-        y.os.symlink('../pkg/' + upm + '/bin/upm', 'upm')
+        safe_symlink('../pkg/' + packs[1] + '/bin/upm', 'upm')
+        safe_symlink('../pkg/' + packs[2] + '/bin/yash', 'sh')
+
+        self.install(['curl'])
 
     def add_indexes(self, indexes):
         with self.open_db() as db:

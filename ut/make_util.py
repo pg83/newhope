@@ -299,6 +299,7 @@ class MakeFile(object):
         args.threads = kwargs.pop('threads', 1)
         args.targets = kwargs.pop('targets', [])
         args.pre_run = kwargs.pop('pre_run', [])
+        args.naked = kwargs.pop('naked', False)
 
         args.update(kwargs)
 

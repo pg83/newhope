@@ -90,7 +90,7 @@ class ProducerQueue(object):
                     q.append(self._jq.get())
                 else:
                     yield el
-    
+
         def wrap(el):
             return lambda: self._c(el)
 
@@ -121,7 +121,7 @@ def cli_test_prodqueue(args):
         for l in lst:
             for el in q:
                 break
-    
+
             sun += el
             cnt += 1
 

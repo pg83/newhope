@@ -1,17 +1,3 @@
-ENTRY = [
-    'exec nice -n 20 unshare --fork --pid --kill-child /media/build/upm cmd scheduler BUILD'
-]
-
-BUILD = [
-    ['cd /tmp && echo "start cycle" && /home/pg83/newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build && echo "done cycle" && sleep 8'],
-    ['echo | tr -d "\n"'],
-    ['/media/build/upm pkg sync repo --fr /home/pg83/upm_root/r --fr /media/build/r --to /media/storage && sleep 5'],
-    ['/usr/bin/timeout 10m /media/build/upm pkg serve repo --fr /media/storage'],
-    ['cd /media/build && ./upm makefile --os linux -v | ./upm make --root /media/build --install-dir /pkg -j5 -f -'],
-    ['cd /media/storage && (find . | grep "\-tmp" | xargs rm) && sleep 1200']
-]
-
-
 def func(code_):
     def do():
         code = code_
@@ -32,7 +18,7 @@ def func(code_):
     return do
 
 
-def wp():
+def wait_pid():
     while True:
         try:
             for i in range(0, 10):
@@ -43,15 +29,47 @@ def wp():
         y.time.sleep(1)
 
 
+def watch_dog():
+    y.time.sleep(4 * 3600)
+    y.shut_down(retcode=11, last_msg='watchdog happen')
+
+
+def gen_wd_func(f):
+    try:
+        f.__name__
+
+        y.info('will run', f.__name__)
+
+        return f
+    except AttributeError:
+
+        y.info('will run', f)
+
+        return func(f)
+
+
+ENTRY = [
+    ['exec nice -n 20 unshare --fork --pid --kill-child /media/build/upm cmd scheduler BUILD'],
+    wait_pid,
+    watch_dog,
+]
+
+BUILD = [
+    ['cd /tmp && echo "start cycle" && /home/pg83/newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build && echo "done cycle" && sleep 8'],
+    ['echo | tr -d "\n"'],
+    ['/media/build/upm pkg sync repo --fr /home/pg83/upm_root/r --fr /media/build/r --to /media/storage && sleep 5'],
+    ['/usr/bin/timeout 10m /media/build/upm pkg serve repo --fr /media/storage'],
+    ['cd /media/build && ./upm makefile --os linux -v | ./upm make --root /media/build --install-dir /pkg -j7 -f -'],
+    ['cd /media/storage && (find . | grep "\-tmp" | xargs rm) && sleep 1200'],
+    wait_pid,
+]
+
+
 @y.verbose_entry_point
 def cli_cmd_scheduler(args):
-    y.signal.alarm(4 * 3600)
-
     code = (len(args) > 0 and args[0]) or 'ENTRY'
-
     y.info('code', code)
-
-    thrs = [y.threading.Thread(target=func(c)) for c in globals()[code]]  + [y.threading.Thread(target=wp)]
+    thrs = [y.threading.Thread(target=gen_wd_func(c)) for c in globals()[code]]
 
     for t in thrs:
         t.start()
