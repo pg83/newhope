@@ -223,7 +223,7 @@ class Func(object):
                 return []
 
             return res
-    
+
 
         return [bg.i]
 

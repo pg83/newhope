@@ -27,6 +27,7 @@ def small_distr():
         'bc-run',
         'p7zip-run',
         'diffutils-run',
+        'less-run',
     ]
 
 
