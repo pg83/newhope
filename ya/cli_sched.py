@@ -42,7 +42,6 @@ def gen_wd_func(f):
 
         return f
     except AttributeError:
-
         y.info('will run', f)
 
         return func(f)
@@ -53,6 +52,7 @@ ENTRY = [
     wait_pid,
     watch_dog,
 ]
+
 
 BUILD = [
     ['cd /tmp && echo "start cycle" && /home/pg83/newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build && echo "done cycle" && sleep 8'],
