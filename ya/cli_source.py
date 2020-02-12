@@ -15,7 +15,7 @@ def cli_pkg_source(arg):
             for a in arg:
                 if a.lower() in d.lower():
                     nodes.append(node)
-    
+
     vs = set()
 
     def visit(n):
