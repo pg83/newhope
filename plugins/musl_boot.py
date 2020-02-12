@@ -21,7 +21,7 @@ if '{os}' == 'linux':
             ],
             'meta': {
             'kind': ['tool'],
-                'depends': ['busybox', 'toybox'],
+                'depends': ['busybox-boot', 'toybox'],
                 'undeps': ['musl', 'make'],
                 'provides': [
                     {'lib': 'muslc'},

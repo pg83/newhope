@@ -1,7 +1,7 @@
 def tini_distr():
     return [
         'toybox-run',
-        'busybox-run',
+        'busybox-boot-run',
         'coreutils-run',
         'yash-run',
     ]

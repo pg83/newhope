@@ -49,7 +49,6 @@ class Func(object):
         self.x = x
         self.inc_count = ic()
         self.data = data
-        self.i = 0
 
     def out_deps(self):
         y.info('{dr}' + str(self) + '{}', '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')
@@ -172,8 +171,6 @@ class Func(object):
         data['deps'] = y.uniq_list_x(data['deps'] + self.data.calc(self.deps))
         data['node']['codec'] = self.codec
 
-        y.apply_meta(data['node']['meta'], y.join_metas([y.restore_node_node(d).get('meta', {}) for d in data['deps']]))
-
         return y.fix_pkg_name(data, self.z)
 
     @y.cached_method
@@ -200,30 +197,31 @@ class Func(object):
             'base': self.base,
             'gen': self.gen,
             'kind': self.kind,
-            'repacks': {},
             'info': self.data.info,
         }
 
     def clone(self):
         return Func(self.x, self.data)
 
+    def busybox_boot(self):
+        res = self.data.busybox_boot()
+
+        if self.i in res:
+            return []
+
+        return res
+        
     def calc_extra(self):
         if self.base == 'box':
             return []
 
         if self.data.flat:
-            return []
+            return self.busybox_boot()
 
         bg = self.data.box_by_gen.get(self.g - 1)
 
         if bg is None:
-            res = self.data.busybox()
-
-            if self.i in res:
-                return []
-
-            return res
-
+            return self.busybox_boot()
 
         return [bg.i]
 
@@ -235,7 +233,6 @@ class SplitFunc(Func):
     def __init__(self, func, split):
         self._func = func
         self._split = split
-        self.i = 0
 
     @property
     def gen(self):
@@ -277,7 +274,6 @@ class SplitFunc(Func):
             'base': self.base,
             'gen': self.gen,
             'kind': self.kind,
-            'repacks': {},
             'info': self.data.info,
         }
 
@@ -379,8 +375,8 @@ class Data(object):
 
         return list(do())
 
-    def busybox(self):
-        return self.last_elements(['busybox'], must_have=False)
+    def busybox_boot(self):
+        return self.last_elements(['busybox-boot'], must_have=False)
 
     def create_object(self, x):
         return Func(x, self)
@@ -479,7 +475,7 @@ class Data(object):
         for x in self.func_by_num:
             x.out_deps()
 
-        y.info('{bg}exec sequence', str(self.exec_seq())[:100] + '...', '{}')
+        y.info('{bg}exec sequence', str(self.exec_seq()[:100])[:-1] + ', ...', '{}')
 
     def full_deps(self, name):
         return y.uniq_list_x(self.full_lib_deps(name) + self.full_tool_deps(name))

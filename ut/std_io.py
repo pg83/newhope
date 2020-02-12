@@ -32,7 +32,7 @@ class ColorStdIO(object):
     def flush_periodicaly(self):
         while True:
             try:
-                y.time.sleep(0.2 * y.random.random())
+                y.time.sleep(0.3 * y.random.random())
                 self.flush()
             except Exception as e:
                 y.os.abort()
@@ -79,13 +79,13 @@ class ColorStdIO(object):
             return
 
         with stdio_lock:
-            if len(t) > 4096:
+            if len(t) > 8192:
                 self.flush_impl()
                 self.write_part(t)
             else:
                 self.p += t
 
-                if len(self.p) > 4096:
+                if len(self.p) > 8192:
                     self.flush_impl()
 
     def write_part(self, p):
@@ -104,6 +104,7 @@ class ColorStdIO(object):
     def flush(self):
         with stdio_lock:
             self.flush_impl()
+            self.extra_flush()
 
     def slave(self):
         self.flush()
@@ -123,14 +124,32 @@ class ColorStdIO(object):
         return self.s.encoding
 
 
+class ColorStdErr(ColorStdIO):
+    def __init__(self):
+        ColorStdIO.__init__(self, y.sys.stderr)
+
+    def extra_flush(self):
+        #y.sys.stdout.flush_impl()
+        pass
+
+        
+class ColorStdOut(ColorStdIO):
+    def __init__(self):
+        ColorStdIO.__init__(self, y.sys.stdout)
+
+    def extra_flush(self):
+        #y.sys.stderr.flush_impl()
+        pass
+
+
 @y.defer_constructor
 def init_stdio():
     init_stdio_0()
 
 
 def init_stdio_0():
-    y.sys.stdout = ColorStdIO(y.sys.stdout)
-    y.sys.stderr = ColorStdIO(y.sys.stderr)
+    y.sys.stdout = ColorStdOut()
+    y.sys.stderr = ColorStdErr()
 
 
 @y.contextlib.contextmanager

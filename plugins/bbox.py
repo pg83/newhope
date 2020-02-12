@@ -1,7 +1,7 @@
 @y.package
 def box0():
     lst = [
-        'busybox',
+        'busybox-boot',
         'coreutils',
         'asciidoc',
         'bison',
@@ -43,7 +43,7 @@ def box0():
                  no_busybox="$(echo $@ | tr ' ' '\n' | grep -v busybox)"
                  busybox="$(echo $@ | tr ' ' '\n' | grep busybox)"
  
-                 for i in $no_busybox $busybox; do
+                 for i in $busybox $no_busybox; do
                       (cd $(dirname $i) && $YTAR -v -cf - .) | (cd $IDIR/ && $YTAR -v -Uxf -)
                  done
              }

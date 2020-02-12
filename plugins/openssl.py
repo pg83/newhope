@@ -25,7 +25,7 @@ def openssl0():
         ],
         'meta': {
             'kind': ['library'],
-            'depends': extra + ['perl5','dl', 'sed', 'busybox', 'coreutils-boot'],
+            'depends': extra + ['perl5','dl', 'sed', 'busybox-boot', 'coreutils-boot'],
             'provides': [
                 {'lib': 'ssl', 'configure': {'opts': ['--with-openssl={pkgroot}', '--with-openssldir={pkgroot}']}},
                 {'env': 'OPENSSL_INCLUDES', 'value': '-I{pkgroot}/include'},

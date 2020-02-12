@@ -33,10 +33,6 @@ def join_metas(metas, merge=['flags']):
     return dict((x, aggr_flag(x, metas)) for x in merge)
 
 
-def apply_meta(to, fr):
-    to.update(join_metas([to, fr]))
-
-
 def gen_mk_data(cc, distr, flat):
     funcs = []
 

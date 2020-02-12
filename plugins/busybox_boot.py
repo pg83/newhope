@@ -1,6 +1,6 @@
 if '{os}' == 'linux':
     @y.package
-    def busybox0():
+    def busybox_boot0():
         return {
             'code': """
                 mkdir -p $IDIR/bin
@@ -17,7 +17,7 @@ if '{os}' == 'linux':
             'version': '1.31.0',
             'meta': {
                 'kind': ['tool'],
-                'undeps': ['make', 'musl', 'busybox'],
+                'undeps': ['make', 'musl', 'busybox-boot'],
                 'provides': [
                     {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
                 ],
@@ -25,7 +25,7 @@ if '{os}' == 'linux':
         }
 else:
     @y.package
-    def busybox0():
+    def busybox_boot0():
         return {
             'meta': {
                 'kind': ['tool'],
