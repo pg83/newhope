@@ -1,7 +1,7 @@
 @y.package
 def box0():
     lst = [
-        'busybox-boot',
+        'busybox',
         'coreutils',
         'asciidoc',
         'bison',
@@ -40,8 +40,8 @@ def box0():
                  shift
                  shift
  
-                 no_busybox="$(echo $@ | tr ' ' '\n' | grep -v busybox)"
-                 busybox="$(echo $@ | tr ' ' '\n' | grep busybox)"
+                 no_busybox="$(echo $@ | tr ' ' '\\n' | grep '\\-run\\-' | grep -v busybox | tr '\\n' ' ')"
+                 busybox="$(echo $@ | tr ' ' '\\n' | grep '\\-run\\-' | grep busybox)"
  
                  for i in $busybox $no_busybox; do
                       (cd $(dirname $i) && $YTAR -v -cf - .) | (cd $IDIR/ && $YTAR -v -Uxf -)
@@ -56,6 +56,7 @@ def box0():
              rm -rf $IDIR/tools
              cd $IDIR/bin
              ln -sf bsdtar tar 
+             ln -sf dash sh
         ''',
         'meta': {
             'kind': ['tool'],
