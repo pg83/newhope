@@ -8,7 +8,7 @@ def busybox0():
             export PATH="$(pwd):$PATH"
             export CFLAGS="-Iinclude $CFLAGS"
 
-            $YMAKE HOSTCFLAGS="$CFLAGS $LDFLAGS $LIBS" LDFLAGS="$LDFLAGS $LIBS" HOSTCXXFLAGS="$CXXFLAGS" HOSTLDFLAGS="$LDFLAGS $LIBS" defconfig            
+            $YMAKE HOSTCFLAGS="$CFLAGS $LDFLAGS $LIBS" LDFLAGS="$LDFLAGS $LIBS" HOSTCXXFLAGS="$CXXFLAGS" HOSTLDFLAGS="$LDFLAGS $LIBS" defconfig    
 
             cat include/ar.h | head -n 23 | tail -n 15 > tmp
             cat archival/libarchive/get_header_ar.c >> tmp

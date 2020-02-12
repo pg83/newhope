@@ -15,7 +15,7 @@ def cli_pkg_source(arg):
             for a in arg:
                 if a.lower() in d.lower():
                     nodes.append(node)
-            
+    
     vs = set()
 
     def visit(n):
@@ -39,7 +39,7 @@ def cli_pkg_source(arg):
                 url = v['cmd'][0].split('"')[1]
 
                 urls.append((d, url))
-        
+
     for d, u in urls:
         y.info('{bg}fetch', d, u, '{}')
         y.fetch_http('data', u, name=d[4:])

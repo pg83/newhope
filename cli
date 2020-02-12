@@ -35,7 +35,18 @@ check_ver()
 
 
 def find_me(g):
-    for f in (lambda: __file__, lambda: sys.argv[0], lambda: os.path.abspath(os.getcwd()) + '/cli'):
+    def linux_proc():
+        try:
+            res = os.readlink('/proc/self/exe')
+            
+            if res.endswith('/upm'):
+                return res
+        except Exception:
+            pass
+
+        return __file__
+    
+    for f in (linux_proc, lambda: sys.argv[0], lambda: os.path.abspath(os.getcwd()) + '/cli'):
         p = os.path.abspath(f())
 
         if os.path.isfile(p):
