@@ -132,7 +132,7 @@ class ColorStdErr(ColorStdIO):
         #y.sys.stdout.flush_impl()
         pass
 
-        
+
 class ColorStdOut(ColorStdIO):
     def __init__(self):
         ColorStdIO.__init__(self, y.sys.stdout)

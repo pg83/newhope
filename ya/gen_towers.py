@@ -210,7 +210,7 @@ class Func(object):
             return []
 
         return res
-        
+
     def calc_extra(self):
         if self.base == 'box':
             return []
