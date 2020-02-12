@@ -49,6 +49,8 @@ def misc_distr():
         'gnu-m4',
         'python3-static',
         'pkg-config',
+        'toybox',
+        'pcre1',
         #'clang'
     ]
 

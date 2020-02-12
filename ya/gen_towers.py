@@ -15,6 +15,7 @@ def subst_by_platform(os):
         'm4': 'gnu-m4',
         'termcap': 'ncurses',
         'ncurses': 'ncurses-real',
+        'pcre': 'pcre2',
     }
 
     by_os = {
@@ -49,6 +50,7 @@ class Func(object):
         self.x = x
         self.inc_count = ic()
         self.data = data
+        self.codec = 'pg'
 
     def out_deps(self):
         y.info('{dr}' + str(self) + '{}', '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')
@@ -225,8 +227,14 @@ class Func(object):
 
         return [bg.i]
 
+    @y.cached_method
     def calc_deps(self):
         return self.data.optimize(self.data.select_deps(self.base) + self.calc_extra(), self)
+
+    @property
+    @y.cached_method
+    def deps(self):
+        return sorted(self.calc_deps(), key=lambda x: -x)
 
 
 class SplitFunc(Func):
@@ -439,7 +447,7 @@ class Data(object):
 
     def calc_new_deps(self, g):
         for func in self.new_funcs:
-            func.deps = sorted(func.calc_deps(), key=lambda x: -x)
+            _ = func.deps
 
         self.new_funcs = []
 
@@ -449,7 +457,6 @@ class Data(object):
 
         func.g = g
         func.i = len(self.func_by_num)
-        func.codec = 'pg'
 
         self.new_funcs.append(func)
         self.by_name[func.base] = func

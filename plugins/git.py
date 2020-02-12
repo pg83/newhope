@@ -11,7 +11,7 @@ def git0():
              ln -s $PYTHON ./python 
              export PATH="$(pwd):$PATH"
 
-             $YSHELL ./configure --prefix="$IDIR" --with-python=$PYTHON --with-perl=$YPERL --with-shell=$YSHELL --with-libpcre1 --with-openssl
+             $YSHELL ./configure --prefix="$IDIR" --with-python=$PYTHON --with-perl=$YPERL --with-shell=$YSHELL --with-libpcre2 --with-openssl
              $YMAKE -j $NTHRS
              $YMAKE install
         """,

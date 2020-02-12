@@ -1,5 +1,5 @@
 @y.package
-def pcre0():
+def pcre10():
     return {
         'code': """
              source fetch "https://downloads.sourceforge.net/project/pcre/pcre/{version}/pcre-{version}.tar.bz2" 1
