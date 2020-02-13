@@ -159,6 +159,14 @@ class PkgMngr(object):
         self.path = path
         self.info = info
 
+    def all_packs_dict(self):
+        res = {}
+
+        for x in self.all_packs():
+            res[self.pkg_unv_name(x)] = x
+
+        return res
+
     def subst_packs(self, p1, p2):
         return frozenset(self.pkg_unv_name(x) for x in p1) - frozenset(self.pkg_unv_name(x) for x in p2)
 
@@ -304,7 +312,6 @@ class PkgMngr(object):
             except Exception as e:
                 try:
                     db.restore_state()
-                    print db.db
                     self.apply_db(db)
                 finally:
                     raise e
@@ -352,8 +359,6 @@ class PkgMngr(object):
 
 
     def fetch_package(self, pkg):
-        print pkg
-
         return pkg['index'].fetch(pkg['path'])
 
     def init_place(self):
@@ -372,16 +377,16 @@ class PkgMngr(object):
 
         with open(base['path'] + '.tar', 'wb') as f:
             f.write(y.decode_prof(self.fetch_package(base)))
-            y.os.system('tar -xf *.tar && rm -rf log base* build')
+            y.os.system('tar -xf *.tar && rm -rf log base* build install')
 
-        self.install(['upm', 'yash', 'bsdtar'])
-        packs = sorted(self.all_packs())
+        self.install(['upm-run', 'dash-run', 'bsdtar-run'])
+
+        packs = self.all_packs_dict()
 
         y.os.chdir(self.path + '/bin')
-        safe_symlink('../pkg/' + packs[1] + '/bin/upm', 'upm')
-        safe_symlink('../pkg/' + packs[2] + '/bin/yash', 'sh')
 
-        self.install(['curl'])
+        safe_symlink('../pkg/' + packs['upm-run'] + '/bin/upm', 'upm')
+        safe_symlink('../pkg/' + packs['dash-run'] + '/bin/dash', 'sh')
 
     def add_indexes(self, indexes):
         with self.open_db() as db:
