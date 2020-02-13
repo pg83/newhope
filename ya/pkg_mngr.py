@@ -32,8 +32,8 @@ class Fetcher(object):
 
 
 def safe_symlink(fr, to):
-    y.os.symlink(fr, to + '.tmp')
-    y.os.rename(to + '.tmp', to)
+    y.os.symlink(fr, to + '-tmp')
+    y.os.rename(to + '-tmp', to)
 
 
 class HTTPFetcher(Fetcher):
@@ -190,7 +190,7 @@ class PkgMngr(object):
 
     def all_packs(self):
         def do():
-            for x, _ in self.list_dir(self.pkg_dir()):
+            for x, _ in self.list_dir(self.pkg_dir()):        
                 if '-v5' in x:
                     yield x
 
@@ -337,7 +337,7 @@ class PkgMngr(object):
             with open(path, 'wb') as f:
                 f.write(y.decode_prof(data))
 
-            ppath_tmp = self.pkg_dir() + '/.' + p['path']
+            ppath_tmp = self.pkg_dir() + '/' + p['path'] + '-tmp'
             ppath = self.pkg_dir() + '/' + p['path']
 
             try:
@@ -346,7 +346,7 @@ class PkgMngr(object):
                 y.shutil.rmtree(ppath_tmp)
                 y.os.makedirs(ppath_tmp)
 
-            y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
+            y.os.system('. /etc/profile && cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
 
         ap = self.all_packs()
 
@@ -356,7 +356,6 @@ class PkgMngr(object):
         for x in self.subst_packs(ap, [x['path'] for x in lst]):
             y.warning('remove stale package', x)
             y.shutil.rmtree(y.os.path.join(self.pkg_dir(), x))
-
 
     def fetch_package(self, pkg):
         return pkg['index'].fetch(pkg['path'])
