@@ -21,17 +21,18 @@ class SimpleDB(object):
 
     def read_db(self):
         try:
-            y.debug('{bb}open db ' + self.path + '{}')
+            y.debug('open db {bb}' + self.path + '{}')
 
             with open(self.path, 'rb') as f:
                 return decode_prof(f.read())
         except Exception as e:
-            y.info('{br}' + str(e) + ', can not load db, reinitialize...{}')
+            if 'No such file or directory' not in str(e):
+                y.info('{br}' + str(e) + '{}, can not load db, reinitialize...')
 
         return {}
 
     def write_db(self, data):
-        y.info('{bg}write new version of ' + self.path + '{}')
+        y.info('commit {bg}' + self.path + '{}')
 
         with open(self.path, 'wb') as f:
             f.write(encode_prof(data))

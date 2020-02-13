@@ -1,0 +1,2 @@
+export CFLAGS="$(echo $CFLAGS | tr ' ' '\n' | grep -v 'freestanding' | tr '\n' ' ')"
+export CXXFLAGS="$(echo $CXXFLAGS | tr ' ' '\n' | grep -v 'freestanding' | tr '\n' ' ')"

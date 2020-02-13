@@ -7,6 +7,8 @@ if '{os}' == 'linux':
                 export CFLAGS="-Diconv=musl_iconv -Diconv_open=musl_iconv_open -Diconv_close=musl_iconv_close -Ddlopen=musl_dlopen -Ddlclose=musl_dlclose -Ddlerror=musl_dlerror -Ddlsym=musl_dlsym $CFLAGS"
                 rm src/ldso/x86_64/dlsym.s
                 $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
+                $(APPLY_EXTRA_PLAN_3)
+                mv crt1.c crt/
                 $YMAKE -j $NTHRS || exit 1
                 $YMAKE install || exit 2
                 $(APPLY_EXTRA_PLAN_2)
@@ -21,6 +23,7 @@ if '{os}' == 'linux':
                 {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_musl.sh']['data']},
                 {'kind': 'file', 'path': 'crt/dso.c', 'data': y.globals.by_name['data/dso.c']['data']},
                 {'kind': 'file', 'path': 'malloc.sh', 'data': y.globals.by_name['data/malloc.sh']['data']},
+                {'kind': 'file', 'path': 'crt1.c', 'data': y.globals.by_name['data/crt1.c']['data']},
             ],
             'meta': {
                 'kind': ['library'],

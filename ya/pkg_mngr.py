@@ -1,11 +1,28 @@
+sp = y.subprocess
+os = y.os
+
+
+def safe_untar(tar, f, where):
+    print tar
+
+    p = sp.Popen([tar, '-C', where, '-xf', f], shell=False, stderr=sp.STDOUT, stdout=sp.PIPE)
+    out, _ = p.communicate()
+    retcode = p.wait()
+
+    if retcode == 0:
+        return
+
+    raise Exception('can not untar ' + f + ': ' + out.decode('utf-8'))
+
+
 def build_index(where):
-    y.info('build index file for {bb}', where, '{}')
+    y.info('build index for{bb}', where, '{}')
 
     index = []
 
-    for f in sorted(y.os.listdir(where)):
+    for f in sorted(os.listdir(where)):
         if len(f) > 10:
-            p = y.os.path.join(where, f)
+            p = os.path.join(where, f)
 
             if f.endswith('-tmp'):
                 continue
@@ -13,7 +30,7 @@ def build_index(where):
             if f.startswith('.'):
                 continue
 
-            index.append({'path': f, 'length': y.os.path.getsize(p), 'ts': int(1000000000 * y.os.path.getmtime(p))})
+            index.append({'path': f, 'length': os.path.getsize(p), 'ts': int(1000000000 * os.path.getmtime(p))})
 
     return index
 
@@ -32,8 +49,8 @@ class Fetcher(object):
 
 
 def safe_symlink(fr, to):
-    y.os.symlink(fr, to + '-tmp')
-    y.os.rename(to + '-tmp', to)
+    os.symlink(fr, to + '-tmp')
+    os.rename(to + '-tmp', to)
 
 
 class HTTPFetcher(Fetcher):
@@ -44,9 +61,9 @@ class HTTPFetcher(Fetcher):
         return y.decode_prof(self.do_fetch('index'))
 
     def do_fetch(self, path):
-        p = y.os.path.join(self._root, path)
+        p = os.path.join(self._root, path)
 
-        y.info('will fetch{bg}', p, '{}')
+        y.info('fetch{bg}', p, '{}')
 
         return y.fetch_data(p)
 
@@ -59,9 +76,9 @@ class LocalFetcher(Fetcher):
         return y.build_index(self._root)
 
     def do_fetch(self, path):
-        p = y.os.path.join(self._root, path)
+        p = os.path.join(self._root, path)
 
-        y.info('will fetch {br}', p, '{}')
+        y.info('fetch{br}', p, '{}')
 
         with open(p, 'rb') as f:
             return f.read()
@@ -112,18 +129,18 @@ class InstPropertyDB(object):
 
 
 def find_file(pattern):
-    p = y.os.path.abspath(y.os.getcwd())
+    p = os.path.abspath(os.getcwd())
 
     def do():
         n = '/'
 
         for x in p.split('/') + ['']:
-            probe = y.os.path.join(n, pattern)
+            probe = os.path.join(n, pattern)
 
-            if y.os.path.isfile(probe):
+            if os.path.isfile(probe):
                 yield probe
 
-            n = y.os.path.join(n, x)
+            n = os.path.join(n, x)
 
     data = list(do())
 
@@ -140,11 +157,11 @@ class PkgMngr(object):
         if not info:
             try:
                 if path:
-                    tgpath = y.os.path.join(path, trf)
+                    tgpath = os.path.join(path, trf)
                 else:
                     tgpath = find_file(trf)
 
-                self.path = y.os.path.abspath(tgpath)[:-len(trf)]
+                self.path = os.path.abspath(tgpath)[:-len(trf)]
 
                 with self.open_db() as db:
                     info = db.target()
@@ -167,11 +184,34 @@ class PkgMngr(object):
 
         return res
 
+    def any_of(self, pkgs):
+        ap = self.all_packs_dict()
+
+        for p in pkgs:
+            if p in ap:
+                return ap[p]
+
+        raise AttributeError('no ' + str(pkgs) + 'found')
+
+    def safe_untar(self, f, to):
+        lst = ['bsdtar', 'tar', 'busybox', 'toybox', 'libarchive']
+
+        try:
+            tar = os.path.join(self.path, 'pkg', self.any_of(lst + [(x + '-run') for x in lst]), 'bin', 'tar')
+
+            if not os.path.isfile(tar):
+                raise AttributeError(tar)
+        except AttributeError as e:
+            y.warning(str(e) + ', will use any tar')
+            tar = 'tar'
+
+        safe_untar(tar, f, to)
+
     def subst_packs(self, p1, p2):
         return frozenset(self.pkg_unv_name(x) for x in p1) - frozenset(self.pkg_unv_name(x) for x in p2)
 
     def get_dir(self, *args):
-        return y.os.path.join(self.path, *args)
+        return os.path.join(self.path, *args)
 
     def etc_dir(self):
         return self.get_dir('etc')
@@ -190,22 +230,22 @@ class PkgMngr(object):
 
     def all_packs(self):
         def do():
-            for x, _ in self.list_dir(self.pkg_dir()):        
+            for x, _ in self.list_dir(self.pkg_dir()):
                 if '-v5' in x:
                     yield x
 
         return list(do())
 
     def list_dir(self, path):
-        where = y.os.path.join(self.path, path)
+        where = os.path.join(self.path, path)
 
-        if not y.os.path.isdir(where):
+        if not os.path.isdir(where):
             y.warning('not a directory', where)
 
             return
 
-        for x in y.os.listdir(where):
-            yield x, y.os.path.join(x, where)
+        for x in os.listdir(where):
+            yield x, os.path.join(x, where)
 
     def get_index_files_0(self):
         with self.open_db() as db:
@@ -284,10 +324,12 @@ class PkgMngr(object):
 
     @y.contextlib.contextmanager
     def open_db(self):
-        with y.open_simple_db(y.os.path.join(self.path, 'etc', 'upm', 'sys.db')) as db:
+        with y.open_simple_db(os.path.join(self.path, 'etc', 'upm', 'sys.db')) as db:
             yield InstPropertyDB(db)
 
     def install(self, pkgs):
+        y.info('install {bb}' + ', '.join(pkgs) + '{}')
+
         def do(inst):
             return y.uniq_list_x(inst + pkgs)
 
@@ -306,8 +348,8 @@ class PkgMngr(object):
     def modify(self, func):
         with self.open_db() as db:
             try:
-                y.info('write next state')
-                db.set_inst(list(func(db.inst())))
+                next_state = list(func(db.inst()))
+                db.set_inst(next_state)
                 self.apply_db(db)
             except Exception as e:
                 try:
@@ -317,36 +359,39 @@ class PkgMngr(object):
                     raise e
 
     def apply_db(self, db):
-        y.info('apply actual changes')
         self.actual_install(db.inst())
+
+    def install_one_pkg(self, p):
+        ppath = self.pkg_dir() + '/' + p['path']
+
+        if os.path.isdir(ppath):
+            y.info('skip', ppath)
+
+            return
+
+        data = self.fetch_package(p)
+        path = os.path.join(self.pkg_cache_dir(), p['path']) + '.tar'
+
+        with open(path, 'wb') as f:
+            f.write(y.decode_prof(data))
+
+        ppath_tmp = self.pkg_dir() + '/' + p['path'] + '-tmp'
+        ppath = self.pkg_dir() + '/' + p['path']
+
+        try:
+            os.makedirs(ppath_tmp)
+        except OSError:
+            y.shutil.rmtree(ppath_tmp)
+            os.makedirs(ppath_tmp)
+
+        self.safe_untar(path, ppath_tmp)
+        os.rename(ppath_tmp, ppath)
 
     def actual_install(self, pkgs):
         lst = self.pkg_list(pkgs)
 
         for p in lst:
-            ppath = self.pkg_dir() + '/' + p['path']
-
-            if y.os.path.isdir(ppath):
-                y.info('skip', ppath)
-
-                continue
-
-            data = self.fetch_package(p)
-            path = y.os.path.join(self.pkg_cache_dir(), p['path']) + '.tar'
-
-            with open(path, 'wb') as f:
-                f.write(y.decode_prof(data))
-
-            ppath_tmp = self.pkg_dir() + '/' + p['path'] + '-tmp'
-            ppath = self.pkg_dir() + '/' + p['path']
-
-            try:
-                y.os.makedirs(ppath_tmp)
-            except OSError:
-                y.shutil.rmtree(ppath_tmp)
-                y.os.makedirs(ppath_tmp)
-
-            y.os.system('. /etc/profile && cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
+            self.install_one_pkg(p)
 
         ap = self.all_packs()
 
@@ -355,37 +400,40 @@ class PkgMngr(object):
 
         for x in self.subst_packs(ap, [x['path'] for x in lst]):
             y.warning('remove stale package', x)
-            y.shutil.rmtree(y.os.path.join(self.pkg_dir(), x))
+            y.shutil.rmtree(os.path.join(self.pkg_dir(), x))
 
     def fetch_package(self, pkg):
         return pkg['index'].fetch(pkg['path'])
 
     def init_place(self):
         try:
-            y.os.makedirs(self.path)
+            os.makedirs(self.path)
         except OSError:
             pass
 
         with self.open_db() as db:
             db.set_target(self.info)
-            db.add_index_file(['http://index.samokhvalov.xyz', y.upm_root() + '/r'])
+            db.add_index_file(['http://index.uberpackagemanager.xyz', y.upm_root() + '/r'])
 
         base = self.pkg_list(['base'])[0]
+        path = base['path'] + '.tar'
 
-        y.os.chdir(self.path)
-
-        with open(base['path'] + '.tar', 'wb') as f:
+        with open(path, 'wb') as f:
             f.write(y.decode_prof(self.fetch_package(base)))
-            y.os.system('tar -xf *.tar && rm -rf log base* build install')
 
-        self.install(['upm-run', 'dash-run', 'bsdtar-run'])
+        self.safe_untar(path, self.path)
+
+        for f in (path, 'build', 'install'):
+            os.unlink(os.path.join(self.path, f))
+
+        y.shutil.rmtree(os.path.join(self.path, 'log'))
+
+        self.install(['bsdtar-run', 'upm-run', 'dash-run'])
 
         packs = self.all_packs_dict()
 
-        y.os.chdir(self.path + '/bin')
-
-        safe_symlink('../pkg/' + packs['upm-run'] + '/bin/upm', 'upm')
-        safe_symlink('../pkg/' + packs['dash-run'] + '/bin/dash', 'sh')
+        safe_symlink('../pkg/' + packs['upm-run'] + '/bin/upm', self.path + '/bin/upm')
+        safe_symlink('../pkg/' + packs['dash-run'] + '/bin/dash', self.path + '/bin/sh')
 
     def add_indexes(self, indexes):
         with self.open_db() as db:

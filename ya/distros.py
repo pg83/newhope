@@ -1,33 +1,51 @@
 def tini_distr():
     return [
         'toybox-run',
-        'busybox-boot-run',
+        'busybox-run',
         'coreutils-run',
-        'yash-run',
+        'dash-run',
+    ]
+
+
+def compression_distr():
+    return [
+        'xz-run',
+        'gzip-run',
+        'bzip2-run',
+        'unrar-run',
+        'bsdtar-run',
+        'p7zip-run',
+    ]
+
+
+def textutils_distr():
+    return [
+        'gawk-run',
+        'grep-run',
+        'sed-run',
+        'file-run',
+        'diffutils-run',
+        'less-run',
     ]
 
 
 def small_distr():
     return [
         '@tini',
-        'dash-run',
-        'xz-run',
+        '@compression',
+        '@textutils',
+        'yash-run',
         'curl-run',
-        'gzip-run',
-        'bzip2-run',
-        'unrar-run',
-        'gawk-run',
-        'grep-run',
-        'make-run',
-        'sed-run',
-        'bsdtar-run',
-        'file-run',
-        'upm-run',
         'psmisc-run',
-        'bc-run',
-        'p7zip-run',
-        'diffutils-run',
-        'less-run',
+    ]
+
+
+def dev_distr():
+    return [
+        'make-run',
+        'sqlite3-run',
+        'ninja-run',
+        'cmake',
     ]
 
 
@@ -36,11 +54,6 @@ def common_distr():
         '@small',
         'mc-slang',
         'mc-ncurses',
-        'cmake',
-        'openssl',
-        'sqlite3-run',
-        'ninja-run',
-        'dropbear',
     ]
 
 
@@ -51,7 +64,11 @@ def misc_distr():
         'pkg-config',
         'toybox',
         'pcre1',
-        #'clang'
+        'openssl',
+        'dropbear',
+        'bc',
+        'upm',
+        'clang',
     ]
 
 
@@ -68,7 +85,7 @@ def resolve_packs(packs):
 
 
 def all_packs_0():
-    return common_distr() + misc_distr() + ['base']
+    return common_distr() + dev_distr() + misc_distr() + ['base']
 
 
 def all_distro_packs():

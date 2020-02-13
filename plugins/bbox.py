@@ -18,7 +18,6 @@ def box0():
         'libiconv',
         'make',
         'ninja',
-        'p7zip',
         'pkg-config',
         'm4',
         'sed',
