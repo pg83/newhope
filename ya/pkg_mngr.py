@@ -167,6 +167,15 @@ class PkgMngr(object):
 
         return res
 
+    def any_of(self, pkgs):
+        ap = self.all_packs_dict()
+
+        for p in pkgs:
+            if p in ap:
+                return ap[p]
+
+        raise AttributeError('no ' + str(pkgs) + 'found')
+
     def subst_packs(self, p1, p2):
         return frozenset(self.pkg_unv_name(x) for x in p1) - frozenset(self.pkg_unv_name(x) for x in p2)
 
@@ -320,34 +329,37 @@ class PkgMngr(object):
         y.info('apply actual changes')
         self.actual_install(db.inst())
 
+    def install_one_pkg(self, p):
+        ppath = self.pkg_dir() + '/' + p['path']
+
+        if y.os.path.isdir(ppath):
+            y.info('skip', ppath)
+
+            return
+
+        data = self.fetch_package(p)
+        path = y.os.path.join(self.pkg_cache_dir(), p['path']) + '.tar'
+
+        with open(path, 'wb') as f:
+            f.write(y.decode_prof(data))
+
+        ppath_tmp = self.pkg_dir() + '/' + p['path'] + '-tmp'
+        ppath = self.pkg_dir() + '/' + p['path']
+
+        try:
+            y.os.makedirs(ppath_tmp)
+        except OSError:
+            y.shutil.rmtree(ppath_tmp)
+            y.os.makedirs(ppath_tmp)
+
+        y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
+
     def actual_install(self, pkgs):
         lst = self.pkg_list(pkgs)
 
         for p in lst:
-            ppath = self.pkg_dir() + '/' + p['path']
-
-            if y.os.path.isdir(ppath):
-                y.info('skip', ppath)
-
-                continue
-
-            data = self.fetch_package(p)
-            path = y.os.path.join(self.pkg_cache_dir(), p['path']) + '.tar'
-
-            with open(path, 'wb') as f:
-                f.write(y.decode_prof(data))
-
-            ppath_tmp = self.pkg_dir() + '/.' + p['path']
-            ppath = self.pkg_dir() + '/' + p['path']
-
-            try:
-                y.os.makedirs(ppath_tmp)
-            except OSError:
-                y.shutil.rmtree(ppath_tmp)
-                y.os.makedirs(ppath_tmp)
-
-            y.os.system('cd ' + ppath_tmp  + ' && tar -xf ' + path + ' && mv ' + ppath_tmp + ' ' + ppath)
-
+            self.install_one_pkg(p)
+    
         ap = self.all_packs()
 
         with open(self.pkg_dir() + '/profile', 'w') as f:
@@ -356,7 +368,6 @@ class PkgMngr(object):
         for x in self.subst_packs(ap, [x['path'] for x in lst]):
             y.warning('remove stale package', x)
             y.shutil.rmtree(y.os.path.join(self.pkg_dir(), x))
-
 
     def fetch_package(self, pkg):
         return pkg['index'].fetch(pkg['path'])
