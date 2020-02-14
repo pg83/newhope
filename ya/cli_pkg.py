@@ -75,6 +75,7 @@ def cli_pkg_up(args_):
 
     y.PkgMngr(path=args.where).install([])
 
+
 @y.main_entry_point
 def cli_pkg_showdb(args_):
    with y.PkgMngr().open_db() as db:
@@ -103,7 +104,7 @@ def cli_pkg_sync_repo(args_):
             z = y.os.path.join(args.to, x)
 
             if y.os.path.isfile(z):
-                y.info('already exists', z)
+                y.debug('already exists', z)
             else:
                 y.info('copy file ', x, ' to ', z)
                 y.shutil.copyfile(y.os.path.join(fr, x), z + '.tmp')

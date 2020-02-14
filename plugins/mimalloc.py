@@ -9,7 +9,7 @@ def mimalloc0():
         'code': """
              source fetch "https://github.com/microsoft/mimalloc/archive/{version}.zip" 0
              (mv mim* xxx && mv xxx/* ./)
-             $CC $CFLAGS -DMI_MALLOC_OVERRIDE=1 -std=c11 -Iinclude -Dasm=__asm__ -c src/static.c -o static.o
+             $CC $CFLAGS -DMI_MALLOC_OVERRIDE=1 -DMI_DEBUG=0 -std=c11 -Iinclude -Dasm=__asm__ -c src/static.c -o static.o
              $AR q libmimalloc.a static.o
              $RANLIB libmimalloc.a
              mkdir $IDIR/lib
@@ -19,7 +19,6 @@ def mimalloc0():
         'meta': {
             'kind': ['library'],
             'depends': depends + ['make-boot'],
-            'undeps': ['make', 'musl'],
             'provides': [
                 {'lib': 'mimalloc'},
             ],

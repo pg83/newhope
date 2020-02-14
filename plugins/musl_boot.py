@@ -22,7 +22,6 @@ if '{os}' == 'linux':
             'meta': {
             'kind': ['tool'],
                 'depends': ['busybox-boot', 'toybox'],
-                'undeps': ['musl', 'make'],
                 'provides': [
                     {'lib': 'muslc'},
                     {'env': 'CPPFLAGS', 'value': '"$CPPFLAGS -I{pkgroot}/include"'},

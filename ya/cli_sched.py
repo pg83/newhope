@@ -47,10 +47,12 @@ def gen_wd_func(f):
         return func(f)
 
 
+def exec_build():
+    y.os.execl('/usr/bin/unshare', 'unshare', '--fork', '--pid', '--kill-child', '/media/build/upm', 'cmd', 'scheduler', 'BUILD')
+
+
 ENTRY = [
-    ['exec nice -n 20 unshare --fork --pid --kill-child /media/build/upm cmd scheduler BUILD'],
-    wait_pid,
-    watch_dog,
+    exec_build,
 ]
 
 
@@ -62,11 +64,13 @@ BUILD = [
     ['cd /media/build && ./upm makefile --os linux -v | ./upm make --root /media/build --install-dir /pkg -j7 -f -'],
     ['cd /media/storage && (find . | grep "\-tmp" | xargs rm) && sleep 1200'],
     wait_pid,
+    watch_dog,
 ]
 
 
 @y.verbose_entry_point
 def cli_cmd_scheduler(args):
+    y.os.nice(20)
     code = (len(args) > 0 and args[0]) or 'ENTRY'
     y.info('code', code)
     thrs = [y.threading.Thread(target=gen_wd_func(c)) for c in globals()[code]]

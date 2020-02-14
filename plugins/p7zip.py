@@ -13,8 +13,8 @@ def p7zip0():
         ''',
         'version': '16.02',
         'meta': {
-            'depends': ['c++'],
-            'kind': ['box', 'tool', 'library'],
+            'depends': ['c++', 'make', 'c'],
+            'kind': ['tool', 'library'],
             'provides': [
                 {'env': 'Y7ZA', 'value': '{pkgroot}/bin/7za'},
             ],

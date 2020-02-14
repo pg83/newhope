@@ -16,7 +16,6 @@ if '{os}' == 'linux':
             'version': '0.8.1',
             'meta': {
                 'kind': ['tool'],
-                'undeps': ['make', 'musl'],
                 'provides': [
                     {'env': 'TOYBOX', 'value': '{pkgroot}/bin/toybox'},
                 ],
@@ -24,9 +23,9 @@ if '{os}' == 'linux':
         }
 else:
     @y.package
-    def    toybox0():
+    def toybox0():
         return {
             'meta': {
-                'kind':    ['tool']
+                'kind': ['tool']
             }
         }

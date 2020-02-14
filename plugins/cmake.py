@@ -28,6 +28,8 @@ def cmake0():
                 'expat',
                 'dl',
                 'iconv',
+                'make',
+                'c',
             ] + extra,
             'provides': [
                 {'env': 'CMAKE', 'value': '{pkgroot}/bin/cmake'},

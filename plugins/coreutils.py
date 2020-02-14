@@ -21,7 +21,7 @@ def coreutils0():
         'version': '8.31',
         'meta': {
             'kind': ['tool', 'box'],
-            'depends': ['iconv', 'intl', 'openssl'],
+            'depends': ['iconv', 'intl', 'openssl', 'make', 'c'],
             'provides': [
                 {'env': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'},
             ],

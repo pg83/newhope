@@ -27,8 +27,8 @@ def yash0():
          """.replace('{opts}', ' '.join(opts)),
         'version': '2.49',
         'meta': {
-            'kind': ['box', 'tool'],
-            'depends': ['intl', 'ncurses', 'xz', 'tar', 'asciidoc', 'python'],
+            'kind': ['tool'],
+            'depends': ['intl', 'ncurses', 'xz', 'tar', 'asciidoc', 'python', 'make', 'c'],
             'provides': [
                 {'env': 'YSHELL_OPT', 'value': '{pkgroot}/bin/yash'},
                 {'env': 'YASH', 'value': '{pkgroot}/bin/yash'},

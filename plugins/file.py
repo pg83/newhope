@@ -10,6 +10,7 @@ def file0():
         'version': '5.38',
         'meta': {
             'kind': ['tool'],
+            'depends': ['make', 'c'],
             'profides': [
                 {'env': 'FILE_TOOL', 'value': '{pkgroot}/bin/file'}
             ],

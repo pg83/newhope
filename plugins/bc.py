@@ -12,6 +12,7 @@ def bc0():
         'version': '2.5.3',
         'meta': {
             'kind': ['tool'],
+            'depends': ['make', 'c'],
             'provides': [
                 {'env': 'YBC', 'value': '{pkgroot}/bin/bc'},
             ],

@@ -17,9 +17,8 @@ def make0():
         'code': code,
         'version': '4.2',
         'meta': {
-            'kind': ['tool', 'box'],
+            'kind': ['box'],
             'depends': ['make-boot'] + extra,
-            'undeps': ['make', 'musl'],
             'contains': ['make-boot'],
             'provides': [
                 {'env': 'YMAKE', 'value': '{pkgroot}/bin/make'},

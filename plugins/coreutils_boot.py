@@ -14,6 +14,7 @@ def coreutils_boot0():
         'version': '8.31',
         'meta': {
             'kind': ['tool'],
+            'depends': ['make', 'c'],
             'provides': [
                 {'env': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'},
             ],

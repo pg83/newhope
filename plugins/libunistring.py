@@ -10,7 +10,7 @@ def libunistring0():
         'version': '0.9.10',
         'meta': {
             'kind': ['library'],
-            'depends': ['iconv', 'xz'],
+            'depends': ['iconv', 'xz', 'make', 'c'],
             'provides': [
                 {'lib': 'unistring', 'configure': {'opt': '--with-libunistring-prefix={pkgroot}'}},
             ],

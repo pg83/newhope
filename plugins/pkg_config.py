@@ -1,4 +1,4 @@
-def pkg_config_base(cflags, opts, deps, kind):
+def pkg_config_base(cflags, opts, deps):
     return {
         'code': """
             source fetch "https://pkg-config.freedesktop.org/releases/pkg-config-{version}.tar.gz" 1 
@@ -13,8 +13,8 @@ def pkg_config_base(cflags, opts, deps, kind):
         """.replace('{opts}', ' '.join(opts)).replace('{cflags}', cflags),
         'version': '0.29.2',
         'meta': {
-            'kind': kind,
-            'depends': deps,
+            'kind': ['tool'],
+            'depends': deps + ['iconv', 'file', 'make', 'c'],
             'provides': [
                 {'env': 'PKG_CONFIG', 'value': '{pkgroot}/bin/pkg-config'}
             ],
@@ -24,9 +24,9 @@ def pkg_config_base(cflags, opts, deps, kind):
 
 @y.package
 def pkg_config0():
-    return pkg_config_base('', [], ['iconv', 'glib', 'file'], ['box', 'tool'])
+    return pkg_config_base('', [], ['glib'])
 
 
 @y.package
 def pkg_config_int0():
-    return pkg_config_base('-Iglib -Iglib/glib', ['--with-internal-glib'], ['iconv', 'file'], ['tool'])
+    return pkg_config_base('-Iglib -Iglib/glib', ['--with-internal-glib'], [])

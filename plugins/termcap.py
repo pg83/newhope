@@ -10,6 +10,7 @@ def termcap0():
         'version': '1.3.1',
         'meta': {
             'kind': ['library'],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'termcap'},
             ],

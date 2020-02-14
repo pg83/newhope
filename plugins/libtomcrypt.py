@@ -10,9 +10,9 @@ def libtomcrypt0():
         'version': '1.18.2',
         'meta': {
             'kind': ['library'],
-            'depends': ['libtommath'],
+            'depends': ['libtommath', 'make', 'c'],
             'provides': [
-                {'lib': 'tommath'},
+                {'lib': 'tomcrypt'},
                 {'env': 'CFLAGS', 'value': '"-DUSE_LTM -DLTM_DESC"'},
             ],
         }

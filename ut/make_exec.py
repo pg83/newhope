@@ -17,8 +17,7 @@ def run_makefile(mk, targets, threads, pre_run=[], naked=False):
 
 def wrap_gen(func):
     def wrapper(inq):
-        for x in func(inq):
-            yield x
+        yield from func(inq)
 
     return wrapper
 
@@ -321,7 +320,7 @@ class Item(ItemBase):
                         bdir = l.split('=')[1]
 
             if bdir:
-                yield '{br}./cli debug ' + bdir + '{}'
+                yield 'run {by}cli debug ' + bdir + '{}'
 
         msg = {
             'output': '\n'.join(iter_lines()),

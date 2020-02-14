@@ -19,7 +19,7 @@ def glib0():
         'version': '2.30.3',
         'meta': {
             'kind': ['library'],
-            'depends': ['iconv', 'intl', 'libffi', 'pkg-config-int', 'coreutils', 'python', 'zlib', 'dash', 'pcre'],
+            'depends': ['iconv', 'intl', 'libffi', 'pkg-config-int', 'coreutils', 'python', 'zlib', 'dash', 'pcre', 'make', 'c'],
             'provides': [
                 {'lib': 'glib-2.0'},
                 {'env': 'GLIB_CFLAGS', 'value': '"-I{pkgroot}/include/glib-2.0 -I{pkgroot}/lib/glib-2.0/include"'},

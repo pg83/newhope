@@ -29,7 +29,7 @@ def perl50():
         'version': '5.30.1',
         'meta': {
             'kind': ['tool'],
-            'depends': ['iconv', 'zlib', 'coreutils-boot'],
+            'depends': ['iconv', 'zlib', 'coreutils-boot', 'make', 'c'],
             'provides': [
                 {'env': 'YPERL', 'value': '{pkgroot}/bin/perl'},
                 {'env': 'POD2HTML', 'value': '{pkgroot}/bin/pod2html'},

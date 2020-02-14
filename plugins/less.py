@@ -12,7 +12,7 @@ def less0():
         'version': '551',
         'meta': {
             'kind': ['tool'],
-            'depends': ['ncurses'],
+            'depends': ['ncurses', 'make', 'c'],
             'profides': [
                 {'env': 'LESS', 'value': '{pkgroot}/bin/less'}
             ],

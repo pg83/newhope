@@ -18,7 +18,7 @@ def libffi0():
         'version': '3.2.1',
         'meta': {
             'kind': ['library'],
-            'depends': ['sed'],
+            'depends': ['sed', 'make', 'c'],
             'provides': [
                 {'lib': 'ffi', 'configure': {'opt': '--with-system-ffi={pkgroot}'}},
                 {'env': 'LIBFFI_CFLAGS', 'value': '-I/{pkgroot}/include'},

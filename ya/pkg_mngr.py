@@ -1,10 +1,10 @@
+import io
+
 sp = y.subprocess
 os = y.os
 
 
 def safe_untar(tar, f, where):
-    print tar
-
     p = sp.Popen([tar, '-C', where, '-xf', f], shell=False, stderr=sp.STDOUT, stdout=sp.PIPE)
     out, _ = p.communicate()
     retcode = p.wait()
@@ -13,6 +13,17 @@ def safe_untar(tar, f, where):
         return
 
     raise Exception('can not untar ' + f + ': ' + out.decode('utf-8'))
+
+
+def untar_from_memory(tar, data, where):
+    p = sp.Popen([tar, '-C', where, '-xf', '-'], shell=False, stderr=sp.STDOUT, stdout=sp.PIPE, stdin=sp.PIPE)
+    out, _ = p.communicate(input=data)
+    retcode = p.wait()
+
+    if retcode == 0:
+        return
+
+    raise Exception('can not untar data: ' + out.decode('utf-8'))
 
 
 def build_index(where):
@@ -63,7 +74,7 @@ class HTTPFetcher(Fetcher):
     def do_fetch(self, path):
         p = os.path.join(self._root, path)
 
-        y.info('fetch{bg}', p, '{}')
+        y.info('fetch{by}', p, '{}')
 
         return y.fetch_data(p)
 
@@ -193,20 +204,39 @@ class PkgMngr(object):
 
         raise AttributeError('no ' + str(pkgs) + 'found')
 
-    def safe_untar(self, f, to):
+    def find_pkg_tar(self):
         lst = ['bsdtar', 'tar', 'busybox', 'toybox', 'libarchive']
+        full_lst = lst + [(x + '-run') for x in lst]
 
+        tar = os.path.join(self.path, 'pkg', self.any_of(full_lst), 'bin', 'tar')
+
+        if not os.path.isfile(tar):
+            raise AttributeError(tar)
+
+        return tar
+
+    def safe_untar(self, f, to):
         try:
-            tar = os.path.join(self.path, 'pkg', self.any_of(lst + [(x + '-run') for x in lst]), 'bin', 'tar')
-
-            if not os.path.isfile(tar):
-                raise AttributeError(tar)
+            tar = self.find_pkg_tar()
         except AttributeError as e:
             y.warning(str(e) + ', will use any tar')
             tar = 'tar'
 
         safe_untar(tar, f, to)
 
+    def untar_from_memory(self, data, where):
+        try:
+            os.makedirs(where)
+        except OSError:
+            pass
+
+        try:
+            untar_from_memory(self.find_pkg_tar(), data, where)
+        except AttributeError as e:
+            y.debug('fallback to pyhon tarfile: ' + str(e))
+            stream = io.BytesIO(data)
+            y.tarfile.open(fileobj=stream, mode='r').extractall(where)
+       
     def subst_packs(self, p1, p2):
         return frozenset(self.pkg_unv_name(x) for x in p1) - frozenset(self.pkg_unv_name(x) for x in p2)
 
@@ -363,29 +393,33 @@ class PkgMngr(object):
 
     def install_one_pkg(self, p):
         ppath = self.pkg_dir() + '/' + p['path']
+        ppath_tmp = self.pkg_dir() + '/' + p['path'] + '-tmp'
 
         if os.path.isdir(ppath):
             y.info('skip', ppath)
 
             return
 
-        data = self.fetch_package(p)
-        path = os.path.join(self.pkg_cache_dir(), p['path']) + '.tar'
+        pkg_data = self.fetch_package(p)
+        data = y.decode_prof(pkg_data)
 
-        with open(path, 'wb') as f:
-            f.write(y.decode_prof(data))
+        def func():
+            y.write_file(os.path.join(self.path, 'pkg', 'cache', p['path']), pkg_data)
 
-        ppath_tmp = self.pkg_dir() + '/' + p['path'] + '-tmp'
-        ppath = self.pkg_dir() + '/' + p['path']
-
-        try:
-            os.makedirs(ppath_tmp)
-        except OSError:
-            y.shutil.rmtree(ppath_tmp)
-            os.makedirs(ppath_tmp)
-
-        self.safe_untar(path, ppath_tmp)
-        os.rename(ppath_tmp, ppath)
+        with y.defer_context() as defer:
+            t = y.threading.Thread(target=func)
+            defer(t.join)
+            t.start()
+    
+            try:
+                os.makedirs(ppath_tmp)
+            except OSError:
+                y.shutil.rmtree(ppath_tmp)
+                os.makedirs(ppath_tmp)
+        
+            self.untar_from_memory(data, ppath_tmp)
+            os.rename(ppath_tmp, ppath)
+        
 
     def actual_install(self, pkgs):
         lst = self.pkg_list(pkgs)
@@ -413,26 +447,22 @@ class PkgMngr(object):
 
         with self.open_db() as db:
             db.set_target(self.info)
-            db.add_index_file(['http://index.uberpackagemanager.xyz', y.upm_root() + '/r'])
+            db.add_index_file(['http://index.uberpackagemanager.xyz', y.upm_root() + '/r', '/pkg/cache'])
 
         base = self.pkg_list(['base'])[0]
-        path = base['path'] + '.tar'
 
-        with open(path, 'wb') as f:
-            f.write(y.decode_prof(self.fetch_package(base)))
+        self.untar_from_memory(y.decode_prof(self.fetch_package(base)), self.path)
 
-        self.safe_untar(path, self.path)
-
-        for f in (path, 'build', 'install'):
+        for f in ('build', 'install'):
             os.unlink(os.path.join(self.path, f))
 
         y.shutil.rmtree(os.path.join(self.path, 'log'))
 
-        self.install(['bsdtar-run', 'upm-run', 'dash-run'])
+        self.install(['bsdtar', 'upm', 'dash-run'])
 
         packs = self.all_packs_dict()
 
-        safe_symlink('../pkg/' + packs['upm-run'] + '/bin/upm', self.path + '/bin/upm')
+        safe_symlink('../pkg/' + packs['upm'] + '/bin/upm', self.path + '/bin/upm')
         safe_symlink('../pkg/' + packs['dash-run'] + '/bin/dash', self.path + '/bin/sh')
 
     def add_indexes(self, indexes):

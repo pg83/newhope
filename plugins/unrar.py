@@ -12,7 +12,7 @@ def unrar0():
         'version': '5.8.3',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['c++'],
+            'depends': ['c++', 'make', 'c'],
             'provides': [
                 {'env': 'YUNRAR', 'value': '{pkgroot}/bin/unrar'},
             ],

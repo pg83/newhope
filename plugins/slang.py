@@ -10,7 +10,11 @@ def slang0():
         'version': 'pre2.3.3-18',
         'meta': {
             'kind': ['library'],
-            'depends': ['zlib', 'readline', 'iconv'],
-            'provides': ['slang'],
+            'depends': ['zlib', 'readline', 'iconv', 'make', 'c'],
+            'provides': [
+                {'lib': 'slang'},
+                {'env': 'SLANG_CFLAGS', 'value': '"-I{pkgroot}/include"'},
+                {'env': 'SLANG_LIBS', 'value': '"-L{pkgroot}/lib -lslang"'}
+            ],   
         },
     }

@@ -59,7 +59,7 @@ def box0():
         ''',
         'meta': {
             'kind': ['tool'],
-            'depends': lst_run,
+            'depends': lst_run + ['base'],
             'contains': lst_run + lst,
             'provides': [
                 {'env': 'SED', 'value': '{pkgroot}/bin/sed'},

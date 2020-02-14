@@ -10,9 +10,7 @@ def groff0():
         'version': '1.22.4',
         'meta': {
             'kind': ['tool'],
-            'depends': [
-                 'c++', 'texinfo',
-            ],
+            'depends': ['c++', 'texinfo','make', 'c'],
             'provides': [
                 {'env': 'TROFF', 'value': '{pkgroot}/bin/troff'},
             ],

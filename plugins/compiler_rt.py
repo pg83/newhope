@@ -14,6 +14,7 @@ def crt0():
         'version': '9.0.1',
         'meta': {
             'kind': ['library'],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'compiler_rt'},
             ],

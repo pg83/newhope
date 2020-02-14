@@ -7,7 +7,7 @@ def is_debug():
 
 
 @y.cached
-def subst_by_platform(os):
+def subst_by_platform(info):
     common = {
         'intl': 'gettext',
         'iconv': 'libiconv',
@@ -16,6 +16,8 @@ def subst_by_platform(os):
         'termcap': 'ncurses',
         'ncurses': 'ncurses-real',
         'pcre': 'pcre2',
+        'busybox': 'busybox-boot',
+        'c': 'sys_libc',
     }
 
     by_os = {
@@ -26,8 +28,9 @@ def subst_by_platform(os):
     by_os['linux'].update({'ncurses': 'netbsd-curses'})
     by_os['linux'].update({'libtool': 'slibtool'})
     by_os['linux'].update({'m4': 'quasar-m4'})
+    by_os['linux'].update({'c': info.get('libc', 'musl')})
 
-    res = y.dc(by_os[os])
+    res = y.dc(by_os[info['os']])
 
     for k in list(res.keys()):
         for s in y.repacks_keys():
@@ -39,7 +42,7 @@ def subst_by_platform(os):
 class Func(object):
     @y.cached_method
     def do_subst(self, x):
-        s = subst_by_platform(self.data.info['os'])
+        s = subst_by_platform(self.data.info)
 
         x = s.get(x, x)
         x = s.get(x, x)
@@ -127,7 +130,7 @@ class Func(object):
         def it():
             for x in self.depends():
                 yield x
-                yield from self.data.by_name[x].all_depends()
+                yield from self.data.by_name[self.g][x].all_depends()
 
         return y.uniq_list_x(it())
 
@@ -135,7 +138,9 @@ class Func(object):
     def dep_lib_list(self):
         def iter():
             for x in self.dep_list():
-                if self.data.by_name[x].is_library:
+                #print self.base, x, sorted(self.data.by_name[self.g].keys())
+        
+                if self.data.by_name[self.g][x].is_library:
                     yield x
 
         return y.uniq_list_x(iter())
@@ -144,13 +149,10 @@ class Func(object):
     def dep_tool_list(self):
         def iter():
             for x in self.dep_list():
-                if not self.data.by_name[x].is_library:
+                if not self.data.by_name[self.g][x].is_library:
                     yield x
 
         return y.uniq_list_x(iter())
-
-    def extra_libs(self):
-        return self.data.extra_libs()
 
     @y.cached_method
     def dep_list(self):
@@ -158,7 +160,6 @@ class Func(object):
 
         def iter_1():
             yield from self.depends()
-            yield from self.extra_libs()
 
         def iter_2():
             for x in iter_1():
@@ -229,7 +230,7 @@ class Func(object):
 
     @y.cached_method
     def calc_deps(self):
-        return self.data.optimize(self.data.select_deps(self.base) + self.calc_extra(), self)
+        return self.data.optimize(self.data.select_deps(self.base, self.g) + self.calc_extra(), self)
 
     @property
     @y.cached_method
@@ -321,13 +322,13 @@ class Solver(object):
         return Solver(self._data, generation=(self._generation + 1), seed=(self._seed * 13 + 17))
 
     def iter_items(self):
-        y.info('run solver')
+        y.debug('run solver')
 
         for el in self._r():
             self._w(el['i'])
             yield el['x']
 
-        y.info('done')
+        y.debug('done')
 
 
 class SolverWrap(object):
@@ -354,7 +355,7 @@ class Data(object):
         self.info = info
         self.distr = distr
         self.new_funcs = []
-        self.by_name = {}
+        self.by_name = y.collections.defaultdict(dict)
         self.box_by_gen = {}
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
@@ -362,26 +363,11 @@ class Data(object):
 
         def iter_objects():
             for x in sorted(data, key=lambda x: x['base']):
-                res = self.create_object(x)
-
-                y.info('will gen func', res.base)
-
-                yield res
+                yield self.create_object(x)
 
         self.data = list(iter_objects())
-        self.by_name['all'] = AllFunc(self.distr, self)
-
-    def extra_libs(self):
-        def do():
-            yield 'make'
-
-            if self.info.get('libc') == 'musl':
-                yield 'musl'
-
-            if self.info.get('libc') == 'uclibc':
-                yield 'uclibc'
-
-        return list(do())
+        self.all_func = AllFunc(self.distr, self)
+        self.prepare_funcs(3)
 
     def busybox_boot(self):
         return self.last_elements(['busybox-boot'], must_have=False)
@@ -426,7 +412,10 @@ class Data(object):
             g = solver.generation()
 
             if pg != g:
-                self.calc_new_deps(g)
+                if pg == num - 1:
+                    self.add_func(self.all_func, pg)
+                        
+                self.calc_new_deps()
                 pg = g
 
             if g >= num:
@@ -442,16 +431,15 @@ class Data(object):
             for k in y.repacks_keys():
                 self.add_func(SplitFunc(func, k), g)
 
-        self.add_func(self.by_name['all'], g)
-        self.calc_new_deps(g)
-
-    def calc_new_deps(self, g):
+    def calc_new_deps(self):
         for func in self.new_funcs:
             _ = func.deps
 
         self.new_funcs = []
 
     def add_func(self, func, g):
+        print func.base, g
+
         if func.base == 'box':
             self.box_by_gen[g] = func
 
@@ -459,7 +447,7 @@ class Data(object):
         func.i = len(self.func_by_num)
 
         self.new_funcs.append(func)
-        self.by_name[func.base] = func
+        self.by_name[g][func.base] = func
         self.func_by_num.append(func)
         self.dd[func.base].append(func.i)
 
@@ -482,31 +470,31 @@ class Data(object):
         for x in self.func_by_num:
             x.out_deps()
 
-        y.info('{bg}exec sequence', str(self.exec_seq()[:100])[:-1] + ', ...', '{}')
+        y.debug('{bg}exec sequence', str(self.exec_seq()[:100])[:-1] + ', ...', '{}')
 
-    def full_deps(self, name):
-        return y.uniq_list_x(self.full_lib_deps(name) + self.full_tool_deps(name))
+    def full_deps(self, name, g):
+        return y.uniq_list_x(self.full_lib_deps(name, g) + self.full_tool_deps(name, g))
 
     @y.cached_method
-    def full_lib_deps(self, name):
-        my_deps = self.by_name[name].dep_lib_list()
+    def full_lib_deps(self, name, g):
+        my_deps = self.by_name[g][name].dep_lib_list()
 
         def iter_lst():
             for y in my_deps:
                 yield y
-                yield from self.full_lib_deps(y)
+                yield from self.full_lib_deps(y, g)
 
         return y.uniq_list_x(iter_lst())
 
     @y.cached_method
-    def full_tool_deps(self, name):
-        return y.uniq_list_x(self.by_name[name].dep_tool_list())
+    def full_tool_deps(self, name, g):
+        return y.uniq_list_x(self.by_name[g][name].dep_tool_list())
 
-    def find_func(self, name):
-        return self.by_name[name]
+    #def find_func(self, name, g):
+    #    return self.by_name[g][name]
 
-    def select_deps(self, name):
-        return self.last_elements(self.full_deps(name))
+    def select_deps(self, name, g):
+        return self.last_elements(self.full_deps(name, g))
 
     @y.cached_method
     def calc(self, deps):
@@ -521,12 +509,11 @@ class Tower(object):
         self._flat = flat
 
     def on_data(self, data):
-        y.info('will gen func for', data['base'])
+        y.debug('will gen func for', data['base'])
         self._data.append(data)
 
     def gen_funcs(self):
         dt = Data(self._distr, self._cc, self._flat, [x for x in self._data])
-        dt.prepare_funcs(3)
         dt.out()
 
         cnt = 0

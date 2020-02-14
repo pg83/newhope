@@ -15,7 +15,7 @@ def libidn20():
         'version': '2.2.0',
         'meta': {
             'kind': ['library'],
-            'depends': ['intl', 'iconv', 'libunistring', 'pkg-config'],
+            'depends': ['intl', 'iconv', 'libunistring', 'pkg-config', 'make', 'c'],
             'provides': [
                 {'lib': 'idn2', 'configure': {'opt': '--with-libidn2={pkgroot}'}},
             ],

@@ -43,7 +43,7 @@ def python30():
                 'ncurses', 'iconv', 'intl', 'zlib',
                 'pkg-config', 'libffi', 'readline',
                 'termcap', 'mpdecimal', 'xz', 'bzip2',
-                'sqlite3', 'openssl', 'dl',
+                'sqlite3', 'openssl', 'dl', 'make', 'c',
             ],
             'provides': [
                 {'lib': 'python3.8'},

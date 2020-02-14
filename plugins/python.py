@@ -25,7 +25,11 @@ def python0():
         ],
         'meta': {
             'kind': ['tool'],
-            'depends': ['ncurses', 'iconv', 'intl', 'zlib', 'pkg-config-int', 'libffi', 'readline', 'termcap', 'expat', 'sqlite3'],
+            'depends': [
+                'ncurses', 'iconv', 'intl', 'zlib', 'pkg-config-int',
+                'libffi', 'readline', 'termcap', 'expat', 'sqlite3',
+                'make', 'c',
+            ],
             'provides': [
                 {'lib': 'python2.7'},
                 {'env': 'PYTHON', 'value': '{pkgroot}/bin/staticpython2'},

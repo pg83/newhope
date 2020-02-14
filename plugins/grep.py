@@ -10,6 +10,6 @@ def grep0():
         'version': '3.3',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['intl', 'libsigsegv', 'iconv']
+            'depends': ['intl', 'libsigsegv', 'iconv', 'make', 'c']
         },
     }

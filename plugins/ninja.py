@@ -14,8 +14,8 @@ def ninja0():
         """,
         'version': '1.9.0',
         'meta': {
-            'kind': ['box', 'tool'],
-            'depends': ['python', 'c++'],
+            'kind': ['tool'],
+            'depends': ['python', 'c++', 'make', 'c'],
             'provides': [
                 {'env': 'YNINJA', 'value': '{pkgroot}/bin/ninja'},
                 {'env': 'NINJA', 'value': '{pkgroot}/bin/ninja'},

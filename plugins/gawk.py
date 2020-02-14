@@ -15,7 +15,7 @@ def gawk0():
         'version': '5.0.1',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['iconv', 'intl', 'readline', 'libsigsegv', 'c++'],
+            'depends': ['iconv', 'intl', 'readline', 'libsigsegv', 'c++', 'make', 'c'],
             'soft': ['mpfr', 'gmp'],
         },
     }

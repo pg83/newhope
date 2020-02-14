@@ -15,6 +15,6 @@ def psmisc0():
         ],
         'meta': {
             'kind': ['tool'],
-            'depends': ['kernel-h', 'ncurses'],
+            'depends': ['kernel-h', 'ncurses', 'make', 'c'],
         },
     }

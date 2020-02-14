@@ -10,6 +10,7 @@ def libpipeline0():
         'version': '1.5.2',
         'meta': {
             'kind': ['library'],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'pipeline'},
                 {'env': 'libpipeline_CFLAGS', 'value': '-I{pkgroot}i/include'},

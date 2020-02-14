@@ -10,7 +10,7 @@ def libsigsegv0():
         'version': '2.12',
         'meta': {
             'kind': ['library'],
-            'depends': [],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'sigsegv', 'configure': {'opt': '--with-libsigsegv-prefix={pkgroot}'}},
             ],

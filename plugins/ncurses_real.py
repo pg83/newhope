@@ -16,6 +16,7 @@ def ncurses_real0():
         'version': '6.1',
         'meta': {
             'kind': ['library'],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'ncurses', 'configure': {'opts': ['--with-curses={pkgroot}', '--with-ncurses={pkgroot}']}},
                 {'env': 'LIBS', 'value': '"$LIBS -lncurses -ltinfo -lpanel -lmenu -lform"'},

@@ -10,7 +10,7 @@ def pth0():
         'version': '2.0.7',
         'meta': {
             'kind': ['library'],
-            'depends': [],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'pth', 'configure': {'opts': ['--with-libpth-prefix={pkgroot}', '--with-pth']}},
             ],

@@ -18,9 +18,7 @@ def python3_static0():
         ],
         'meta': {
             'kind': ['tool'],
-            'depends': [
-                'python3',
-            ],
+            'depends': ['python3', 'make', 'c'],
             'provides': [
                 {'lib': 'python3.8'},
                 {'env': 'STATICPYTHON3', 'value': '{pkgroot}/bin/staticpython3'},

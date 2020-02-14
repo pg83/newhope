@@ -11,7 +11,7 @@ def gnu_m40():
         'version': '1.4.18',
         'meta': {
             'kind': ['tool'],
-            'depends': ['libsigsegv', 'crt', 'help2man'],
+            'depends': ['libsigsegv', 'crt', 'help2man', 'make', 'c'],
             'provides': [
                 {'env': 'M4', 'value': '{pkgroot}/bin/m4'},
             ],

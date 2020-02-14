@@ -14,7 +14,7 @@ def upm0():
         'version': '7695567dd35b688fc5f435045f7d6a7044db82c9',
         'meta': {
             'kind': ['tool'],
-            'depends': ['python3'],
+            'depends': ['python3', 'make', 'c'],
         },
         'extra': [
             {'kind': 'file', 'path': 'freeze.sh', 'data': y.builtin_data('data/freeze.sh')},

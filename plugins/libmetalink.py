@@ -11,7 +11,7 @@ def libmetalink0():
         'version': '0.1.3',
         'meta': {
             'kind': ['library'],
-            'depends': ['expat', 'dash'],
+            'depends': ['expat', 'dash', 'make', 'c'],
             'provides': [
                 {'lib': 'metalink', 'configure': {'opt': '--with-libmetalink={pkgroot}'}},
             ],

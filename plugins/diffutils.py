@@ -12,6 +12,6 @@ def diffutils0():
         'version': '3.7',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['iconv', 'intl', 'libsigsegv', 'perl5', 'help2man']
+            'depends': ['iconv', 'intl', 'libsigsegv', 'perl5', 'help2man', 'make', 'c']
         },
     }

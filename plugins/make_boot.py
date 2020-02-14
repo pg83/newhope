@@ -19,7 +19,6 @@ def make_boot0():
         'meta': {
             'kind': ['tool'],
             'depends': extra,
-            'undeps': ['make', 'musl'],
             'provides': [
                 {'env': 'YMAKE', 'value': '{pkgroot}/bin/make'},
             ],

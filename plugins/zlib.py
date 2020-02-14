@@ -12,7 +12,7 @@ def zlib0():
         'version': '1.2.11',
         'meta': {
             'kind': ['library'],
-            'depends': [],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'z', 'configure': {'opt': '--with-z={pkgroot}'}},
                 {'env': 'ZLIB_CFLAGS', 'value': '"-I{pkgroot}/include"'},

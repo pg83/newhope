@@ -10,9 +10,7 @@ def texinfo0():
         'version': '6.7',
         'meta': {
             'kind': ['tool'],
-            'depends': [
-                 'c++',
-            ],
+            'depends': ['c++', 'make', 'c'],
             'provides': [
                 {'env': 'MAKEINFO', 'value': '{pkgroot}/bin/makeinfo'},
             ],

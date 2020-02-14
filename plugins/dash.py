@@ -13,7 +13,7 @@ def dash0():
         'version': '0.5.10.2',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['libedit'],
+            'depends': ['libedit', 'make', 'c'],
             'provides': [
                 {'env': 'YSHELL', 'value': '{pkgroot}/bin/dash'},
                 {'env': 'DASH', 'value': '{pkgroot}/bin/dash'},

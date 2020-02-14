@@ -59,6 +59,7 @@ def common_distr():
 
 def misc_distr():
     return [
+        'base',
         'gnu-m4',
         'python3-static',
         'pkg-config',
@@ -68,7 +69,8 @@ def misc_distr():
         'dropbear',
         'bc',
         'upm',
-        'clang',
+        'upm-run',
+        #'clang',
     ]
 
 

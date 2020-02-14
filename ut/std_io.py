@@ -47,7 +47,6 @@ class ColorStdIO(object):
         return not is_debug()
 
     def colorize_0(self, t):
-        #return t
         return y.process_color(t, '', self.f)
 
     def colorize(self, t):
@@ -103,8 +102,8 @@ class ColorStdIO(object):
 
     def flush(self):
         with stdio_lock:
-            self.flush_impl()
             self.extra_flush()
+            self.flush_impl()
 
     def slave(self):
         self.flush()
@@ -129,8 +128,10 @@ class ColorStdErr(ColorStdIO):
         ColorStdIO.__init__(self, y.sys.stderr)
 
     def extra_flush(self):
-        #y.sys.stdout.flush_impl()
-        pass
+        try:
+            y.sys.stdout.flush_impl()
+        except Exception:
+            pass
 
 
 class ColorStdOut(ColorStdIO):
@@ -138,8 +139,10 @@ class ColorStdOut(ColorStdIO):
         ColorStdIO.__init__(self, y.sys.stdout)
 
     def extra_flush(self):
-        #y.sys.stderr.flush_impl()
-        pass
+        try:
+            y.sys.stderr.flush_impl()
+        except Exception:
+            pass
 
 
 @y.defer_constructor

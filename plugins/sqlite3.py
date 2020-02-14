@@ -9,8 +9,8 @@ def sqlite30():
         """,
         'version': '3300100',
         'meta': {
-            'kind': ['library', 'tool', 'box'],
-            'depends': ['readline'],
+            'kind': ['library', 'tool'],
+            'depends': ['readline', 'make', 'c'],
             'provides': [
                 {'lib': 'sqlite3'},
             ],

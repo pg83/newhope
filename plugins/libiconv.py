@@ -17,7 +17,8 @@ def libiconv0():
         """,
         'version': '1.16',
         'meta': {
-            'kind': ['box', 'library', 'tool'],
+            'kind': ['library', 'tool'],
+            'depends': ['make', 'c'],
             'provides': [
                 {
                     'lib': 'iconv',

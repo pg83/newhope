@@ -12,7 +12,7 @@ def bison0():
         'version': '3.4.2',
         'meta': {
             'kind': ['box', 'tool'],
-            'depends': ['c++', 'm4', 'iconv', 'intl', 'xz', 'perl5']
+            'depends': ['c++', 'm4', 'iconv', 'intl', 'xz', 'perl5', 'make', 'c']
         },
     }
 

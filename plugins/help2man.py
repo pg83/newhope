@@ -9,8 +9,8 @@ def help2man0():
         """,
         'version': '1.47.9',
         'meta': {
-            'kind': ['box', 'tool'],
-            'depends': ['perl5'],
+            'kind': ['tool'],
+            'depends': ['perl5', 'make', 'c'],
             'provides': [
                 {'env': 'HELP2MAN', 'value': '{pkgroot}/bin/help2man'},
             ],

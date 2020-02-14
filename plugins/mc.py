@@ -11,7 +11,7 @@ def mc(gui, gui_lib):
         'version': '4.8.23',
         'meta': {
             'kind': ['program'],
-            'depends': ['intl', 'iconv', 'glib', gui],
+            'depends': ['intl', 'iconv', 'glib', gui, 'make', 'c'],
         }
     }
 

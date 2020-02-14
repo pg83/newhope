@@ -9,8 +9,8 @@ def sed0():
         """,
         'version': '4.7',
         'meta': {
-            'kind': ['box', 'tool'],
-            'depends': ['iconv', 'intl'],
+            'kind': ['tool'],
+            'depends': ['iconv', 'intl', 'make', 'c'],
             'provides': [
                 {'env': 'SED', 'value': '{pkgroot}/bin/sed'},
             ],

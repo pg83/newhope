@@ -10,6 +10,7 @@ def expat0():
         'version': '2.2.9',
         'meta': {
             'kind': ['library'],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'expat', 'configure': {'opt': '--with-expat={pkgroot}'}},
             ],

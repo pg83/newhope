@@ -19,6 +19,6 @@ def bash0():
         'version': '5.0',
         'meta': {
             'kind': ['tool'],
-            'depends': ['readline', 'ncurses', 'intl', 'iconv']
+            'depends': ['readline', 'ncurses', 'intl', 'iconv', 'make', 'c']
         }
     }

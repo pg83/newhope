@@ -10,7 +10,7 @@ def gettext_tiny0():
         'version': '55a2119d06403e05808d89eedc9e94a20e87cbd3',
         'meta': {
             'kind': ['library', 'tool'],
-            'depends': ['iconv'],
+            'depends': ['iconv', 'make', 'c'],
             'provides': [
                 {'lib': 'intl', 'configure': {'opt': '--with-libintl-prefix={pkgroot}'}},
             ],

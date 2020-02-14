@@ -17,8 +17,8 @@ def gettext0():
         """.replace('{opts}', ' '.join(opts)),
         'version': '0.20.1',
         'meta': {
-            'kind': ['box', 'library', 'tool'],
-            'depends': ['iconv', 'ncurses'],
+            'kind': ['library', 'tool'],
+            'depends': ['iconv', 'ncurses', 'make', 'c'],
             'provides': [
                 {'lib': 'intl', 'configure': {'opt': '--with-libintl-prefix={pkgroot}'}},
             ],

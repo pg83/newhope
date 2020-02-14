@@ -10,6 +10,6 @@ def dropbear0():
         'version': '2019.78',
         'meta': {
             'kind': ['tool'],
-            'depends': ['libtommath', 'libtomcrypt', 'zlib']
+            'depends': ['libtommath', 'libtomcrypt', 'zlib', 'make', 'c']
         }
     }

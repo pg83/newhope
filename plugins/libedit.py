@@ -11,7 +11,7 @@ def libedit0():
         'version': '20191025-3.1',
         'meta': {
             'kind': ['library'],
-            'depends': ['ncurses', 'termcap'],
+            'depends': ['ncurses', 'termcap', 'make', 'c'],
             'provides': [
                 {'lib': 'edit'},
             ],

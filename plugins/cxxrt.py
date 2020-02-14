@@ -14,7 +14,7 @@ def libcxxrt0():
         ],
         'meta': {
             'kind': ['library'],
-            'depends': ['libunwind'],
+            'depends': ['libunwind', 'c'],
             'provides': [
                 {'lib': 'cxxrt'},
                 {'env': 'LIBCXXRT_INC', 'value': '"{pkgroot}/include"'},

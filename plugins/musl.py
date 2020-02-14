@@ -29,7 +29,6 @@ if '{os}' == 'linux':
                 'kind': ['library'],
                 'contains': ['musl-boot'],
                 'depends': ['busybox-boot', 'make-boot', 'mimalloc'],
-                'undeps': ['make', 'musl'],
                 'provides': [
                     {'lib': 'muslc'},
                     {'env': 'CFLAGS', 'value': '"-w $CFLAGS"'},

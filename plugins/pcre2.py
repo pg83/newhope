@@ -10,7 +10,7 @@ def pcre20():
         'version': '10.34',
         'meta': {
             'kind': ['library'],
-            'depends': ['pkg-config-int', 'zlib', 'bzip2', 'c++'],
+            'depends': ['pkg-config-int', 'zlib', 'bzip2', 'c++', 'make', 'c'],
             'provides': [
                 {'lib': 'pcre2-8'},
             ],

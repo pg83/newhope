@@ -10,6 +10,7 @@ def gdbm0():
         'version': '1.18.1',
         'meta': {
             'kind': ['library'],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'gdbm'},
             ],

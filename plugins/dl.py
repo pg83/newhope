@@ -9,7 +9,7 @@ def dl0():
         'version': '670037f6c15db5c0b46b7452124bce8bcc2f9801',
         'meta': {
             'kind': ['library'],
-            'depends': ['c++'],
+            'depends': ['c++', 'make'],
             'provides': [
                 {'lib': 'dl'},
             ],

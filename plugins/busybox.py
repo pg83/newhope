@@ -38,7 +38,7 @@ def busybox0():
         'version': '1.31.1',
         'meta': {
             'kind': ['tool'],
-            'depends': ['make', 'kernel-h'],
+            'depends': ['make', 'kernel-h', 'make', 'c'],
             'provides': [
                 {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
             ],
