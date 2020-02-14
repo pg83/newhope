@@ -414,7 +414,7 @@ class Data(object):
             if pg != g:
                 if pg == num - 1:
                     self.add_func(self.all_func, pg)
-                
+        
                 self.calc_new_deps()
                 pg = g
 

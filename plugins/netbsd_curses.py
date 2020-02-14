@@ -13,6 +13,10 @@ def netbsd_curses0():
             'provides': [
                 {'lib': 'curses', 'configure': {'opts': ['--with-curses={pkgroot}', '--with-ncurses={pkgroot}']}},
                 {'env': 'LIBS', 'value': '"$LIBS -lform -lmenu -lpanel -lcurses -lterminfo"'},
+                {'env': 'NCURSES_CFLAGS', 'value': '"-I{pkgroot}/include"'},
+                {'env': 'NCURSESW_CFLAGS', 'value': '"-I{pkgroot}/include"'},
+                {'env': 'NCURSES_LIBS', 'value': '"-lform -lmenu -lpanel -lcurses -lterminfo"'},
+                {'env': 'NCURSESW_LIBS', 'value': '"-lform -lmenu -lpanel -lcurses -lterminfo"'},
             ],
         },
     }

@@ -20,22 +20,45 @@ def is_debug():
     return 'debug' in y.config.get('color', '')
 
 
+def safe_print(*args):
+    y.sys.__stderr__.write((' '.join(str(x) for x in args)) + '\n')
+
+
 class ColorStdIO(object):
     def __init__(self, s):
+        self.q = y.queue.SimpleQueue()
         self.s = s
         self.p = ''
         self.f = {'strip_colors': not self.isatty()}
+
         self.t = y.threading.Thread(target=self.flush_periodicaly)
-        self.t.damon = True
+        self.t.daemon = True
         self.t.start()
 
+        self.tt = y.threading.Thread(target=self.flush_q)
+        self.tt.daemon = True
+        self.tt.start()
+
+    def flush_q(self):
+        while True:
+            try:
+                self.q.get()()
+            except Exception as e:
+                try:
+                    safe_print(e)
+                finally:
+                    y.os.abort()
+            
     def flush_periodicaly(self):
         while True:
             try:
                 y.time.sleep(0.3 * y.random.random())
                 self.flush()
             except Exception as e:
-                y.os.abort()
+                try:
+                    safe_print(e)
+                finally:
+                    y.os.abort()
 
     def isatty(self):
         return self.s.isatty()
@@ -77,6 +100,9 @@ class ColorStdIO(object):
         if not t:
             return
 
+        self.q.put(lambda: self.do_write(t))
+
+    def do_write(self, t):
         with stdio_lock:
             if len(t) > 8192:
                 self.flush_impl()
@@ -101,6 +127,17 @@ class ColorStdIO(object):
         self.write_part(self.get_part())
 
     def flush(self):
+        ev = y.threading.Event()
+
+        def f():
+            self.do_flush()
+            ev.set()
+
+        self.q.put(f)
+
+        ev.wait()
+
+    def do_flush(self):
         with stdio_lock:
             self.extra_flush()
             self.flush_impl()

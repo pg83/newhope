@@ -19,7 +19,7 @@ def perl50():
             export LDFLAGS="-L$(pwd) $LDFLAGS"
 
             export CXXFLAGS="$CFLAGS $CXXFLAGS"
-            ./Configure -des -Accflags="$CFLAGS" -Aldflags="$LDFLAGS $LIBS" -Dusethreads -Duse64bitall -Dprefix=$IDIR -Duseperlio -Uusesfio -Duseshrplib=false -Dusedl=false -Dcc="$CC -Duserelocatableinc $CFLAGS $LDFLAGS $LIBS" || true
+            $YBASH ./Configure -des -Accflags="$CFLAGS" -Aldflags="$LDFLAGS $LIBS" -Dusethreads -Duse64bitall -Dprefix=$IDIR -Duseperlio -Uusesfio -Duseshrplib=false -Dusedl=false -Dcc="$CC -Duserelocatableinc $CFLAGS $LDFLAGS $LIBS" || true
             $YMAKE -j $NTHRS || $YMAKE -j $NTHRS  
             $YMAKE install
         """,
@@ -29,7 +29,7 @@ def perl50():
         'version': '5.30.1',
         'meta': {
             'kind': ['tool'],
-            'depends': ['iconv', 'zlib', 'coreutils-boot', 'make', 'c'],
+            'depends': ['iconv', 'zlib', 'coreutils-boot', 'make', 'c', 'bash'],
             'provides': [
                 {'env': 'YPERL', 'value': '{pkgroot}/bin/perl'},
                 {'env': 'POD2HTML', 'value': '{pkgroot}/bin/pod2html'},

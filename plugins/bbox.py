@@ -29,6 +29,8 @@ def box0():
         'psmisc',
         'python3-static',
         'bc',
+        'patch',
+        'procps-ng',
     ]
 
     lst_run = [x + '-run' for x in lst]

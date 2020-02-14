@@ -92,3 +92,19 @@ def cli_dev_repl(args):
       y.code.interact(local=frame.f_globals)
    except Exception as e:
       y.debug('in prompt', e)
+
+  
+@y.verbose_entry_point
+async def cli_misc_timeout(args):
+    import os
+
+    tout = int(args[0])
+    pid = os.fork()
+
+    if pid:
+        y.time.sleep(tout)
+        os.kill(pid, y.signal.SIGINT)
+        os.waitpid(pid, 0)
+        os._exit(0)
+    else:
+        os.execv(args[1], args[1:])

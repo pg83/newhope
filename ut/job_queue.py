@@ -10,8 +10,8 @@ def wrap_pair(res, err):
 
 class JobQueue(object):
     def __init__(self, numthrs):
-        self._inq = y.queue.Queue()
-        self._ouq = y.queue.Queue()
+        self._inq = y.queue.SimpleQueue()
+        self._ouq = y.queue.SimpleQueue()
         self._t = [y.threading.Thread(target=self.run) for x in range(0, numthrs)]
 
         for t in self._t:
