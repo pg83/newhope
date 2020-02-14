@@ -366,7 +366,6 @@ class Data(object):
                 yield self.create_object(x)
 
         self.data = list(iter_objects())
-        self.all_func = AllFunc(self.distr, self)
         self.prepare_funcs(3)
 
     def busybox_boot(self):
@@ -413,7 +412,7 @@ class Data(object):
 
             if pg != g:
                 if pg == num - 1:
-                    self.add_func(self.all_func, pg)
+                    self.add_func(AllFunc(self.distr, self), pg)
 
                 self.calc_new_deps()
                 pg = g

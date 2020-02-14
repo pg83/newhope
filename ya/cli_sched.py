@@ -59,7 +59,7 @@ ENTRY = [
 BUILD = [
     ['cd /tmp && echo "start cycle" && /home/pg83/newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build && echo "done cycle" && sleep 8'],
     ['echo | tr -d "\n"'],
-    ['/media/build/upm pkg sync repo --fr /home/pg83/upm_root/r --fr /media/build/r --to /media/storage && sleep 5'],
+    ['/media/build/upm pkg sync repo --fr /media/build/r --to /media/storage && sleep 5'],
     ['/usr/bin/timeout 10m /media/build/upm pkg serve repo --fr /media/storage'],
     ['cd /media/build && ./upm makefile --os linux -v | ./upm make --root /media/build --install-dir /pkg -j7 -f -'],
     ['cd /media/storage && (find . | grep "\-tmp" | xargs rm) && sleep 1200'],
