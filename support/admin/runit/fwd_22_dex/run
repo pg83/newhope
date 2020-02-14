@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec unshare --fork --pid --kill-child autossh -M 0 -N -R 2200:localhost:22 root@84.201.173.42

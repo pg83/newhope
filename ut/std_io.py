@@ -48,7 +48,7 @@ class ColorStdIO(object):
                     safe_print(e)
                 finally:
                     y.os.abort()
-            
+    
     def flush_periodicaly(self):
         while True:
             try:
