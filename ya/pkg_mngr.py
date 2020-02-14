@@ -236,7 +236,7 @@ class PkgMngr(object):
             y.debug('fallback to pyhon tarfile: ' + str(e))
             stream = io.BytesIO(data)
             y.tarfile.open(fileobj=stream, mode='r').extractall(where)
-       
+   
     def subst_packs(self, p1, p2):
         return frozenset(self.pkg_unv_name(x) for x in p1) - frozenset(self.pkg_unv_name(x) for x in p2)
 
@@ -410,16 +410,16 @@ class PkgMngr(object):
             t = y.threading.Thread(target=func)
             defer(t.join)
             t.start()
-    
+
             try:
                 os.makedirs(ppath_tmp)
             except OSError:
                 y.shutil.rmtree(ppath_tmp)
                 os.makedirs(ppath_tmp)
-        
+
             self.untar_from_memory(data, ppath_tmp)
             os.rename(ppath_tmp, ppath)
-        
+
 
     def actual_install(self, pkgs):
         lst = self.pkg_list(pkgs)

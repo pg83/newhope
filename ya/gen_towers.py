@@ -139,7 +139,7 @@ class Func(object):
         def iter():
             for x in self.dep_list():
                 #print self.base, x, sorted(self.data.by_name[self.g].keys())
-        
+
                 if self.data.by_name[self.g][x].is_library:
                     yield x
 
@@ -414,7 +414,7 @@ class Data(object):
             if pg != g:
                 if pg == num - 1:
                     self.add_func(self.all_func, pg)
-                        
+                
                 self.calc_new_deps()
                 pg = g
 
