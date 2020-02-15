@@ -31,7 +31,7 @@ if '{os}' == 'linux':
                 'depends': ['busybox-boot', 'make-boot', 'mimalloc'],
                 'provides': [
                     {'lib': 'muslc'},
-                    {'env': 'CFLAGS', 'value': '"-w $CFLAGS"'},
+                    {'env': 'CFLAGS', 'value': '"-ffreestanding -w $CFLAGS"'},
                 ],
             },
         }

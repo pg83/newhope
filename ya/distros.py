@@ -37,6 +37,7 @@ def small_distr():
         'yash-run',
         'curl-run',
         'psmisc-run',
+        'procps-ng-run',
     ]
 
 
@@ -46,6 +47,7 @@ def dev_distr():
         'sqlite3-run',
         'ninja-run',
         'cmake',
+        'patch',
     ]
 
 

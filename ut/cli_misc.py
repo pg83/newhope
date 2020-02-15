@@ -78,21 +78,6 @@ def cli_misc_pip(args):
    
     y.sys.exit(main())
 
-
-@y.main_entry_point
-def cli_dev_repl(args):
-   frame = y.inspect.currentframe()
-   frame = frame.f_back
-
-   try:
-      from ptpython.repl import embed
-   
-      embed(frame.f_globals, locals())
-   except ImportError:
-      y.code.interact(local=frame.f_globals)
-   except Exception as e:
-      y.debug('in prompt', e)
-
   
 @y.verbose_entry_point
 async def cli_misc_timeout(args):

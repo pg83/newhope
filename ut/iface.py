@@ -250,18 +250,22 @@ def prompt(l):
         return False
 
     if can_use():
-        frame = y.inspect.currentframe()
-        frame = frame.f_back
+        run_repl()
 
-        try:
-            with y.without_color():
-                from ptpython.repl import embed
 
-                embed(frame.f_globals, frame.f_locals)
-        except ImportError:
-            y.code.interact(local=frame.f_locals)
-        except Exception as e:
-            y.os.abort()
+def run_repl():
+    frame = y.inspect.currentframe()
+    frame = frame.f_back
+
+    try:
+        #with y.without_color():
+        from ptpython.repl import embed
+
+        embed(frame.f_globals, frame.f_locals)
+    except ImportError:
+        y.code.interact(local=frame.f_locals)
+    except Exception as e:
+        y.os.abort()
 
   
 def load_builtin_modules(builtin):

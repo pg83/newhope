@@ -9,3 +9,5 @@ source prune "$IDIR"
 source cleanup "$IDIR"
 source prepare_install
 source prepare_"$ext"_pkg "$IDIR" "$PKGF"
+
+rm -rf "$IDIR" || true

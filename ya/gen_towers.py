@@ -39,13 +39,27 @@ def subst_by_platform(info):
     return res
 
 
+SG = {
+    'musl-boot': 'musl',
+    'make-boot': 'make',
+}
+    
+
 class Func(object):
+    def do_subst_0(self, x):
+        if self.g > 0:
+            sg = {}
+        else:
+            sg = {}
+
+        return self.do_subst_0(sg.get(x, x))
+
     @y.cached_method
     def do_subst(self, x):
-        s = subst_by_platform(self.data.info)
+        sd = self.subst_dict
 
-        x = s.get(x, x)
-        x = s.get(x, x)
+        x = sd.get(x, x)
+        x = sd.get(x, x)
 
         return x
 
@@ -54,6 +68,11 @@ class Func(object):
         self.inc_count = ic()
         self.data = data
         self.codec = 'pg'
+
+    @property
+    @y.cached_method
+    def subst_dict(self):
+        return subst_by_platform(self.data.info)
 
     def out_deps(self):
         y.info('{dr}' + str(self) + '{}', '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')

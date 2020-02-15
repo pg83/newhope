@@ -19,7 +19,7 @@ def perl50():
             export LDFLAGS="-L$(pwd) $LDFLAGS"
 
             export CXXFLAGS="$CFLAGS $CXXFLAGS"
-            $YBASH ./Configure -des -Accflags="$CFLAGS" -Aldflags="$LDFLAGS $LIBS" -Dusethreads -Duse64bitall -Dprefix=$IDIR -Duseperlio -Uusesfio -Duseshrplib=false -Dusedl=false -Dcc="$CC -Duserelocatableinc $CFLAGS $LDFLAGS $LIBS" || true
+            $YBASH  ./Configure -des -Accflags="$CFLAGS" -Aldflags="$LDFLAGS $LIBS" -Dusethreads -Duse64bitall -Dprefix=$IDIR -Duseperlio -Uusesfio -Duseshrplib=false -Dusedl=false -Dcc="$CC -Duserelocatableinc $CFLAGS $LDFLAGS $LIBS" || true
             $YMAKE -j $NTHRS || $YMAKE -j $NTHRS  
             $YMAKE install
         """,

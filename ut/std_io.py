@@ -108,20 +108,29 @@ class ColorStdIO(object):
                 self.flush_impl()
                 self.write_part(t)
             else:
+                try:
+                    t = t.decode('utf-8')
+                except Exception:
+                    pass
+        
                 self.p += t
 
                 if len(self.p) > 8192:
                     self.flush_impl()
 
     def write_part(self, p):
+        self.clear_sl()
+
         if p:
             try:
                 self.s.buffer.write(self.colorize(p).encode('utf-8'))
             except AttributeError:
                 self.s.buffer.write(p)
 
-        self.s.buffer.flush()
+        self.draw_sl()
+        #self.s.buffer.flush()
         self.s.flush()
+
 
     def flush_impl(self):
         self.write_part(self.get_part())
@@ -160,15 +169,61 @@ class ColorStdIO(object):
         return self.s.encoding
 
 
+@y.singleton
+def columns():
+    return int(y.subprocess.check_output(['/usr/bin/tput', 'cols']).strip())
+
+
+class StatusBar(object):
+    def __init__(self, columns):
+        self._v = ''
+        self._c = columns
+
+    def cb(self, columns):
+        self._c = columns
+
+        return self._v
+
+    def set_data(self, v):
+        self._v = v
+
+    def get_columns(self):
+        return self._c
+
+
+@y.contextlib.contextmanager
+def with_status_bar(stream):
+    try:
+        sb = StatusBar(columns())
+
+        stream.set_sb_cb(sb.cb)
+        yield sb
+    finally:
+        stream.set_sb_cb(None)
+
+
 class ColorStdErr(ColorStdIO):
     def __init__(self):
         ColorStdIO.__init__(self, y.sys.stderr)
+        self._cb = None
 
     def extra_flush(self):
         try:
             y.sys.stdout.flush_impl()
         except Exception:
             pass
+
+    def clear_sl(self):
+        if self._cb:
+            self.s.write("\r\033[K")
+
+    def    draw_sl(self):
+        if self._cb:
+            self.s.write('\r' + self._cb(columns()) + '\r')
+
+    def set_sb_cb(self, cb):
+        self.clear_sl()
+        self._cb = cb
 
 
 class ColorStdOut(ColorStdIO):
@@ -180,6 +235,12 @@ class ColorStdOut(ColorStdIO):
             y.sys.stderr.flush_impl()
         except Exception:
             pass
+
+    def clear_sl(self):
+        pass
+
+    def draw_sl(self):
+        pass
 
 
 @y.defer_constructor
@@ -201,4 +262,3 @@ def without_color():
         yield
     finally:
         init_stdio()
-

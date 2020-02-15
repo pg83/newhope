@@ -15,6 +15,7 @@ def kill_all_running(*args):
 
 
 def run_sigint(*args):
+    y.stderr.set_sb_cb(None)
     y.stderr.write('\r\n')
     y.stderr.flush()
     last_msg = get_white_line() + '\n{br}system failure{}\n'

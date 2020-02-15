@@ -62,7 +62,7 @@ def box0():
         'meta': {
             'kind': ['tool'],
             'depends': lst_run + ['base'],
-            'contains': lst_run + lst,
+            'contains': lst_run + lst + ['make-boot', 'busybox-boot', 'busybox', 'toybox'],
             'provides': [
                 {'env': 'SED', 'value': '{pkgroot}/bin/sed'},
                 {'env': 'YGNUTAR', 'value': '{pkgroot}/bin/tar'},
