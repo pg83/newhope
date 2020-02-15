@@ -11,7 +11,7 @@ def upm0():
              $YSHELL ./freeze.sh "$PYTHON3" ./upm -w
              mv upm $IDIR/bin/ && chmod +x $IDIR/bin/upm
         """,
-        'version': '9ab1e2c5fac4005aeb38087312a871a50595cbb9',
+        'version': 'ee7b9b3cebb91f47823b613f22b3efaeec560787',
         'meta': {
             'kind': ['tool'],
             'depends': ['python3', 'make', 'c'],
