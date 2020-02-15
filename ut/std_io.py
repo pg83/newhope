@@ -219,7 +219,7 @@ def with_status_bar(stream):
     if stream_wrapped(stream):
         try:
             sb = StatusBar(columns())
-    
+
             stream.set_sb_cb(sb.cb)
             yield sb
         finally:

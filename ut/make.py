@@ -58,7 +58,7 @@ class OutputResult(object):
 def run_make_0(mk, args):
     #if args.naked:
     #    return run_make_1(mk, args, y.FakeStatusBar())
-    
+
     with y.with_status_bar(y.sys.stderr) as status_bar:
         return run_make_1(mk, args, status_bar)
 

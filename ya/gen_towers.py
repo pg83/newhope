@@ -454,7 +454,7 @@ class Data(object):
     def register(self):
         for i in self.last_elements(self.distr):
             v = self.func_by_num[i]
-    
+
             yield {'func': v.z}
 
     def iter_deps(self):
