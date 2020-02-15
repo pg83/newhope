@@ -112,7 +112,7 @@ class ColorStdIO(object):
                     t = t.decode('utf-8')
                 except Exception:
                     pass
-        
+
                 self.p += t
 
                 if len(self.p) > 8192:

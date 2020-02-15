@@ -3,15 +3,7 @@ def get_white_line():
 
 
 def kill_all_running(*args):
-    running_os = 'linux' #y.platform.system().lower()
-
-    if running_os == 'darwin':
-        return y.os.system('pkill -KILL -g {pgid}'.format(pgid=y.os.getpgid(y.os.getpid())))
-
-    if running_os == 'linux':
-        return y.os.system('pkill -KILL -P {ppid}'.format(ppid=y.os.getpid()))
-
-    raise Exception('todo')
+    y.os.killpg(y.os.getpgid(y.os.getpid()), y.signal.SIGTERM)
 
 
 def run_sigint(*args):

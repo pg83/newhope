@@ -39,6 +39,7 @@ def set_sigint(g):
 
     signal.signal(signal.SIGINT, sig_handler)
     signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
 
 
 def set_abort(g):

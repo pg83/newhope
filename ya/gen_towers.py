@@ -43,7 +43,7 @@ SG = {
     'musl-boot': 'musl',
     'make-boot': 'make',
 }
-    
+
 
 class Func(object):
     def do_subst_0(self, x):
