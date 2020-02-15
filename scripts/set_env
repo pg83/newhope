@@ -1,4 +1,4 @@
-export CFLAGS="$CFLAGS $CPPFLAGS"
+export CFLAGS="$CFLAGS $CPPFLAGS $LDFLAGS $LIBS"
 export CXXFLAGS="$CXXFLAGS $CFLAGS"
 
 export PATH="`source fix_uniq ':' $PATH`"

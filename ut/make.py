@@ -2,6 +2,8 @@ class OutputResult(object):
     def __init__(self, status_bar):
         self._in_fly = set()
         self._sb = status_bar
+        self._complete = 0
+        self._st = y.time.time()
 
     def set_sb(self):
         self._sb.set_data(self.render())
@@ -18,6 +20,7 @@ class OutputResult(object):
             else:
                 try:
                     self._in_fly.remove(tg)
+                    self._complete += 1
                     self.set_sb()
                 except Exception:
                     pass
@@ -49,15 +52,22 @@ class OutputResult(object):
         b = y.get_color_ext(None, 'on_grey', attrs=['light', 'reverse'])
         e = y.get_code(0)
 
-        return b + ('in fly: ' + ', '.join(in_fly) + ' ' * 200)[:cols] + e
+        return b + ('complete: ' + str(self._complete) + ', run time: ' + str(int(y.time.time() - self._st)) + ', in fly: ' + ', '.join(in_fly) + ' ' * 200)[:cols] + e
 
 
 def run_make_0(mk, args):
+    #if args.naked:
+    #    return run_make_1(mk, args, y.FakeStatusBar())
+    
     with y.with_status_bar(y.sys.stderr) as status_bar:
-        ores = OutputResult(status_bar)
+        return run_make_1(mk, args, status_bar)
 
-        @y.lookup
-        def lookup(name):
-            return {'build_results': ores.output_build_results}[name]
 
-        return y.run_makefile(mk, args.targets, int(args.threads), pre_run=args.pre_run, naked=args.naked)
+def run_make_1(mk, args, status_bar):
+    ores = OutputResult(status_bar)
+
+    @y.lookup
+    def lookup(name):
+        return {'build_results': ores.output_build_results}[name]
+
+    return y.run_makefile(mk, args.targets, int(args.threads), pre_run=args.pre_run, naked=args.naked)

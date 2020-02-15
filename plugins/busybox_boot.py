@@ -14,7 +14,7 @@ if '{os}' == 'linux':
                     ln -fs busybox $y
                 done
             """,
-            'version': '1.31.0',
+            'version': '1.31.1',
             'meta': {
                 'kind': ['tool'],
                 'undeps': ['make', 'musl', 'busybox-boot'],

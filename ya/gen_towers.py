@@ -16,7 +16,6 @@ def subst_by_platform(info):
         'termcap': 'ncurses',
         'ncurses': 'ncurses-real',
         'pcre': 'pcre2',
-        'busybox': 'busybox-boot',
         'c': 'sys_libc',
     }
 
@@ -309,26 +308,6 @@ class SplitFunc(Func):
         return [self._func.i] + self._func.calc_extra()
 
 
-class AllFunc(Func):
-    def __init__(self, deps, data):
-        def func():
-            return {
-                'meta': {
-                    'depends': deps
-                },
-            }
-
-        x = {
-            'kind': ['all'],
-            'code': func,
-            'base': 'all',
-        }
-
-        self.gen = 'all'
-
-        Func.__init__(self, x, data)
-
-
 class Solver(object):
     def __init__(self, data, generation=0, seed=1):
         self._generation = generation
@@ -430,8 +409,8 @@ class Data(object):
             g = solver.generation()
 
             if pg != g:
-                if pg == num - 1:
-                    self.add_func(AllFunc(self.distr, self), pg)
+                #if pg == num - 1:
+                    #self.add_func(AllFunc(self.distr, self), pg)
 
                 self.calc_new_deps()
                 pg = g
@@ -473,8 +452,10 @@ class Data(object):
         return self.dd.get(name, [-1])[0]
 
     def register(self):
-        v = self.func_by_num[-1]
-        yield {'func': v.z}
+        for i in self.last_elements(self.distr):
+            v = self.func_by_num[i]
+    
+            yield {'func': v.z}
 
     def iter_deps(self):
         for f in self.func_by_num:
@@ -507,9 +488,6 @@ class Data(object):
     @y.cached_method
     def full_tool_deps(self, name, g):
         return y.uniq_list_x(self.by_name[g][name].dep_tool_list())
-
-    #def find_func(self, name, g):
-    #    return self.by_name[g][name]
 
     def select_deps(self, name, g):
         return self.last_elements(self.full_deps(name, g))

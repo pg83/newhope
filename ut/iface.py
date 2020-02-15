@@ -258,7 +258,6 @@ def run_repl():
     frame = frame.f_back
 
     try:
-        #with y.without_color():
         from ptpython.repl import embed
 
         embed(frame.f_globals, frame.f_locals)

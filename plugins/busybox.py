@@ -2,6 +2,18 @@
 def busybox0():
     return {
         'code': """
+            mkdir -p $IDIR/bin
+            cd $IDIR/bin
+            source fetch "https://www.busybox.net/downloads/binaries/{version}-defconfig-multiarch-musl/busybox-{arch}" 0
+            mv busybox-* busybox
+            chmod +x busybox
+
+            for x in `./busybox --list-full`; do
+                y=$(basename $x)
+                ln -fs busybox $y
+            done
+        """,
+        'code1': """
             source fetch "https://www.busybox.net/downloads/busybox-{version}.tar.bz2" 1
 
             ln -s $CC ./gcc

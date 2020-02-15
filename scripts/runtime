@@ -10,6 +10,6 @@ export PIC=""
 export CFLAGS="-O2 $PIC -pipe -fno-builtin $CFLAGS"
 export LDFLAGS="$PIC $LDFLAGS"
 export NCPUX=$(source num_cpu)
-export NCPU=$(($NCPUX / 1))
+export NCPU=$(($NCPUX / 2))
 export NTHR=$NCPU
 export NTHRS=$NTHR

@@ -119,16 +119,17 @@ class ColorStdIO(object):
                     self.flush_impl()
 
     def write_part(self, p):
+        if not p:
+            return
+
         self.clear_sl()
 
-        if p:
-            try:
-                self.s.buffer.write(self.colorize(p).encode('utf-8'))
-            except AttributeError:
-                self.s.buffer.write(p)
+        try:
+            self.s.buffer.write(self.colorize(p).encode('utf-8'))
+        except AttributeError:
+            self.s.buffer.write(p)
 
         self.draw_sl()
-        #self.s.buffer.flush()
         self.s.flush()
 
 
@@ -169,9 +170,23 @@ class ColorStdIO(object):
         return self.s.encoding
 
 
+def stream_wrapped(stream):
+    try:
+        stream.can_colorize
+
+        return True
+    except AttributeError:
+        pass
+
+    return False
+
+
 @y.singleton
 def columns():
-    return int(y.subprocess.check_output(['/usr/bin/tput', 'cols']).strip())
+    try:
+        return y.shutil.get_terminal_size().columns
+    except OSError:
+        return 100
 
 
 class StatusBar(object):
@@ -191,21 +206,32 @@ class StatusBar(object):
         return self._c
 
 
+class FakeStatusBar(object):
+    def set_data(self, v):
+        pass
+
+    def get_columns(self):
+        return 1
+
+
 @y.contextlib.contextmanager
 def with_status_bar(stream):
-    try:
-        sb = StatusBar(columns())
-
-        stream.set_sb_cb(sb.cb)
-        yield sb
-    finally:
-        stream.set_sb_cb(None)
+    if stream_wrapped(stream):
+        try:
+            sb = StatusBar(columns())
+    
+            stream.set_sb_cb(sb.cb)
+            yield sb
+        finally:
+            stream.set_sb_cb(None)
+    else:
+        yield FakeStatusBar()
 
 
 class ColorStdErr(ColorStdIO):
     def __init__(self):
-        ColorStdIO.__init__(self, y.sys.stderr)
         self._cb = None
+        ColorStdIO.__init__(self, y.sys.stderr)
 
     def extra_flush(self):
         try:
@@ -217,7 +243,7 @@ class ColorStdErr(ColorStdIO):
         if self._cb:
             self.s.write("\r\033[K")
 
-    def    draw_sl(self):
+    def draw_sl(self):
         if self._cb:
             self.s.write('\r' + self._cb(columns()) + '\r')
 
@@ -245,20 +271,6 @@ class ColorStdOut(ColorStdIO):
 
 @y.defer_constructor
 def init_stdio():
-    init_stdio_0()
-
-
-def init_stdio_0():
     y.sys.stdout = ColorStdOut()
     y.sys.stderr = ColorStdErr()
-
-
-@y.contextlib.contextmanager
-def without_color():
-    try:
-        y.sys.stdout = y.sys.__stdout__
-        y.sys.stderr = y.sys.__stderr__
-
-        yield
-    finally:
-        init_stdio()
+    #pass

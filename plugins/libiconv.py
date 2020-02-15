@@ -10,6 +10,7 @@ def libiconv0():
     return {
         'code': """
             source fetch "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-{version}.tar.gz" 1
+            export CFLAGS="$CFLAGS $LDFLAGS $LIBS"
             export LDFLAGS="$LDFLAGS $LIBS"
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared || exit 1
             $YMAKE -j $NTHRS || exit 1

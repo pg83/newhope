@@ -3,7 +3,8 @@ def get_white_line():
 
 
 def kill_all_running(*args):
-    y.os.killpg(y.os.getpgid(y.os.getpid()), y.signal.SIGTERM)
+    y.os.system('pkill -KILL -P {ppid}'.format(ppid=y.os.getpid()))
+    #y.os.killpg(y.os.getpgid(y.os.getpid()), y.signal.SIGTERM)
 
 
 def run_sigint(*args):
