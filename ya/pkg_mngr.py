@@ -458,7 +458,7 @@ class PkgMngr(object):
 
         y.shutil.rmtree(os.path.join(self.path, 'log'))
 
-        self.install(['bsdtar', 'upm', 'dash-run'])
+        self.install(['upm', 'dash-run'])
 
         packs = self.all_packs_dict()
 
