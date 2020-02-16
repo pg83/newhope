@@ -5,13 +5,13 @@ def upm0():
              source fetch "https://github.com/pg83/newhope/archive/{version}.zip" 0
              (mv newhope* xxx && mv xxx/* ./)
              mkdir $IDIR/bin
-             $PYTHON3 ./cli release  > upm
+             $PYTHON3 ./cli release > upm
              $(APPLY_EXTRA_PLAN_0)
              $(APPLY_EXTRA_PLAN_1)
              $YSHELL ./freeze.sh "$PYTHON3" ./upm -w
              mv upm $IDIR/bin/ && chmod +x $IDIR/bin/upm
         """,
-        'version': 'ee7b9b3cebb91f47823b613f22b3efaeec560787',
+        'version': 'adfee595a77a10ce58e67d6f0f455b0e1cf86af6',
         'meta': {
             'kind': ['tool'],
             'depends': ['python3', 'make', 'c'],

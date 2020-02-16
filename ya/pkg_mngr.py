@@ -190,7 +190,7 @@ class PkgMngr(object):
 
             if '-tmp' in x:
                 continue
-    
+
             name = self.pkg_unv_name(x)
             res[name] = x
 
@@ -417,7 +417,7 @@ class PkgMngr(object):
                     y.shutil.rmtree(p)
                 except OSError:
                     os.unlink(p)
-            
+    
     def fetch_package(self, pkg):
         return pkg['index'].fetch(pkg['path'])
 
