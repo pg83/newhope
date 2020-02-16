@@ -4,17 +4,6 @@ sp = y.subprocess
 os = y.os
 
 
-def safe_untar(tar, f, where):
-    p = sp.Popen([tar, '-C', where, '-xf', f], shell=False, stderr=sp.STDOUT, stdout=sp.PIPE)
-    out, _ = p.communicate()
-    retcode = p.wait()
-
-    if retcode == 0:
-        return
-
-    raise Exception('can not untar ' + f + ': ' + out.decode('utf-8'))
-
-
 def untar_from_memory(tar, data, where):
     p = sp.Popen([tar, '-C', where, '-xf', '-'], shell=False, stderr=sp.STDOUT, stdout=sp.PIPE, stdin=sp.PIPE)
     out, _ = p.communicate(input=data)
@@ -74,7 +63,7 @@ class HTTPFetcher(Fetcher):
     def do_fetch(self, path):
         p = os.path.join(self._root, path)
 
-        y.info('fetch{by}', p, '{}')
+        y.info('add{by}', p, '{}')
 
         return y.fetch_data(p)
 
@@ -89,7 +78,7 @@ class LocalFetcher(Fetcher):
     def do_fetch(self, path):
         p = os.path.join(self._root, path)
 
-        y.info('fetch{bm}', p, '{}')
+        y.info('add{bm}', p, '{}')
 
         with open(p, 'rb') as f:
             return f.read()
@@ -190,8 +179,20 @@ class PkgMngr(object):
     def all_packs_dict(self):
         res = {}
 
-        for x in self.all_packs():
-            res[self.pkg_unv_name(x)] = x
+        try:
+            real_files = list(os.listdir(self.pkg_dir()))
+        except FileNotFoundError:
+            return {}
+
+        for x in real_files:
+            if '-v5' not in x:
+                continue
+
+            if '-tmp' in x:
+                continue
+    
+            name = self.pkg_unv_name(x)
+            res[name] = x
 
         return res
 
@@ -205,24 +206,14 @@ class PkgMngr(object):
         raise AttributeError('no ' + str(pkgs) + 'found')
 
     def find_pkg_tar(self):
-        lst = ['bsdtar', 'tar', 'busybox', 'toybox', 'libarchive']
+        lst = ['bsdtar', 'tar', 'libarchive']
         full_lst = lst + [(x + '-run') for x in lst]
-
         tar = os.path.join(self.path, 'pkg', self.any_of(full_lst), 'bin', 'tar')
 
         if not os.path.isfile(tar):
             raise AttributeError(tar)
 
         return tar
-
-    def safe_untar(self, f, to):
-        try:
-            tar = self.find_pkg_tar()
-        except AttributeError as e:
-            y.warning(str(e) + ', will use any tar')
-            tar = 'tar'
-
-        safe_untar(tar, f, to)
 
     def untar_from_memory(self, data, where):
         try:
@@ -257,25 +248,6 @@ class PkgMngr(object):
 
     def pkg_dir(self):
         return self.get_dir('pkg')
-
-    def all_packs(self):
-        def do():
-            for x, _ in self.list_dir(self.pkg_dir()):
-                if '-v5' in x:
-                    yield x
-
-        return list(do())
-
-    def list_dir(self, path):
-        where = os.path.join(self.path, path)
-
-        if not os.path.isdir(where):
-            y.warning('not a directory', where)
-
-            return
-
-        for x in os.listdir(where):
-            yield x, os.path.join(x, where)
 
     def get_index_files_0(self):
         with self.open_db() as db:
@@ -335,6 +307,10 @@ class PkgMngr(object):
 
     def pkg_unv_name(self, full_name):
         return full_name.split('-' + self.info)[0]
+
+    def db_pkg_list(self):
+        with self.open_db() as db:
+            return self.resolve_groups(db.inst())
 
     def pkg_list(self, pkgs):
         pkgs = self.resolve_groups(pkgs)
@@ -420,22 +396,28 @@ class PkgMngr(object):
             self.untar_from_memory(data, ppath_tmp)
             os.rename(ppath_tmp, ppath)
 
-
     def actual_install(self, pkgs):
         lst = self.pkg_list(pkgs)
 
         for p in lst:
             self.install_one_pkg(p)
 
-        ap = self.all_packs()
-
         with open(self.pkg_dir() + '/profile', 'w') as f:
-            f.write('export PATH=' + ':'.join([('/pkg/' + x + '/bin') for x in ap]))
+            f.write('export PATH=' + ':'.join([('/pkg/' + x['path'] + '/bin') for x in reversed(lst)]))
 
-        for x in self.subst_packs(ap, [x['path'] for x in lst]):
-            y.warning('remove stale package', x)
-            y.shutil.rmtree(os.path.join(self.pkg_dir(), x))
+        in_use = frozenset([x['path'] for x in lst] + ['cache', 'profile'])
 
+        for x in os.listdir(self.pkg_dir()):
+            if x not in in_use:
+                p = os.path.join(self.pkg_dir(), x)
+
+                y.warning('remove stale{r}', p, '{}')
+
+                try:
+                    y.shutil.rmtree(p)
+                except OSError:
+                    os.unlink(p)
+            
     def fetch_package(self, pkg):
         return pkg['index'].fetch(pkg['path'])
 
@@ -458,7 +440,7 @@ class PkgMngr(object):
 
         y.shutil.rmtree(os.path.join(self.path, 'log'))
 
-        self.install(['bsdtar', 'upm', 'dash-run'])
+        self.install(['upm', 'dash-run'])
 
         packs = self.all_packs_dict()
 
