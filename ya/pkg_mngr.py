@@ -89,7 +89,7 @@ class LocalFetcher(Fetcher):
     def do_fetch(self, path):
         p = os.path.join(self._root, path)
 
-        y.info('fetch{br}', p, '{}')
+        y.info('fetch{bm}', p, '{}')
 
         with open(p, 'rb') as f:
             return f.read()

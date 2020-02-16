@@ -1,7 +1,7 @@
 @y.package
 def busybox0():
     return {
-        'code': """
+        'code1': """
             mkdir -p $IDIR/bin
             cd $IDIR/bin
             source fetch "https://www.busybox.net/downloads/binaries/{version}-defconfig-multiarch-musl/busybox-{arch}" 0
@@ -13,14 +13,13 @@ def busybox0():
                 ln -fs busybox $y
             done
         """,
-        'code1': """
+        'code': """
             source fetch "https://www.busybox.net/downloads/busybox-{version}.tar.bz2" 1
 
             ln -s $CC ./gcc
             export PATH="$(pwd):$PATH"
             export CFLAGS="-Iinclude $CFLAGS"
-
-            source no_free
+            export LIBS="$LIBS -Wl,--whole-archive"
 
             $YMAKE HOSTCFLAGS="$CFLAGS $LDFLAGS $LIBS" LDFLAGS="$LDFLAGS $LIBS" HOSTCXXFLAGS="$CXXFLAGS" HOSTLDFLAGS="$LDFLAGS $LIBS" defconfig
 
@@ -32,7 +31,7 @@ def busybox0():
             cat archival/libarchive/unpack_ar_archive.c >> tmp
             cat tmp > archival/libarchive/unpack_ar_archive.c
 
-            $YMAKE HOSTCFLAGS="$CFLAGS $LDFLAGS $LIBS" LDFLAGS="$LDFLAGS $LIBS" HOSTCXXFLAGS="$CXXFLAGS" HOSTLDFLAGS="$LDFLAGS $LIBS" -j $THRS
+            $YMAKE HOSTCFLAGS="$CFLAGS $LDFLAGS $LIBS" LDFLAGS="$LDFLAGS $LIBS" HOSTCXXFLAGS="$CXXFLAGS" HOSTLDFLAGS="$LDFLAGS $LIBS" V=1 -j $THRS || exit 1
             mkdir $IDIR/bin && cp busybox $IDIR/bin && cd $IDIR/bin
             chmod +x busybox
 
