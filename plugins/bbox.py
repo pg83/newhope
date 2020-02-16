@@ -61,7 +61,7 @@ def box0():
         ''',
         'meta': {
             'kind': ['tool'],
-            'depends': lst_run + ['base'],
+            'depends': lst_run,
             'contains': lst_run + lst + ['make-boot', 'busybox-boot', 'busybox', 'toybox'],
             'provides': [
                 {'env': 'SED', 'value': '{pkgroot}/bin/sed'},

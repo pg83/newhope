@@ -36,18 +36,9 @@ def repacks_keys():
 
 
 def split_run_meta(m):
-    m = y.dc(m)
+    nm = {}
 
-    m.pop('depends', None)
-
-    def flt_kind():
-        for k in m.get('kind', []):
-            if k == 'library':
-                pass
-            else:
-                yield k
-
-    m['kind'] = list(flt_kind())
+    nm['kind'] = ['tool']
 
     def flt_provides():
         for p in m.get('provides', []):
@@ -62,67 +53,29 @@ def split_run_meta(m):
 
             yield p
 
-    m['provides'] = list(flt_provides())
+    nm['provides'] = list(flt_provides())
 
-    return m
+    return nm
 
 
 def split_meta(m, kind):
     if kind == 'run':
         return split_run_meta(m)
 
-    if kind in ('doc', 'log'):
-        return {
-            'flags': m.get('flags', []),
-        }
-
-    # TODO
-    return m
+    return {
+        'kind': ['library']
+    }
 
 
-class SplitKind(object):
-    def __init__(self, parent, kind):
-        self.p = parent
-        self.k = kind
+def run_splitter(func, split):
+    m = split_meta(func.code().get('meta', {}), split)
 
-    @y.cached_method
-    def run(self):
-        return y.store_node(self.code())
+    m.update({
+        'depends': [func.base],
+        'undeps': ['musl', 'mimalloc', 'make']
+    })
 
-    def split_part(self): 
-        res = {
-            'code': self.p.repacks[self.k]['code'],
-            'kind': {'dev': ['library'], 'run': ['tool']}.get(self.k, []),
-            'deps': [self.p.dep()],
-            'meta': split_meta(self.p.meta(), self.k),
-            'codec': self.p.node()['codec'],
-        }
-
-        res['meta']['kind'] = res.pop('kind')
-
-        return res, self.p.arg['info']
-
-    def code(self):
-        return y.fix_v2(y.to_v2(*self.split_part()))
-
-
-class Splitter(object):
-    def __init__(self, arg, repacks):
-        self.arg = arg
-        self.repacks = repacks
-
-    def dep(self):
-        return self.arg['code']()
-
-    def node(self):
-        return y.restore_node_node(self.dep())
-
-    def meta(self):
-        return self.node().get('meta', {})
-
-    def gen_code(self, kind):
-        return SplitKind(self, kind).code()
-
-
-def pkg_splitter(arg, kind):
-    return Splitter(arg, repacks()).gen_code(kind)
+    return {
+        'code': repacks()[split]['code'],
+        'meta': m,
+    }

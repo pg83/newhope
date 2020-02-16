@@ -156,8 +156,6 @@ class Func(object):
     def dep_lib_list(self):
         def iter():
             for x in self.dep_list():
-                #print self.base, x, sorted(self.data.by_name[self.g].keys())
-
                 if self.data.by_name[self.g][x].is_library:
                     yield x
 
@@ -258,62 +256,40 @@ class Func(object):
 
 class SplitFunc(Func):
     def __init__(self, func, split):
+        Func.__init__(self, func.x, func.data)
         self._func = func
         self._split = split
-
-    @property
-    def gen(self):
-        return self._func.gen
-
-    @property
-    def data(self):
-        return self._func.data
-
-    @property
-    def kind(self):
-        return self._func.kind + [self._split, 'split']
-
-    def depends(self):
-        return [self._func.base]
-
-    def contains(self):
-        return []
-
-    def undeps(self):
-        return ['musl', 'mimalloc', 'make']
-
-    @y.cached_method
-    def ff(self):
-        return y.store_node(y.fix_pkg_name(y.pkg_splitter(self._func.zz, self._split), self.zz))
 
     @property
     def base(self):
         return self._func.base + '-' + self._split
 
     def clone(self):
-        return SplitFunc(self._func.clone(), self._split)
+        return SplitFunc(self._func, self._split)
 
-    @property
+    def code(self):
+        return y.run_splitter(self._func, self._split)
+
     @y.cached_method
-    def zz(self):
-        return {
-            'code': self.ff,
-            'base': self.base,
-            'gen': self.gen,
-            'kind': self.kind,
-            'info': self.data.info,
-        }
-
     def calc_deps(self):
-        return [self._func.i] + self._func.calc_extra()
+        return self.data.last_elements([self._func.base]) + self.calc_extra()
 
 
 class Solver(object):
     def __init__(self, data, generation=0, seed=1):
         self._generation = generation
         self._data = data
+        self._by_base = dict((x.base, i) for i, x in enumerate(self._data))
         self._seed = seed
-        self._r, self._w = y.make_engine(self._data, ntn=lambda x: x.base, dep_list=lambda x: x.dep_list(), seed=self._seed)
+
+        def iter_deps():
+            for i, x in enumerate(self._data):
+                for y in x.dep_list():
+                    yield i, self._by_base[y]
+
+                yield i, None
+
+        self._r, self._w = y.simple_engine(iter_deps(), seed=self._seed)
         self.inc_count = ic()
 
     def next_solver(self):
@@ -323,8 +299,8 @@ class Solver(object):
         y.debug('run solver')
 
         for el in self._r():
-            self._w(el['i'])
-            yield el['x']
+            self._w(el)
+            yield self._data[el]
 
         y.debug('done')
 
@@ -361,8 +337,13 @@ class Data(object):
 
         def iter_objects():
             for x in sorted(data, key=lambda x: x['base']):
-                yield self.create_object(x)
+                f = self.create_object(x)
 
+                yield f
+
+                for k in y.repacks_keys():
+                    yield SplitFunc(f, k)
+        
         self.data = list(iter_objects())
         self.prepare_funcs(3)
 
@@ -409,9 +390,6 @@ class Data(object):
             g = solver.generation()
 
             if pg != g:
-                #if pg == num - 1:
-                    #self.add_func(AllFunc(self.distr, self), pg)
-
                 self.calc_new_deps()
                 pg = g
 
@@ -425,9 +403,6 @@ class Data(object):
 
             self.add_func(func, g)
 
-            for k in y.repacks_keys():
-                self.add_func(SplitFunc(func, k), g)
-
     def calc_new_deps(self):
         for func in self.new_funcs:
             _ = func.deps
@@ -435,8 +410,6 @@ class Data(object):
         self.new_funcs = []
 
     def add_func(self, func, g):
-        print func.base, g
-
         if func.base == 'box':
             self.box_by_gen[g] = func
 
@@ -514,12 +487,9 @@ class Tower(object):
 
         cnt = 0
 
-        try:
-            for x in dt.register():
-                cnt += 1
-                yield x
-        except IndexError:
-            pass
+        for x in dt.register():
+            cnt += 1
+            yield x
 
         if not cnt:
             y.error('{br}no package detected in', self._cc, '{}')

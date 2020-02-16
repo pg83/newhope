@@ -3,10 +3,10 @@ def base0():
     return {
         'code': """
             cd $IDIR
-            mkdir -p etc etc/alt/ etc/upm pkg pkg/cache srv bin dev
+            mkdir -p etc etc/upm pkg pkg/cache srv bin dev sys proc
             touch pkg/profile
             echo '. ../pkg/profile' > etc/profile
-            echo 'root:x:0:0:root:/root:/bin/bash' > etc/passwd
+            echo 'root:x:0:0:root:/root:/bin/sh' > etc/passwd
 
             cat > etc/group << "EOF"
 root:x:0:
@@ -22,8 +22,6 @@ lp:x:9:
 dialout:x:10:
 audio:x:11:
 EOF
-
-            ln -s etc/alt/sh bin/sh 
             echo 'nameserver 8.8.8.8' > etc/resolv.conf
         """,
         'meta': {

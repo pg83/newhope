@@ -10,7 +10,7 @@ def libarchive0():
         'version': '3.4.0',
         'meta': {
             'kind': ['library', 'tool', 'box'],
-            'depends': ['zlib-dev', 'bzip2-dev', 'xz-dev', 'make', 'c'],
+            'depends': ['zlib', 'bzip2', 'xz', 'make', 'c'],
             'provides': [
                 {'lib': 'archive'},
                 {'env': 'YTAR', 'value': '{pkgroot}/bin/bsdtar'},

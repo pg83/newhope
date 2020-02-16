@@ -417,7 +417,7 @@ class PkgMngr(object):
                     y.shutil.rmtree(p)
                 except OSError:
                     os.unlink(p)
-    
+
     def fetch_package(self, pkg):
         return pkg['index'].fetch(pkg['path'])
 

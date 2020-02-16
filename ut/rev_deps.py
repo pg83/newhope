@@ -44,7 +44,12 @@ def simple_engine(it, random=False, seed=''):
         while ready:
             tmp = list(sorted(ready, key=lambda x: y.burn([x, seed])))
             ready.clear()
-            yield from tmp
+
+            for t in tmp:
+                if t is not None:
+                    yield t
+                else:
+                    cb(None)
 
     def cb(item):
         for k in by_rdep[item]:
@@ -55,7 +60,7 @@ def simple_engine(it, random=False, seed=''):
             if not el:
                 by_dep.pop(k)
                 ready.add(k)
-
+        
     return iter_ready, cb
 
 
