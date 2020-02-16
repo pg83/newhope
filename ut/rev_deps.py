@@ -60,7 +60,7 @@ def simple_engine(it, random=False, seed=''):
             if not el:
                 by_dep.pop(k)
                 ready.add(k)
-        
+
     return iter_ready, cb
 
 

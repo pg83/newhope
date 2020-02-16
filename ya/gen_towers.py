@@ -343,7 +343,7 @@ class Data(object):
 
                 for k in y.repacks_keys():
                     yield SplitFunc(f, k)
-        
+
         self.data = list(iter_objects())
         self.prepare_funcs(3)
 
