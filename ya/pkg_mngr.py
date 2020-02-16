@@ -223,8 +223,8 @@ class PkgMngr(object):
 
         try:
             untar_from_memory(self.find_pkg_tar(), data, where)
-        except AttributeError as e:
-            y.debug('fallback to pyhon tarfile: ' + str(e))
+        except Exception as e:
+            y.info('fallback to python tarfile: ' + str(e))
             stream = io.BytesIO(data)
             y.tarfile.open(fileobj=stream, mode='r').extractall(where)
    
