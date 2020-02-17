@@ -389,7 +389,7 @@ class PkgMngr(object):
             self.untar_from_memory(data, ppath_tmp)
 
             outs = []
-    
+
             try:
                 install_path = ppath_tmp + '/install'
                 out = sp.check_output(['/bin/sh', '-l', install_path], cwd=ppath_tmp, shell=False, stderr=sp.STDOUT)
@@ -400,10 +400,10 @@ class PkgMngr(object):
                     outs.append(out)
             except Exception as e:
                 outs.append(str(e))
-        
+
             if outs:
                 y.info('from install script {bg}' + install_path + '{}:\n' + '\n'.join(outs))
-    
+
             os.rename(ppath_tmp, ppath)
 
     def thr_fetch(self, p):
@@ -416,7 +416,7 @@ class PkgMngr(object):
             except Exception as e:
                 res.clear()
                 res.append(e)
-        
+
         t = y.threading.Thread(target=fetch_func)
         t.start()
 
@@ -425,18 +425,18 @@ class PkgMngr(object):
 
             if len(res) == 1:
                 raise res[0]
-    
+
             return res[0], res[1]
 
         return join
-    
+
     def actual_install(self, pkgs):
         lst = self.pkg_list(pkgs)
 
         def to_install():
             for p in lst:
                 path = self.pkg_dir() + '/' + p['path']
-        
+
                 if os.path.isdir(path):
                     y.info('skip', path)
                 else:

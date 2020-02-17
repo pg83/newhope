@@ -38,7 +38,7 @@ def cli_dev_make(arg):
             yield ('$PD', args.install_dir)
         else:
             yield ('$PD', '$PREFIX/p')
-        
+
         yield ('$PREFIX', root)
         yield ('$UPM', y.globals.script_path)
 
