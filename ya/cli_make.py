@@ -7,12 +7,11 @@ def cli_dev_make(arg):
     p.add_argument('-r', '--root', default=None, action='store', help='main root for build files')
     p.add_argument('-i', '--install-dir', default=None, action='store', help='where to install packages')
     p.add_argument('-s', '--shell', default=None, action='store', help='указать шелл для сборки')
-    p.add_argument('--production', default=False, action='store_const', const=True, help='production execution')
-    p.add_argument('--naked', default=False, action='store_const', const=True, help='serve as as a stream proxy')
+    p.add_argument('-k', '--keep-going', default=False, action='store_const', const=True, help='продолжать сборку после ошибок')
+    p.add_argument('--naked', default=False, action='store_const', const=True, help='show command output as is')
     p.add_argument('targets', nargs=y.argparse.REMAINDER)
 
     args = p.parse_args(arg)
-    local = not args.production
 
     def calc_root():
         if args.root:
@@ -22,13 +21,7 @@ def cli_dev_make(arg):
             if 'build_prefix' in db.kv:
                 return db.kv['build_prefix']
 
-        if local:
-            return y.upm_root()
-
-        if args.production:
-            return '/d'
-
-        raise Exception('can not determine root')
+        return y.upm_root()
 
     root = calc_root()
 
@@ -41,15 +34,11 @@ def cli_dev_make(arg):
         yield ('$WD', '$PREFIX/w')
         yield ('$SD', '$PREFIX/s')
 
-        if local:
-            yield ('$PD', '$PREFIX/p')
-
-        if args.production:
-            yield ('$PD', '/private')
-
         if args.install_dir:
             yield ('$PD', args.install_dir)
-
+        else:
+            yield ('$PD', '$PREFIX/p')
+        
         yield ('$PREFIX', root)
         yield ('$UPM', y.globals.script_path)
 

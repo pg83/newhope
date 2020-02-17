@@ -3,16 +3,16 @@ def is_debug():
     return 'debug' in y.config.get('make', '')
 
 
-def run_makefile(mk, targets, threads, pre_run=[], naked=False):
+def run_makefile(mk, targets, threads, pre_run=[], naked=False, keep_going=False):
     y.cheet(mk)
 
     if pre_run:
-        run_par_build(mk.select_targets(pre_run), 1, False, naked)
+        run_par_build(mk.select_targets(pre_run), 1, False, naked, keep_going)
 
     if targets:
         mk = mk.select_targets(targets)
 
-    return run_par_build(mk, threads, True, naked)
+    return run_par_build(mk, threads, True, naked, keep_going)
 
 
 def wrap_gen(func):
@@ -36,9 +36,10 @@ def iter_deque(q):
 
 
 class Builder(object):
-    def __init__(self, mk, threads, check, naked):
+    def __init__(self, mk, threads, check, naked, keep_going):
         self.check = check
         self.mk = mk
+        self.keep_going = keep_going
         self.naked = naked
         self.threads = threads
         self.lst = [item_factory(x, self, n) for n, x in enumerate(mk.lst)]
@@ -343,7 +344,10 @@ class Item(ItemBase):
         y.build_results(msg)
 
         if retcode:
-            y.shut_down(5, last_msg='{br}target ' + target + ' failed, exiting now{}\n')
+            if self.p.keep_going:
+                pass
+            else:
+                y.shut_down(5, last_msg='{br}target ' + target + ' failed, exiting now{}\n')
 
     def run_cmd_0(self):
         sp = y.subprocess
@@ -397,10 +401,10 @@ class Item(ItemBase):
         return retcode, '\n'.join(y.super_decode(o.strip()) for o in out), input
 
 
-def run_par_build(mk, threads, check, naked):
+def run_par_build(mk, threads, check, naked, keep_going):
     y.info('{br}start build{}')
 
     try:
-        return Builder(mk, threads, check, naked).run()
+        return Builder(mk, threads, check, naked, keep_going).run()
     finally:
         y.info('{br}end build{}')

@@ -1,4 +1,4 @@
-#@y.package
+@y.package
 def git0():
     return {
         'code': """
@@ -6,12 +6,12 @@ def git0():
 
              export CFLAGS="-w -Icompat/regex -iquote$(pwd) $CFLAGS"
              export CPPFLAGS="-w -Icompat/regex $CPPFLAGS"
-             export LDFLAGS="$LDFLAGS $LIBS"
+             #export LDFLAGS="$LDFLAGS $LIBS"
 
              ln -s $PYTHON ./python 
              export PATH="$(pwd):$PATH"
 
-             $YSHELL ./configure --prefix="$IDIR" --with-python=$PYTHON --with-perl=$YPERL --with-shell=$YSHELL --with-libpcre2 --with-openssl
+             $YSHELL ./configure --prefix="$IDIR" --with-python=$PYTHON --with-perl=$YPERL --with-shell=$YSHELL --with-libpcre2
              $YMAKE -j $NTHRS
              $YMAKE install
         """,

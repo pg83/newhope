@@ -300,6 +300,7 @@ class MakeFile(object):
         args.targets = kwargs.pop('targets', [])
         args.pre_run = kwargs.pop('pre_run', [])
         args.naked = kwargs.pop('naked', False)
+        args.keep_going = kwargs.pop('keep_going', False)
 
         args.update(kwargs)
 

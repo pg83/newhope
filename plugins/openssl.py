@@ -28,7 +28,7 @@ def openssl0():
             'depends': extra + ['perl5','dl', 'sed', 'busybox-boot', 'coreutils-boot', 'make', 'c'],
             'provides': [
                 {'lib': 'ssl', 'configure': {'opts': ['--with-openssl={pkgroot}', '--with-openssldir={pkgroot}']}},
-                {'env': 'OPENSSL_INCLUDES', 'value': '-I{pkgroot}/include'},
+                {'env': 'OPENSSL_INCLUDES', 'value': '"-I{pkgroot}/include"'},
             ],
         },
     }

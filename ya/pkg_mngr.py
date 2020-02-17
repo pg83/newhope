@@ -367,17 +367,10 @@ class PkgMngr(object):
     def apply_db(self, db):
         self.actual_install(db.inst())
 
-    def install_one_pkg(self, p):
+    def install_one_pkg(self, p, join):
         ppath = self.pkg_dir() + '/' + p['path']
         ppath_tmp = self.pkg_dir() + '/' + p['path'] + '-tmp'
-
-        if os.path.isdir(ppath):
-            y.info('skip', ppath)
-
-            return
-
-        pkg_data = self.fetch_package(p)
-        data = y.decode_prof(pkg_data)
+        pkg_data, data = join()
 
         def func():
             y.write_file(os.path.join(self.path, 'pkg', 'cache', p['path']), pkg_data)
@@ -394,13 +387,66 @@ class PkgMngr(object):
                 os.makedirs(ppath_tmp)
 
             self.untar_from_memory(data, ppath_tmp)
+
+            outs = []
+    
+            try:
+                install_path = ppath_tmp + '/install'
+                out = sp.check_output(['/bin/sh', '-l', install_path], cwd=ppath_tmp, shell=False, stderr=sp.STDOUT)
+                out = out.decode('utf-8')
+                out = out.strip()
+
+                if out:
+                    outs.append(out)
+            except Exception as e:
+                outs.append(str(e))
+        
+            if outs:
+                y.info('from install script {bg}' + install_path + '{}:\n' + '\n'.join(outs))
+    
             os.rename(ppath_tmp, ppath)
 
+    def thr_fetch(self, p):
+        res = []
+
+        def fetch_func():
+            try:
+                res.append(self.fetch_package(p))
+                res.append(y.decode_prof(res[0]))
+            except Exception as e:
+                res.clear()
+                res.append(e)
+        
+        t = y.threading.Thread(target=fetch_func)
+        t.start()
+
+        def join():
+            t.join()
+
+            if len(res) == 1:
+                raise res[0]
+    
+            return res[0], res[1]
+
+        return join
+    
     def actual_install(self, pkgs):
         lst = self.pkg_list(pkgs)
 
-        for p in lst:
-            self.install_one_pkg(p)
+        def to_install():
+            for p in lst:
+                path = self.pkg_dir() + '/' + p['path']
+        
+                if os.path.isdir(path):
+                    y.info('skip', path)
+                else:
+                    yield p
+
+        to_inst = list(to_install())
+        to_wait = [(p, self.thr_fetch(p)) for p in to_inst]
+
+        for p, j in to_wait:
+            self.install_one_pkg(p, j)
 
         with open(self.pkg_dir() + '/profile', 'w') as f:
             f.write('export PATH=' + ':'.join([('/pkg/' + x['path'] + '/bin') for x in reversed(lst)]))

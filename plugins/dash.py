@@ -8,7 +8,7 @@ def dash0():
             $YMAKE -j $NTHRS
             $YMAKE install
 
-            echo 'ln -lf {pkgroot}/bin/dash /etc/alt/sh' > $IDIR/install && chmod +x $IDIR/install
+            #echo 'ln -sf ../{pkgroot}/bin/dash ../../bin/sh' > $IDIR/install && chmod +x $IDIR/install
          """,
         'version': '0.5.10.2',
         'meta': {

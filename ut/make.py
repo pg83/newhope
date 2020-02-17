@@ -56,9 +56,6 @@ class OutputResult(object):
 
 
 def run_make_0(mk, args):
-    #if args.naked:
-    #    return run_make_1(mk, args, y.FakeStatusBar())
-
     with y.with_status_bar(y.sys.stderr) as status_bar:
         return run_make_1(mk, args, status_bar)
 
@@ -70,4 +67,4 @@ def run_make_1(mk, args, status_bar):
     def lookup(name):
         return {'build_results': ores.output_build_results}[name]
 
-    return y.run_makefile(mk, args.targets, int(args.threads), pre_run=args.pre_run, naked=args.naked)
+    return y.run_makefile(mk, args.targets, int(args.threads), pre_run=args.pre_run, naked=args.naked, keep_going=args.keep_going)
