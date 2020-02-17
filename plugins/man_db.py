@@ -1,4 +1,4 @@
-@y.package
+#@y.package
 def man_db0():
     return {
         'code': """

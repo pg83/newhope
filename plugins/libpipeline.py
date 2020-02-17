@@ -13,8 +13,8 @@ def libpipeline0():
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'pipeline'},
-                {'env': 'libpipeline_CFLAGS', 'value': '-I{pkgroot}i/include'},
-                {'env': 'libpipeline_LiBS', 'value': '-L{pkgroot}i/libs -lpipeline'},
+                {'env': 'libpipeline_CFLAGS', 'value': '"-I{pkgroot}i/include"'},
+                {'env': 'libpipeline_LIBS', 'value': '"-L{pkgroot}i/libs -lpipeline"'},
             ],
         }
     }

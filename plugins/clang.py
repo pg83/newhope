@@ -1,4 +1,4 @@
-@y.package
+#@y.package
 def clang0():
     return {
         'code': '''

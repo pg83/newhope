@@ -1,4 +1,4 @@
-@y.package
+#@y.package
 def groff0():
     return {
         'code': """
@@ -10,7 +10,7 @@ def groff0():
         'version': '1.22.4',
         'meta': {
             'kind': ['tool'],
-            'depends': ['c++', 'texinfo','make', 'c'],
+            'depends': ['c++', 'texinfo','make', 'perl5', 'c'],
             'provides': [
                 {'env': 'TROFF', 'value': '{pkgroot}/bin/troff'},
             ],

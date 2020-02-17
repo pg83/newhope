@@ -10,7 +10,7 @@ def gen_code(kind, folders):
         yield 'cp $MDIR/install $IDIR/install'
         yield 'chmod +x $IDIR/install'
     else:
-        for y in (('cp -R $MDIR/%s $IDIR/') % x[1:] for x in folders):
+        for y in (('cp -R $MDIR/%s $IDIR/ || true') % x[1:] for x in folders):
             yield y
 
 

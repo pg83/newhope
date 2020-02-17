@@ -128,9 +128,12 @@ def cli_pkg_serve_repo(args_):
     parser.add_argument('--fr', default='', action='store', help='path to repo')
     parser.add_argument('--port', default=80, action='store', help='listen port')
 
-    args = parser.parse_args(args_)   
+    args = parser.parse_args(args_)
 
-    class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+    class ThreadingHTTPServer(y.socketserver.ForkingMixIn, y.http.server.HTTPServer):
+        pass
+
+    class RequestHandler(y.http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
             y.info('incoming connection')
 
@@ -143,6 +146,6 @@ def cli_pkg_serve_repo(args_):
 
             self.wfile.write(data)
 
-    httpd = HTTPServer(('0.0.0.0', int(args.port)), SimpleHTTPRequestHandler)
+    httpd = ThreadingHTTPServer(("", int(args.port)), RequestHandler)
     y.info('start server')
     httpd.serve_forever()

@@ -425,7 +425,7 @@ class Data(object):
         return self.dd.get(name, [-1])[0]
 
     def register(self):
-        for i in self.last_elements(self.distr):
+        for i in self.last_elements(self.dd.keys()):
             v = self.func_by_num[i]
 
             yield {'func': v.z}

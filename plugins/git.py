@@ -1,4 +1,4 @@
-@y.package
+#@y.package
 def git0():
     return {
         'code': """

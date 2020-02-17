@@ -14,3 +14,5 @@ def cli_cmd_codec(args):
         raise Exception('shit')
 
     so.flush()
+    y.os._exit(0)
+

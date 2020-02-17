@@ -13,7 +13,7 @@ def compression_distr():
         'gzip-run',
         'bzip2-run',
         'unrar-run',
-        'bsdtar-run',
+        'tar-run',
         'p7zip-run',
     ]
 
@@ -70,8 +70,8 @@ def misc_distr():
         'pcre1',
         'openssl',
         'dropbear',
-        'upm',
         'upm-run',
+        'bsdtar-run',
         #'clang',
     ]
 
