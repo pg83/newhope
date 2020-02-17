@@ -486,12 +486,12 @@ class PkgMngr(object):
 
         y.shutil.rmtree(os.path.join(self.path, 'log'))
 
-        self.install(['upm', 'dash-run'])
-
+        self.install(['tar-run', 'dash-run'])
         packs = self.all_packs_dict()
-
-        safe_symlink('../pkg/' + packs['upm'] + '/bin/upm', self.path + '/bin/upm')
         safe_symlink('../pkg/' + packs['dash-run'] + '/bin/dash', self.path + '/bin/sh')
+
+        self.install(['upm-run'])
+        safe_symlink('../pkg/' + packs['upm-run'] + '/bin/upm', self.path + '/bin/upm')
 
     def add_indexes(self, indexes):
         with self.open_db() as db:

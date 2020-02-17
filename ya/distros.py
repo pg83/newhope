@@ -4,6 +4,8 @@ def tini_distr():
         'busybox-run',
         'coreutils-run',
         'dash-run',
+        'tar-run',
+        'upm-run',
     ]
 
 
