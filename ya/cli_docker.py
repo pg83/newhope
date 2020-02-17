@@ -54,6 +54,19 @@ def cli_docker_run(arg):
    y.os.execv('/bin/bash', ['/bin/bash', path + '/run.sh'] + arg[1:] + [latest])
 
 
+@y.main_entry_point
+def cli_docker_push(arg):
+   assert arg, 'empty arguments'
+
+   cont = arg[0]
+   data = data_for_container(cont)
+   path = data['path']
+   latest = data['data'][-1]
+
+   y.os.system('docker tag ' + latest + ' antonsamokhvalov/newhope:latest')
+   y.os.system('docker push antonsamokhvalov/newhope:latest')
+   
+
 def get_running():
     out = y.subprocess.check_output(['docker container ls'], shell=True).decode('utf-8')
     res = dict((y[1], y[0]) for y in (x.split() for x in out.split('\n')[1:] if x))
