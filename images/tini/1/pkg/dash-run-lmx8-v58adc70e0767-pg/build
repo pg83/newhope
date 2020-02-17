@@ -1,0 +1,4 @@
+export CMAKE_PREFIX_PATH="$MD/dash-run-lmx8-v58adc70e0767-pg:$CMAKE_PREFIX_PATH"
+export PATH="$MD/dash-run-lmx8-v58adc70e0767-pg/bin:$PATH"
+export YSHELL=$MD/dash-run-lmx8-v58adc70e0767-pg/bin/dash
+export DASH=$MD/dash-run-lmx8-v58adc70e0767-pg/bin/dash

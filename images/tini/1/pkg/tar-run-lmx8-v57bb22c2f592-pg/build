@@ -1,0 +1,3 @@
+export CMAKE_PREFIX_PATH="$MD/tar-run-lmx8-v57bb22c2f592-pg:$CMAKE_PREFIX_PATH"
+export PATH="$MD/tar-run-lmx8-v57bb22c2f592-pg/bin:$PATH"
+export YGNUTAR=$MD/tar-run-lmx8-v57bb22c2f592-pg/bin/tar

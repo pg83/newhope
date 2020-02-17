@@ -1,0 +1,2 @@
+export CMAKE_PREFIX_PATH="$MD/upm-run-lmx8-v5c1720765938-pg:$CMAKE_PREFIX_PATH"
+export PATH="$MD/upm-run-lmx8-v5c1720765938-pg/bin:$PATH"

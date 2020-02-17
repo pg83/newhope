@@ -206,12 +206,12 @@ class PkgMngr(object):
         raise AttributeError('no ' + str(pkgs) + 'found')
 
     def find_pkg_tar(self):
-        lst = ['bsdtar', 'tar', 'libarchive']
+        lst = ['tar']
         full_lst = lst + [(x + '-run') for x in lst]
         tar = os.path.join(self.path, 'pkg', self.any_of(full_lst), 'bin', 'tar')
 
         if not os.path.isfile(tar):
-            raise AttributeError(tar)
+            raise AttributeError(tars)
 
         return tar
 
@@ -340,6 +340,8 @@ class PkgMngr(object):
             return y.uniq_list_x(inst + pkgs)
 
         self.modify(do)
+
+        return self.all_packs_dict() 
 
     def delete_x(self, pkgs):
         pkgs = frozenset(pkgs)
@@ -486,11 +488,10 @@ class PkgMngr(object):
 
         y.shutil.rmtree(os.path.join(self.path, 'log'))
 
-        self.install(['tar-run', 'dash-run'])
-        packs = self.all_packs_dict()
+        packs = self.install(['tar-run', 'dash-run'])
         safe_symlink('../pkg/' + packs['dash-run'] + '/bin/dash', self.path + '/bin/sh')
 
-        self.install(['upm-run'])
+        packs = self.install(['upm-run'])
         safe_symlink('../pkg/' + packs['upm-run'] + '/bin/upm', self.path + '/bin/upm')
 
     def add_indexes(self, indexes):
