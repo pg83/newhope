@@ -63,8 +63,8 @@ def cli_docker_push(arg):
    path = data['path']
    latest = data['data'][-1]
 
-   y.os.system('docker tag ' + latest + ' antonsamokhvalov/newhope:latest')
-   y.os.system('docker push antonsamokhvalov/newhope:latest')
+   y.os.system('docker tag ' + latest + ' antonsamokhvalov/newhope:' + cont)
+   y.os.system('docker push antonsamokhvalov/newhope:' + cont)
    
 
 def get_running():
@@ -101,4 +101,4 @@ def cli_docker_shell(arg):
     cont_image = data_for_container(cont)['data'][-1]
     cont_id = get_running()[cont_image]
 
-    y.os.execvp('docker', ['docker', 'exec', '-ti', cont_id, '/bin/bash'])
+    y.os.execvp('docker', ['docker', 'exec', '-ti', cont_id, '/bin/sh', '-l'])
