@@ -61,7 +61,7 @@ BUILD = [
     ['echo | tr -d "\n"'],
     ['/media/build/upm pkg sync repo --fr /media/build/r --to /media/storage && sleep 5'],
     ['/usr/bin/timeout 10m /media/build/upm pkg serve repo --fr /media/storage --port 10000'],
-    ['cd /media/build && ./upm makefile --os linux -v | ./upm make --keep-going --root /media/build --install-dir /pkg -j7 -f-'],
+    ['cd /media/build && ./upm makefile --os linux -v | ./upm make --keep-going --root /media/build --install-dir /pkg -j10 -f-'],
     ['cd /media/storage && (find . | grep "\-tmp" | xargs rm) && sleep 1200'],
     wait_pid,
     watch_dog,

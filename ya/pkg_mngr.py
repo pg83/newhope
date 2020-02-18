@@ -393,8 +393,7 @@ class PkgMngr(object):
             outs = []
 
             try:
-                install_path = ppath_tmp + '/install'
-                out = sp.check_output(['/bin/sh', '-l', install_path, p['path']], cwd=ppath_tmp, shell=False, stderr=sp.STDOUT)
+                out = sp.check_output(['. ../pkg/profile; ./install ' + p['path']], cwd=ppath_tmp, shell=True, stderr=sp.STDOUT)
                 out = out.decode('utf-8')
                 out = out.strip()
 
@@ -404,7 +403,7 @@ class PkgMngr(object):
                 outs.append(str(e))
 
             if outs:
-                y.info('from install script {bg}' + install_path + '{}:\n' + '\n'.join(outs))
+                y.info('from install script :\n' + '\n'.join(outs))
 
             os.rename(ppath_tmp, ppath)
 
