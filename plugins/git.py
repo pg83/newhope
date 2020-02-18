@@ -4,9 +4,9 @@ def git0():
         'code': """
              source fetch "https://mirrors.edge.kernel.org/pub/software/scm/git/git-{version}.tar.xz" 1
 
-             export CFLAGS="-w -Icompat/regex -iquote$(pwd) $CFLAGS"
-             export CPPFLAGS="-w -Icompat/regex $CPPFLAGS"
-             #export LDFLAGS="$LDFLAGS $LIBS"
+             export CFLAGS="$OPENSSL_INCLUDES $LIBPCRE2_INCLUDES -w -Icompat/regex -iquote$(pwd) $CFLAGS"
+             export CPPFLAGS="$OPENSSL_INCLUDES -w -Icompat/regex $CPPFLAGS"
+             export LDFLAGS="$LDFLAGS $LIBS"
 
              ln -s $PYTHON ./python 
              export PATH="$(pwd):$PATH"

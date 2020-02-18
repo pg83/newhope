@@ -31,12 +31,15 @@ def meta_to_build(meta):
                 if 'configure' in p:
                     cfg = p['configure']
 
-                    if 'opt' in cfg:
-                        yield 'export COFLAGS="$COFLAGS {opt}"'.format(opt=cfg['opt'])
+                    if isinstance(cfg, str):
+                        yield 'export COFLAGS="$COFLAGS {opt}"'.format(opt=cfg)
+                    else:
+                        if 'opt' in cfg:
+                            yield 'export COFLAGS="$COFLAGS {opt}"'.format(opt=cfg['opt'])
 
-                    if 'opts' in cfg:
-                        for o in cfg['opts']:
-                            yield 'export COFLAGS="$COFLAGS {opt}"'.format(opt=o)
+                        if 'opts' in cfg:
+                            for o in cfg['opts']:
+                                yield 'export COFLAGS="$COFLAGS {opt}"'.format(opt=o)
 
             if 'env' in p:
                 yield 'export {k}={v}'.format(k=p['env'], v=p['value'])
