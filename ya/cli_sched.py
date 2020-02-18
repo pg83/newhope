@@ -68,6 +68,11 @@ BUILD = [
 ]
 
 
+CRON = [
+    ['sleep 10'],
+]
+
+
 @y.verbose_entry_point
 def cli_cmd_scheduler(args):
     y.os.nice(20)
