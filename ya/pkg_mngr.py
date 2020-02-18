@@ -394,7 +394,7 @@ class PkgMngr(object):
 
             try:
                 install_path = ppath_tmp + '/install'
-                out = sp.check_output(['/bin/sh', '-l', install_path, ppath], cwd=ppath_tmp, shell=False, stderr=sp.STDOUT)
+                out = sp.check_output(['/bin/sh', '-l', install_path, p['path']], cwd=ppath_tmp, shell=False, stderr=sp.STDOUT)
                 out = out.decode('utf-8')
                 out = out.strip()
 

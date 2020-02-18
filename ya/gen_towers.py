@@ -79,9 +79,6 @@ class Func(object):
     def contains(self):
         return self.code().get('meta', {}).get('contains', [])
 
-    def undeps(self):
-        return self.raw_depends('undeps')
-
     @property
     def __name__(self):
         return str(self)
@@ -132,30 +129,21 @@ class Func(object):
     def base(self):
         return self.x['base']
 
-    @y.cached_method
-    def raw_depends(self, name):
+    def raw_depends(self):
         code = self.code()
 
         if code:
-            for x in self.code().get('meta', {}).get(name, []):
+            for x in self.code().get('meta', {}).get('depends', []):
                 yield self.do_subst(x)
 
-    def depends(self):
-        return list(self.raw_depends('depends'))
-
     @y.cached_method
-    def all_depends(self):
-        def it():
-            for x in self.depends():
-                yield x
-                yield from self.data.by_name[self.g][x].all_depends()
-
-        return y.uniq_list_x(it())
+    def depends(self):
+        return list(self.raw_depends())
 
     @y.cached_method
     def dep_lib_list(self):
         def iter():
-            for x in self.dep_list():
+            for x in self.depends():
                 if self.data.by_name[self.g][x].is_library:
                     yield x
 
@@ -164,25 +152,11 @@ class Func(object):
     @y.cached_method
     def dep_tool_list(self):
         def iter():
-            for x in self.dep_list():
+            for x in self.depends():
                 if not self.data.by_name[self.g][x].is_library:
                     yield x
 
         return y.uniq_list_x(iter())
-
-    @y.cached_method
-    def dep_list(self):
-        not_to = frozenset(self.undeps())
-
-        def iter_1():
-            yield from self.depends()
-
-        def iter_2():
-            for x in iter_1():
-                if x not in not_to:
-                    yield x
-
-        return y.uniq_list_x(iter_2())
 
     @y.cached_method
     def run_func(self):
@@ -284,7 +258,7 @@ class Solver(object):
 
         def iter_deps():
             for i, x in enumerate(self._data):
-                for y in x.dep_list():
+                for y in x.depends():
                     yield i, self._by_base[y]
 
                 yield i, None

@@ -17,7 +17,7 @@ if '{os}' == 'linux':
             'version': '1.31.1',
             'meta': {
                 'kind': ['tool'],
-                'undeps': ['make', 'musl', 'busybox-boot'],
+                #'undeps': ['make', 'musl', 'busybox-boot'],
                 'provides': [
                     {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
                 ],

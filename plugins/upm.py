@@ -1,6 +1,6 @@
 install_upm = '''
-ln -sf ../pkg/$1/bin/upm ../../bin/upm
-ln -sf ../pkg/$1 ../../etc/runit
+ln -sf ../../pkg/$1/bin/upm ../../bin/upm
+ln -sf ../../pkg/$1 ../../etc/runit
 '''
 
 run_upm = '''
@@ -25,7 +25,7 @@ def upm0():
              chmod +x install
              chmod +x run
         """,
-        'version': '445b577749da6dc8434cd5b84032c82a59cd75cb',
+        'version': '986fe50a6168c44c021bee23eb17636f91bf4f50',
         'meta': {
             'kind': ['tool'],
             'depends': ['python3', 'make', 'c'],
