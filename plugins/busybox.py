@@ -45,6 +45,7 @@ def busybox0():
             unlink awk
             unlink sh
             unlink wget
+            unlink vi
         """,
         'version': '1.31.1',
         'meta': {

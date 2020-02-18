@@ -17,7 +17,7 @@ def cli_dev_makefile(arg):
         else:
             f = y.stdout
 
-        data = y.main_makefile(iter_cc, y.all_distro_packs(), args.flat)
+        data = y.main_makefile(iter_cc, args.flat)
 
         f.write(data)
         f.flush()

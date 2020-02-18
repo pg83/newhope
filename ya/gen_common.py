@@ -9,8 +9,8 @@ def common_plugins(cc):
             yield {'el': el, 'cc': cc}
 
 
-def generate_data(cc, cb, distr, flat):
-    tow = y.Tower(distr, cc, flat)
+def generate_data(cc, cb, flat):
+    tow = y.Tower(cc, flat)
 
     for el in common_plugins(cc):
         for func in y.exec_plugin_code(el):
@@ -33,18 +33,18 @@ def join_metas(metas, merge=['flags']):
     return dict((x, aggr_flag(x, metas)) for x in merge)
 
 
-def gen_mk_data(cc, distr, flat):
+def gen_mk_data(cc, flat):
     funcs = []
 
     for c in cc:
-        generate_data(c, funcs.append, distr, flat)
+        generate_data(c, funcs.append, flat)
 
     return funcs
 
 
-def main_makefile(iter_cc, distr, flat, kind='text'):
+def main_makefile(iter_cc, flat, kind='text'):
     cc = list(iter_cc())
-    portion = gen_mk_data(cc, distr, flat)
+    portion = gen_mk_data(cc, flat)
 
     return y.build_makefile([x['code']() for x in portion], kind=kind)
 

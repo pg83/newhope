@@ -298,10 +298,9 @@ class SolverWrap(object):
 
 
 class Data(object):
-    def __init__(self, distr, info, flat, data):
+    def __init__(self, info, flat, data):
         self.flat = flat
         self.info = info
-        self.distr = distr
         self.new_funcs = []
         self.by_name = y.collections.defaultdict(dict)
         self.box_by_gen = {}
@@ -445,8 +444,7 @@ class Data(object):
 
 
 class Tower(object):
-    def __init__(self, distr, cc, flat):
-        self._distr = distr
+    def __init__(self, cc, flat):
         self._data = []
         self._cc = cc
         self._flat = flat
@@ -456,7 +454,7 @@ class Tower(object):
         self._data.append(data)
 
     def gen_funcs(self):
-        dt = Data(self._distr, self._cc, self._flat, [x for x in self._data])
+        dt = Data(self._cc, self._flat, [x for x in self._data])
         dt.out()
 
         cnt = 0

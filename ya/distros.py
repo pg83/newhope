@@ -37,11 +37,10 @@ def small_distr():
         '@compression',
         '@textutils',
         'bc-run',
-        #'yash-run',
-        #'bash-run',
         'curl-run',
         'psmisc-run',
         'procps-ng-run',
+        'vim-run',
     ]
 
 
@@ -55,45 +54,5 @@ def dev_distr():
     ]
 
 
-def common_distr():
-    return [
-        '@small',
-        'mc-slang',
-        'mc-ncurses',
-    ]
-
-
-def misc_distr():
-    return [
-        'base',
-        'gnu-m4',
-        'python3-static',
-        'pkg-config',
-        'toybox',
-        'pcre1',
-        'openssl',
-        'dropbear',
-        'upm-run',
-        'bsdtar-run',
-        #'clang',
-    ]
-
-
 def distr_by_name(name):
     return y.find(name + '_distr')()
-
-
-def resolve_packs(packs):
-    for p in packs:
-        if p[0] == '@':
-            yield from resolve_packs(distr_by_name(p[1:]))
-        else:
-            yield p
-
-
-def all_packs_0():
-    return common_distr() + dev_distr() + misc_distr() + ['base']
-
-
-def all_distro_packs():
-    return list(resolve_packs(all_packs_0()))
