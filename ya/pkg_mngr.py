@@ -452,7 +452,7 @@ class PkgMngr(object):
         env = {
             'PATH': '/bin:' + ':'.join([('/pkg/' + x['path'] + '/bin') for x in reversed(lst)])
         }
-    
+
         with open(self.pkg_dir() + '/profile', 'w') as f:
             for k in sorted(env.keys()):
                 f.write('export ' + k + '=' + env[k])
