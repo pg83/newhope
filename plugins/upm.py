@@ -1,10 +1,11 @@
 install_upm = '''
-ln -sf ../../pkg/$1/bin/upm ../../bin/upm
-ln -sf ../../pkg/$1 ../../etc/runit
+ln -sf ../pkg/$1/bin/upm ../../bin/
+ln -sf ../../pkg/$1 ../../etc/runit/
 '''
 
 run_upm = '''
-unshare --fork --pid --kill-child /bin/upm cmd scheduler CRON
+#!/bin/sh
+/bin/upm cmd scheduler CRON
 '''
 
 @y.package
@@ -19,13 +20,14 @@ def upm0():
              $(APPLY_EXTRA_PLAN_1)
              $YSHELL ./freeze.sh "$PYTHON3" ./upm -w
              mv upm $IDIR/bin/ && chmod +x $IDIR/bin/upm
+
              cd $IDIR
              $(APPLY_EXTRA_PLAN_2)
              $(APPLY_EXTRA_PLAN_3)
              chmod +x install
              chmod +x run
         """,
-        'version': '986fe50a6168c44c021bee23eb17636f91bf4f50',
+        'version': '06f80968b6cba5ded9004bdc63e938ceeafff0cc',
         'meta': {
             'kind': ['tool'],
             'depends': ['python3', 'make', 'c'],
