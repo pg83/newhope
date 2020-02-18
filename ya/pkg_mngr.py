@@ -393,7 +393,7 @@ class PkgMngr(object):
             outs = []
 
             try:
-                out = sp.check_output(['. ../pkg/profile; ./install ' + p['path']], cwd=ppath_tmp, shell=True, stderr=sp.STDOUT)
+                out = sp.check_output(['. ../pkg/profile; exec /bin/sh ./install ' + p['path']], cwd=ppath_tmp, shell=True, stderr=sp.STDOUT)
                 out = out.decode('utf-8')
                 out = out.strip()
 
