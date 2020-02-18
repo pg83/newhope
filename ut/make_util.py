@@ -116,7 +116,6 @@ def parse_makefile(data):
 
                 continue
             else:
-                print(shell_args, file=y.sys.stderr)
                 parse_flags = False
 
         p = l.find('##')
