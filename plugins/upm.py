@@ -26,7 +26,7 @@ def upm0():
              chmod +x install
              chmod +x run
         """,
-        'version': '98e7fdb2b3fea1fd935ef0c359d533e131a2bae1',
+        'version': '41abbaeb8992acbcea8e461928e5d9bdb06be179',
         'meta': {
             'kind': ['tool'],
             'depends': ['python3', 'make', 'c'],

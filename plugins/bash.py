@@ -14,8 +14,6 @@ def bash0():
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --without-bash-malloc --disable-nls  {extra}
             $YMAKE LIBS_FOR_BUILD="$LIBS" -j $NTHRS
             $YMAKE install
-
-            echo 'ln -lf {pkgroot}/bin/bash /etc/alt/sh' > $IDIR/install && chmod +x $IDIR/install
         """.replace('{extra}', ' '.join(do())),
         'version': '5.0',
         'meta': {

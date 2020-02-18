@@ -21,8 +21,6 @@ def yash0():
             echo 'install-rec:' > doc/Makefile
             $YMAKE -j $NTHRS
             $YMAKE install
-
-            echo 'ln -sf ../{pkgroot}/bin/yash ../../bin/sh' >> $IDIR/install
          """.replace('{opts}', ' '.join(opts)),
         'version': '2.49',
         'meta': {
