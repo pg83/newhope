@@ -3,8 +3,7 @@ ln -sf ../pkg/$1/bin/upm ../../bin/
 ln -sf ../../pkg/$1 ../../etc/runit/
 '''
 
-run_upm = '''
-#!/bin/sh
+run_upm = '''#!/bin/sh
 /bin/upm cmd scheduler CRON
 '''
 
@@ -27,7 +26,7 @@ def upm0():
              chmod +x install
              chmod +x run
         """,
-        'version': '025850cb557ddf4c4780d0403dde50ff26686ce4',
+        'version': '8f545b325316e42a30764144494dc2acd21fdaaf',
         'meta': {
             'kind': ['tool'],
             'depends': ['python3', 'make', 'c'],

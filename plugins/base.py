@@ -5,7 +5,7 @@ def base0():
             cd $IDIR
             mkdir -p etc etc/upm etc/runit pkg pkg/cache srv bin dev sys proc
             touch pkg/profile
-            echo '. ../pkg/profile' > etc/profile
+            echo '. /pkg/profile' > etc/profile
             echo 'root:x:0:0:root:/root:/bin/sh' > etc/passwd
 
             cat > etc/group << "EOF"

@@ -393,7 +393,7 @@ class PkgMngr(object):
             outs = []
 
             try:
-                out = sp.check_output(['. ../pkg/profile; exec /bin/sh ./install ' + p['path']], cwd=ppath_tmp, shell=True, stderr=sp.STDOUT)
+                out = sp.check_output(['/bin/sh', '-c', '". /etc/profile; exec /bin/sh ./install ' + p['path'] + '"'], cwd=ppath_tmp, shell=False, stderr=sp.STDOUT)
                 out = out.decode('utf-8')
                 out = out.strip()
 
@@ -449,8 +449,13 @@ class PkgMngr(object):
         for p, j in to_wait:
             self.install_one_pkg(p, j)
 
+        env = {
+            'PATH': '/bin:' + ':'.join([('/pkg/' + x['path'] + '/bin') for x in reversed(lst)])
+        }
+    
         with open(self.pkg_dir() + '/profile', 'w') as f:
-            f.write('export PATH=' + ':'.join([('/pkg/' + x['path'] + '/bin') for x in reversed(lst)]))
+            for k in sorted(env.keys()):
+                f.write('export ' + k + '=' + env[k])
 
         in_use = frozenset([x['path'] for x in lst] + ['cache', 'profile'])
 
