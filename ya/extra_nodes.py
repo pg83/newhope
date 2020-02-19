@@ -41,6 +41,7 @@ def iter_workspace():
         'inputs': [],
         'build': [
             path,
+            'rm -rf "$MD" 2> /dev/null || true',
             'mkdir -p "$MD"',
         ],
     }

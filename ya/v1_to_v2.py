@@ -7,7 +7,7 @@ def call_v2(func):
     return data
 
 
-@y.cached()
+@y.cached
 def to_v2(data, info):
     node = y.copy.copy(data)
     node.pop('deps', None)

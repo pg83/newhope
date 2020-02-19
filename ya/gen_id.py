@@ -17,14 +17,14 @@ def to_visible_name_0(pkg, good_id):
     def iter_parts():
         yield pkg['name'].replace('_', '')
         yield y.small_repr(pkg.get('host'))
-        yield 'v4' + good_id[:10][2:]
+        yield 'v5' + good_id[:10][2:]
         yield pkg['codec']
 
     return '-'.join(iter_parts())
 
 
 def to_visible_name_4(root):
-    key = y.calc_noid(root)
+    key = root['noid']
 
     try:
         return root[key]
@@ -35,7 +35,7 @@ def to_visible_name_4(root):
 
 
 def to_visible_name(root):
-    return root['trash']['replacer'](to_visible_name_4(root))
+    return to_visible_name_4(root)
 
 
 def to_pretty_name(t):

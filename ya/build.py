@@ -11,13 +11,6 @@ def gen_unpack_node(pkg):
     }
 
 
-def print_v3_node(n):
-    yield n['output'] + ': ' + ' '.join(n['inputs'])
-
-    for l in n['build']:
-        yield '\t' + l
-
-
 def print_v3_node_2(n):
     yield n['output']
 
@@ -61,14 +54,6 @@ def do_apply_node(root, by_name):
             by_name[name] = [pp]
 
 
-def iter_nodes(nodes):
-    vn = y.visit_nodes
-    rn = y.restore_node
-
-    for n in vn(nodes):
-        yield rn(n), n
-
-
 def gen_unpack_node_for_node(r):
     return y.gen_unpack_node(y.gen_pkg_path(r))
 
@@ -78,75 +63,12 @@ def preprocess(cmd, r):
     yield gen_unpack_node_for_node(r)
 
 
-def reducer(v, by_deps):
-    return v
-
-    if len(v) < 2:
-        return v
-
-    v = list(sorted(set(v)))
-    k = 'r' + y.struct_dump_bytes(v)
-
-    s = by_deps.get(k, {})
-
-    if s:
-        s['c'] = s['c'] + 1
-    else:
-        by_deps[k] = {'c': 1, 'v': v}
-
-    return [k]
-
-
-def replacer(data):
-    def func(s):
-        return s.replace('-v4', '-v5' + data[4:7])
-
-    return func
-
-
 def build_makefile(nodes, kind):
-    by_noid = {}
-
-    def iter1():
-        for r, n in iter_nodes(nodes):
-            by_noid[y.calc_noid_base(r)] = r
-
-            yield r
-
-    def iter2():
-        trash = {
-            'replacer': lambda x: x,
-            'restore_node': lambda x: by_noid[y.calc_noid_base(y.restore_node(x))],
-            'extra': 1,
-            'reducer': lambda x: x,
-        }
-
-        for r in list(iter1()):
-            r['trash'] = trash
-
-            yield r
-
-    def iter3():
-        for r in list(iter2()):
-            yield r, y.struct_dump_bytes(y.print_one_node(r))
-
+    def iter3(nodes):
+        for n in y.visit_nodes(nodes):
+            yield y.restore_node(n)
+    
     def iter4():
-        by_deps = {}
-        my_reducer = lambda v: reducer(v, by_deps)
-
-        for r, data in list(iter3()):
-            trash = {
-                'replacer': replacer(data),
-                'restore_node': lambda x: by_noid[y.calc_noid_base(y.restore_node(x))],
-                'extra': 3,
-                'reducer': my_reducer,
-            }
-
-            r['trash'] = trash
-
-            yield r
-
-    def iter5_0():
         by_name = {}
 
         yield y.build_scripts_run()
@@ -154,7 +76,7 @@ def build_makefile(nodes, kind):
         for x in y.iter_workspace():
             yield x
 
-        for r in list(iter4()):
+        for r in iter3(nodes):
             res = y.print_one_node(r)
             do_apply_node(r, by_name)
 
@@ -171,7 +93,7 @@ def build_makefile(nodes, kind):
     def iter5():
         by_out = {}
 
-        for l in iter5_0():
+        for l in iter4():
             k = l['output']
             id = y.burn(l)
 

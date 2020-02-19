@@ -1,4 +1,4 @@
-def visit_nodes(nodes, debug=False):
+def visit_nodes(nodes):
     s = set()
 
     def check_hash(k):
@@ -37,7 +37,7 @@ def restore_node(ptr):
         'deps': y.load_list(res[1]),
     }
 
-    v['noid'] = y.calc_noid_base(v)
+    v['noid'] = y.hash_key(ptr)
 
     return v
 

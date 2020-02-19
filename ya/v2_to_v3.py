@@ -8,10 +8,8 @@ def mn(x):
 
 
 def iter_deps(root):
-    rn = root['trash']['restore_node']
-
     for d in root['deps']:
-        yield rn(d)
+        yield y.restore_node(d)
 
 
 def mgr_pkg(x):
@@ -30,20 +28,15 @@ def uniq_deps(d):
     return y.uniq_list_2(d, gen_pkg_path)
 
 
-def rmmkcd(q, suffix=''):
-    return 'rm -rf {q} || true; mkdir -p {q}{s}; cd {q}{s}'.format(q=q, s=suffix)
-
-
 def prepare_prepare(data, target):
     return '\n'.join(data).replace('$(CUR_DIR)', '$MD/' + target[4:])
 
 
 def print_one_node(root):
-    rn = root['trash']['restore_node']
     root_node = root['node']
     extra = root_node.get('extra_cmd', [])
     target = gen_pkg_path(root)
-    nodes = list(uniq_deps([rn(x) for x in root['deps']]))
+    nodes = list(uniq_deps([y.restore_node(x) for x in root['deps']]))
     naked = root_node.get('naked', False)
     inputs = [y.build_scripts_path()] + [mgr_pkg_mark(x[0]) for x in nodes] + [x['output'] for x in extra]
 

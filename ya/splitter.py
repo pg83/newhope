@@ -72,7 +72,6 @@ def run_splitter(func, split):
 
     m.update({
         'depends': [func.base],
-        'undeps': ['musl', 'mimalloc', 'make']
     })
 
     return {

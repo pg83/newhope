@@ -142,14 +142,6 @@ def find_compiler_x(info):
     return list(do())[:10]
 
 
-#def join_versions(deps):
-#    def iter_v():
-#        for d in deps:
-#            yield y.restore_node_node(d)['version']
-#
-#    return '-'.join(iter_v())
-
-
 @y.cached
 def find_compiler_id(info):
     for x in find_compiler_x(info):

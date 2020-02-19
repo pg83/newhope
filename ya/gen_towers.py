@@ -2,6 +2,15 @@ ic = y.inc_counter()
 
 
 @y.singleton
+def get_decor():
+    return y.compose_simple(y.call_v2, y.fix_v2, y.store_node)
+
+
+def gen_func(func):
+    return get_decor()(func)
+
+
+@y.singleton
 def is_debug():
     return 'debug' in y.config.get('tow', '')
 
@@ -418,7 +427,7 @@ class Data(object):
         for x in self.func_by_num:
             x.out_deps()
 
-        y.debug('{bg}exec sequence', str(self.exec_seq()[:100])[:-1] + ', ...', '{}')
+        y.info('{bg}exec sequence', str(self.exec_seq()[:100])[:-1] + ', ...', '{}')
 
     def full_deps(self, name, g):
         return y.uniq_list_x(self.full_lib_deps(name, g) + self.full_tool_deps(name, g))

@@ -68,17 +68,12 @@ BUILD = [
 ]
 
 
-CRON = [
-    ['sleep 10'],
-]
-
-
 @y.verbose_entry_point
 def cli_cmd_scheduler(args):
     y.os.nice(20)
     code = (len(args) > 0 and args[0]) or 'ENTRY'
     y.info('code', code)
-    thrs = [y.threading.Thread(target=gen_wd_func(c)) for c in globals()[code]]
+    thrs = [y.threading.Thread(target=gen_wd_func(c)) for c in y.find(code)]
 
     for t in thrs:
         t.start()
