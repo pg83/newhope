@@ -337,11 +337,14 @@ class Data(object):
             for d in deps:
                 f = self.func_by_num[d]
 
-                if f.is_library:
+                if f.is_library and f.is_tool:
                     yield d
                 elif f.base in contains:
                     if what.base.startswith(f.base):
                         yield d
+                    else:
+                        if f.is_library:
+                            print f, what
                 else:
                     yield d
 

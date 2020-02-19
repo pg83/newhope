@@ -8,7 +8,7 @@ def python3_static0():
 
             $YSHELL ./freeze_python.sh $PYTHON3
             mkdir $IDIR/bin
-            cp -p staticpython $IDIR/bin/staticpython3
+            $YUPX -o $IDIR/bin/staticpython3 staticpython
         """,
         'version': '3.8.1',
         'extra': [
@@ -18,7 +18,7 @@ def python3_static0():
         ],
         'meta': {
             'kind': ['tool'],
-            'depends': ['python3', 'make', 'c'],
+            'depends': ['python3', 'upx', 'make', 'c'],
             'provides': [
                 {'lib': 'python3.8'},
                 {'env': 'STATICPYTHON3', 'value': '{pkgroot}/bin/staticpython3'},

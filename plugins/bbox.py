@@ -31,6 +31,7 @@ def box0():
         'bc',
         'patch',
         'procps-ng',
+        'upx',
     ]
 
     lst_run = [x + '-run' for x in lst]
@@ -64,13 +65,14 @@ def box0():
             'depends': lst_run,
             'contains': lst_run + lst + ['make-boot', 'busybox-boot', 'busybox', 'toybox'],
             'provides': [
-                {'env': 'SED', 'value': '{pkgroot}/bin/sed'},
-                {'env': 'YGNUTAR', 'value': '{pkgroot}/bin/tar'},
-                {'env': 'YTAR', 'value': '{pkgroot}/bin/bsdtar'},
-                {'env': 'YBSDTAR', 'value': '{pkgroot}/bin/bsdtar'},
-                {'env': 'YXZ', 'value': '{pkgroot}/bin/xz'},
-                {'env': 'YXZCAT', 'value': '{pkgroot}/bin/xzcat'},
-                {'env': 'STATICPYTHON3', 'value': '{pkgroot}/bin/staticpython3'},
+                {'env': 'SED', 'value': '"{pkgroot}/bin/sed"'},
+                {'env': 'YGNUTAR', 'value': '"{pkgroot}/bin/tar"'},
+                {'env': 'YTAR', 'value': '"{pkgroot}/bin/bsdtar"'},
+                {'env': 'YBSDTAR', 'value': '"{pkgroot}/bin/bsdtar"'},
+                {'env': 'YXZ', 'value': '"{pkgroot}/bin/xz"'},
+                {'env': 'YXZCAT', 'value': '"{pkgroot}/bin/xzcat"'},
+                {'env': 'STATICPYTHON3', 'value': '"{pkgroot}/bin/staticpython3"'},
+                {'env': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
             ],
         }
     }

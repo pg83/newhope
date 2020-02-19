@@ -18,7 +18,8 @@ def upm0():
              $(APPLY_EXTRA_PLAN_0)
              $(APPLY_EXTRA_PLAN_1)
              $YSHELL ./freeze.sh "$PYTHON3" ./upm -w
-             mv upm $IDIR/bin/ && chmod +x $IDIR/bin/upm
+             $YUPX -o upm.upx upm
+             mv upm.upx $IDIR/bin/upm && chmod +x $IDIR/bin/upm
 
              cd $IDIR
              $(APPLY_EXTRA_PLAN_2)
@@ -29,7 +30,7 @@ def upm0():
         'version': 'b928f8f884e147e82c94464dd324e44d149d2290',
         'meta': {
             'kind': ['tool'],
-            'depends': ['python3', 'make', 'c'],
+            'depends': ['python3', 'upx', 'make', 'c'],
         },
         'extra': [
             {'kind': 'file', 'path': 'freeze.sh', 'data': y.builtin_data('data/freeze.sh')},

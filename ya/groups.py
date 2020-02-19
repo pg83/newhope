@@ -1,4 +1,4 @@
-def tini_distr():
+def tini_group():
     return [
         'toybox-run',
         'busybox-run',
@@ -9,7 +9,7 @@ def tini_distr():
     ]
 
 
-def compression_distr():
+def compression_group():
     return [
         'xz-run',
         'gzip-run',
@@ -17,10 +17,11 @@ def compression_distr():
         'unrar-run',
         'tar-run',
         'p7zip-run',
+        'upx-run',
     ]
 
 
-def textutils_distr():
+def textutils_group():
     return [
         'gawk-run',
         'grep-run',
@@ -31,7 +32,7 @@ def textutils_distr():
     ]
 
 
-def small_distr():
+def small_group():
     return [
         '@tini',
         '@compression',
@@ -41,18 +42,26 @@ def small_distr():
         'psmisc-run',
         'procps-ng-run',
         'vim-run',
+        'findutils-run',
     ]
 
 
-def dev_distr():
+def full_group():
     return [
+        '@small',
+        'mc-slang',
+        'openssh',
+    ]
+
+def devel_group():
+    return [
+        '@full',
         'make-run',
         'sqlite3-run',
         'ninja-run',
         'cmake',
-        'patch',
+        'patch-run',
+        'bison',
+        'git',
+        'python3',
     ]
-
-
-def distr_by_name(name):
-    return y.find(name + '_distr')()

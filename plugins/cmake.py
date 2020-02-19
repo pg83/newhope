@@ -15,6 +15,9 @@ def cmake0():
              ./Bootstrap.cmk/cmake .
              $YMAKE -j $NTHRS
              $YMAKE install
+             $YUPX $IDIR/bin/cmake
+             $YUPX $IDIR/bin/cpack
+             $YUPX $IDIR/bin/ctest
         """,
         'version': '3.16.1',
         'meta': {
@@ -30,6 +33,7 @@ def cmake0():
                 'iconv',
                 'make',
                 'c',
+                'upx',
             ] + extra,
             'provides': [
                 {'env': 'CMAKE', 'value': '{pkgroot}/bin/cmake'},

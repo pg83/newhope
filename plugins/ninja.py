@@ -11,11 +11,12 @@ def ninja0():
              $PYTHON ./configure.py --bootstrap
              mkdir -p $IDIR/bin
              install -v -m755 ninja $IDIR/bin
+             $YUPX $IDIR/bin/ninja
         """,
         'version': '1.9.0',
         'meta': {
             'kind': ['tool'],
-            'depends': ['python', 'c++', 'make', 'c'],
+            'depends': ['python', 'c++', 'make', 'c', 'upx'],
             'provides': [
                 {'env': 'YNINJA', 'value': '{pkgroot}/bin/ninja'},
                 {'env': 'NINJA', 'value': '{pkgroot}/bin/ninja'},

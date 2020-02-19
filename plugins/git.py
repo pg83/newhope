@@ -12,13 +12,17 @@ def git0():
              export PATH="$(pwd):$PATH"
 
              $YSHELL ./configure --prefix="$IDIR" --with-python=$PYTHON --with-perl=$YPERL --with-shell=$YSHELL --with-libpcre2
-             $YMAKE -j $NTHRS
+
+             $YMAKE 
              $YMAKE install
+
+             ($YUPX $IDIR/bin/*) || true
+             ($YUPX $IDIR/libexec/git-core/*) || true
         """,
         'version': '2.24.1',
         'meta': {
             'kind': ['tool'],
-            'depends': ['pcre', 'curl', 'openssl', 'expat', 'python', 'iconv', 'perl5', 'zlib', 'make', 'c'],
+            'depends': ['upx', 'pcre', 'curl', 'openssl', 'expat', 'python', 'iconv', 'perl5', 'zlib', 'make', 'c'],
             'provides': [
                 {'env': 'GIT', 'value': '{pkgroot}/bin/git'},
                 {'env': 'GIT_EXEC_PATH', 'value': '{pkgroot}/bin'},

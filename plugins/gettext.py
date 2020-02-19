@@ -14,11 +14,12 @@ def gettext0():
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared {opts} || exit 1
             $YMAKE -j $NTHRS || exit 1
             $YMAKE install
+            ($YUPX $IDIR/bin/*) || true
         """.replace('{opts}', ' '.join(opts)),
         'version': '0.20.1',
         'meta': {
             'kind': ['library', 'tool'],
-            'depends': ['iconv', 'ncurses', 'make', 'c'],
+            'depends': ['upx', 'iconv', 'ncurses', 'make', 'c'],
             'provides': [
                 {'lib': 'intl', 'configure': {'opt': '--with-libintl-prefix={pkgroot}'}},
             ],

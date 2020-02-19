@@ -11,7 +11,7 @@ def openssh0():
         'version': '8.2p1',
         'meta': {
             'kind': ['tool'],
-            'depends': ['openssl', 'make', 'c', 'zlib'],
+            'depends': ['openssl', 'make', 'c', 'zlib', 'jemalloc'],
             'provides': [
                 {'env': 'SSHD', 'value': '"{pkgroot}/sbin/sshd"'},
             ],

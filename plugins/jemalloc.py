@@ -10,7 +10,8 @@ def jemalloc0():
         'version': '5.2.1',
         'meta': {
             'kind': ['library'],
-            'depends': ['make-boot', 'c'],
+            'depends': ['make', 'c'],
+            'contains': ['mimalloc'],
             'provides': [
                 {'lib': 'jemalloc'},
             ],

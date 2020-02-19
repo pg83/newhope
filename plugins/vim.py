@@ -7,11 +7,12 @@ def vim0():
              $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
              $YMAKE -j $THRS
              $YMAKE install
+             ($YUPX $IDIR/bin/*) || true
         ''',
         'version': '8.2.0268',
         'meta': {
             'kind': ['tool'],
-            'depends': ['ncurses', 'zlib', 'make', 'c'],
+            'depends': ['ncurses', 'zlib', 'make', 'c', 'upx'],
             'provides': [
                 {'env': 'VIM', 'value': '"{pkgroot}/bin/vim"'},
             ],

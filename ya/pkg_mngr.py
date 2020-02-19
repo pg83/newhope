@@ -275,7 +275,7 @@ class PkgMngr(object):
     def resolve_groups_0(self, pkgs):
         for g in pkgs:
             if g[0] == '@':
-                yield from self.resolve_groups_0(y.distr_by_name(g[1:]))
+                yield from self.resolve_groups_0(y.find(g[1:] + '_group')())
             else:
                 yield g
 
