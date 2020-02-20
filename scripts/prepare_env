@@ -12,9 +12,9 @@ for i in "$IDIR" "$BDIR"; do
     source rmmkcd "$i"
 done
 
-mkdir "$IDIR/log"
-mkdir "$BD"
-mkdir "$TMPDIR"
+for i in "$IDIR/log" "$BD" "$TMPDIR"; do
+    mkdir "$i"
+done
 
 source mkcd "$BDIR/runtime"
 

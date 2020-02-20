@@ -39,6 +39,7 @@ def small_group():
         '@textutils',
         'bc-run',
         'curl-run',
+        'wget-run',
         'psmisc-run',
         'procps-ng-run',
         'vim-run',
@@ -54,6 +55,7 @@ def full_group():
         'openssh',
         'util-linux',
     ]
+
 
 def devel_group():
     return [
