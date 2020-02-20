@@ -9,7 +9,6 @@ def bc0():
              $YMAKE -j $THRS
              $YMAKE DESTDIR=$IDIR BINDIR=/bin install   
         """,
-        'version': '2.5.3',
         'meta': {
             'kind': ['tool'],
             'depends': ['make', 'c'],

@@ -9,7 +9,6 @@ def clang0():
             $YMAKE -j 7 -k || true
             cp -pR bin $IDIR/
         ''',
-        'version': '9.0.1',
         'meta': {
             'depends': ['cmake', 'zlib', 'c++', 'make', 'c'],
             'kind': ['tool'], 

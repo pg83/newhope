@@ -8,7 +8,6 @@ def curl0():
             $YMAKE -j $NTHRS
             $YMAKE install
         """,
-        'version': '7.67.0-20191011',
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['openssl', 'libidn2', 'libmetalink', 'make', 'c'],

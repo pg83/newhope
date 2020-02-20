@@ -7,7 +7,6 @@ def asciidoc0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '8.6.9',
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['make', 'c'],

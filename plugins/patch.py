@@ -7,7 +7,6 @@ def patch0():
              $YMAKE -j $THRS
              $YMAKE install
         ''',
-        'version': '2.7.6',
         'meta': {
             'depends': ['bison', 'make', 'c'],
             'kind': ['tool'],

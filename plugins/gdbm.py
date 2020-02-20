@@ -7,7 +7,6 @@ def gdbm0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '1.18.1',
         'meta': {
             'kind': ['library'],
             'depends': ['make', 'c'],

@@ -9,7 +9,6 @@ def diffutils0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '3.7',
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['iconv', 'intl', 'libsigsegv', 'perl5', 'help2man', 'make', 'c']

@@ -6,7 +6,6 @@ def quasar_m40():
                $YMAKE -j $NTHRS CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS $LIBS" CC="$CC" m4 
                $YMAKE  PREFIX=/ DESTDIR="$IDIR" install
         """,
-        'version': '2',
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['coreutils-boot', 'make', 'c'],

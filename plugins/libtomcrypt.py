@@ -7,7 +7,6 @@ def libtomcrypt0():
             CFLAGS="$CFLAGS -DUSE_LTM -DLTM_DESC" $YMAKE -j $THRS
             $YMAKE DESTDIR=$IDIR LIBPATH=/lib INCPATH=/include install
         ''',
-        'version': '1.18.2',
         'meta': {
             'kind': ['library'],
             'depends': ['libtommath', 'make', 'c'],

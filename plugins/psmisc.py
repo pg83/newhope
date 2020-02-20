@@ -9,7 +9,6 @@ def psmisc0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '23.3',
         'extra': [
             {'kind': 'file', 'path': 'psmisc1.patch', 'data': y.builtin_data('data/psmisc1.patch')},
         ],

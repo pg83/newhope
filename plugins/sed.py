@@ -7,7 +7,6 @@ def sed0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '4.7',
         'meta': {
             'kind': ['tool'],
             'depends': ['iconv', 'intl', 'make', 'c'],

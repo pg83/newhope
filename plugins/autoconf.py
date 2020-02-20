@@ -7,7 +7,6 @@ def autoconf0():
             $YMAKE -j $THRS
             $YMAKE install
         ''',
-        'version': '2.69',
         'meta': {
             'kind': ['tool'],
             'depends': ['gnu-m4', 'make'],

@@ -7,7 +7,6 @@ def libarchive0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '3.4.0',
         'meta': {
             'kind': ['library', 'tool', 'box'],
             'depends': ['zlib', 'bzip2', 'xz', 'make', 'c'],

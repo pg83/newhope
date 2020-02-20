@@ -9,7 +9,6 @@ def less0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '551',
         'meta': {
             'kind': ['tool'],
             'depends': ['ncurses', 'make', 'c'],

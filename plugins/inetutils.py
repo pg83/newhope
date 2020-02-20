@@ -7,7 +7,6 @@ def inetutils0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '1.9.4',
         'meta': {
             'kind': ['tool'],
             'depends': ['intl', 'iconv', 'ncurses', 'readline', 'libedit'],

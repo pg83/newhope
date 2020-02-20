@@ -7,7 +7,6 @@ def sqlite30():
             $YSHELL ./configure $COFLAGS --disable-shared --enable-static  --prefix=$IDIR || exit 1
             $YMAKE install || exit 1
         """,
-        'version': '3300100',
         'meta': {
             'kind': ['library', 'tool'],
             'depends': ['readline', 'make', 'c'],

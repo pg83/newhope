@@ -7,7 +7,6 @@ def tar0():
              $YSHELL ./configure $COFLAGS --prefix=$IDIR
              $YMAKE -j $NTHRS && $YMAKE install
         """,
-        'version': '1.32',
         'meta': {
             'kind': ['tool'],
             'depends': ['iconv', 'intl', 'gzip', 'bzip2', 'xz', 'unrar', 'busybox-boot', 'make', 'c'],

@@ -19,7 +19,6 @@ def git0():
              ($YUPX $IDIR/bin/*) || true
              ($YUPX $IDIR/libexec/git-core/*) || true
         """,
-        'version': '2.24.1',
         'meta': {
             'kind': ['tool'],
             'depends': ['upx', 'pcre', 'curl', 'openssl', 'expat', 'python', 'iconv', 'perl5', 'zlib', 'make', 'c'],

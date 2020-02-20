@@ -7,7 +7,6 @@ def help2man0():
              $YMAKE -j $NTHRS
              $YMAKE install  
         """,
-        'version': '1.47.9',
         'meta': {
             'kind': ['tool'],
             'depends': ['perl5', 'make', 'c'],

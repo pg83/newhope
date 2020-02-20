@@ -17,7 +17,6 @@ def util_linux0():
             ($YUPX $IDIR/bin/*) || true
             ($YUPX $IDIR/sbin/*) || true
         ''',
-        'version': '2.35.1',
         'meta': {
             'kind': ['tool'],
             'depends': ['upx', 'slang', 'readline', 'ncurses', 'musl', 'c', 'kernel-h', 'iconv', 'intl'],

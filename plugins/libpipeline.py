@@ -7,7 +7,6 @@ def libpipeline0():
             $YMAKE -j $THRS
             $YMAKE install
         ''',
-        'version': '1.5.2',
         'meta': {
             'kind': ['library'],
             'depends': ['make', 'c'],

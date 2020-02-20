@@ -7,7 +7,6 @@ def jemalloc0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '5.2.1',
         'meta': {
             'kind': ['library'],
             'depends': ['make', 'c'],

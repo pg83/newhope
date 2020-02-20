@@ -7,7 +7,6 @@ def expat0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '2.2.9',
         'meta': {
             'kind': ['library'],
             'depends': ['make', 'c'],

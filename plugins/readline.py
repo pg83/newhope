@@ -8,7 +8,6 @@ def readline0():
              $YMAKE -j $NTHRS
              $YMAKE install 2>&1 | grep -v 'No such file or directory'
         """,
-        'version': '8.0',
         'meta': {
             'kind': ['library'],
             'depends': ['ncurses', 'termcap', 'make', 'c'],

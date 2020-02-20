@@ -11,7 +11,6 @@ def crt0():
         'extra': [
             {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_crt.sh']['data']},
         ],
-        'version': '9.0.1',
         'meta': {
             'kind': ['library'],
             'depends': ['make', 'c'],

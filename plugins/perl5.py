@@ -26,7 +26,6 @@ def perl50():
         'prepare': """
             source perl5_env
         """,
-        'version': '5.30.1',
         'meta': {
             'kind': ['tool'],
             'depends': ['iconv', 'zlib', 'coreutils-boot', 'make', 'c', 'bash'],

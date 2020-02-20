@@ -18,7 +18,6 @@ if '{os}' == 'linux':
                 source fetch_url "$IDIR/include/stdatomic.h" "https://raw.githubusercontent.com/llvm-mirror/clang/master/lib/Headers/stdatomic.h"
                 echo '#include <sys/sysmacros.h>' > "$IDIR/include/sys/mkdev.h"
             """,
-            'version': '1.1.24', 
             'extra': [
                 {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_musl.sh']['data']},
                 {'kind': 'file', 'path': 'crt/dso.c', 'data': y.globals.by_name['data/dso.c']['data']},

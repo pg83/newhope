@@ -15,7 +15,7 @@ def make_boot0():
 
     return {
         'code': code,
-        'version': '4.2',
+        'version': y.package_versions()['make'],
         'meta': {
             'kind': ['tool'],
             'depends': extra,

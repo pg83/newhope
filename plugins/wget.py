@@ -9,7 +9,6 @@ def wget0():
              $YMAKE install
              ($YUPX $IDIR/bin/*) || true
         ''',
-        'version': '1.20.3',
         'meta': {
             'kind': ['tool'],
             'depends': ['openssl', 'libmetalink', 'iconv', 'intl', 'libunistring', 'pcre', 'zlib', 'make', 'c', 'upx'],

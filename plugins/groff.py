@@ -7,7 +7,6 @@ def groff0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '1.22.4',
         'meta': {
             'kind': ['tool'],
             'depends': ['c++', 'texinfo','make', 'perl5', 'c'],

@@ -7,7 +7,6 @@ def texinfo0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '6.7',
         'meta': {
             'kind': ['tool'],
             'depends': ['c++', 'make', 'c'],

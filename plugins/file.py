@@ -7,7 +7,6 @@ def file0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '5.38',
         'meta': {
             'kind': ['tool'],
             'depends': ['make', 'c'],

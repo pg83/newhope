@@ -12,7 +12,6 @@ def ncurses_real0():
 
             cd $IDIR/lib && (for i in `ls *.a`; do q=`echo $i | tr -d 'w'`;  ln -s $i $q; done)
         """,
-        'version': '6.1',
         'meta': {
             'kind': ['library'],
             'depends': ['make', 'c'],

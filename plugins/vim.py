@@ -9,7 +9,6 @@ def vim0():
              $YMAKE install
              ($YUPX $IDIR/bin/*) || true
         ''',
-        'version': '8.2.0268',
         'meta': {
             'kind': ['tool'],
             'depends': ['ncurses', 'zlib', 'make', 'c', 'upx'],

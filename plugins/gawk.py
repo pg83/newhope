@@ -12,7 +12,6 @@ def gawk0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '5.0.1',
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['iconv', 'intl', 'readline', 'libsigsegv', 'c++', 'make', 'c'],

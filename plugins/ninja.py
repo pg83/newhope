@@ -13,7 +13,6 @@ def ninja0():
              install -v -m755 ninja $IDIR/bin
              $YUPX $IDIR/bin/ninja
         """,
-        'version': '1.9.0',
         'meta': {
             'kind': ['tool'],
             'depends': ['python', 'c++', 'make', 'c', 'upx'],

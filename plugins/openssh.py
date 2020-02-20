@@ -8,7 +8,6 @@ def openssh0():
             $YMAKE -j $NTHR
             $YMAKE install
         ''',
-        'version': '8.2p1',
         'meta': {
             'kind': ['tool'],
             'depends': ['openssl', 'make', 'c', 'zlib', 'jemalloc'],

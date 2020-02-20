@@ -9,7 +9,6 @@ def unrar0():
              mkdir -p $IDIR/bin
              install -v -m755 unrar $IDIR/bin
         """,
-        'version': '5.8.3',
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['c++', 'make', 'c'],

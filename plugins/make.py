@@ -15,7 +15,6 @@ def make0():
 
     return {
         'code': code,
-        'version': '4.2',
         'meta': {
             'kind': ['box'],
             'depends': ['make-boot'] + extra,

@@ -7,7 +7,6 @@ def gzip0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '1.10',
         'meta': {
             'kind': ['tool'],
             'depends': ['make', 'c'],

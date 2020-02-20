@@ -15,7 +15,6 @@ def bash0():
             $YMAKE LIBS_FOR_BUILD="$LIBS" -j $NTHRS
             $YMAKE install
         """.replace('{extra}', ' '.join(do())),
-        'version': '5.0',
         'meta': {
             'kind': ['tool'],
             'depends': ['ncurses', 'intl', 'iconv', 'make', 'c'],

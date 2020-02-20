@@ -7,7 +7,6 @@ def libsigsegv0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '2.12',
         'meta': {
             'kind': ['library'],
             'depends': ['make', 'c'],

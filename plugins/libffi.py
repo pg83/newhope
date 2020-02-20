@@ -15,7 +15,6 @@ def libffi0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '3.2.1',
         'meta': {
             'kind': ['library'],
             'depends': ['sed', 'make', 'c'],

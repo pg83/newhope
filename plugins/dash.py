@@ -10,7 +10,6 @@ def dash0():
 
             echo 'ln -sf ../pkg/$1/bin/dash ../../bin/sh' > $IDIR/install && chmod +x $IDIR/install
          """,
-        'version': '0.5.10.2',
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['libedit', 'make', 'c'],

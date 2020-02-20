@@ -7,7 +7,6 @@ def nano0():
             $YMAKE -j $NTHRS
             $YMAKE install
         """,
-        'version': '4.4',
         'meta': {
             'kind': ['tool'],
             'depends': ['intl', 'iconv', 'readline', 'ncurses', 'make', 'c', 'kernel-h'],

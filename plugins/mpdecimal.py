@@ -10,7 +10,6 @@ def mpdecimal0():
              rm -rf $IDIR/lib/*.so.*
              rm -rf $IDIR/lib/*.so
         """,
-        'version': '2.4.2',
         'meta': {
             'kind': ['library'],
             'depends': ['make', 'c'],

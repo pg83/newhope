@@ -7,7 +7,6 @@ def libunistring0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '0.9.10',
         'meta': {
             'kind': ['library'],
             'depends': ['iconv', 'xz', 'make', 'c'],

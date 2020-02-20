@@ -10,7 +10,6 @@ def yasm0():
                $YMAKE -j $NTHR
                $YMAKE install
         """,
-        'version': '1.3.0',
         'meta': {
             'kind': ['box', 'tool'],
         },

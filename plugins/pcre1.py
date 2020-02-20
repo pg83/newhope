@@ -7,7 +7,6 @@ def pcre10():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '8.43',
         'meta': {
             'kind': ['library'],
             'depends': ['pkg-config-int', 'zlib', 'bzip2', 'c++', 'make', 'c'],

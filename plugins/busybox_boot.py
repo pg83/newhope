@@ -14,10 +14,9 @@ if '{os}' == 'linux':
                     ln -fs busybox $y
                 done
             """,
-            'version': '1.31.1',
+            'version': y.package_versions()['busybox'],
             'meta': {
                 'kind': ['tool'],
-                #'undeps': ['make', 'musl', 'busybox-boot'],
                 'provides': [
                     {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
                 ],

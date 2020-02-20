@@ -7,7 +7,6 @@ def libtommath0():
             $YMAKE -j $THRS
             $YMAKE DESTDIR=$IDIR LIBPATH=/lib INCPATH=/include install
         ''',
-        'version': '1.2.0',
         'meta': {
             'kind': ['library'],
             'depends': ['crt', 'make', 'c'],

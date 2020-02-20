@@ -7,7 +7,6 @@ def grep0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '3.3',
         'meta': {
             'kind': ['box', 'tool'],
             'depends': ['intl', 'libsigsegv', 'iconv', 'make', 'c']

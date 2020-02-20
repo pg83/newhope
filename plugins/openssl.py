@@ -18,8 +18,7 @@ def openssl0():
             $YPERL ./Configure {flags} no-asm threads no-shared no-dso no-hw no-tests no-engine --prefix=$IDIR --openssldir=$IDIR -w -std=c99 -D_GNU_SOURCE=1 $CFLAGS $LDFLAGS $LIBS || exit 1
             ($YMAKE -j $NTHRS) || ($YMAKE -j $NTHRS) || ($YMAKE -j $NTHRS)
             $YMAKE install
-        """.replace('{minver}', version[:-1]).replace('{flags}', flags),
-        'version': version,
+        """.replace('{minver}', version[:-1]).replace('{flags}', flags).replace('{version}', version),
         'extra': [
             {'kind': 'file', 'path': 'pod2html', 'data': y.builtin_data('data/pod2html')},
         ],

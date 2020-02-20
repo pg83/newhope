@@ -16,7 +16,6 @@ def libiconv0():
             $YMAKE -j $NTHRS || exit 1
             $YMAKE install
         """,
-        'version': '1.16',
         'meta': {
             'kind': ['library', 'tool'],
             'depends': ['make', 'c'],

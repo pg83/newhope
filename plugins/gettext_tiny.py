@@ -7,7 +7,6 @@ def gettext_tiny0():
             $YMAKE -j $NTHRS AR="$AR" RANLIB="$RANLIB" CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS $LIBS" LIBINTL="MUSL" all || exit 1
             $YMAKE LIBINTL="MUSL" DESTDIR="$IDIR" prefix=/ install
         """,
-        'version': '55a2119d06403e05808d89eedc9e94a20e87cbd3',
         'meta': {
             'kind': ['library', 'tool'],
             'depends': ['iconv', 'make', 'c'],

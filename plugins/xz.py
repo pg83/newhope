@@ -6,7 +6,6 @@ def xz0():
              export CFLAGS="$CFLAGS $LDFLAGS $LIBS"
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static --disable-threads && $YMAKE -j $NTHRS && $YMAKE install
         """,
-        'version': '5.2.4',
         'meta': {
             'kind': ['library', 'tool'],
             'depends': ['make', 'c'],

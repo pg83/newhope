@@ -47,7 +47,6 @@ def busybox0():
             unlink wget
             unlink vi
         """,
-        'version': '1.31.1',
         'meta': {
             'kind': ['tool'],
             'depends': ['make', 'kernel-h', 'make', 'c'],

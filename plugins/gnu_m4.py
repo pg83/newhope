@@ -8,7 +8,6 @@ def gnu_m40():
                $YMAKE -j $NTHRS
                $YMAKE install
         """,
-        'version': '1.4.18',
         'meta': {
             'kind': ['tool'],
             'depends': ['libsigsegv', 'crt', 'help2man', 'make', 'c'],

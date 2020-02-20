@@ -7,7 +7,6 @@ def findutils0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '4.7.0',
         'meta': {
             'kind': ['tool'],
             'depends': ['python', 'intl', 'iconv'],

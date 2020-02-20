@@ -19,7 +19,6 @@ def cmake0():
              $YUPX $IDIR/bin/cpack
              $YUPX $IDIR/bin/ctest
         """,
-        'version': '3.16.1',
         'meta': {
             'kind': ['tool'],
             'depends': [

@@ -7,7 +7,6 @@ def dropbear0():
              $YMAKE -j $THRS
              $YMAKE install
         ''',
-        'version': '2019.78',
         'meta': {
             'kind': ['tool'],
             'depends': ['libtommath', 'libtomcrypt', 'zlib', 'make', 'c']

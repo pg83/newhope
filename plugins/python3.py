@@ -30,8 +30,7 @@ def python30():
             mv $IDIR/Tools $IDIR/tools 
 
             (cd $IDIR/lib/python{ver} && ln -s config-{ver}* config-{ver})
-        """.replace('{ver}', ver),
-        'version': version,
+        """.replace('{ver}', ver).replace('{version}', version),
         'extra': [
             {'kind': 'file', 'path': 'Setup', 'data': y.builtin_data('data/Setup.local')},
             {'kind': 'file', 'path': 'fix.py', 'data': y.builtin_data('data/python3_bc.py')},

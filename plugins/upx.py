@@ -14,7 +14,6 @@ def upx0():
             chmod +x upx.out
             upx.out -o $IDIR/bin/upx ./upx.out
         ''',
-        'version': '3.96',
         'meta': {
             'kind': ['tool'],
             'depends': ['zlib', 'ucl', 'make', 'c', 'c++'],

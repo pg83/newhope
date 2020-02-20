@@ -12,7 +12,6 @@ def libidn20():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '2.2.0',
         'meta': {
             'kind': ['library'],
             'depends': ['intl', 'iconv', 'libunistring', 'pkg-config', 'make', 'c'],

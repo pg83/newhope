@@ -11,7 +11,6 @@ def p7zip0():
              mkdir $IDIR/bin
              install bin/7za $IDIR/bin
         ''',
-        'version': '16.02',
         'meta': {
             'depends': ['c++', 'make', 'c'],
             'kind': ['tool', 'library'],

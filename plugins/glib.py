@@ -16,7 +16,6 @@ def glib0():
              $YMAKE -j $NTHRS || exit 1
              $YMAKE install
         """,
-        'version': '2.30.3',
         'meta': {
             'kind': ['library'],
             'depends': ['iconv', 'intl', 'libffi', 'pkg-config-int', 'coreutils', 'python', 'zlib', 'dash', 'pcre', 'make', 'c'],

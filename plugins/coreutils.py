@@ -19,7 +19,6 @@ def coreutils0():
                  ln -fs coreutils $i
              done
         """,
-        'version': '8.31',
         'meta': {
             'kind': ['tool', 'box'],
             'depends': ['iconv', 'intl', 'openssl', 'make', 'c'],

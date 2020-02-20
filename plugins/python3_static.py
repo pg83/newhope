@@ -10,7 +10,6 @@ def python3_static0():
             mkdir $IDIR/bin
             $YUPX -o $IDIR/bin/staticpython3 staticpython
         """,
-        'version': '3.8.1',
         'extra': [
             {'kind': 'file', 'path': 'freeze.sh', 'data': y.builtin_data('data/freeze.sh')},
             {'kind': 'file', 'path': 'freeze_python.sh', 'data': y.builtin_data('data/freeze_python.sh')},

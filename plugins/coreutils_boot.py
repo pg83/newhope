@@ -12,7 +12,7 @@ def coreutils_boot0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '8.31',
+        'version': y.package_versions()['coreutils'],
         'meta': {
             'kind': ['tool'],
             'depends': ['make', 'c'],

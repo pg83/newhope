@@ -8,7 +8,6 @@ def ucl0():
             $YMAKE -j $NTHR
             $YMAKE install
         ''',
-        'version': '1.03',
         'meta': {
             'kind': ['library'],
             'depends': ['musl', 'c'],

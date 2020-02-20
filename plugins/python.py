@@ -17,7 +17,6 @@ def python0():
             export PYTHONHOME="$IDIR"
             source ./mk_staticpython.sh "$IDIR/bin/python2.7" "2.7" "2" "Py_Main"
         """,
-        'version': '2.7.17',
         'extra': [
             {'kind': 'file', 'path': 'Modules/Setup.local', 'data': y.builtin_data('data/Setup.local2')},
             {'kind': 'file', 'path': 'find_modules.py', 'data': y.builtin_data('data/find_modules.py')},

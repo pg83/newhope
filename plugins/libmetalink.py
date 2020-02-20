@@ -8,7 +8,6 @@ def libmetalink0():
              $YMAKE -j $NTHRS SHELL=$SHELL
              $YMAKE install
         """,
-        'version': '0.1.3',
         'meta': {
             'kind': ['library'],
             'depends': ['expat', 'dash', 'make', 'c'],

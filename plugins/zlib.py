@@ -9,7 +9,6 @@ def zlib0():
             $YMAKE -j $NTHRS TEST_LDFLAGS="$TEST_LDFLAGS"
             $YMAKE install
         """,
-        'version': '1.2.11',
         'meta': {
             'kind': ['library'],
             'depends': ['make', 'c'],

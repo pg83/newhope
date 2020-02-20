@@ -13,7 +13,6 @@ if '{os}' == 'linux':
                     ln -fs toybox $i
                 done
             ''',
-            'version': '0.8.1',
             'meta': {
                 'kind': ['tool'],
                 'provides': [

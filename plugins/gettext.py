@@ -16,7 +16,6 @@ def gettext0():
             $YMAKE install
             ($YUPX $IDIR/bin/*) || true
         """.replace('{opts}', ' '.join(opts)),
-        'version': '0.20.1',
         'meta': {
             'kind': ['library', 'tool'],
             'depends': ['upx', 'iconv', 'ncurses', 'make', 'c'],

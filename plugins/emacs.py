@@ -7,7 +7,6 @@ def emacs0():
              $YMAKE -j $THRS
              $YMAKE install
         ''',
-        'version': '26.3',
         'meta': {
             'kind': ['tool'],
             'depends': ['ncurses', 'zlib', 'make', 'c'],

@@ -295,10 +295,11 @@ def load_builtin_modules(builtin):
         __loader__.create_module(m)
 
     initial = set(initial)
+    must_have = {'pl.versions'}
 
     for k in builtin:
         if k not in initial:
-            if k.startswith('ya') or k.startswith('ut'):
+            if k.startswith('ya') or k.startswith('ut') or (k in must_have):
                 __loader__.create_module(k)
                 initial.add(k)
 

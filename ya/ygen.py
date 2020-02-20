@@ -1,16 +1,25 @@
-def subst_some_values(v):
-    def gen_some_subst(k, v):
-        yield k, v
-        yield '_' + k + '_', v.replace('.', '_').replace('-', '_')
+def gen_some_subst(k, v):
+    yield k, v
+    yield '_' + k + '_', v.replace('.', '_').replace('-', '_')
 
+
+def subst_some_values(v, base_name):
     if 'code' in v and '{' in v['code']:
         v = y.dc(v)
+
+        if 'version' not in v:
+            s = y.package_versions()
+
+            if base_name in s:
+                v['version'] = s[base_name]
 
         for x in ('version', 'name', 'num'):
             if x in v:
                 for p1, p2 in gen_some_subst(x, v[x]):
                     v['code'] = v['code'].replace('{' + p1 + '}', p2)
 
+        assert '{version}' not in v['code']
+            
     return v
 
 
@@ -44,12 +53,13 @@ def exec_plugin_code(el):
 
 def package(func):
     base_name = func.__name__[:-1]
-    new_f = y.singleton(y.compose_simple(func, y.dc, subst_some_values))
+    fix_bn = base_name.replace('_', '-')
+    new_f = y.singleton(y.compose_simple(func, y.dc, lambda x: subst_some_values(x, fix_bn)))
     parts = func.__module__.split('.')
 
     descr = {
         'gen': 'human',
-        'base': base_name.replace('_', '-'),
+        'base': fix_bn,
         'kind': new_f()['meta']['kind'],
         'code': new_f,
         'cc': y.to_full_target(parts[1])

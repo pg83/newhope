@@ -8,7 +8,6 @@ def libedit0():
              $YMAKE -j $NTHRS
              $YMAKE install
         """,
-        'version': '20191025-3.1',
         'meta': {
             'kind': ['library'],
             'depends': ['ncurses', 'termcap', 'make', 'c'],

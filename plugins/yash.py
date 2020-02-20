@@ -22,7 +22,6 @@ def yash0():
             $YMAKE -j $NTHRS
             $YMAKE install
          """.replace('{opts}', ' '.join(opts)),
-        'version': '2.49',
         'meta': {
             'kind': ['tool'],
             'depends': ['intl', 'ncurses', 'xz', 'tar', 'asciidoc', 'python', 'make', 'c'],

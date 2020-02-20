@@ -8,7 +8,6 @@ def procps_ng0():
              $YMAKE install
              $YUPX $IDIR/bin/*
         ''',
-        'version': '3.3.16',
         'meta': {
             'depends': ['make', 'c', 'ncurses', 'intl', 'iconv', 'upx'],
             'kind': ['tool'],
