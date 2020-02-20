@@ -1,9 +1,10 @@
 @y.singleton
 def package_versions():
     llvm_ver = '9.0.1'
+    upm_ver = 'b928f8f884e147e82c94464dd324e44d149d2290'
 
     return {
-        'upm': 'b928f8f884e147e82c94464dd324e44d149d2290',
+        'upm': upm_ver,
         'asciidoc': '8.6.9',
         'autoconf': '2.69',
         'bash': '5.0',
@@ -18,7 +19,7 @@ def package_versions():
         'curl':  '7.67.0-20191011',
         'dash':  '0.5.10.2',
         'diffutils':  '3.7',
-        'dl':  '670037f6c15db5c0b46b7452124bce8bcc2f9801',
+        'dl': upm_ver,
         'dropbear':  '2019.78',
         'emacs':  '26.3',
         'expat':  '2.2.9',

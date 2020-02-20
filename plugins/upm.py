@@ -1,6 +1,7 @@
 install_upm = '''
 ln -sf ../pkg/$1/bin/upm ../../bin/
 ln -sf ../../pkg/$1 ../../etc/runit/
+rm -rf ./log
 '''
 
 run_upm = '''#!/bin/sh

@@ -19,7 +19,7 @@ def subst_some_values(v, base_name):
                     v['code'] = v['code'].replace('{' + p1 + '}', p2)
 
         assert '{version}' not in v['code']
-            
+    
     return v
 
 
