@@ -13,7 +13,10 @@ def libmetalink0():
             'kind': ['library'],
             'depends': ['expat', 'dash', 'make', 'c'],
             'provides': [
-                {'lib': 'metalink', 'configure': {'opt': '--with-libmetalink={pkgroot}'}},
+                {'lib': 'metalink'},
+                {'configure': '--with-libmetalink={pkgroot}'},
+                {'env': 'METALINK_CFLAGS', 'value': '"-I{pkgroot}/include"'},
+                {'env': 'METALINK_LIBS', 'value': '"-I{pkgroot}/lib -lmetalink"'},
             ],
         },
     }

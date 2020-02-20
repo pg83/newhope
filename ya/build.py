@@ -67,7 +67,7 @@ def build_makefile(nodes, kind):
     def iter3(nodes):
         for n in y.visit_nodes(nodes):
             yield y.restore_node(n)
-    
+
     def iter4():
         by_name = {}
 

@@ -27,11 +27,11 @@ def box0():
         'xz',
         'yash',
         'psmisc',
-        'python3-static',
         'bc',
         'patch',
         'procps-ng',
         'upx',
+        'wget',
     ]
 
     lst_run = [x + '-run' for x in lst]
@@ -71,7 +71,6 @@ def box0():
                 {'env': 'YBSDTAR', 'value': '"{pkgroot}/bin/bsdtar"'},
                 {'env': 'YXZ', 'value': '"{pkgroot}/bin/xz"'},
                 {'env': 'YXZCAT', 'value': '"{pkgroot}/bin/xzcat"'},
-                {'env': 'STATICPYTHON3', 'value': '"{pkgroot}/bin/staticpython3"'},
                 {'env': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
             ],
         }

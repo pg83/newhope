@@ -13,7 +13,9 @@ def pcre20():
             'depends': ['pkg-config-int', 'zlib', 'bzip2', 'c++', 'make', 'c'],
             'provides': [
                 {'lib': 'pcre2-8'},
-                {'env': 'LIBPCRE2_INCLUDES', 'value': '"-I{pkgroot}/include"'}
+                {'env': 'LIBPCRE2_INCLUDES', 'value': '"-I{pkgroot}/include"'},
+                {'env': 'PCRE2_CFLAGS', 'value': '"-I{pkgroot}/include"'},
+                {'env': 'PCRE2_LIBS', 'value': '"-L{pkgroot}/lib -lpcre2-8"'},
             ],
         },
     }
