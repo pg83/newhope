@@ -37,7 +37,7 @@ def restore_node(ptr):
         'deps': y.load_list(res[1]),
     }
 
-    v['noid'] = y.hash_key(ptr)
+    v['noid'] = ptr
 
     return v
 

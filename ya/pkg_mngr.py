@@ -449,8 +449,13 @@ class PkgMngr(object):
         for p, j in to_wait:
             self.install_one_pkg(p, j)
 
+        def iter_path():
+            for x in reversed(lst):
+                yield '/pkg/' + x['path'] + '/bin'
+                yield '/pkg/' + x['path'] + '/sbin'
+        
         env = {
-            'PATH': '/bin:' + ':'.join([('/pkg/' + x['path'] + '/bin') for x in reversed(lst)])
+            'PATH': '/bin:' + ':'.join(iter_path())
         }
 
         with open(self.pkg_dir() + '/profile', 'w') as f:

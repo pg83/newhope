@@ -10,13 +10,30 @@ def key_struct_ptr(n):
     return struct_ptr(n)[2:12]
 
 
+X = {}
+
+
+def store_kv(k, v):
+    X[k] = v
+
+
+def load_kv(k):
+    return X[k]
+
+
 def intern_list(l):
     assert None not in l
-    return intern_struct({'l': l})
+
+    res1 = intern_struct({'l': l})
+    res2 = intern_struct({'l': sorted(l)})
+
+    store_kv(res2, res1)
+
+    return res2
 
 
 def load_list(ptr):
-    return load_struct(ptr)['l']
+    return load_struct(load_kv(ptr))['l']
 
 
 def intern_struct(s):
@@ -143,4 +160,3 @@ def init():
 
     if y.config.get('check_db'):
         y.atexit.register(v.check_db)
-

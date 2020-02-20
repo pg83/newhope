@@ -68,6 +68,9 @@ def build_makefile(nodes, kind):
         for n in y.visit_nodes(nodes):
             yield y.restore_node(n)
 
+    if kind == 'json':
+        return y.json.dumps(list(iter3(nodes)), indent=4, sort_keys=True)
+
     def iter4():
         by_name = {}
 
@@ -76,7 +79,7 @@ def build_makefile(nodes, kind):
         for x in y.iter_workspace():
             yield x
 
-        for r in iter3(nodes):
+        for r in list(iter3(nodes)):
             res = y.print_one_node(r)
             do_apply_node(r, by_name)
 

@@ -351,9 +351,6 @@ class Data(object):
                 elif f.base in contains:
                     if what.base.startswith(f.base):
                         yield d
-                    else:
-                        if f.is_library:
-                            print f, what
                 else:
                     yield d
 
@@ -467,7 +464,7 @@ class Tower(object):
 
     def gen_funcs(self):
         dt = Data(self._cc, self._flat, [x for x in self._data])
-        dt.out()
+        #dt.out()
 
         cnt = 0
 
