@@ -42,6 +42,7 @@ def small_group():
         'psmisc-run',
         'procps-ng-run',
         'vim-run',
+        'nano-run',
         'findutils-run',
     ]
 
@@ -51,6 +52,7 @@ def full_group():
         '@small',
         'mc-slang',
         'openssh',
+        'util-linux',
     ]
 
 def devel_group():
