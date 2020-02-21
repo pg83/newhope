@@ -225,7 +225,12 @@ class Item(ItemBase):
         return self.p.shell_vars
 
     def prepare_env(self):
-        return dict(y.itertools.chain({'OUTER_SHELL': self.shell}.items(), y.fix_shell_vars(self.shell_vars)))
+        def iter_env():
+            yield 'OUTER_SHELL', self.shell
+            yield from y.fix_shell_vars(self.shell_vars)
+            yield 'PATH', y.os.environ['PATH']
+
+        return dict(iter_env())
 
     def find_tool(self, tool):
         if tool[0] == '/':

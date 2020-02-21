@@ -46,7 +46,13 @@ def main_makefile(iter_cc, flat, kind='text'):
     cc = list(iter_cc())
     portion = gen_mk_data(cc, flat)
 
-    return y.build_makefile([x['code']() for x in portion], kind=kind)
+    def iter_data():
+        for x in portion:
+            yield x['code']()
+
+    data = list(iter_data())
+
+    return y.build_makefile(data, kind=kind)
 
 
 def gen_package_name(x):
@@ -70,3 +76,4 @@ def fix_pkg_name(res, descr):
     res['node']['gen'] = descr['gen']
 
     return res
+
