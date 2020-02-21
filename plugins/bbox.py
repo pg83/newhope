@@ -72,6 +72,8 @@ def box0():
                 {'env': 'YXZ', 'value': '"{pkgroot}/bin/xz"'},
                 {'env': 'YXZCAT', 'value': '"{pkgroot}/bin/xzcat"'},
                 {'env': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
+                {'env': 'YMAKE', 'value': '"{pkgroot}/bin/make"'},
+                {'env': 'YSHELL', 'value': '"{pkgroot}/bin/dash"'},
             ],
         }
     }
