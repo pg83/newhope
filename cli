@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/env python3
 
 
 import os
@@ -7,6 +7,10 @@ import sys
 import gc
 import hashlib
 import marshal
+import threading
+
+
+threading.stack_size(64 * 1024 * 1024)
 
 
 try:

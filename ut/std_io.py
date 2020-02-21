@@ -274,3 +274,4 @@ def init_stdio():
     y.sys.stdout = ColorStdOut()
     y.sys.stderr = ColorStdErr()
     #pass
+
