@@ -10,7 +10,7 @@ def openssh0():
         ''',
         'meta': {
             'kind': ['tool'],
-            'depends': ['openssl', 'make', 'c', 'zlib', 'jemalloc'],
+            'depends': ['openssl', 'make', 'c', 'zlib'],
             'provides': [
                 {'env': 'SSHD', 'value': '"{pkgroot}/sbin/sshd"'},
             ],

@@ -1,4 +1,4 @@
-#@y.package
+@y.package
 def yasm0():
     return {
         'code': """
@@ -7,10 +7,11 @@ def yasm0():
                export CC_FOR_BUILD="$CC"
                export CFLAGS_FOR_BUILD="$CFLAGS"
                $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared
-               $YMAKE -j $NTHR
+               $YMAKE DEFAULT_INCLUDES="-I. $CFLAGS" -j $NTHR
                $YMAKE install
         """,
         'meta': {
             'kind': ['box', 'tool'],
+            'depends': ['make', 'c'],
         },
     }
