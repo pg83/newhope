@@ -81,7 +81,7 @@ def base0():
         'code': """
             cd $IDIR
             mkdir -p etc etc/upm etc/runit pkg pkg/cache srv bin dev sys proc
-    
+
             $(APPLY_EXTRA_PLAN_0)
 
             touch pkg/profile
