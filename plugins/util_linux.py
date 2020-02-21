@@ -19,6 +19,6 @@ def util_linux0():
         ''',
         'meta': {
             'kind': ['tool'],
-            'depends': ['upx', 'slang', 'readline', 'ncurses', 'musl', 'c', 'kernel-h', 'iconv', 'intl'],
+            'depends': ['upx', 'slang', 'readline', 'ncurses', 'make', 'c', 'kernel-h', 'iconv', 'intl'],
         },
     }
