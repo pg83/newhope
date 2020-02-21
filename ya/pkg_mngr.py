@@ -453,7 +453,7 @@ class PkgMngr(object):
             for x in reversed(lst):
                 yield '/pkg/' + x['path'] + '/bin'
                 yield '/pkg/' + x['path'] + '/sbin'
-        
+
         env = {
             'PATH': '/bin:' + ':'.join(iter_path())
         }
