@@ -43,6 +43,7 @@ def python30():
                 'pkg-config', 'libffi', 'readline',
                 'termcap', 'mpdecimal', 'xz', 'bzip2',
                 'sqlite3', 'openssl', 'dl', 'make', 'c',
+                'jemalloc',
             ],
             'provides': [
                 {'lib': 'python3.8'},

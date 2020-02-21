@@ -45,6 +45,8 @@ def small_group():
         'vim-run',
         'nano-run',
         'findutils-run',
+        'yash-run',
+        'bash-run',
     ]
 
 
@@ -68,4 +70,5 @@ def devel_group():
         'bison',
         'git',
         'python3',
+        'strace',
     ]

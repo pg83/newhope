@@ -389,11 +389,12 @@ class PkgMngr(object):
                 os.makedirs(ppath_tmp)
 
             self.untar_from_memory(data, ppath_tmp)
+            os.rename(ppath_tmp, ppath)
 
             outs = []
 
             try:
-                out = sp.check_output(['../../bin/sh', '-c', '. ../profile; ../../bin/sh ./install ' + p['path']], cwd=ppath_tmp, shell=False)
+                out = sp.check_output(['../../bin/sh', '-c', '. ../profile; ../../bin/sh ./install ' + p['path']], cwd=ppath, shell=False)
                 out = out.decode('utf-8')
                 out = out.strip()
 
@@ -405,7 +406,7 @@ class PkgMngr(object):
             if outs:
                 y.info('from install script :\n' + '\n'.join(outs))
 
-            os.rename(ppath_tmp, ppath)
+            y.info('{bb}' + ppath + '{} done')
 
     def thr_fetch(self, p):
         res = []
