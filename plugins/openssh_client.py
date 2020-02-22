@@ -10,6 +10,7 @@ def openssh_client0():
              pp=$(dirname $SSHD)
              p=$(dirname $pp)
              cp -pR $p/bin $IDIR/
+             $YUPX $IDIR/bin/*
 
              cd $IDIR
              $(APPLY_EXTRA_PLAN_0)
@@ -18,7 +19,7 @@ def openssh_client0():
         ''',
         'meta': {
             'kind': ['tool'],
-            'depends': ['openssh'],
+            'depends': ['openssh', 'upx'],
         },
         'extra': [
             {'kind': 'file', 'path': 'run', 'data': y.builtin_data('data/ssh_agent_run.py')},

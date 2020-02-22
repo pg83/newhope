@@ -1,0 +1,21 @@
+#!/bin/upm python
+
+import os
+import sys
+import time
+
+
+prefix = '/etc/runit'
+
+
+for x in os.listdir(prefix):
+    p = os.path.join(prefix, x)
+
+    if os.path.islink(p):
+        where = p + '/' + os.readlink(p)
+
+        if not os.path.exists(where):
+            os.unlink(p)
+
+
+time.sleep(5)

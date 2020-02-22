@@ -80,7 +80,7 @@ def base0():
     return {
         'code': """
             cd $IDIR
-            mkdir -p etc etc/upm etc/runit pkg pkg/cache srv bin dev sys proc
+            mkdir -p etc etc/upm etc/runit etc/runit/symlinks pkg pkg/cache srv bin dev sys proc home root
 
             $(APPLY_EXTRA_PLAN_0)
 
@@ -106,9 +106,14 @@ audio:x:11:
 EOF
 
             echo 'nameserver 8.8.8.8' > etc/resolv.conf
+
+            cd $IDIR/etc/runit/symlinks
+            $(APPLY_EXTRA_PLAN_1)
+            chmod +x run
         """,
         'extra': [
             {'kind': 'file', 'path': 'colors_sh', 'data': colors_sh},
+            {'kind': 'file', 'path': 'run', 'data': y.builtin_data('data/stale_symlinks.py')},
         ],
         'meta': {
             'kind': ['tool'],
