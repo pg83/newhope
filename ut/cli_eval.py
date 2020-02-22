@@ -22,3 +22,11 @@ def run_eval(args):
 @y.main_entry_point
 def cli_dev_repl(args):
     y.run_repl()
+
+
+@y.main_entry_point
+def cli_python(args):
+    with open(args[0]) as f:
+        data = f.read()
+
+    exec(data, globals())
