@@ -55,7 +55,7 @@ def unpack_sh(no_last=False):
 @y.singleton
 def build_scripts_dir():
     data = list(unpack_sh(no_last=True))
-    ver = y.struct_dump_bytes(data)[:5]
+    ver = y.burn(data)[:5]
 
     return '$MD/noarch-build-scripts-run-' + ver
 
@@ -76,6 +76,6 @@ def build_scripts_run():
         ] + list(unpack_sh()),
     }
 
-    res['hash'] = y.struct_dump_bytes(res)
+    res['hash'] = y.burn(res)
 
     return res

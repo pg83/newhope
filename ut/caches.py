@@ -1,5 +1,5 @@
 def default_key(*args, **kwargs):
-    return y.struct_dump_bytes([args, kwargs])
+    return y.burn([args, kwargs])
 
 
 def restore_name(f):
@@ -20,7 +20,7 @@ def get_copy_func(copy=False):
 
 tmpl = """
 def {holder}({vars}):
-    sdb = y.struct_dump_bytes
+    sdb = y.burn
     cc = y.common_cache()
     stats = dict(h=0, m=0)
     uniq = (y.random.random() * 10000000000000)
@@ -124,11 +124,11 @@ def compose_lisp(funcs):
 def cached_method(meth):
     def wrapper(self, *args, **kwargs):
         try:
-            self.__dict__['__cache__']
+            self.__cache__
         except Exception:
-            self.__dict__['__cache__'] = {}
+            self.__cache__ = {}
 
-        d = self.__dict__['__cache__']
+        d = self.__cache__
         k = y.burn([args, kwargs, meth.__name__])[:8]
 
         if k not in d:

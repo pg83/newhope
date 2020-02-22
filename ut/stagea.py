@@ -8,14 +8,11 @@ import hashlib
 import json
 
 from marshal import loads, dumps
+from hashlib import md5
 
 
 def y_burn(p):
-    return y_struct_dump_bytes(p)
-
-
-def y_struct_dump_bytes(p):
-    return hashlib.md5(dumps(p)).hexdigest()[:16]
+    return md5(dumps(p)).hexdigest()[:16]
 
 
 def set_profile(g):

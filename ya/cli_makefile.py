@@ -18,7 +18,13 @@ def cli_dev_makefile(arg):
         else:
             f = y.stdout
 
-        data = y.main_makefile(iter_cc, args.flat, kind=args.kind)
+        #@y.run_cc_profile
+        def ff():
+            data = y.main_makefile(iter_cc, args.flat, kind=args.kind)
 
-        f.write(data)
-        f.flush()
+            f.write(data)
+            f.flush()
+
+        ff()
+
+
