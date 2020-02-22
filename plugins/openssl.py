@@ -29,6 +29,7 @@ def openssl0():
                 {'lib': 'ssl'},
                 {'configure': '--with-openssl={pkgroot}'},
                 {'configure': '--with-openssldir={pkgroot}'},
+                {'configure': '--with-ssl-dir={pkgroot}'},
                 {'env': 'OPENSSL_INCLUDES', 'value': '"-I{pkgroot}/include"'},
             ],
         },

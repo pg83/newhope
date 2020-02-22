@@ -2,16 +2,11 @@
 def iter_all_tools():
     ff = y.fix_v2
 
-    def do():
-        for x in y.iter_system_tools():
-            yield ff(x)
-
-    return list(do())
+    return [ff(x) for x in y.iter_system_tools()]
 
 
 def iter_all_cc():
-    for t in y.iter_all_targets():
-        yield y.dc(t)
+    return [y.dc(t) for t in y.iter_all_targets()]
 
 
 def iter_tcs(os):
@@ -126,7 +121,6 @@ def score_toolchains(lst, info):
     return [join_toolchains(info, [x['c'], x['c++'], x['l']]) for x in toolchains]
 
 
-@y.cached
 def iterate_best_compilers(info):
     return score_toolchains(find_toolchain_by_cc(info), info)
 

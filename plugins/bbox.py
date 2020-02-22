@@ -25,7 +25,6 @@ def box0():
         'tar',
         'unrar',
         'xz',
-        'yash',
         'psmisc',
         'bc',
         'patch',
@@ -74,6 +73,12 @@ def box0():
                 {'env': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
                 {'env': 'YMAKE', 'value': '"{pkgroot}/bin/make"'},
                 {'env': 'YSHELL', 'value': '"{pkgroot}/bin/dash"'},
+                {'env': 'YGZIP', 'value': '"{pkgroot}/bin/gzip"'},
+                {'env': 'YBZIP2', 'value': '"{pkgroot}/bin/bzip2"'},
+                #{'env': 'YUNZIP', 'value': '"{pkgroot}/bin/dash"'},
+                {'env': 'YCURL', 'value': '"{pkgroot}/bin/curl"'},
+                {'env': 'YWGET', 'value': '"{pkgroot}/bin/wget"'},
+                {'env': 'Y7ZA', 'value': '"{pkgroot}/bin/7za"'},
             ],
         }
     }

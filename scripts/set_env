@@ -1,7 +1,7 @@
 export CFLAGS="$CFLAGS $CPPFLAGS $LDFLAGS $LIBS"
 export CXXFLAGS="$CXXFLAGS $CFLAGS"
 
-#export PATH="`source fix_uniq ':' $PATH`"
+export PATH="`source fix_uniq ':' $PATH`"
 export CFLAGS="`source fix_uniq_space $CFLAGS`"
 export LDFLAGS="`source fix_uniq_space $LDFLAGS`"
 export CXXFLAGS="`source fix_uniq_space $CXXFLAGS`"

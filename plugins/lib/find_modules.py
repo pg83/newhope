@@ -12,8 +12,12 @@ def find_modules():
     no = ['idlelib.idle', 'this', '_abcoll']
 
     for a, b, c in os.walk(pr):
+        if not os.path.isfile(a + '/__init__.py'):
+            continue
+
         for d in b + c:
             if d.endswith('.py'):
+        
                 d = d[:-3]
                 p = a + '/' + d
                 p = p[len(pr) + 1:]
@@ -41,6 +45,11 @@ def find_modules():
                     continue
 
                 if '.tests.' in m:
+                    skip(m)
+
+                    continue
+        
+                if ' ' in m:
                     skip(m)
 
                     continue

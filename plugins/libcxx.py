@@ -12,7 +12,7 @@ def libcxx0():
              mv libcxx* xxx
              mv xxx/* ./
              $(APPLY_EXTRA_PLAN_0)
-             source mk.sh
+             $YSHELL mk.sh
         """,
         'extra': [
             {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name[sh]['data']},

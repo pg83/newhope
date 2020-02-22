@@ -68,7 +68,7 @@ def fix_v2(v, **kwargs):
     def iter_subst():
         for i, v in enumerate(n.get('extra', [])):
             if v['kind'] == 'file':
-                cmd = 'echo "' + y.base64.b64encode(v['data'].encode('utf-8')).decode('utf-8') + '" | (base64 -D -i - -o - || base64 -d) > ' + v['path']
+                cmd = 'echo "' + y.base64.b64encode(v['data'].encode('utf-8')).decode('utf-8') + '" | source base64_decode > ' + v['path']
                 key = '$(APPLY_EXTRA_PLAN_' + str(i) + ')'
 
                 yield (key, cmd)

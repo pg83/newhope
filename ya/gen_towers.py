@@ -47,21 +47,7 @@ def subst_by_platform(info):
     return res
 
 
-SG = {
-    'musl-boot': 'musl',
-    'make-boot': 'make',
-}
-
-
 class Func(object):
-    def do_subst_0(self, x):
-        if self.g > 0:
-            sg = {}
-        else:
-            sg = {}
-
-        return self.do_subst_0(sg.get(x, x))
-
     @y.cached_method
     def do_subst(self, x):
         sd = self.subst_dict
@@ -100,7 +86,6 @@ class Func(object):
             yield self.base
             yield str(self.i)
             yield self.compact_kind() + self.data.info['os'][:1]
-
 
         return '<' + '-'.join(iter_parts())+ '>'
 
@@ -170,6 +155,7 @@ class Func(object):
     @y.cached_method
     def run_func(self):
         data = y.dc(self.c())
+
         data['deps'] = y.uniq_list_x(data['deps'] + self.data.calc(self.deps))
         data['node']['codec'] = self.codec
 

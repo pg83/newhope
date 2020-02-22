@@ -4,6 +4,7 @@ def package_versions():
     upm_ver = 'b928f8f884e147e82c94464dd324e44d149d2290'
 
     return {
+        'openssl': '1.1.1c',
         'upm': upm_ver,
         'asciidoc': '8.6.9',
         'autoconf': '2.69',

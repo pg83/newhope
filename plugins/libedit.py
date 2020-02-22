@@ -13,6 +13,7 @@ def libedit0():
             'depends': ['ncurses', 'termcap', 'make', 'c'],
             'provides': [
                 {'lib': 'edit'},
+                {'configure': '--with-libedit={pkgroot}'},
             ],
         },
     }

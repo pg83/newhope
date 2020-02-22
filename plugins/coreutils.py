@@ -20,7 +20,7 @@ def coreutils0():
              done
         """,
         'meta': {
-            'kind': ['tool', 'box'],
+            'kind': ['tool'],
             'depends': ['iconv', 'intl', 'openssl', 'make', 'c'],
             'provides': [
                 {'env': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'},

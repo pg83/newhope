@@ -182,13 +182,6 @@ class IFace(dict):
             self._a[k] = mod.__name__
 
     def find(self, name):
-        subst = {
-            'xpath': 'run_xpath_simple',
-            'Queue': 'queue',
-        }
-
-        name = subst.get(name, name)
-
         for i, f in enumerate(self._l):
             try:
                 ret = f(name)
