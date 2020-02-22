@@ -1,7 +1,7 @@
 @y.singleton
 def package_versions():
     llvm_ver = '9.0.1'
-    upm_ver = 'b928f8f884e147e82c94464dd324e44d149d2290'
+    upm_ver = '20f89906a30042ef13ebdaa8d9f7234e993fb079'
 
     return {
         'openssl': '1.1.1c',
