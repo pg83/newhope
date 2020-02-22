@@ -17,7 +17,7 @@ def find_modules():
 
         for d in b + c:
             if d.endswith('.py'):
-        
+
                 d = d[:-3]
                 p = a + '/' + d
                 p = p[len(pr) + 1:]
@@ -48,7 +48,7 @@ def find_modules():
                     skip(m)
 
                     continue
-        
+
                 if ' ' in m:
                     skip(m)
 
