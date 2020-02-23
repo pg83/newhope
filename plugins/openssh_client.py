@@ -1,5 +1,10 @@
+keygen_sh='''
+. $HOME/.ssh_agent
+'''
+
 install_agent = '''
 ln -sf ../../pkg/$1 ../../etc/runit/
+ln -sf ../../pkg/$1/03-keygen.sh ../../etc/profile.d/
 rm -rf ./log
 '''
 
@@ -15,6 +20,7 @@ def openssh_client0():
              cd $IDIR
              $(APPLY_EXTRA_PLAN_0)
              $(APPLY_EXTRA_PLAN_1)
+             $(APPLY_EXTRA_PLAN_2)
              chmod +x run
         ''',
         'meta': {
@@ -24,5 +30,6 @@ def openssh_client0():
         'extra': [
             {'kind': 'file', 'path': 'run', 'data': y.builtin_data('data/ssh_agent_run.py')},
             {'kind': 'file', 'path': 'install', 'data': install_agent},
+            {'kind': 'file', 'path': '03-keygen.sh', 'data': keygen_sh},
         ],
     }

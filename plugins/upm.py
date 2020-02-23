@@ -5,7 +5,7 @@ rm -rf ./log
 '''
 
 run_upm = '''#!/bin/sh
-/bin/upm cmd scheduler CRON
+exec /bin/upm cmd scheduler CRON
 '''
 
 @y.package

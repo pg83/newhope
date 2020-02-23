@@ -1,3 +1,12 @@
+etc_profile = '''
+. /pkg/profile
+
+for i in $(ls /etc/profile.d/); do
+    . "/etc/profile.d/$i"
+done
+'''
+
+
 colors_sh = '''
 # Сброс
 Color_Off='\e[0m'       # Text Reset
@@ -75,23 +84,17 @@ On_IWhite='\e[0;107m'   # White
 export PS1="$BIRed\\h$BIGreen@\\u$BIBlue:\\w$BIWhite# $Color_Off"
 '''
 
-@y.package
-def base0():
-    return {
-        'code': """
-            cd $IDIR
-            mkdir -p etc etc/upm etc/runit etc/runit/symlinks pkg pkg/cache srv bin dev sys proc home root
 
-            $(APPLY_EXTRA_PLAN_0)
+tmpdir_sh = '''
+if test -z "$HOME"; then
+    export HOME=$(getent passwd `whoami` | cut -d: -f6)
+fi
+export TMPDIR="$HOME/.tmpdir"
+mkdir -p ""$TMPDIR"" || true
+'''
 
-            touch pkg/profile
-            echo '. /pkg/profile' > etc/profile
-            cat colors_sh >> etc/profile && rm colors_sh
 
-            echo 'root:x:0:0:root:/root:/bin/sh' > etc/passwd
-
-            cat > etc/group << "EOF"
-root:x:0:
+group_sh = '''root:x:0:
 bin:x:1:
 sys:x:2:
 kmem:x:3:
@@ -103,17 +106,43 @@ disk:x:8:
 lp:x:9:
 dialout:x:10:
 audio:x:11:
-EOF
+'''
 
-            echo 'nameserver 8.8.8.8' > etc/resolv.conf
 
-            cd $IDIR/etc/runit/symlinks
+@y.package
+def base0():
+    return {
+        'code': """
+            cd $IDIR
+            mkdir -p etc etc/upm etc/runit etc/runit/symlinks etc/profile.d pkg pkg/cache srv bin dev sys proc home root
+
+            touch pkg/profile
+
+            cd etc
+
+            $(APPLY_EXTRA_PLAN_0)
             $(APPLY_EXTRA_PLAN_1)
-            chmod +x run
+            echo 'root:x:0:0:root:/root:/bin/sh' > passwd
+            echo 'nameserver 8.8.8.8' > resolv.conf
+
+            (
+              cd profile.d
+              $(APPLY_EXTRA_PLAN_3)
+              $(APPLY_EXTRA_PLAN_4)
+            )
+
+            (
+              cd runit/symlinks
+              $(APPLY_EXTRA_PLAN_2)
+              chmod +x run
+            )
         """,
         'extra': [
-            {'kind': 'file', 'path': 'colors_sh', 'data': colors_sh},
+            {'kind': 'file', 'path': 'profile', 'data': etc_profile},
+            {'kind': 'file', 'path': 'group', 'data': group_sh},
             {'kind': 'file', 'path': 'run', 'data': y.builtin_data('data/stale_symlinks.py')},
+            {'kind': 'file', 'path': '00-colors.sh', 'data': colors_sh},
+            {'kind': 'file', 'path': '01-tmpdir.sh', 'data': tmpdir_sh},
         ],
         'meta': {
             'kind': ['tool'],
