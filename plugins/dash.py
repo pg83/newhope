@@ -14,8 +14,8 @@ def dash0():
             'kind': ['box', 'tool'],
             'depends': ['libedit', 'make', 'c'],
             'provides': [
-                {'env': 'YSHELL', 'value': '{pkgroot}/bin/dash'},
-                {'env': 'DASH', 'value': '{pkgroot}/bin/dash'},
+                {'tool': 'YSHELL', 'value': '{pkgroot}/bin/dash'},
+                {'tool': 'DASH', 'value': '{pkgroot}/bin/dash'},
             ],
         },
     }

@@ -15,7 +15,7 @@ def p7zip0():
             'depends': ['c++', 'make', 'c'],
             'kind': ['tool', 'library'],
             'provides': [
-                {'env': 'Y7ZA', 'value': '{pkgroot}/bin/7za'},
+                {'tool': 'Y7ZA', 'value': '{pkgroot}/bin/7za'},
             ],
         },
     }

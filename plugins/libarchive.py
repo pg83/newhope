@@ -12,8 +12,8 @@ def libarchive0():
             'depends': ['zlib', 'bzip2', 'xz', 'make', 'c'],
             'provides': [
                 {'lib': 'archive'},
-                {'env': 'YTAR', 'value': '{pkgroot}/bin/bsdtar'},
-                {'env': 'YBSDTAR', 'value': '{pkgroot}/bin/bsdtar'},
+                {'tool': 'YTAR', 'value': '{pkgroot}/bin/bsdtar'},
+                {'tool': 'YBSDTAR', 'value': '{pkgroot}/bin/bsdtar'},
             ],
         },
     }

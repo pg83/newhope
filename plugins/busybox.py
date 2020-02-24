@@ -1,19 +1,7 @@
 @y.package
 def busybox0():
     return {
-        'code1': """
-            mkdir -p $IDIR/bin
-            cd $IDIR/bin
-            source fetch "https://www.busybox.net/downloads/binaries/{version}-defconfig-multiarch-musl/busybox-{arch}" 0
-            mv busybox-* busybox
-            chmod +x busybox
-
-            for x in `./busybox --list-full`; do
-                y=$(basename $x)
-                ln -fs busybox $y
-            done
-        """,
-        'code': """
+        'code': '''
             source fetch "https://www.busybox.net/downloads/busybox-{version}.tar.bz2" 1
 
             ln -s $CC ./gcc
@@ -46,12 +34,12 @@ def busybox0():
             unlink sh
             unlink wget
             unlink vi
-        """,
+        ''',
         'meta': {
             'kind': ['tool'],
             'depends': ['make', 'kernel-h', 'make', 'c'],
             'provides': [
-                {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
+                {'tool': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
             ],
             'contains': ['busybox-boot']
         },

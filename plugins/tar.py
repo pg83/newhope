@@ -11,7 +11,7 @@ def tar0():
             'kind': ['tool'],
             'depends': ['iconv', 'intl', 'gzip', 'bzip2', 'xz', 'unrar', 'busybox-boot', 'make', 'c'],
             'provides': [
-                {'env': 'YGNUTAR', 'value': '{pkgroot}/bin/tar'},
+                {'tool': 'YGNUTAR', 'value': '{pkgroot}/bin/tar'},
             ],
         },
     }

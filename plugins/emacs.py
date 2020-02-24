@@ -11,7 +11,7 @@ def emacs0():
             'kind': ['tool'],
             'depends': ['ncurses', 'zlib', 'make', 'c'],
             'provides': [
-                {'env': 'EMACS', 'value': '"{pkgroot/bin/emacs}"'},
+                {'tool': 'EMACS', 'value': '"{pkgroot/bin/emacs}"'},
             ],
         }
     }

@@ -46,11 +46,8 @@ def split_run_meta(m):
                 continue
 
             if 'env' in p:
-                e = p['env']
-
-                if 'CFLAGS' in e or 'LIBS' in e:
-                    continue
-
+                continue
+    
             yield p
 
     nm['provides'] = list(flt_provides())

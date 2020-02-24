@@ -13,7 +13,7 @@ def bc0():
             'kind': ['tool'],
             'depends': ['make', 'c'],
             'provides': [
-                {'env': 'YBC', 'value': '{pkgroot}/bin/bc'},
+                {'tool': 'YBC', 'value': '{pkgroot}/bin/bc'},
             ],
         },
     }

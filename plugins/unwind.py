@@ -6,7 +6,7 @@ def libunwind0():
              source fetch "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/libunwind-{version}.src.tar.xz" 0
              mv libunwind* xxx
              mv xxx/* ./
-             $(APPLY_EXTRA_PLAN_0)
+             $(F_0)
              cat src/AddressSpace.hpp | grep -v 'pragma comment' > tmp && mv tmp src/AddressSpace.hpp
              $YSHELL mk.sh
         """,

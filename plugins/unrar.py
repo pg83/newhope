@@ -13,7 +13,7 @@ def unrar0():
             'kind': ['box', 'tool'],
             'depends': ['c++', 'make', 'c'],
             'provides': [
-                {'env': 'YUNRAR', 'value': '{pkgroot}/bin/unrar'},
+                {'tool': 'YUNRAR', 'value': '{pkgroot}/bin/unrar'},
             ],
         },
     }

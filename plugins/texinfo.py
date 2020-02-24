@@ -11,7 +11,7 @@ def texinfo0():
             'kind': ['tool'],
             'depends': ['c++', 'make', 'c'],
             'provides': [
-                {'env': 'MAKEINFO', 'value': '{pkgroot}/bin/makeinfo'},
+                {'tool': 'MAKEINFO', 'value': '{pkgroot}/bin/makeinfo'},
             ],
         }
     }

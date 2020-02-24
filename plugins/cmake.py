@@ -35,7 +35,7 @@ def cmake0():
                 'upx',
             ] + extra,
             'provides': [
-                {'env': 'CMAKE', 'value': '{pkgroot}/bin/cmake'},
+                {'tool': 'CMAKE', 'value': '{pkgroot}/bin/cmake'},
             ],
         }
     }

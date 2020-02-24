@@ -10,7 +10,7 @@ def bzip20():
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'bz2'},
-                {'env': 'YBZIP2', 'value': '{pkgroot}/bin/bzip2'},
+                {'tool': 'YBZIP2', 'value': '{pkgroot}/bin/bzip2'},
             ],
         },
     }

@@ -10,7 +10,9 @@ def netbsd_curses0():
             'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
-                {'lib': 'curses', 'configure': {'opts': ['--with-curses={pkgroot}', '--with-ncurses={pkgroot}']}},
+                {'lib': 'curses'},
+                {'configure': '--with-curses={pkgroot}'},
+                {'configure': '--with-ncurses={pkgroot}'},
                 {'env': 'LIBS', 'value': '"$LIBS -lform -lmenu -lpanel -lcurses -lterminfo"'},
                 {'env': 'NCURSES_CFLAGS', 'value': '"-I{pkgroot}/include"'},
                 {'env': 'NCURSESW_CFLAGS', 'value': '"-I{pkgroot}/include"'},

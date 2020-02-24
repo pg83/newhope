@@ -12,6 +12,7 @@ def mc(gui, gui_lib):
         'meta': {
             'kind': ['program'],
             'depends': ['intl', 'iconv', 'glib', gui, 'make', 'c'],
+            'repacks': {},
         }
     }
 

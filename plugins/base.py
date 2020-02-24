@@ -120,20 +120,20 @@ def base0():
 
             cd etc
 
-            $(APPLY_EXTRA_PLAN_0)
-            $(APPLY_EXTRA_PLAN_1)
+            $(F_0)
+            $(F_1)
             echo 'root:x:0:0:root:/root:/bin/sh' > passwd
             echo 'nameserver 8.8.8.8' > resolv.conf
 
             (
               cd profile.d
-              $(APPLY_EXTRA_PLAN_3)
-              $(APPLY_EXTRA_PLAN_4)
+              $(F_3)
+              $(F_4)
             )
 
             (
               cd runit/symlinks
-              $(APPLY_EXTRA_PLAN_2)
+              $(F_2)
               chmod +x run
             )
         """,

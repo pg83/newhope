@@ -11,7 +11,7 @@ def help2man0():
             'kind': ['tool'],
             'depends': ['perl5', 'make', 'c'],
             'provides': [
-                {'env': 'HELP2MAN', 'value': '{pkgroot}/bin/help2man'},
+                {'tool': 'HELP2MAN', 'value': '{pkgroot}/bin/help2man'},
             ],
         },
     }

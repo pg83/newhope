@@ -13,7 +13,7 @@ def vim0():
             'kind': ['tool'],
             'depends': ['ncurses', 'zlib', 'make', 'c', 'upx'],
             'provides': [
-                {'env': 'VIM', 'value': '"{pkgroot}/bin/vim"'},
+                {'tool': 'VIM', 'value': '"{pkgroot}/bin/vim"'},
             ],
         }
     }

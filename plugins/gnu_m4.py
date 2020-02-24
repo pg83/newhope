@@ -12,7 +12,7 @@ def gnu_m40():
             'kind': ['tool'],
             'depends': ['libsigsegv', 'crt', 'help2man', 'make', 'c'],
             'provides': [
-                {'env': 'M4', 'value': '{pkgroot}/bin/m4'},
+                {'tool': 'M4', 'value': '{pkgroot}/bin/m4'},
             ],
         },
     }

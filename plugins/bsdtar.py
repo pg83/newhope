@@ -11,7 +11,7 @@ def bsdtar0():
             'kind': ['tool'],
             'depends': ['libarchive'],
             'provides': [
-                {'env': 'YTAR', 'value': '{pkgroot}/bin/bsdtar'},
+                {'tool': 'YTAR', 'value': '{pkgroot}/bin/bsdtar'},
             ]
         }
     }

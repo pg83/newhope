@@ -71,6 +71,9 @@ class Func(object):
     def out_deps(self):
         y.info('{dr}' + str(self) + '{}', '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')
 
+    def repacks(self):
+        return self.code().get('meta', {}).get('repacks', y.repacks())
+
     def contains(self):
         return self.code().get('meta', {}).get('contains', [])
 
@@ -309,7 +312,7 @@ class Data(object):
 
                 yield f
 
-                for k in y.repacks_keys():
+                for k in sorted(f.repacks().keys()):
                     yield SplitFunc(f, k)
 
         self.data = list(iter_objects())

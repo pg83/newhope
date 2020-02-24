@@ -26,8 +26,8 @@ def yash0():
             'kind': ['tool'],
             'depends': ['intl', 'ncurses', 'xz', 'tar', 'asciidoc', 'python', 'make', 'c'],
             'provides': [
-                {'env': 'YSHELL_OPT', 'value': '{pkgroot}/bin/yash'},
-                {'env': 'YASH', 'value': '{pkgroot}/bin/yash'},
+                {'tool': 'YSHELL_OPT', 'value': '{pkgroot}/bin/yash'},
+                {'tool': 'YASH', 'value': '{pkgroot}/bin/yash'},
             ],
         },
     }

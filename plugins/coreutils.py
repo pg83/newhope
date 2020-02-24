@@ -23,7 +23,7 @@ def coreutils0():
             'kind': ['tool'],
             'depends': ['iconv', 'intl', 'openssl', 'make', 'c'],
             'provides': [
-                {'env': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'},
+                {'tool': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'},
             ],
         },
     }

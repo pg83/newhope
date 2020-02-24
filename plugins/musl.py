@@ -7,11 +7,11 @@ if '{os}' == 'linux':
                 export CFLAGS="-Diconv=musl_iconv -Diconv_open=musl_iconv_open -Diconv_close=musl_iconv_close -Ddlopen=musl_dlopen -Ddlclose=musl_dlclose -Ddlerror=musl_dlerror -Ddlsym=musl_dlsym $CFLAGS"
                 rm src/ldso/x86_64/dlsym.s
                 $YSHELL ./configure --prefix=$IDIR --enable-static --disable-shared || exit 1
-                $(APPLY_EXTRA_PLAN_3)
+                $(F_3)
                 mv crt1.c crt/
                 $YMAKE -j $NTHRS || exit 1
                 $YMAKE install || exit 2
-                $(APPLY_EXTRA_PLAN_2)
+                $(F_2)
                 source ./malloc.sh
                 (cd $IDIR/lib && $AR q libc.a crt1.o crti.o crtn.o && rm *crt* && $RANLIB libc.a && ln -s libc.a libmuslc.a && rm libdl.a)
                 rm $IDIR/include/iconv.h

@@ -14,7 +14,7 @@ def upx_free0():
             'kind': ['tool'],
             'depends': ['zlib', 'ucl', 'make', 'c', 'c++'],
             'provides': [
-                {'env': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
+                {'tool': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
             ]
         },
     }

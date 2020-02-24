@@ -42,11 +42,11 @@ class OutputResult(object):
         in_fly = sorted(list(self._in_fly))
 
         def get_part(x):
-            try:
-                return x.split('-')[1]
-            except Exception:
-                return x
+            if x[0] == '$':
+                return x[4:-5]
 
+            return x
+    
         in_fly = [get_part(x) for x in in_fly]
 
         b = y.get_color_ext(None, 'on_grey', attrs=['light', 'reverse'])

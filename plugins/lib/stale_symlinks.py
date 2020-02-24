@@ -10,7 +10,12 @@ for prefix in ('/etc/runit', '/etc/profile.d'):
         p = os.path.join(prefix, x)
 
         if os.path.islink(p):
-            where = p + '/' + os.readlink(p)
+            l = os.readlink(p)
+    
+            if os.path.isabs(l):
+                where = l
+            else:
+                where = prefix + '/' + l
 
             if not os.path.exists(where):
                 os.unlink(p)

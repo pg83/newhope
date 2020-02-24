@@ -12,7 +12,8 @@ def openssh0():
             'kind': ['tool'],
             'depends': ['openssl', 'make', 'c', 'zlib', 'libedit', 'jemalloc'],
             'provides': [
-                {'env': 'SSHD', 'value': '"{pkgroot}/sbin/sshd"'},
+                {'tool': 'SSHD', 'value': '"{pkgroot}/sbin/sshd"'},
             ],
+            'repacks': {},
         },
     }

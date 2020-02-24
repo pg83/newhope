@@ -4,7 +4,7 @@ def python0():
         'code': """
             source fetch "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz" 1
             export PYTHONHOME=
-            $(APPLY_EXTRA_PLAN_0)
+            $(F_0)
             $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared --with-signal-module --with-system-expat --with-system-ffi || exit1
             ##echo "#define HAVE_PTH 1" >> pyconfig.h
             ##echo "#undef HAVE_PTHREAD_H" >> pyconfig.h 
@@ -12,8 +12,8 @@ def python0():
             $YMAKE install
 
             mkdir good && cd good
-            $(APPLY_EXTRA_PLAN_1)
-            $(APPLY_EXTRA_PLAN_2)
+            $(F_1)
+            $(F_2)
             export PYTHONHOME="$IDIR"
             source ./mk_staticpython.sh "$IDIR/bin/python2.7" "2.7" "2" "Py_Main"
         """,
@@ -31,8 +31,9 @@ def python0():
             ],
             'provides': [
                 {'lib': 'python2.7'},
-                {'env': 'PYTHON', 'value': '{pkgroot}/bin/staticpython2'},
+                {'tool': 'PYTHON', 'value': '{pkgroot}/bin/staticpython2'},
                 {'env': 'PYTHONHOME', 'value': '{pkgroot}/lib/python2.7'},
             ],
+            'repacks': {},
         },
     }

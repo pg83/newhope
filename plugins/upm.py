@@ -16,15 +16,15 @@ def upm0():
              (mv newhope* xxx && mv xxx/* ./)
              mkdir $IDIR/bin
              $PYTHON3 ./cli release > upm
-             $(APPLY_EXTRA_PLAN_0)
-             $(APPLY_EXTRA_PLAN_1)
+             $(F_0)
+             $(F_1)
              $YSHELL ./freeze.sh "$PYTHON3" ./upm -w
              $YUPX -o upm.upx upm
              mv upm.upx $IDIR/bin/upm && chmod +x $IDIR/bin/upm
 
              cd $IDIR
-             $(APPLY_EXTRA_PLAN_2)
-             $(APPLY_EXTRA_PLAN_3)
+             $(F_2)
+             $(F_3)
              chmod +x install
              chmod +x run
         """,

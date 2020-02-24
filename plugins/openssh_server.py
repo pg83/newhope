@@ -10,7 +10,8 @@ def openssh_server0():
             'kind': ['tool'],
             'depends': ['openssh'],
             'provides': [
-                {'env': 'SSHD', 'value': '{pkgroot}/bin/sshd'}
+                {'tool': 'SSHD', 'value': '{pkgroot}/bin/sshd'}
             ],
+            'repacks': {},
         }
     }

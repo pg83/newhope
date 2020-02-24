@@ -2,9 +2,9 @@
 def python3_static0():
     return {
         'code': """
-            $(APPLY_EXTRA_PLAN_0)
-            $(APPLY_EXTRA_PLAN_1)
-            $(APPLY_EXTRA_PLAN_2)
+            $(F_0)
+            $(F_1)
+            $(F_2)
 
             $YSHELL ./freeze_python.sh $PYTHON3
             mkdir $IDIR/bin
@@ -20,7 +20,8 @@ def python3_static0():
             'depends': ['python3', 'upx', 'make', 'c'],
             'provides': [
                 {'lib': 'python3.8'},
-                {'env': 'STATICPYTHON3', 'value': '{pkgroot}/bin/staticpython3'},
+                {'tool': 'STATICPYTHON3', 'value': '{pkgroot}/bin/staticpython3'},
             ],
+            'repacks': {},
         },
     }

@@ -6,7 +6,7 @@ def libcxxrt0():
              source fetch "https://github.com/pathscale/libcxxrt/archive/master.zip" 0
              mv libcxxrt* xxx
              mv xxx/* ./
-             $(APPLY_EXTRA_PLAN_0)
+             $(F_0)
              $YSHELL mk.sh
         """,
         'extra': [

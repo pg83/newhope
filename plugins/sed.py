@@ -11,7 +11,7 @@ def sed0():
             'kind': ['tool'],
             'depends': ['iconv', 'intl', 'make', 'c'],
             'provides': [
-                {'env': 'SED', 'value': '{pkgroot}/bin/sed'},
+                {'tool': 'SED', 'value': '{pkgroot}/bin/sed'},
             ],
         }
     }

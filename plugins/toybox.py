@@ -16,7 +16,7 @@ if '{os}' == 'linux':
             'meta': {
                 'kind': ['tool'],
                 'provides': [
-                    {'env': 'TOYBOX', 'value': '{pkgroot}/bin/toybox'},
+                    {'tool': 'TOYBOX', 'value': '{pkgroot}/bin/toybox'},
                 ],
             },
         }

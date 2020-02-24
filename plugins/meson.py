@@ -4,8 +4,8 @@ def meson0():
         'code': """
              source fetch "https://github.com/mesonbuild/meson/releases/download/{version}/meson-{version}.tar.gz" 1
              mkdir $IDIR/bin
-             $(APPLY_EXTRA_PLAN_0)
-             $(APPLY_EXTRA_PLAN_1)
+             $(F_0)
+             $(F_1)
              $PYTHON3 ./freeze.py ./meson.py . 
              $YMAKE -j $NTHR
              $YUPX -o $IDIR/bin/meson meson
@@ -15,8 +15,9 @@ def meson0():
             'kind': ['tool'],
             'depends': ['python3', 'upx', 'make', 'c'],
             'provides': [
-                {'env': 'MESON', 'value': '{pkgroot}/bin/meson'},
+                {'tool': 'MESON', 'value': '{pkgroot}/bin/meson'},
             ],
+            'repacks': {},
         },
         'extra': [
             {'kind': 'file', 'path': 'freeze.py', 'data': y.builtin_data('data/freeze.py')},

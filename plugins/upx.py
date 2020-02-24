@@ -9,7 +9,8 @@ def upx0():
         'meta': {
             'kind': ['tool'],
             'provides': [
-                {'env': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
-            ]
+                {'tool': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
+            ],
+            'repacks': {},
         },
     }

@@ -29,7 +29,6 @@ def box0():
         'bc',
         'patch',
         'procps-ng',
-        'upx',
         'wget',
     ]
 
@@ -51,6 +50,8 @@ def box0():
 
              copy_many $@
 
+             cp -p $YUPX $IDIR/bin/upx
+
              rm -rf $IDIR/include
              rm -rf $IDIR/share
              rm -rf $IDIR/lib
@@ -61,24 +62,25 @@ def box0():
         ''',
         'meta': {
             'kind': ['tool'],
-            'depends': lst_run,
-            'contains': lst_run + lst + ['make-boot', 'busybox-boot', 'busybox', 'toybox'],
+            'depends': lst_run + ['upx'],
+            'contains': lst_run + lst + ['upx', 'make-boot', 'busybox-boot', 'busybox', 'toybox'],
+            'repacks': {},
             'provides': [
-                {'env': 'SED', 'value': '"{pkgroot}/bin/sed"'},
-                {'env': 'YGNUTAR', 'value': '"{pkgroot}/bin/tar"'},
-                {'env': 'YTAR', 'value': '"{pkgroot}/bin/bsdtar"'},
-                {'env': 'YBSDTAR', 'value': '"{pkgroot}/bin/bsdtar"'},
-                {'env': 'YXZ', 'value': '"{pkgroot}/bin/xz"'},
-                {'env': 'YXZCAT', 'value': '"{pkgroot}/bin/xzcat"'},
-                {'env': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
-                {'env': 'YMAKE', 'value': '"{pkgroot}/bin/make"'},
-                {'env': 'YSHELL', 'value': '"{pkgroot}/bin/dash"'},
-                {'env': 'YGZIP', 'value': '"{pkgroot}/bin/gzip"'},
-                {'env': 'YBZIP2', 'value': '"{pkgroot}/bin/bzip2"'},
-                #{'env': 'YUNZIP', 'value': '"{pkgroot}/bin/dash"'},
-                {'env': 'YCURL', 'value': '"{pkgroot}/bin/curl"'},
-                {'env': 'YWGET', 'value': '"{pkgroot}/bin/wget"'},
-                {'env': 'Y7ZA', 'value': '"{pkgroot}/bin/7za"'},
+                {'tool': 'SED', 'value': '"{pkgroot}/bin/sed"'},
+                {'tool': 'YGNUTAR', 'value': '"{pkgroot}/bin/tar"'},
+                {'tool': 'YTAR', 'value': '"{pkgroot}/bin/bsdtar"'},
+                {'tool': 'YBSDTAR', 'value': '"{pkgroot}/bin/bsdtar"'},
+                {'tool': 'YXZ', 'value': '"{pkgroot}/bin/xz"'},
+                {'tool': 'YXZCAT', 'value': '"{pkgroot}/bin/xzcat"'},
+                {'tool': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
+                {'tool': 'YMAKE', 'value': '"{pkgroot}/bin/make"'},
+                {'tool': 'YSHELL', 'value': '"{pkgroot}/bin/dash"'},
+                {'tool': 'YGZIP', 'value': '"{pkgroot}/bin/gzip"'},
+                {'tool': 'YBZIP2', 'value': '"{pkgroot}/bin/bzip2"'},
+                #{'tool': 'YUNZIP', 'value': '"{pkgroot}/bin/dash"'},
+                {'tool': 'YCURL', 'value': '"{pkgroot}/bin/curl"'},
+                {'tool': 'YWGET', 'value': '"{pkgroot}/bin/wget"'},
+                {'tool': 'Y7ZA', 'value': '"{pkgroot}/bin/7za"'},
             ],
         }
     }

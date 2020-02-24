@@ -10,7 +10,7 @@ def quasar_m40():
             'kind': ['box', 'tool'],
             'depends': ['coreutils-boot', 'make', 'c'],
             'provides': [
-                {'env': 'M4', 'value': '{pkgroot}/bin/m4'},
+                {'tool': 'M4', 'value': '{pkgroot}/bin/m4'},
             ],
         },
     }

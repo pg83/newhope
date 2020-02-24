@@ -1,14 +1,14 @@
 @y.package
 def python30():
-    version = '3.8.1'
+    version = y.package_versions()['python3']
     ver = '.'.join(version.split('.')[:2])
 
     return {
         'code': """
             source fetch "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz" 1
             export PYTHONHOME=
-            $(APPLY_EXTRA_PLAN_0)
-            $(APPLY_EXTRA_PLAN_1)
+            $(F_0)
+            $(F_1)
 
             source subst_string Setup OPENSSL_INCLUDE "$OPENSSL_INCLUDES"
             source subst_string Setup LIBFFI_CFLAGS "$LIBFFI_CFLAGS"
@@ -46,8 +46,9 @@ def python30():
             ],
             'provides': [
                 {'lib': 'python3.8'},
-                {'env': 'PYTHON3', 'value': '{pkgroot}/bin/python3'},
-                {'env': 'PYTHON3HOME', 'value': '{pkgroot}/lib/python3.8'},
+                {'tool': 'PYTHON3', 'value': '{pkgroot}/bin/python3'},
+                {'tool': 'PYTHON3HOME', 'value': '{pkgroot}/lib/python3.8'},
             ],
+            'repacks': {},
         },
     }

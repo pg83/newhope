@@ -23,7 +23,7 @@ def git0():
             'kind': ['tool'],
             'depends': ['upx', 'pcre', 'curl', 'openssl', 'expat', 'python', 'iconv', 'perl5', 'zlib', 'make', 'c'],
             'provides': [
-                {'env': 'GIT', 'value': '{pkgroot}/bin/git'},
+                {'tool': 'GIT', 'value': '{pkgroot}/bin/git'},
                 {'env': 'GIT_EXEC_PATH', 'value': '{pkgroot}/bin'},
             ],
         },

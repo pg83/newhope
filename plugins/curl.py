@@ -12,7 +12,7 @@ def curl0():
             'kind': ['box', 'tool'],
             'depends': ['openssl', 'libidn2', 'libmetalink', 'make', 'c'],
             'provides': [
-                {'env': 'CURL', 'value': '{pkgroot}/bin/curl'},
+                {'tool': 'CURL', 'value': '{pkgroot}/bin/curl'},
             ],
         },
     }

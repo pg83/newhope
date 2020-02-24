@@ -20,7 +20,7 @@ def libffi0():
             'depends': ['sed', 'make', 'c'],
             'provides': [
                 {'lib': 'ffi', 'configure': {'opt': '--with-system-ffi={pkgroot}'}},
-                {'env': 'LIBFFI_CFLAGS', 'value': '-I/{pkgroot}/include'},
+                {'env': 'LIBFFI_CFLAGS', 'value': '"-I/{pkgroot}/include"'},
             ],
         },
     }

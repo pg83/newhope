@@ -5,7 +5,7 @@ if '{os}' == 'linux':
             'code': """
                 mkdir -p $IDIR/bin
                 cd $IDIR/bin
-                source fetch "https://www.busybox.net/downloads/binaries/{version}-defconfig-multiarch-musl/busybox-{arch}" 0
+                source fetch "https://www.busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-{arch}" 0
                 mv busybox-* busybox
                 chmod +x busybox
 
@@ -18,7 +18,7 @@ if '{os}' == 'linux':
             'meta': {
                 'kind': ['tool'],
                 'provides': [
-                    {'env': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
+                    {'tool': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
                 ],
             },
         }
@@ -28,6 +28,5 @@ else:
         return {
             'meta': {
                 'kind': ['tool'],
-                'undeps': ['busybox'],
             }
         }

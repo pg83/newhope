@@ -11,7 +11,7 @@ def autoconf0():
             'kind': ['tool'],
             'depends': ['gnu-m4', 'make'],
             'provides': [
-                {'env': 'AUTOCONF', 'value': '"{pkgroot}/bin/autoconf"'},
+                {'tool': 'AUTOCONF', 'value': '"{pkgroot}/bin/autoconf"'},
             ],
         },
     }

@@ -11,7 +11,7 @@ def libcxx0():
              source fetch "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/libcxx-{version}.src.tar.xz" 0
              mv libcxx* xxx
              mv xxx/* ./
-             $(APPLY_EXTRA_PLAN_0)
+             $(F_0)
              $YSHELL mk.sh
         """,
         'extra': [

@@ -12,7 +12,7 @@ def procps_ng0():
             'depends': ['make', 'c', 'ncurses', 'intl', 'iconv', 'upx'],
             'kind': ['tool'],
             'provides': [
-                {'env': 'PATCH', 'value': '{pkgroot}/bin/patch'},
+                {'tool': 'PATCH', 'value': '{pkgroot}/bin/patch'},
             ],
         },
     }

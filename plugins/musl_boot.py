@@ -4,8 +4,8 @@ if '{os}' == 'linux':
         return {
             'code': '''
                 source fetch "https://www.musl-libc.org/releases/musl-{version}.tar.gz" 1
-                $(APPLY_EXTRA_PLAN_0)
-                $(APPLY_EXTRA_PLAN_1)
+                $(F_0)
+                $(F_1)
                 export CFLAGS="-Diconv=musl_iconv -Diconv_open=musl_iconv_open -Diconv_close=musl_iconv_close $CFLAGS"
                 sh ./mk.sh x86_64 .
                 SRC=$(pwd) BDIR=$BDIR/build IDIR=$IDIR CC=$CC sh run.sh

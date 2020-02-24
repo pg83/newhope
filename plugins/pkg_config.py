@@ -16,7 +16,7 @@ def pkg_config_base(cflags, opts, deps):
             'kind': ['tool'],
             'depends': deps + ['iconv', 'file', 'make', 'c'],
             'provides': [
-                {'env': 'PKG_CONFIG', 'value': '{pkgroot}/bin/pkg-config'}
+                {'tool': 'PKG_CONFIG', 'value': '{pkgroot}/bin/pkg-config'}
             ],
         },
     }

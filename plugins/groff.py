@@ -11,7 +11,7 @@ def groff0():
             'kind': ['tool'],
             'depends': ['c++', 'texinfo','make', 'perl5', 'c'],
             'provides': [
-                {'env': 'TROFF', 'value': '{pkgroot}/bin/troff'},
+                {'tool': 'TROFF', 'value': '{pkgroot}/bin/troff'},
             ],
         }
     }

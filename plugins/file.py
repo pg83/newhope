@@ -11,7 +11,7 @@ def file0():
             'kind': ['tool'],
             'depends': ['make', 'c'],
             'profides': [
-                {'env': 'FILE_TOOL', 'value': '{pkgroot}/bin/file'}
+                {'tool': 'FILE_TOOL', 'value': '{pkgroot}/bin/file'}
             ],
         },
     }

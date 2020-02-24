@@ -11,7 +11,7 @@ def gzip0():
             'kind': ['tool'],
             'depends': ['make', 'c'],
             'provides': [
-                {'env': 'YGZIP', 'value': '{pkgroot}/bin/gzip'},
+                {'tool': 'YGZIP', 'value': '{pkgroot}/bin/gzip'},
             ],
         },
     }

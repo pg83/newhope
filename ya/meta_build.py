@@ -41,7 +41,11 @@ def meta_to_build(meta):
                             for o in cfg['opts']:
                                 yield 'export COFLAGS="$COFLAGS {opt}"'.format(opt=o)
 
-            if 'env' in p:
-                yield 'export {k}={v}'.format(k=p['env'], v=p['value'])
+                if 'env' in p:
+                    yield 'export {k}={v}'.format(k=p['env'], v=p['value'])
 
+            if is_bin:
+                if 'tool' in p:
+                    yield 'export {k}={v}'.format(k=p['tool'], v=p['value'])
+        
     return '\n'.join(iter()) + '\n'

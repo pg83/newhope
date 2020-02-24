@@ -20,7 +20,7 @@ def make_boot0():
             'kind': ['tool'],
             'depends': extra,
             'provides': [
-                {'env': 'YMAKE', 'value': '{pkgroot}/bin/make'},
+                {'tool': 'YMAKE', 'value': '{pkgroot}/bin/make'},
             ],
         },
     }

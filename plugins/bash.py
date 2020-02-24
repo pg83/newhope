@@ -19,7 +19,7 @@ def bash0():
             'kind': ['tool'],
             'depends': ['ncurses', 'intl', 'iconv', 'make', 'c'],
             'provides': [
-                {'env': 'YBASH', 'value': '{pkgroot}/bin/bash'},
+                {'tool': 'YBASH', 'value': '{pkgroot}/bin/bash'},
             ],
         }
     }

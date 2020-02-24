@@ -1,4 +1,5 @@
 keygen_sh='''
+touch $HOME/.ssh_agent
 . $HOME/.ssh_agent
 '''
 
@@ -18,14 +19,15 @@ def openssh_client0():
              $YUPX $IDIR/bin/*
 
              cd $IDIR
-             $(APPLY_EXTRA_PLAN_0)
-             $(APPLY_EXTRA_PLAN_1)
-             $(APPLY_EXTRA_PLAN_2)
+             $(F_0)
+             $(F_1)
+             $(F_2)
              chmod +x run
         ''',
         'meta': {
             'kind': ['tool'],
             'depends': ['openssh', 'upx'],
+            'repacks': {},
         },
         'extra': [
             {'kind': 'file', 'path': 'run', 'data': y.builtin_data('data/ssh_agent_run.py')},

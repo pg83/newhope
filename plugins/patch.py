@@ -11,7 +11,7 @@ def patch0():
             'depends': ['bison', 'make', 'c'],
             'kind': ['tool'],
             'provides': [
-                {'env': 'PATCH', 'value': '{pkgroot}/bin/patch'},
+                {'tool': 'PATCH', 'value': '{pkgroot}/bin/patch'},
             ],
         },
     }

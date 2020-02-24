@@ -11,8 +11,8 @@ def xz0():
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'lzma'},
-                {'env': 'YXZ', 'value': '{pkgroot}/bin/xz'},
-                {'env': 'YXZCAT', 'value': '{pkgroot}/bin/xzcat'},
+                {'tool': 'YXZ', 'value': '{pkgroot}/bin/xz'},
+                {'tool': 'YXZCAT', 'value': '{pkgroot}/bin/xzcat'},
             ],
         },
     }

@@ -17,7 +17,7 @@ def coreutils_boot0():
             'kind': ['tool'],
             'depends': ['make', 'c'],
             'provides': [
-                {'env': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'},
+                {'tool': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'},
             ],
         },
     }

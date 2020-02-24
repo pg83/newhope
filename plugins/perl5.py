@@ -30,8 +30,8 @@ def perl50():
             'kind': ['tool'],
             'depends': ['iconv', 'zlib', 'coreutils-boot', 'make', 'c', 'bash'],
             'provides': [
-                {'env': 'YPERL', 'value': '{pkgroot}/bin/perl'},
-                {'env': 'POD2HTML', 'value': '{pkgroot}/bin/pod2html'},
+                {'tool': 'YPERL', 'value': '{pkgroot}/bin/perl'},
+                {'tool': 'POD2HTML', 'value': '{pkgroot}/bin/pod2html'},
             ],
         },
     }

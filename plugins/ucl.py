@@ -10,7 +10,7 @@ def ucl0():
         ''',
         'meta': {
             'kind': ['library'],
-            'depends': ['musl', 'c'],
+            'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'ucl'},
                 {'env': 'UPX_UCLDIR', 'value': '"{pkgroot}"'},
