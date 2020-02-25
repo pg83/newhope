@@ -47,5 +47,5 @@ def meta_to_build(meta):
             if is_bin:
                 if 'tool' in p:
                     yield 'export {k}={v}'.format(k=p['tool'], v=p['value'])
-        
+
     return '\n'.join(iter()) + '\n'

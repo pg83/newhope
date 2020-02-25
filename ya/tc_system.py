@@ -7,20 +7,20 @@ def iter_darwin():
 
             if k == 'c':
                 meta['provides'] = [
-                    {'env': 'CC', 'value': '"' + path + '"'},
-                    {'env': 'CFLAGS', 'value': '"$CFLAGS"'},
-                    {'env': 'AR', 'value': '"ar"'},
-                    {'env': 'RANLIB', 'value': '"ranlib"'},
-                    {'env': 'STRIP', 'value': '"strip"'},
-                    {'env': 'NM', 'value': '"nm"'},
+                    {'tool': 'CC', 'value': '"' + path + '"'},
+                    {'tool': 'CFLAGS', 'value': '"$CFLAGS"'},
+                    {'tool': 'AR', 'value': '"ar"'},
+                    {'tool': 'RANLIB', 'value': '"ranlib"'},
+                    {'tool': 'STRIP', 'value': '"strip"'},
+                    {'tool': 'NM', 'value': '"nm"'},
                 ]
             elif k == 'c++':
                 meta['provides'] = [
-                    {'env': 'CXX', 'value': '"' + path + '++"'},
+                    {'tool': 'CXX', 'value': '"' + path + '++"'},
                 ]
             elif k == 'linker':
                 meta['provides'] = [
-                    {'env': 'LD', 'value': '"' + path + '"'},
+                    {'tool': 'LD', 'value': '"' + path + '"'},
                 ]
 
             yield meta
@@ -54,22 +54,22 @@ def iter_linux():
 
             if k == 'c':
                 meta['provides'] = [
-                    {'env': 'CC', 'value': '"' + path + '"'},
-                    {'env': 'CFLAGS', 'value': '"-nostdinc $CFLAGS"'},
-                    {'env': 'AR', 'value': '"/usr/bin/llvm-ar"'},
-                    {'env': 'RANLIB', 'value': '"/usr/bin/llvm-ranlib"'},
-                    {'env': 'STRIP', 'value': '"/usr/bin/llvm-strip"'},
-                    {'env': 'NM', 'value': '"/usr/bin/llvm-nm"'},
+                    {'tool': 'CC', 'value': '"' + path + '"'},
+                    {'tool': 'CFLAGS', 'value': '"-nostdinc $CFLAGS"'},
+                    {'tool': 'AR', 'value': '"/usr/bin/llvm-ar"'},
+                    {'tool': 'RANLIB', 'value': '"/usr/bin/llvm-ranlib"'},
+                    {'tool': 'STRIP', 'value': '"/usr/bin/llvm-strip"'},
+                    {'tool': 'NM', 'value': '"/usr/bin/llvm-nm"'},
                 ]
             elif k == 'c++':
                 meta['provides'] = [
-                    {'env': 'CXX', 'value': '"' + path + '++"'},
-                    {'env': 'CXXFLAGS', 'value': '"-nostdinc++ $CXXFLAGS"'},
+                    {'tool': 'CXX', 'value': '"' + path + '++"'},
+                    {'tool': 'CXXFLAGS', 'value': '"-nostdinc++ $CXXFLAGS"'},
                 ]
             elif k == 'linker':
                 meta['provides'] = [
-                    {'env': 'LD', 'value': '"' + path + '"'},
-                    {'env': 'LDFLAGS', 'value': '"-static -all-static -nostdlib -fuse-ld=/usr/bin/ld.lld $LDFLAGS"'},
+                    {'tool': 'LD', 'value': '"' + path + '"'},
+                    {'tool': 'LDFLAGS', 'value': '"-static -all-static -nostdlib -fuse-ld=/usr/bin/ld.lld $LDFLAGS"'},
                 ]
 
             yield meta

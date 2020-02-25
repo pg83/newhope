@@ -157,6 +157,7 @@ class Func(object):
 
     @y.cached_method
     def run_func(self):
+        print self
         data = y.dc(self.c())
 
         data['deps'] = y.uniq_list_x(data['deps'] + self.data.calc(self.deps))
@@ -202,7 +203,7 @@ class Func(object):
 
         return res
 
-    def calc_extra(self):
+    def calc_extra_box(self):
         if self.base == 'box':
             return []
 
@@ -215,6 +216,24 @@ class Func(object):
             return self.busybox_boot()
 
         return [bg.i]
+
+    def calc_clang(self):
+        c = self.code()
+
+        full = c.get('code', '') + c.get('prepare', '')
+
+        if all((y not in full) for y in ('#pragma cc', './configure', 'YMAKE', '$CC', '$CXX', 'gcc', 'clang')):
+            return []
+
+        res = self.data.clang_by_gen.get(self.g - 1)
+
+        if res is None:
+            return self.data.clang_boot()
+
+        return [res.i]
+
+    def calc_extra(self):
+        return self.calc_extra_box() + self.calc_clang()
 
     @y.cached_method
     def calc_deps(self):
@@ -302,12 +321,18 @@ class Data(object):
         self.new_funcs = []
         self.by_name = y.collections.defaultdict(dict)
         self.box_by_gen = {}
+        self.clang_by_gen = {}
         self.dd = y.collections.defaultdict(list)
         self.func_by_num = []
         self.inc_count = ic()
 
         def iter_objects():
-            for x in sorted(data, key=lambda x: x['base']):
+            subst = {'clang-boot': ''}
+
+            def sort_key(x):
+                return subst.get(x, x)
+    
+            for x in sorted(data, key=lambda x: sort_key(x['base'])):
                 f = self.create_object(x)
 
                 yield f
@@ -320,6 +345,12 @@ class Data(object):
 
     def busybox_boot(self):
         return self.last_elements(['busybox-boot'], must_have=False)
+
+    def clang(self):
+        return self.last_elements(['clang'], must_have=False)
+
+    def clang_boot(self):
+        return self.last_elements(['clang-boot'], must_have=True)
 
     def create_object(self, x):
         return Func(x, self)
@@ -384,6 +415,9 @@ class Data(object):
         if func.base == 'box':
             self.box_by_gen[g] = func
 
+        if func.base == 'clang':
+            self.clang_by_gen[g] = func
+    
         func.g = g
         func.i = len(self.func_by_num)
 
@@ -453,7 +487,7 @@ class Tower(object):
 
     def gen_funcs(self):
         dt = Data(self._cc, self._flat, [x for x in self._data])
-        #dt.out()
+        dt.out()
 
         cnt = 0
 

@@ -47,7 +47,7 @@ def split_run_meta(m):
 
             if 'env' in p:
                 continue
-    
+
             yield p
 
     nm['provides'] = list(flt_provides())

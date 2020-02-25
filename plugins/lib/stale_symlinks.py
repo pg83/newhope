@@ -11,7 +11,7 @@ for prefix in ('/etc/runit', '/etc/profile.d'):
 
         if os.path.islink(p):
             l = os.readlink(p)
-    
+
             if os.path.isabs(l):
                 where = l
             else:

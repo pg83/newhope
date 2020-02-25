@@ -84,7 +84,7 @@ def build_makefile(nodes, kind):
         for i, r in enumerate(nn):
             res = y.print_one_node(r)
             do_apply_node(r, by_name)
-    
+
             for l in preprocess(res, r):
                 yield l
 

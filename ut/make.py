@@ -46,7 +46,7 @@ class OutputResult(object):
                 return x[4:-5]
 
             return x
-    
+
         in_fly = [get_part(x) for x in in_fly]
 
         b = y.get_color_ext(None, 'on_grey', attrs=['light', 'reverse'])

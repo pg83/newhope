@@ -61,10 +61,6 @@ def fix_v2(v, **kwargs):
     if 'naked' in kwargs:
         n['naked'] = kwargs['naked']
 
-    if 'url' in n:
-        if 'pkg_full_name' not in n:
-            n['pkg_full_name'] = y.calc_pkg_full_name(n['url'])
-
     def iter_subst():
         for i, v in enumerate(n.get('extra', [])):
             if v['kind'] == 'file':
