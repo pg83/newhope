@@ -4,7 +4,7 @@ def autoconf0():
         'code': '''
             source fetch "https://ftp.gnu.org/gnu/autoconf/autoconf-{version}.tar.xz" 1
             $YSHELL ./configure --prefix=$IDIR
-            $YMAKE -j $THRS
+            $YMAKE -j $NTHRS
             $YMAKE install
         ''',
         'meta': {

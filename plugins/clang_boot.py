@@ -4,7 +4,7 @@ def clang_boot0():
     c = y.restore_node(y.find_compiler_id(info))
 
     res = c['node']
-    res['deps'] = c['deps']
+    #res['deps'] = c['deps']
 
     res.pop('build')
     res.pop('prepare')
@@ -13,10 +13,5 @@ def clang_boot0():
 
     res['code'] = ''
     res['meta']['repacks'] = {}
-
-    print y.json.dumps(res, indent=4, sort_keys=True)
-
-    for x in c['deps']:
-        print y.restore_node(x)
 
     return res

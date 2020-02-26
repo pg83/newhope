@@ -40,5 +40,6 @@ export YWGET=$(find_file $YWGET wget)
 export Y7ZA=$(find_file $Y7ZA 7za)
 
 export SHELL="$YSHELL"
+export YMAKE="$YMAKE SHELL=$YSHELL"
 
 env

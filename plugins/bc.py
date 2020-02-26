@@ -6,7 +6,7 @@ def bc0():
              export LDFLAGS="$LDFLAGS $LIBS"
              export CFLAGS="$CFLAGS $LDFLAGS"
              $YSHELL ./configure.sh --prefix "$IDIR" -O3
-             $YMAKE -j $THRS
+             $YMAKE -j $NTHRS
              $YMAKE DESTDIR=$IDIR BINDIR=/bin install   
         """,
         'meta': {

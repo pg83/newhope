@@ -30,7 +30,7 @@ def apply_fetch(lines, v):
             yield l
 
 
-def fix_v2(v, **kwargs):
+def fix_v2(v):
     assert v is not None
 
     v = y.dc(v)
@@ -53,13 +53,8 @@ def fix_v2(v, **kwargs):
     m['kind'] = sorted(frozenset(kind))
     f = m['flags']
 
-    if 'codec' in n:
-        pass
-    else:
-        n['codec'] = kwargs.get('codec', 'gz')
-
-    if 'naked' in kwargs:
-        n['naked'] = kwargs['naked']
+    if 'codec' not in n:
+        n['codec'] = 'pg'
 
     def iter_subst():
         for i, v in enumerate(n.get('extra', [])):

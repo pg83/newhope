@@ -2,6 +2,7 @@
 def sys_libc0():
     return {
         'meta': {
-            'kind': ['library']
+            'kind': ['library'],
+            'repacks': {},
         }
     }

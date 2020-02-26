@@ -7,7 +7,7 @@ if '{os}' == 'linux':
                 $(F_0)
                 $(F_1)
                 export CFLAGS="-Diconv=musl_iconv -Diconv_open=musl_iconv_open -Diconv_close=musl_iconv_close $CFLAGS"
-                sh ./mk.sh x86_64 .
+                $YSHELL ./mk.sh x86_64 .
                 SRC=$(pwd) BDIR=$BDIR/build IDIR=$IDIR CC=$CC sh run.sh
                 (cd $IDIR/lib && ln -s libc.a libmuslc.a)
                 rm $IDIR/include/iconv.h

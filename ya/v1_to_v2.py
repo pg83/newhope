@@ -10,11 +10,10 @@ def call_v2(func):
 @y.cached
 def to_v2(data, info):
     node = y.copy.copy(data)
-    node.pop('deps', None)
 
+    deps = node.pop('deps', [])
     code = node.pop('code', '')
     prepare = node.pop('prepare', '')
-    full = '\n'.join((code, prepare))
 
     node['host'] = info
     node['prepare'] = y.to_lines(prepare)
@@ -22,5 +21,5 @@ def to_v2(data, info):
 
     return y.fix_v2({
         'node': node,
-        'deps': data.get('deps', []),
+        'deps': deps,
     })

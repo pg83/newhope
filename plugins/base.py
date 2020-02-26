@@ -146,5 +146,6 @@ def base0():
         ],
         'meta': {
             'kind': ['tool'],
+            'repacks': {},
         },
     }

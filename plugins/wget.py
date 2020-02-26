@@ -5,7 +5,7 @@ def wget0():
              source fetch "https://ftp.gnu.org/gnu/wget/wget-{version}.tar.gz" 1
              export CFLAGS="-Dhas_key=wget_has_key $OPENSSL_INCLUDES $METALINK_CFLAGS $PCRE2_CFLAGS $CFLAGS"
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared --with-ssl=openssl || exit 1
-             $YMAKE -j $THRS
+             $YMAKE -j $NTHRS
              $YMAKE install
              ($YUPX $IDIR/bin/*) || true
         ''',

@@ -4,7 +4,7 @@ def procps_ng0():
         'code': '''
              source fetch "https://downloads.sourceforge.net/project/procps-ng/Production/procps-ng-{version}.tar.xz" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared --disable-numa
-             $YMAKE -j $THRS
+             $YMAKE -j $NTHRS
              $YMAKE install
              $YUPX $IDIR/bin/*
         ''',

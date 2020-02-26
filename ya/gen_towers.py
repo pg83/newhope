@@ -61,7 +61,6 @@ class Func(object):
         self.x = x
         self.inc_count = ic()
         self.data = data
-        self.codec = 'pg'
 
     @property
     @y.cached_method
@@ -157,11 +156,12 @@ class Func(object):
 
     @y.cached_method
     def run_func(self):
-        print self
         data = y.dc(self.c())
 
         data['deps'] = y.uniq_list_x(data['deps'] + self.data.calc(self.deps))
-        data['node']['codec'] = self.codec
+
+        if self.base == 'clang':
+            data['node']['codec'] = 'tar'
 
         return y.fix_pkg_name(data, self.z)
 
@@ -247,9 +247,9 @@ class Func(object):
 
 class SplitFunc(Func):
     def __init__(self, func, split):
-        Func.__init__(self, func.x, func.data)
         self._func = func
         self._split = split
+        Func.__init__(self, func.x, func.data)
 
     @property
     def base(self):
@@ -331,7 +331,7 @@ class Data(object):
 
             def sort_key(x):
                 return subst.get(x, x)
-    
+
             for x in sorted(data, key=lambda x: sort_key(x['base'])):
                 f = self.create_object(x)
 
@@ -347,7 +347,7 @@ class Data(object):
         return self.last_elements(['busybox-boot'], must_have=False)
 
     def clang(self):
-        return self.last_elements(['clang'], must_have=False)
+        return self.last_elements(['clang-mini'], must_have=False)
 
     def clang_boot(self):
         return self.last_elements(['clang-boot'], must_have=True)
@@ -415,9 +415,9 @@ class Data(object):
         if func.base == 'box':
             self.box_by_gen[g] = func
 
-        if func.base == 'clang':
+        if func.base == 'clang-mini':
             self.clang_by_gen[g] = func
-    
+
         func.g = g
         func.i = len(self.func_by_num)
 

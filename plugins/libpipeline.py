@@ -4,7 +4,7 @@ def libpipeline0():
         'code': '''
             source fetch "http://download.savannah.nongnu.org/releases/libpipeline/libpipeline-{version}.tar.gz" 1
             $YSHELL ./configure $COFLAGS --enable-shared --disable-static --prefix=$IDIR || exit 1
-            $YMAKE -j $THRS
+            $YMAKE -j $NTHRS
             $YMAKE install
         ''',
         'meta': {

@@ -13,5 +13,6 @@ if '{os}' == 'linux':
                 'provides': [
                     {'env': 'CPPFLAGS', 'value': '"$CPPFLAGS -I{pkgroot}/include"'},
                 ],
+                'repacks': {},
             },
         }

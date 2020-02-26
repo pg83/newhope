@@ -95,3 +95,19 @@ def package_versions():
         'yasm':  '1.3.0',
         'zlib':  '1.2.11',
     }
+
+
+def clang_provides():
+    return [
+        {'tool': 'CC', 'value': '"{pkgroot}/bin/clang"'},
+        {'tool': 'CFLAGS', 'value': '"-nostdinc $CFLAGS"'},
+        {'tool': 'AR', 'value': '"{pkgroot}/bin/llvm-ar"'},
+        {'tool': 'RANLIB', 'value': '"{pkgroot}/bin/llvm-ranlib"'},
+        {'tool': 'STRIP', 'value': '"{pkgroot}/bin/llvm-strip"'},
+        {'tool': 'NM', 'value': '"{pkgroot}/llvm-nm"'},
+        {'tool': 'CXX', 'value': '"{pkgroot}/bin/clang++"'},
+        {'tool': 'CXXFLAGS', 'value': '"-nostdinc++ $CXXFLAGS"'},
+        {'tool': 'LD', 'value': '"{pkgroot}/bin/clang"'},
+        {'tool': 'LDFLAGS', 'value': '"-static -all-static -nostdlib -fuse-ld=/usr/bin/ld.lld $LDFLAGS"'},
+        {'tool': 'CLANG_ROOT', 'value': '"{pkgroot}"'},
+    ]

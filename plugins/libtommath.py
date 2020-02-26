@@ -4,7 +4,7 @@ def libtommath0():
         'code': '''
             source fetch "https://github.com/libtom/libtommath/releases/download/v{version}/ltm-{version}.tar.xz" 0
             (mv libtommath* xxx && mv xxx/* ./)
-            $YMAKE -j $THRS
+            $YMAKE -j $NTHRS
             $YMAKE DESTDIR=$IDIR LIBPATH=/lib INCPATH=/include install
         ''',
         'meta': {

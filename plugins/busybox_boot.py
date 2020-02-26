@@ -20,6 +20,7 @@ if '{os}' == 'linux':
                 'provides': [
                     {'tool': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
                 ],
+                'repacks': {},
             },
         }
 else:

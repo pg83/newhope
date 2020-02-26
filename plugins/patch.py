@@ -4,7 +4,7 @@ def patch0():
         'code': '''
              source fetch "https://ftp.gnu.org/gnu/patch/patch-{version}.tar.xz" 1
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared
-             $YMAKE -j $THRS
+             $YMAKE -j $NTHRS
              $YMAKE install
         ''',
         'meta': {

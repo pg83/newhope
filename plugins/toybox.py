@@ -18,6 +18,7 @@ if '{os}' == 'linux':
                 'provides': [
                     {'tool': 'TOYBOX', 'value': '{pkgroot}/bin/toybox'},
                 ],
+                'repacks': {},
             },
         }
 else:

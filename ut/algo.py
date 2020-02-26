@@ -115,3 +115,7 @@ def ensure_value(k, d, v):
         d[k] = v
 
     return d[k]
+
+
+def jd(d):
+    return y.json.dumps(d, indent=4, sort_keys=True)

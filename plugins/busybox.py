@@ -19,7 +19,7 @@ def busybox0():
             cat archival/libarchive/unpack_ar_archive.c >> tmp
             cat tmp > archival/libarchive/unpack_ar_archive.c
 
-            $YMAKE HOSTCFLAGS="$CFLAGS $LDFLAGS $LIBS" LDFLAGS="$LDFLAGS $LIBS" HOSTCXXFLAGS="$CXXFLAGS" HOSTLDFLAGS="$LDFLAGS $LIBS" V=1 -j $THRS || exit 1
+            $YMAKE HOSTCFLAGS="$CFLAGS $LDFLAGS $LIBS" LDFLAGS="$LDFLAGS $LIBS" HOSTCXXFLAGS="$CXXFLAGS" HOSTLDFLAGS="$LDFLAGS $LIBS" V=1 -j $NTHR || exit 1
             mkdir $IDIR/bin && cp busybox $IDIR/bin && cd $IDIR/bin
             chmod +x busybox
 
