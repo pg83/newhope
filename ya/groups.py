@@ -47,14 +47,14 @@ def small_group():
         'findutils-run',
         'yash-run',
         'bash-run',
+        'mc-ncurses',
     ]
 
 
 def full_group():
     return [
         '@small',
-        'mc-slang',
-        'openssh',
+        'shadow',
         'util-linux',
     ]
 
@@ -67,8 +67,9 @@ def devel_group():
         'ninja-run',
         'cmake',
         'patch-run',
-        'bison',
+        'openssh-client',
         'git',
         'python3',
         'strace',
+        'clang-mini',
     ]
