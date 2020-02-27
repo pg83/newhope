@@ -26,5 +26,6 @@ def git0():
                 {'tool': 'GIT', 'value': '{pkgroot}/bin/git'},
                 {'env': 'GIT_EXEC_PATH', 'value': '{pkgroot}/bin'},
             ],
+            'repacks': {},
         },
     }

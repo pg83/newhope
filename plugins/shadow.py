@@ -9,7 +9,6 @@ def shadow0():
              ($YUPX $IDIR/bin/*) || true
              ($YUPX $IDIR/sbin/*) || true
         ''',
-        'version': '4.8.1',
         'meta': {
             'kind': ['tool'],
             'depends': ['upx', 'intl', 'iconv', 'make', 'c'],

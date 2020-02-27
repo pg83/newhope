@@ -11,7 +11,7 @@ def pkg_config_base(cflags, opts, deps):
             $YMAKE -j $NTHRS
             $YMAKE install
         """.replace('{opts}', ' '.join(opts)).replace('{cflags}', cflags),
-        'version': '0.29.2',
+        'version': y.package_versions()['pkg-config'],
         'meta': {
             'kind': ['tool'],
             'depends': deps + ['iconv', 'file', 'make', 'c'],

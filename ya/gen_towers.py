@@ -161,7 +161,7 @@ class Func(object):
         data['deps'] = y.uniq_list_x(data['deps'] + self.data.calc(self.deps))
 
         if self.base == 'clang':
-            data['node']['codec'] = 'tar'
+            data['node']['codec'] = 'tr'
 
         return y.fix_pkg_name(data, self.z)
 

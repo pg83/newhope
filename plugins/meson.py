@@ -10,7 +10,6 @@ def meson0():
              $YMAKE -j $NTHR
              $YUPX -o $IDIR/bin/meson meson
         """,
-        'version': '0.53.1',
         'meta': {
             'kind': ['tool'],
             'depends': ['python3', 'upx', 'make', 'c'],

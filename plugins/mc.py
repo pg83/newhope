@@ -8,7 +8,7 @@ def mc(gui, gui_lib):
              echo 'all install:' > doc/hlp/Makefile
              $YMAKE install
         '''.replace('{gui}', gui_lib),
-        'version': '4.8.23',
+        'version': y.package_versions()['mc'],
         'meta': {
             'kind': ['program'],
             'depends': ['intl', 'iconv', 'glib', gui, 'make', 'c'],

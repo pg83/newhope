@@ -4,6 +4,11 @@ def package_versions():
     upm_ver = '20f89906a30042ef13ebdaa8d9f7234e993fb079'
 
     return {
+        'mc': '4.8.23',
+        'meson': '0.53.1',
+        'shadow': '4.8.1',
+        'pkg-config': '0.29.2',
+        'strace': '5.5',
         'python3': '3.8.1',
         'openssl': '1.1.1c',
         'upm': upm_ver,
