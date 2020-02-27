@@ -56,6 +56,7 @@ def full_group():
         '@small',
         'shadow',
         'util-linux',
+        'initutils',
     ]
 
 

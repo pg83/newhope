@@ -1,7 +1,7 @@
 @y.singleton
 def package_versions():
     llvm_ver = '9.0.1'
-    upm_ver = '20f89906a30042ef13ebdaa8d9f7234e993fb079'
+    upm_ver = 'd8d53ecc6f0db0cb62b55caa9fc42f69d2171d74'
 
     return {
         'mc': '4.8.23',

@@ -12,6 +12,8 @@ def sqlite30():
             'depends': ['readline', 'make', 'c'],
             'provides': [
                 {'lib': 'sqlite3'},
+                {'configure': '--with-sqlite3={pkgroot}'},
+                {'tool': 'SQLITE3_TOOL', 'value': '{pkgroot}/bin/sqlite3'}
             ],
         },
     }
