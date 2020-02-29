@@ -207,9 +207,6 @@ class Func(object):
         if self.base == 'box':
             return []
 
-        if self.data.flat:
-            return self.busybox_boot()
-
         bg = self.data.box_by_gen.get(self.g - 1)
 
         if bg is None:
@@ -341,7 +338,11 @@ class Data(object):
                     yield SplitFunc(f, k)
 
         self.data = list(iter_objects())
-        self.prepare_funcs(3)
+
+        if self.flat:
+            self.prepare_funcs(1)
+        else:
+            self.prepare_funcs(3)
 
     def busybox_boot(self):
         return self.last_elements(['busybox-boot'], must_have=False)

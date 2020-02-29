@@ -4,6 +4,7 @@ export TARG="$1"
 export IDIR="$PD/$1"
 export BDIR="$WD/$(source echon $1 | $YMD5 | tr ' ' '\n' | head -n1)"
 export PKGF="$RD/$1"
+export MDIR="$MD/$1"
 
 export TMPDIR="$BDIR/tmp"
 export BD="$BDIR/playground"

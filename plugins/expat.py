@@ -11,7 +11,9 @@ def expat0():
             'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
-                {'lib': 'expat', 'configure': {'opt': '--with-expat={pkgroot}'}},
+                {'lib': 'expat'},
+                {'configure': '--with-expat={pkgroot}'},
+                {'env': 'EXPAT_ROOT', 'value': '"{pkgroot}"'},
             ],
         },
     }
