@@ -1,8 +1,8 @@
 @y.package
 def gettext0():
     opts = [
-        '--with-included-libunistring',
-        '--with-included-libxml',
+        #'--with-included-libunistring',
+        #'--with-included-libxml',
         '--with-included-gettext',
         '--enable-relocatable',
         '--disable-c++',
@@ -18,7 +18,7 @@ def gettext0():
         """.replace('{opts}', ' '.join(opts)),
         'meta': {
             'kind': ['library', 'tool'],
-            'depends': ['upx', 'iconv', 'ncurses', 'make', 'c'],
+            'depends': ['bsdtar', 'upx', 'libxml2', 'libunistring', 'iconv', 'ncurses', 'make', 'c'],
             'provides': [
                 {'lib': 'intl', 'configure': {'opt': '--with-libintl-prefix={pkgroot}'}},
             ],

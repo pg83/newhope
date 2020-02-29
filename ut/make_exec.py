@@ -15,26 +15,6 @@ def run_makefile(mk, targets, threads, pre_run=[], naked=False, keep_going=False
     return run_par_build(mk, threads, True, naked, keep_going)
 
 
-def wrap_gen(func):
-    def wrapper(inq):
-        yield from func(inq)
-
-    return wrapper
-
-
-def CHANNEL(data):
-    return y.DATA(tags=['mk:channel'], data=data)
-
-
-def iter_deque(q):
-    while True:
-        try:
-            yield q.popleft()
-        except IndexError:
-            yield None
-
-
-
 class Builder(object):
     def __init__(self, mk, threads, check, naked, keep_going):
         self.check = check

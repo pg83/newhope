@@ -10,6 +10,6 @@ def inetutils0():
         """,
         'meta': {
             'kind': ['tool'],
-            'depends': ['intl', 'iconv', 'ncurses', 'readline', 'libedit'],
+            'depends': ['intl', 'iconv', 'ncurses', 'readline'],
         },
     }

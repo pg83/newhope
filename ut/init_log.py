@@ -1,6 +1,3 @@
-import datetime
-
-
 def get_log():
     f = y.sys._getframe()
 
@@ -100,7 +97,7 @@ def init_logger(log_level='DEBUG'):
 
     def record_factory(*args, **kwargs):
         record = old_factory(*args, **kwargs)
-        record.asctime = datetime.datetime.fromtimestamp(int(y.time.time())).strftime('%H:%M:%S')
+        record.asctime = y.datetime.datetime.fromtimestamp(int(y.time.time())).strftime('%H:%M:%S')
         record.name = record.name[:10]
 
         return record

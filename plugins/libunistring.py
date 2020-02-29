@@ -11,7 +11,8 @@ def libunistring0():
             'kind': ['library'],
             'depends': ['iconv', 'xz', 'make', 'c'],
             'provides': [
-                {'lib': 'unistring', 'configure': {'opt': '--with-libunistring-prefix={pkgroot}'}},
+                {'lib': 'unistring'},
+                {'configure': '--with-libunistring-prefix={pkgroot}'},
             ],
         },
     }

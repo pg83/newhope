@@ -13,6 +13,7 @@ def xz0():
                 {'lib': 'lzma'},
                 {'tool': 'YXZ', 'value': '{pkgroot}/bin/xz'},
                 {'tool': 'YXZCAT', 'value': '{pkgroot}/bin/xzcat'},
+                {'configure': '--with-lzma={pkgroot}'},
             ],
         },
     }

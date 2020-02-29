@@ -16,7 +16,7 @@ def yash0():
             mv ./yash* ./xxx
             mv ./xxx/* ./
             export LDFLAGS="$LDFLAGS $LIBS"
-            export CFLAGS="-Dwordfree=yash_wordfree $CFLAGS"
+            export CFLAGS="-Dwordfree=yash_wordfree -Dadd_history=yash_add_history $CFLAGS"
             $YSHELL ./configure --prefix=$IDIR {opts}
             echo 'install-rec:' > doc/Makefile
             $YMAKE -j $NTHRS

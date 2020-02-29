@@ -12,7 +12,9 @@ def readline0():
             'kind': ['library'],
             'depends': ['ncurses', 'termcap', 'make', 'c'],
             'provides': [
-                {'lib': 'readline', 'configure': {'opts': ['--with-installed-readline={pkgroot}', '--with-readline={pkgroot}']}},
+                {'lib': 'readline'},
+                {'configure': '--with-installed-readline={pkgroot}'},
+                {'configure': '--with-readline={pkgroot}'},
             ],
         },
     }
