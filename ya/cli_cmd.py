@@ -17,4 +17,4 @@ def cli_cmd_subst(args):
     with open(path, 'r') as f:
         data = f.read()
 
-    y.write_file(path, data.replace(a, b).encode('utf-8'))
+    y.write_file(path, data.replace(a, b), mode='w')

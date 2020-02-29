@@ -33,10 +33,7 @@ class SimpleDB(object):
 
     def write_db(self, data):
         y.info('commit {bg}' + self.path + '{}')
-
-        with open(self.path, 'wb') as f:
-            f.write(encode_prof(data))
-            f.flush()
+        y.write_file(self.path, encode_prof(data))
 
     def rcu(self, func):
         self.write_db(func(self.read_db()))

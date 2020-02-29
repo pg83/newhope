@@ -16,5 +16,6 @@ def subversion0():
             'provides': [
                 {'tool': 'SVN', 'value': '{pkgroot}/bin/svn'},
             ],
+            'repacks': {},
         },
     }

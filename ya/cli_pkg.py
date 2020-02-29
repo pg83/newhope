@@ -107,18 +107,12 @@ def cli_pkg_sync_repo(args_):
                 y.debug('already exists', z)
             else:
                 y.info('copy file ', x, ' to ', z)
-                y.shutil.copyfile(y.os.path.join(fr, x), z + '.tmp')
-                y.os.rename(z + '.tmp', z)
-
+                y.copy_file(z, x)
+ 
     index = y.build_index(args.to)
 
     y.info('will write index')
-
-    with open(args.to + '/index', 'w') as f:
-        f.buffer.write(y.encode_prof(index))
-
-
-from http.server import HTTPServer, BaseHTTPRequestHandler
+    y.write_file(args.to + '/index', y.encode_prof(index))
 
 
 @y.verbose_entry_point

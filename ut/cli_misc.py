@@ -1,8 +1,8 @@
 @y.verbose_entry_point
 def cli_misc_cleanup(arg):
-   y.os.system("find . | grep '~' | xargs rm")
-   y.os.system("find . | grep '#' | xargs rm")
-   y.os.system('find . | grep "\\.tmp" | xargs rm')
+   y.os.system("find . | grep '~' | xargs rm >& /dev/null")
+   y.os.system("find . | grep '#' | xargs rm >& /dev/null")
+   y.os.system('find . | grep "\\.tmp" | xargs rm >& /dev/null')
 
    def fix1(data):
       return data.replace('    \n', '\n')
@@ -30,10 +30,7 @@ def cli_misc_cleanup(arg):
                   data = j(data)
 
             if data != orig:
-               with open(pp + '.$tmp', 'w') as f:
-                  f.write(data)
-
-               y.os.rename(pp + '.$tmp', pp)
+               y.write_file(pp, data, mode='w')
    
 
 @y.main_entry_point

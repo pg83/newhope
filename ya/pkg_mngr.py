@@ -24,7 +24,7 @@ def build_index(where):
         if len(f) > 10:
             p = os.path.join(where, f)
 
-            if f.endswith('-tmp'):
+            if '-tmp' in f:
                 continue
 
             if f.startswith('.'):
@@ -455,13 +455,12 @@ class PkgMngr(object):
                 yield '/pkg/' + x['path'] + '/bin'
                 yield '/pkg/' + x['path'] + '/sbin'
 
-        env = {
-            'PATH': '/bin:' + ':'.join(iter_path())
-        }
+        def iter_profile():
+            yield 'export PATH=' + ':'.join(iter_path())
 
-        with open(self.pkg_dir() + '/profile', 'w') as f:
-            for k in sorted(env.keys()):
-                f.write('export ' + k + '=' + env[k])
+        profile = '\n'.join(iter_profile()) + '\n'
+
+        y.write_file(self.pkg_dir() + '/profile', profile, mode='w')
 
         in_use = frozenset([x['path'] for x in lst] + ['cache', 'profile'])
 
