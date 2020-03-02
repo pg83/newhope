@@ -63,7 +63,7 @@ def package_versions():
         'mc':  '4.8.23',
         'mimalloc':  '6a744a8549263696ef8d620006a0de2249e59b46',
         'mpdecimal':  '2.4.2',
-        'musl':  '1.1.24', 
+        'musl':  '1.2.0', 
         'nano':  '4.4',
         'ncurses-real':  '6.1',
         'netbsd-curses':  '5b0d21692c6c2db31e960961f7a846429e701c30',

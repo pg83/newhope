@@ -36,31 +36,36 @@ def repacks_keys():
 
 
 def split_run_meta(m):
-    nm = {}
-
-    nm['kind'] = ['tool']
-
     def flt_provides():
         for p in m.get('provides', []):
-            if 'lib' in p:
-                continue
+            if y.have_bin_fields(p):
+                yield p
 
-            if 'env' in p:
-                continue
+    return {
+        'provides': list(flt_provides()),
+    }
 
-            yield p
 
-    nm['provides'] = list(flt_provides())
+def split_dev_meta(m):
+    def flt_provides():
+        for p in m.get('provides', []):
+            if y.have_lib_fields(p):
+                yield p
 
-    return nm
+    return {
+        'provides': list(flt_provides()),
+    }
 
 
 def split_meta(m, kind):
     if kind == 'run':
         return split_run_meta(m)
 
+    if kind == 'dev':
+        return split_dev_meta(m)
+
     return {
-        'kind': ['library']
+        'kind': ['any']
     }
 
 

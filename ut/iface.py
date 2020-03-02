@@ -181,7 +181,7 @@ class IFace(dict):
         for k in do():
             self._a[k] = mod.__name__
 
-    def find(self, name):
+    def _find(self, name):
         for i, f in enumerate(self._l):
             try:
                 ret = f(name)
@@ -197,15 +197,18 @@ class IFace(dict):
 
         raise AttributeError(name)
 
-    def __getattr__(self, name):
+    def find(self, name):
         try:
             self._hit += 1
             return self[name]
         except KeyError:
             self._hit -= 1
-            self[name] = self.find(name)
+            self[name] = self._find(name)
 
         return self[name]
+
+    def __getattr__(self, name):
+        return self.find(name)
 
     def add_lookup(self, func):
         self._cc[len(self._l)] = 0

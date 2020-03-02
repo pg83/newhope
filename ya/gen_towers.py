@@ -15,6 +15,13 @@ def is_debug():
     return 'debug' in y.config.get('tow', '')
 
 
+def sum_sets(args):
+    if args:
+        return args[0] | sum_sets(args[1:])
+
+    return frozenset()
+
+
 @y.cached
 def subst_by_platform(info):
     common = {
@@ -74,7 +81,9 @@ class Func(object):
         return self.code().get('meta', {}).get('repacks', y.repacks())
 
     def contains(self):
-        return self.code().get('meta', {}).get('contains', [])
+        cc = self.code().get('meta', {}).get('contains', [])
+
+        return frozenset(cc) | frozenset(self.repacks().keys())
 
     @property
     def __name__(self):
@@ -249,14 +258,31 @@ class SplitFunc(Func):
         Func.__init__(self, func.x, func.data)
 
     @property
+    def kind(self):
+        if self._split == 'run':
+            return ['tool']
+
+        if self._split == 'dev':
+            return ['library']
+
+        return ['any']
+
+    @property
     def base(self):
         return self._func.base + '-' + self._split
+
+    def contains(self):
+        return frozenset()
 
     def clone(self):
         return SplitFunc(self._func, self._split)
 
     def code(self):
-        return y.run_splitter(self._func, self._split)
+        res = y.run_splitter(self._func, self._split)
+
+        res['meta']['kind'] = self.kind
+
+        return res
 
     @y.cached_method
     def calc_deps(self):
@@ -324,12 +350,7 @@ class Data(object):
         self.inc_count = ic()
 
         def iter_objects():
-            subst = {'clang-boot': ''}
-
-            def sort_key(x):
-                return subst.get(x, x)
-
-            for x in sorted(data, key=lambda x: sort_key(x['base'])):
+            for x in sorted(data, key=lambda x: x['base']):
                 f = self.create_object(x)
 
                 yield f
@@ -357,11 +378,7 @@ class Data(object):
         return Func(x, self)
 
     def optimize(self, deps, what):
-        def it():
-            for i in deps:
-                yield from self.func_by_num[i].contains()
-
-        contains = frozenset(it())
+        contains = sum_sets([self.func_by_num[i].contains() for i in deps])
 
         def iter_deps():
             for d in deps:
@@ -441,6 +458,8 @@ class Data(object):
             for d in f.deps:
                 yield f.i, d
 
+            yield f.i, None
+
     def exec_seq(self):
         return list(y.execution_sequence(self.iter_deps()))
 
@@ -488,7 +507,7 @@ class Tower(object):
 
     def gen_funcs(self):
         dt = Data(self._cc, self._flat, [x for x in self._data])
-        dt.out()
+        #dt.out()
 
         cnt = 0
 

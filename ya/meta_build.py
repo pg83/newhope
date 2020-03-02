@@ -1,3 +1,19 @@
+LIB_FIELDS = {'lib', 'extra', 'configure', 'env'}
+BIN_FIELDS = {'tool'}
+
+
+def have_fields(p, fields):
+    return fields & frozenset(p.keys())
+
+
+def have_lib_fields(p):
+    return have_fields(p, LIB_FIELDS)
+
+
+def have_bin_fields(p):
+    return have_fields(p, BIN_FIELDS)
+
+
 def meta_to_build(meta):
     def iter():
         kind = set(meta['kind'])
@@ -16,7 +32,7 @@ def meta_to_build(meta):
             yield 'export PATH="{pkgroot}/bin:$PATH"'
 
         for p in meta.get('provides', []):
-            if is_lib:
+            if is_lib and have_lib_fields(p):
                 if 'lib' in p:
                     yield 'export LIBS="{lib} $LIBS"'.format(lib='-l' + p['lib'])
 
@@ -44,7 +60,7 @@ def meta_to_build(meta):
                 if 'env' in p:
                     yield 'export {k}={v}'.format(k=p['env'], v=p['value'])
 
-            if is_bin:
+            if is_bin and have_bin_fields(p):
                 if 'tool' in p:
                     yield 'export {k}={v}'.format(k=p['tool'], v=p['value'])
 
