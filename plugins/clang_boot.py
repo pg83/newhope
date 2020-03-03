@@ -4,7 +4,6 @@ def clang_boot0():
     c = y.restore_node(y.find_compiler_id(info))
 
     res = c['node']
-    #res['deps'] = c['deps']
 
     res.pop('build')
     res.pop('prepare')

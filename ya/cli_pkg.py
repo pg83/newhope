@@ -19,7 +19,7 @@ def cli_pkg_init(args_):
     args = p.parse_args(args_)
     where = y.os.path.abspath(args.where)
 
-    assert not args.barebone
+    assert not args.barebone, "barebone not implemented"
 
     y.PkgMngr(args.target, where).init_place()
 

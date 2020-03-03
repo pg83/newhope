@@ -502,12 +502,12 @@ class Tower(object):
         self._flat = flat
 
     def on_data(self, data):
-        y.debug('will gen func for', data['base'])
+        y.info('will gen func for', data['base'])
         self._data.append(data)
 
     def gen_funcs(self):
         dt = Data(self._cc, self._flat, [x for x in self._data])
-        #dt.out()
+        dt.out()
 
         cnt = 0
 

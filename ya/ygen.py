@@ -18,7 +18,7 @@ def subst_some_values(v, base_name):
                 for p1, p2 in gen_some_subst(x, v[x]):
                     v['code'] = v['code'].replace('{' + p1 + '}', p2)
 
-        assert '{version}' not in v['code']
+        assert '{version}' not in v['code'], '{version} not substituted'
 
     return v
 

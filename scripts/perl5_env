@@ -1,4 +1,8 @@
 root=$(dirname "$YPERL")
 root=$(dirname "$root")
-export PERL5LIB=$(env -i "$YPERL" -V 2>&1 | tr ' ' '\n' | grep perl5 | sed -e 's/)\.//' | sed -e 's/.*\/lib/lib/' | while read line; do echo "$root/$line"; done | tr '\n' ':')
+
+export PERL5LIB_CUR=$(env -i "$YPERL" -V 2>&1 | tr ' ' '\n' | grep perl5 | sed -e 's/)\.//' | sed -e 's/.*\/lib/lib/' | while read line; do echo "$root/$line"; done | tr '\n' ':')
+
+export PERL5LIB="$PERL5LIB:$PERL5LIB_CUR"
+
 echo $PERL5LIB

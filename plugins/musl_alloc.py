@@ -1,19 +1,17 @@
 if '{os}' == 'linux':
     @y.package
-    def musl0():
+    def musl_alloc0():
         return {
             'code': """
-                cp -pR $MUSL_ROOT/lib $IDIR/
-                cp -pR $MUSL_ROOT/include $IDIR/
-                rm $IDIR/lib/libmuslalloc.a
+                mkdir $IDIR/lib
+                cp -pR $MUSL_ROOT/lib/libmuslalloc.a $IDIR/lib/
             """,
             'meta': {
                 'kind': ['library'],
-                'contains': ['musl-boot'],
+                'contains': ['mimalloc'],
                 'depends': ['busybox-boot', 'mimalloc', 'musl-base'],
                 'provides': [
-                    {'lib': 'muslc'},
-                    {'env': 'CFLAGS', 'value': '"-ffreestanding -w $CFLAGS"'},
+                    {'lib': 'muslalloc'},
                 ],
                 'repacks': {},
             },

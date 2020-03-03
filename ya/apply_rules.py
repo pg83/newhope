@@ -16,7 +16,7 @@ def apply_fetch(lines, v):
         if 'source fetch ' in l:
             parts = l.split('"')
 
-            assert len(parts) == 3
+            assert len(parts) == 3, 'incorrect fetch ' + l
 
             url = parts[1]
             bn = gen_fetch_cmd(url)
@@ -31,7 +31,7 @@ def apply_fetch(lines, v):
 
 
 def fix_v2(v):
-    assert v is not None
+    assert v is not None, 'empty node'
 
     v = y.dc(v)
     n = v['node']
