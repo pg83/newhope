@@ -3,6 +3,10 @@ def libapr0():
     return {
         'code': """
              source fetch "https://downloads.apache.org//apr/apr-1.7.0.tar.bz2" 1
+
+             ln -s $AR ./ar
+             export PATH=$(pwd):$PATH
+
              $YSHELL ./configure $COFLAGS --prefix=$MDIR --disable-shared --enable-static --disable-dso || exit 1
              $YMAKE LIBTOOL="$LIBTOOL" -j $NTHRS
              touch .libs/libapr-1.so.0 
