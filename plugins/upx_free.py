@@ -4,6 +4,7 @@ def upx_free0():
         'code': '''
             source fetch "https://github.com/upx/upx/releases/download/v{version}/upx-{version}-src.tar.xz" 1
             cd src
+            echo '#!/bin/sh' > ./../src/stub/scripts/check_whitespace.sh
             $YMAKE CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" LIBS="$LIBS" CC="$CC" CXX="$CXX" UPX_UCLDIR="$UPX_UCLDIR" -j $NTHRS
             mkdir $IDIR/bin
             chmod +x upx.out
