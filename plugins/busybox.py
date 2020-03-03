@@ -5,6 +5,7 @@ def busybox0():
             source fetch "https://www.busybox.net/downloads/busybox-{version}.tar.bz2" 1
 
             ln -s $CC ./gcc
+            ln -s $STRIP ./strip
             ln -s $AR ./ar
             export PATH="$(pwd):$PATH"
             export CFLAGS="-Iinclude $CFLAGS"
