@@ -365,8 +365,8 @@ class Data(object):
                         if f.is_library:
                             yield SplitFunc(f, k)
                     else:
-                        yield SplitFunc(f, k)          
-            
+                        yield SplitFunc(f, k)  
+    
         self.data = list(iter_objects())
 
         if self.flat:

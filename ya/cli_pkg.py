@@ -124,7 +124,9 @@ def cli_pkg_serve_repo(args_):
 
     args = parser.parse_args(args_)
 
-    class ThreadingHTTPServer(y.socketserver.ForkingMixIn, y.http.server.HTTPServer):
+    import http.server
+
+    class ThreadingHTTPServer(y.socketserver.ForkingMixIn, http.server.HTTPServer):
         pass
 
     class RequestHandler(y.http.server.SimpleHTTPRequestHandler):
