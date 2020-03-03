@@ -13,7 +13,7 @@ def strace0():
 
             export PATH="$(pwd):$PATH"
             source fetch "https://github.com/strace/strace/releases/download/v{version}/strace-{version}.tar.xz" 1
-            $YSHELL ./configure  --prefix=$IDIR --disable-shared --enable-static
+            $YSHELL ./configure  --prefix=$IDIR --disable-shared --enable-static --enable-mpers=no
             $YMAKE CFLAGS_FOR_BUILD="$CFLAGS" -j $NTHR
             $YMAKE install
         ''',
