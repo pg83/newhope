@@ -107,7 +107,7 @@ def cli_pkg_sync_repo(args_):
                 y.debug('already exists', z)
             else:
                 y.info('copy file ', x, ' to ', z)
-                y.copy_file(z, x)
+                y.copy_file(z, os.path.join(fr, x))
  
     index = y.build_index(args.to)
 

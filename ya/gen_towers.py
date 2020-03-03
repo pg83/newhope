@@ -366,7 +366,7 @@ class Data(object):
                             yield SplitFunc(f, k)
                     else:
                         yield SplitFunc(f, k)  
-    
+
         self.data = list(iter_objects())
 
         if self.flat:
