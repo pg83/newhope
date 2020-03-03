@@ -9,7 +9,6 @@ def inetutils0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['intl', 'iconv', 'ncurses', 'readline'],
         },
     }

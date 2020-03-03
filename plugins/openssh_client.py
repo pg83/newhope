@@ -25,7 +25,6 @@ def openssh_client0():
              chmod +x run
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['openssh', 'upx'],
             'repacks': {},
         },

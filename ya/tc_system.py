@@ -50,16 +50,17 @@ def iter_linux():
     def iter_nodes():
         for k in ('c', 'c++', 'linker'):
             meta = {'kind': [k, 'tool']}
-            path = '/usr/bin/clang'
+            path = y.find_tool('clang')[0]
+            pdir = y.os.path.dirname(path)
 
             if k == 'c':
                 meta['provides'] = [
                     {'tool': 'CC', 'value': '"' + path + '"'},
                     {'tool': 'CFLAGS', 'value': '"-nostdinc $CFLAGS"'},
-                    {'tool': 'AR', 'value': '"/usr/bin/llvm-ar"'},
-                    {'tool': 'RANLIB', 'value': '"/usr/bin/llvm-ranlib"'},
-                    {'tool': 'STRIP', 'value': '"/usr/bin/llvm-strip"'},
-                    {'tool': 'NM', 'value': '"/usr/bin/llvm-nm"'},
+                    {'tool': 'AR', 'value': '"' + pdir + '/llvm-ar"'},
+                    {'tool': 'RANLIB', 'value': '"' + pdir + '/llvm-ranlib"'},
+                    {'tool': 'STRIP', 'value': '"' + pdir + '/llvm-strip"'},
+                    {'tool': 'NM', 'value': '"' + pdir + '/llvm-nm"'},
                 ]
             elif k == 'c++':
                 meta['provides'] = [
@@ -69,7 +70,7 @@ def iter_linux():
             elif k == 'linker':
                 meta['provides'] = [
                     {'tool': 'LD', 'value': '"' + path + '"'},
-                    {'tool': 'LDFLAGS', 'value': '"-static -all-static -nostdlib -fuse-ld=/usr/bin/ld.lld $LDFLAGS"'},
+                    {'tool': 'LDFLAGS', 'value': '"-static -all-static -nostdlib -fuse-ld=' + pdir + '/ld.lld $LDFLAGS"'},
                 ]
 
             yield meta

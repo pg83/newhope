@@ -13,7 +13,6 @@ def psmisc0():
             {'kind': 'file', 'path': 'psmisc1.patch', 'data': y.builtin_data('data/psmisc1.patch')},
         ],
         'meta': {
-            'kind': ['tool'],
             'depends': ['kernel-h', 'ncurses', 'make', 'c'],
         },
     }

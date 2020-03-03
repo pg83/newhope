@@ -13,7 +13,6 @@ def pkg_config_base(cflags, opts, deps):
         """.replace('{opts}', ' '.join(opts)).replace('{cflags}', cflags),
         'version': y.package_versions()['pkg-config'],
         'meta': {
-            'kind': ['tool'],
             'depends': deps + ['iconv', 'file', 'make', 'c'],
             'provides': [
                 {'tool': 'PKG_CONFIG', 'value': '{pkgroot}/bin/pkg-config'}

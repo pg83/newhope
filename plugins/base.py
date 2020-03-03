@@ -145,7 +145,6 @@ def base0():
             {'kind': 'file', 'path': '01-tmpdir.sh', 'data': tmpdir_sh},
         ],
         'meta': {
-            'kind': ['tool'],
             'repacks': {},
         },
     }

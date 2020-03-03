@@ -10,7 +10,6 @@ def dlmalloc0():
             cp libdlmalloc.a $IDIR/lib
         ''',
         'meta': {
-            'kind': ['library'],
             'contains': ['mimalloc'],
             'depends': ['c'],
             'provides': [

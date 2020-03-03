@@ -9,7 +9,6 @@ def autoconf0():
             (cd $IDIR && mv $IDIR/$MDIR/* ./)
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['gnu-m4', 'make'],
             'provides': [
                 {'tool': 'AUTOCONF', 'value': '"{pkgroot}/bin/autoconf"'},

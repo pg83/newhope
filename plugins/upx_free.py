@@ -11,7 +11,6 @@ def upx_free0():
         ''',
         'version': y.package_versions()['upx'],
         'meta': {
-            'kind': ['tool'],
             'depends': ['zlib', 'ucl', 'make', 'c', 'c++'],
             'provides': [
                 {'tool': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},

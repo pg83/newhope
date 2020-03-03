@@ -11,7 +11,6 @@ def meson0():
              $YUPX -o $IDIR/bin/meson meson
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['python3', 'upx', 'make', 'c'],
             'provides': [
                 {'tool': 'MESON', 'value': '{pkgroot}/bin/meson'},

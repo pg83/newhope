@@ -10,7 +10,6 @@ def less0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['ncurses', 'make', 'c'],
             'profides': [
                 {'tool': 'LESS', 'value': '{pkgroot}/bin/less'}

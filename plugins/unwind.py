@@ -14,7 +14,6 @@ def libunwind0():
             {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_libunwind.sh']['data']},
         ],
         'meta': {
-            'kind': ['library'],
             'depends': ['c'],
             'provides': [
                 {'lib': 'unwind'},

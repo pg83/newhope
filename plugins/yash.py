@@ -23,7 +23,6 @@ def yash0():
             $YMAKE install
          """.replace('{opts}', ' '.join(opts)),
         'meta': {
-            'kind': ['tool'],
             'depends': ['intl', 'ncurses', 'xz', 'tar', 'asciidoc', 'python', 'make', 'c'],
             'provides': [
                 {'tool': 'YSHELL_OPT', 'value': '{pkgroot}/bin/yash'},

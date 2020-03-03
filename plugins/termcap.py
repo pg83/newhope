@@ -8,7 +8,6 @@ def termcap0():
             $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'termcap'},

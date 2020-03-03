@@ -26,7 +26,6 @@ if '{os}' == 'linux':
                 {'kind': 'file', 'path': 'crt1.c', 'data': y.globals.by_name['data/crt1.c']['data']},
             ],
             'meta': {
-                'kind': ['tool'],
                 'depends': ['busybox-boot', 'make-boot'],
                 'provides': [
                     {'tool': 'MUSL_ROOT', 'value': '"{pkgroot}"'},

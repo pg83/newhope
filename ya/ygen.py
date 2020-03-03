@@ -60,7 +60,6 @@ def package(func):
     descr = {
         'gen': 'human',
         'base': fix_bn,
-        'kind': new_f()['meta']['kind'],
         'code': new_f,
         'cc': y.to_full_target(parts[1])
     }

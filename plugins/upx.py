@@ -7,7 +7,6 @@ def upx0():
             cp -p upx $IDIR/bin 
         ''',
         'meta': {
-            'kind': ['tool'],
             'provides': [
                 {'tool': 'YUPX', 'value': '"{pkgroot}/bin/upx"'},
             ],

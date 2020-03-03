@@ -9,7 +9,6 @@ if '{os}' == 'linux':
                 cp -RL ./include $IDIR/
             """,
             'meta': {
-                'kind': ['library'],
                 'provides': [
                     {'env': 'CPPFLAGS', 'value': '"$CPPFLAGS -I{pkgroot}/include"'},
                 ],

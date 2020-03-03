@@ -8,7 +8,6 @@ if '{os}' == 'linux':
                 rm $IDIR/lib/libmuslalloc.a
             """,
             'meta': {
-                'kind': ['library'],
                 'contains': ['musl-boot'],
                 'depends': ['busybox-boot', 'mimalloc', 'musl-base'],
                 'provides': [

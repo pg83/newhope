@@ -14,7 +14,6 @@ if '{os}' == 'linux':
                 done
             ''',
             'meta': {
-                'kind': ['tool'],
                 'provides': [
                     {'tool': 'TOYBOX', 'value': '{pkgroot}/bin/toybox'},
                 ],
@@ -26,6 +25,5 @@ else:
     def toybox0():
         return {
             'meta': {
-                'kind': ['tool']
             }
         }

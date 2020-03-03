@@ -12,7 +12,6 @@ def crt0():
             {'kind': 'file', 'path': 'mk.sh', 'data': y.globals.by_name['data/mk_crt.sh']['data']},
         ],
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'compiler_rt'},

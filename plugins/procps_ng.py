@@ -10,7 +10,6 @@ def procps_ng0():
         ''',
         'meta': {
             'depends': ['make', 'c', 'ncurses', 'intl', 'iconv', 'upx'],
-            'kind': ['tool'],
             'provides': [
                 {'tool': 'PATCH', 'value': '{pkgroot}/bin/patch'},
             ],

@@ -18,7 +18,6 @@ def util_linux0():
             ($YUPX $IDIR/sbin/*) || true
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['upx', 'slang', 'readline', 'ncurses', 'make', 'c', 'kernel-h', 'iconv', 'intl'],
             'provides': [
                 {'tool': 'UL_ROOT', 'value': '"{pkgroot}"'},

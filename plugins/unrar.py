@@ -10,7 +10,6 @@ def unrar0():
              install -v -m755 unrar $IDIR/bin
         """,
         'meta': {
-            'kind': ['box', 'tool'],
             'depends': ['c++', 'make', 'c'],
             'provides': [
                 {'tool': 'YUNRAR', 'value': '{pkgroot}/bin/unrar'},

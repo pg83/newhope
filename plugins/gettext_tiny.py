@@ -8,10 +8,11 @@ def gettext_tiny0():
             $YMAKE LIBINTL="MUSL" DESTDIR="$IDIR" prefix=/ install
         """,
         'meta': {
-            'kind': ['library', 'tool'],
             'depends': ['iconv', 'make', 'c'],
             'provides': [
-                {'lib': 'intl', 'configure': {'opt': '--with-libintl-prefix={pkgroot}'}},
+                {'lib': 'intl'},
+                {'configure': '--with-libintl-prefix={pkgroot}'},
+                {'tool': 'XGETTEXT', 'value': '{pkgroot}/bin/xgettext'},
             ],
         },
     }

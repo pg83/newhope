@@ -11,7 +11,6 @@ def subversion0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['sqlite3', 'utf8proc', 'libapr', 'libapr-util', 'zlib', 'expat', 'make', 'c'],
             'provides': [
                 {'tool': 'SVN', 'value': '{pkgroot}/bin/svn'},

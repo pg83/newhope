@@ -16,10 +16,8 @@ def python3_static0():
             {'kind': 'file', 'path': 'find_modules.py', 'data': y.builtin_data('data/find_modules.py')},
         ],
         'meta': {
-            'kind': ['tool'],
             'depends': ['python3', 'upx', 'make', 'c'],
             'provides': [
-                {'lib': 'python3.8'},
                 {'tool': 'STATICPYTHON3', 'value': '{pkgroot}/bin/staticpython3'},
             ],
             'repacks': {},

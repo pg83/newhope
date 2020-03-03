@@ -7,7 +7,6 @@ def netbsd_curses0():
             $YMAKE -j 1 CC="$CC" AR="$AR" RANLIB="$RANLIB" CFLAGS="$CFLAGS $LDFLAGS $LIBS"  LDFLAGS="$LDFLAGS $LIBS" LDFLAGS_HOST="$LDFLAGS $LIBS" PREFIX=/ DESTDIR="$IDIR" all-static install-static
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'curses'},

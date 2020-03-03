@@ -10,7 +10,6 @@ def slibtool0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['make', 'c'],
             'provides': [
                 {'tool': 'LIBTOOL', 'value': '{pkgroot}/bin/slibtool'},

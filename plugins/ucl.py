@@ -9,7 +9,6 @@ def ucl0():
             $YMAKE install
         ''',
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'ucl'},

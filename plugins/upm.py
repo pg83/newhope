@@ -29,7 +29,6 @@ def upm0():
              chmod +x run
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['python3', 'upx', 'make', 'c'],
         },
         'extra': [

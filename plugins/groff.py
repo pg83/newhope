@@ -8,7 +8,6 @@ def groff0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['c++', 'texinfo','make', 'perl5', 'c'],
             'provides': [
                 {'tool': 'TROFF', 'value': '{pkgroot}/bin/troff'},

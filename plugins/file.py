@@ -8,7 +8,6 @@ def file0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['make', 'c'],
             'profides': [
                 {'tool': 'FILE_TOOL', 'value': '{pkgroot}/bin/file'}

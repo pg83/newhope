@@ -8,7 +8,6 @@ def libtomcrypt0():
             $YMAKE DESTDIR=$IDIR LIBPATH=/lib INCPATH=/include install
         ''',
         'meta': {
-            'kind': ['library'],
             'depends': ['libtommath', 'make', 'c'],
             'provides': [
                 {'lib': 'tomcrypt'},

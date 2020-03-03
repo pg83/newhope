@@ -18,7 +18,6 @@ def clang0():
         'code': code,
         'meta': {
             'depends': ['upx', 'cmake', 'zlib', 'c++', 'make', 'c'],
-            'kind': ['tool'],
             'repacks': {},
             'provides': y.clang_provides(),
         },

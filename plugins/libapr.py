@@ -11,7 +11,6 @@ def libapr0():
              (cd $IDIR/lib && rm *so* *.la)
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['slibtool', 'make', 'c'],
             'provides': [
                 {'lib': 'apr-1'},

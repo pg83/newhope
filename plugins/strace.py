@@ -18,7 +18,6 @@ def strace0():
             $YMAKE install
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['kernel-h', 'make', 'c'],
         },
     }

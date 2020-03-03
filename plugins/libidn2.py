@@ -13,7 +13,6 @@ def libidn20():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['intl', 'iconv', 'libunistring', 'pkg-config', 'make', 'c'],
             'provides': [
                 {'lib': 'idn2', 'configure': {'opt': '--with-libidn2={pkgroot}'}},

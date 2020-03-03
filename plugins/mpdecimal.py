@@ -11,7 +11,6 @@ def mpdecimal0():
              rm -rf $IDIR/lib/*.so
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'mpdec'},

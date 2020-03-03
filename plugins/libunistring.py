@@ -8,7 +8,6 @@ def libunistring0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['iconv', 'xz', 'make', 'c'],
             'provides': [
                 {'lib': 'unistring'},

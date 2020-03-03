@@ -8,7 +8,6 @@ def gzip0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['make', 'c'],
             'provides': [
                 {'tool': 'YGZIP', 'value': '{pkgroot}/bin/gzip'},

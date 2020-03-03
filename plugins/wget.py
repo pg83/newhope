@@ -10,7 +10,6 @@ def wget0():
              ($YUPX $IDIR/bin/*) || true
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['openssl', 'libmetalink', 'iconv', 'intl', 'libunistring', 'pcre', 'zlib', 'make', 'c', 'upx'],
         }
     }

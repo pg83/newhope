@@ -7,7 +7,6 @@ def openssh_server0():
              cp -pR $p/sbin $IDIR/bin
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['openssh'],
             'provides': [
                 {'tool': 'SSHD', 'value': '{pkgroot}/bin/sshd'}

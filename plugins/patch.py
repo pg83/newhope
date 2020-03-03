@@ -9,7 +9,6 @@ def patch0():
         ''',
         'meta': {
             'depends': ['bison', 'make', 'c'],
-            'kind': ['tool'],
             'provides': [
                 {'tool': 'PATCH', 'value': '{pkgroot}/bin/patch'},
             ],

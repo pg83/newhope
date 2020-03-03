@@ -10,7 +10,6 @@ def bc0():
              $YMAKE DESTDIR=$IDIR BINDIR=/bin install   
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['make', 'c'],
             'provides': [
                 {'tool': 'YBC', 'value': '{pkgroot}/bin/bc'},

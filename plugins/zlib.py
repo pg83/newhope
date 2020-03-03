@@ -10,7 +10,6 @@ def zlib0():
             $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'z', 'configure': {'opt': '--with-z={pkgroot}'}},

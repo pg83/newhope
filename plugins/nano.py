@@ -8,7 +8,6 @@ def nano0():
             $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['intl', 'iconv', 'readline', 'ncurses', 'make', 'c', 'kernel-h'],
         },
     }

@@ -8,7 +8,6 @@ def slang0():
             $YMAKE AR_CR="$AR cr" install-static || exit 1
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['zlib', 'readline', 'iconv', 'make', 'c'],
             'provides': [
                 {'lib': 'slang'},

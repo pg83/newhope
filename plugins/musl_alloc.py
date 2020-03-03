@@ -7,7 +7,6 @@ if '{os}' == 'linux':
                 cp -pR $MUSL_ROOT/lib/libmuslalloc.a $IDIR/lib/
             """,
             'meta': {
-                'kind': ['library'],
                 'contains': ['mimalloc'],
                 'depends': ['busybox-boot', 'mimalloc', 'musl-base'],
                 'provides': [

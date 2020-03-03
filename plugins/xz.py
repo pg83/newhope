@@ -7,7 +7,6 @@ def xz0():
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static --disable-threads && $YMAKE -j $NTHRS && $YMAKE install
         """,
         'meta': {
-            'kind': ['library', 'tool'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'lzma'},

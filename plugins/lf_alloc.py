@@ -9,7 +9,6 @@ def lf_alloc0():
             mv liblfalloc.a $IDIR/lib/
         ''',
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c', 'c++'],
             'contains': ['mimalloc'],
             'provides': [

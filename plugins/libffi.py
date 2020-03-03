@@ -16,7 +16,6 @@ def libffi0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['sed', 'make', 'c'],
             'provides': [
                 {'lib': 'ffi', 'configure': {'opt': '--with-system-ffi={pkgroot}'}},

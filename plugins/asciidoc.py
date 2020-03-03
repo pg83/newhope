@@ -8,7 +8,6 @@ def asciidoc0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['box', 'tool'],
             'depends': ['make', 'c'],
         }
     }

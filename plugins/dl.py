@@ -7,7 +7,6 @@ def dl0():
              $YMAKE CXX="$CXX" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" LIBS="$LIBS" AR="$AR" NM="$NM" RANLIB="$RANLIB" DESTDIR="$IDIR" install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['c++', 'make'],
             'provides': [
                 {'lib': 'dl'},

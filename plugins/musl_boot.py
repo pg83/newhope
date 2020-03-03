@@ -20,7 +20,6 @@ if '{os}' == 'linux':
                 {'kind': 'file', 'path': 'malloc.sh', 'data': y.globals.by_name['data/malloc.sh']['data']},
             ],
             'meta': {
-                'kind': ['tool'],
                 'depends': ['busybox-boot'],
                 'provides': [
                     {'lib': 'muslc'},

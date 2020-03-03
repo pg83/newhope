@@ -8,7 +8,6 @@ def jemalloc0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'contains': ['mimalloc'],
             'provides': [

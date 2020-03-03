@@ -8,7 +8,6 @@ def libarchive0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['library', 'tool', 'box'],
             'depends': ['zlib', 'bzip2', 'xz', 'make', 'c'],
             'provides': [
                 {'lib': 'archive'},

@@ -8,7 +8,6 @@ def grep0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['box', 'tool'],
             'depends': ['intl', 'libsigsegv', 'iconv', 'make', 'c']
         },
     }

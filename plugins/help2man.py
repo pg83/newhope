@@ -8,7 +8,6 @@ def help2man0():
              $YMAKE install  
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['perl5', 'make', 'c'],
             'provides': [
                 {'tool': 'HELP2MAN', 'value': '{pkgroot}/bin/help2man'},

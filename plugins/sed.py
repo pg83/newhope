@@ -8,7 +8,6 @@ def sed0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['iconv', 'intl', 'make', 'c'],
             'provides': [
                 {'tool': 'SED', 'value': '{pkgroot}/bin/sed'},

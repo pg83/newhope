@@ -18,7 +18,6 @@ def bash0():
             $YMAKE install
         """.replace('{extra}', ' '.join(do())),
         'meta': {
-            'kind': ['tool'],
             'depends': ['readline', 'ncurses', 'intl', 'iconv', 'make', 'c'],
             'provides': [
                 {'tool': 'YBASH', 'value': '{pkgroot}/bin/bash'},

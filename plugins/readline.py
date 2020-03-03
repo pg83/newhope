@@ -9,7 +9,6 @@ def readline0():
              $YMAKE install 2>&1 | grep -v 'No such file or directory'
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['ncurses', 'termcap', 'make', 'c'],
             'provides': [
                 {'lib': 'readline'},

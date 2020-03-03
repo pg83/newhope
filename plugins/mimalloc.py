@@ -16,7 +16,6 @@ def mimalloc0():
              mv libmimalloc.a $IDIR/lib/ 
         """,
         'meta': {
-            'kind': ['library'],
             'depends': depends + ['make-boot'],
             'provides': [
                 {'lib': 'mimalloc'},

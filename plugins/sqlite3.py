@@ -8,7 +8,6 @@ def sqlite30():
             $YMAKE install || exit 1
         """,
         'meta': {
-            'kind': ['library', 'tool'],
             'depends': ['readline', 'make', 'c'],
             'provides': [
                 {'lib': 'sqlite3'},

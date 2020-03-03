@@ -59,7 +59,6 @@ def box0():
              ln -sf dash sh
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': lst_run + ['upx'],
             'contains': lst_run + lst + ['upx', 'make-boot', 'busybox-boot', 'busybox', 'toybox'],
             'repacks': {},

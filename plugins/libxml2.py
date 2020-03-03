@@ -9,7 +9,6 @@ def libxml20():
         ''',
         'version': '2.9.10',
         'meta': {
-            'kind': ['library'],
             'depends': ['c', 'make', 'iconv', 'zlib', 'xz', 'readline'],
             'provides': [
                 {'lib': 'xml2'},

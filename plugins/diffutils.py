@@ -10,7 +10,6 @@ def diffutils0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['box', 'tool'],
             'depends': ['iconv', 'intl', 'libsigsegv', 'perl5', 'help2man', 'make', 'c']
         },
     }

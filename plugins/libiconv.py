@@ -17,7 +17,6 @@ def libiconv0():
             $YMAKE install
         """,
         'meta': {
-            'kind': ['library', 'tool'],
             'depends': ['make', 'c'],
             'provides': [
                 {
@@ -31,6 +30,7 @@ def libiconv0():
                     'extra': extra,
                 },
                 {'lib': 'charset'},
+                {'tool': 'ICONV_BIN', 'value': '"{pkgroot}/bin/iconv"'},
             ],
         },
     }

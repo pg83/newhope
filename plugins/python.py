@@ -23,7 +23,6 @@ def python0():
             {'kind': 'file', 'path': 'mk_staticpython.sh', 'data': y.builtin_data('data/mk_staticpython.sh')},
         ],
         'meta': {
-            'kind': ['tool'],
             'depends': [
                 'ncurses', 'iconv', 'intl', 'zlib', 'pkg-config-int',
                 'libffi', 'readline', 'termcap', 'expat', 'sqlite3',

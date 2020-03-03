@@ -24,7 +24,6 @@ def tcmalloc0():
             $YMAKE install
         ''',
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c', 'c++', 'kernel-h', 'libunwind'],
             'contains': ['mimalloc'],
             'provides': [

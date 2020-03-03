@@ -9,7 +9,6 @@ def gnu_m40():
                $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['libsigsegv', 'crt', 'help2man', 'make', 'c'],
             'provides': [
                 {'tool': 'M4', 'value': '{pkgroot}/bin/m4'},

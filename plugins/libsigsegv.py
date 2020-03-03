@@ -8,7 +8,6 @@ def libsigsegv0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'sigsegv', 'configure': {'opt': '--with-libsigsegv-prefix={pkgroot}'}},

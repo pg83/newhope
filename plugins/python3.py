@@ -37,7 +37,6 @@ def python30():
             {'kind': 'file', 'path': 'find_modules.py', 'data': y.builtin_data('data/find_modules.py')},
         ],
         'meta': {
-            'kind': ['tool'],
             'depends': [
                 'ncurses', 'iconv', 'intl', 'zlib',
                 'pkg-config', 'libffi', 'readline',

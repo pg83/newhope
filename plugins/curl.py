@@ -9,7 +9,6 @@ def curl0():
             $YMAKE install
         """,
         'meta': {
-            'kind': ['box', 'tool'],
             'depends': ['openssl', 'libidn2', 'libmetalink', 'make', 'c'],
             'provides': [
                 {'tool': 'CURL', 'value': '{pkgroot}/bin/curl'},

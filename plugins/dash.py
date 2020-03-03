@@ -11,7 +11,6 @@ def dash0():
             echo 'ln -sf ../pkg/$1/bin/dash ../../bin/sh' > $IDIR/install && chmod +x $IDIR/install
          """,
         'meta': {
-            'kind': ['box', 'tool'],
             'depends': ['libedit', 'make', 'c'],
             'provides': [
                 {'tool': 'YSHELL', 'value': '{pkgroot}/bin/dash'},

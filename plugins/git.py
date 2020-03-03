@@ -20,11 +20,10 @@ def git0():
              ($YUPX $IDIR/libexec/git-core/*) || true
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['upx', 'pcre', 'curl', 'openssl', 'expat', 'python', 'iconv', 'perl5', 'zlib', 'make', 'c'],
             'provides': [
                 {'tool': 'GIT', 'value': '{pkgroot}/bin/git'},
-                {'env': 'GIT_EXEC_PATH', 'value': '{pkgroot}/bin'},
+                {'tool': 'GIT_EXEC_PATH', 'value': '{pkgroot}/bin'},
             ],
             'repacks': {},
         },

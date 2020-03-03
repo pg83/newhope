@@ -8,7 +8,6 @@ def tar0():
              $YMAKE -j $NTHRS && $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['iconv', 'intl', 'gzip', 'bzip2', 'xz', 'unrar', 'busybox-boot', 'make', 'c'],
             'provides': [
                 {'tool': 'YGNUTAR', 'value': '{pkgroot}/bin/tar'},

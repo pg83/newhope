@@ -17,7 +17,6 @@ def glib0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['iconv', 'intl', 'libffi', 'pkg-config-int', 'coreutils', 'python', 'zlib', 'dash', 'pcre', 'make', 'c'],
             'provides': [
                 {'lib': 'glib-2.0'},

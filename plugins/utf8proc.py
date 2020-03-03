@@ -11,7 +11,6 @@ def utf8proc0():
             (cd $IDIR/lib && rm *so*)
         ''',
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'utf8proc'},

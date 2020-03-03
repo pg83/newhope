@@ -8,7 +8,6 @@ def libtommath0():
             $YMAKE DESTDIR=$IDIR LIBPATH=/lib INCPATH=/include install
         ''',
         'meta': {
-            'kind': ['library'],
             'depends': ['crt', 'make', 'c'],
             'provides': [
                 {'lib': 'tommath'},

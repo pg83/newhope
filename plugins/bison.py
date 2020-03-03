@@ -11,7 +11,6 @@ def bison0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['box', 'tool'],
             'depends': ['c++', 'm4', 'iconv', 'intl', 'xz', 'perl5', 'make', 'c']
         },
     }

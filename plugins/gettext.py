@@ -17,10 +17,11 @@ def gettext0():
             ($YUPX $IDIR/bin/*) || true
         """.replace('{opts}', ' '.join(opts)),
         'meta': {
-            'kind': ['library', 'tool'],
             'depends': ['bsdtar', 'upx', 'libunistring', 'iconv', 'ncurses', 'make', 'c'],
             'provides': [
-                {'lib': 'intl', 'configure': {'opt': '--with-libintl-prefix={pkgroot}'}},
+                {'lib': 'intl'},
+                {'configure': '--with-libintl-prefix={pkgroot}'},
+                {'tool': 'XGETTEXT', 'value': '{pkgroot}/bin/xgettext'},
             ],
         },
     }

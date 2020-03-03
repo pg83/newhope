@@ -13,8 +13,8 @@ def p7zip0():
         ''',
         'meta': {
             'depends': ['c++', 'make', 'c'],
-            'kind': ['tool', 'library'],
             'provides': [
+                {'lib': '7za'},
                 {'tool': 'Y7ZA', 'value': '{pkgroot}/bin/7za'},
             ],
         },

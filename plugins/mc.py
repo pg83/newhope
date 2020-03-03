@@ -10,7 +10,6 @@ def mc(gui, gui_lib):
         '''.replace('{gui}', gui_lib),
         'version': y.package_versions()['mc'],
         'meta': {
-            'kind': ['program'],
             'depends': ['intl', 'iconv', 'glib', gui, 'make', 'c'],
             'repacks': {},
         }

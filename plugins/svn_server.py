@@ -9,7 +9,6 @@ def snv_server0():
              $YUPX ./*
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['subversion', 'upx'],
             'repacks': {},
         },

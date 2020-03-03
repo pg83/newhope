@@ -8,7 +8,6 @@ def bsdtar0():
              ln -s bsdtar tar
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['libarchive'],
             'provides': [
                 {'tool': 'YTAR', 'value': '{pkgroot}/bin/bsdtar'},

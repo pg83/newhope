@@ -8,7 +8,6 @@ def findutils0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['python', 'intl', 'iconv'],
         },
     }

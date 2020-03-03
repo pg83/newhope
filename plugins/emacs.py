@@ -15,7 +15,6 @@ def emacs0():
              $YMAKE install
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['ncurses', 'zlib', 'make', 'c', 'autoconf', 'gnu-m4', 'perl5', 'lf-alloc'],
             'provides': [
                 {'tool': 'EMACS', 'value': '"{pkgroot}/bin/emacs"'},

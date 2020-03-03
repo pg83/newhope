@@ -9,7 +9,6 @@ def libmetalink0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['expat', 'dash', 'make', 'c'],
             'provides': [
                 {'lib': 'metalink'},

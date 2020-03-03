@@ -8,7 +8,6 @@ def texinfo0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['c++', 'make', 'c'],
             'provides': [
                 {'tool': 'MAKEINFO', 'value': '{pkgroot}/bin/makeinfo'},

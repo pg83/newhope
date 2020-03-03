@@ -8,7 +8,6 @@ def clang_mini0():
                     llvm-ar llvm-nm llvm-objcopy llvm-ranlib llvm-strip wasm-ld $IDIR/bin
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['clang'],
             'provides': y.clang_provides(),
             'repacks': {},

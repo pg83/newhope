@@ -8,7 +8,6 @@ def dropbear0():
              $YMAKE install
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['libtommath', 'libtomcrypt', 'zlib', 'make', 'c']
         }
     }

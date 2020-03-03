@@ -23,7 +23,6 @@ def openssl0():
             {'kind': 'file', 'path': 'pod2html', 'data': y.builtin_data('data/pod2html')},
         ],
         'meta': {
-            'kind': ['library'],
             'depends': extra + ['perl5','dl', 'sed', 'busybox-boot', 'coreutils-boot', 'make', 'c'],
             'provides': [
                 {'lib': 'ssl'},

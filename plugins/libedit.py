@@ -9,7 +9,6 @@ def libedit0():
              $YMAKE install
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['ncurses', 'termcap', 'make', 'c'],
             'provides': [
                 {'lib': 'edit'},

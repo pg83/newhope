@@ -7,7 +7,6 @@ def snv_client0():
              $YUPX $IDIR/bin/*
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['subversion', 'upx'],
             'repacks': {},
             'provides': [

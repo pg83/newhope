@@ -78,10 +78,10 @@ class Func(object):
         y.info('{dr}' + str(self) + '{}', '->', '(' + ', '.join([str(self.data.func_by_num[i]) for i in self.deps]) + ')')
 
     def repacks(self):
-        return self.code().get('meta', {}).get('repacks', y.repacks())
+        return self.meta.get('repacks', y.repacks())
 
     def contains(self):
-        cc = self.code().get('meta', {}).get('contains', [])
+        cc = self.meta.get('contains', [])
 
         return frozenset(cc) | frozenset(self.repacks().keys())
 
@@ -123,8 +123,9 @@ class Func(object):
         return 'tool' in self.kind
 
     @property
+    @y.cached_method
     def kind(self):
-        return self.x['kind']
+        return y.derive_kind(self.meta)
 
     @y.cached_method
     def code(self):
@@ -134,11 +135,16 @@ class Func(object):
     def base(self):
         return self.x['base']
 
+    @property
+    @y.cached_method
+    def meta(self):
+        return self.code().get('meta', {})
+
     def raw_depends(self):
         code = self.code()
 
         if code:
-            for x in self.code().get('meta', {}).get('depends', []):
+            for x in self.meta.get('depends', []):
                 yield self.do_subst(x)
 
     @y.cached_method
@@ -278,11 +284,7 @@ class SplitFunc(Func):
         return SplitFunc(self._func, self._split)
 
     def code(self):
-        res = y.run_splitter(self._func, self._split)
-
-        res['meta']['kind'] = self.kind
-
-        return res
+        return y.run_splitter(self._func, self._split)
 
     @y.cached_method
     def calc_deps(self):
@@ -356,8 +358,15 @@ class Data(object):
                 yield f
 
                 for k in sorted(f.repacks().keys()):
-                    yield SplitFunc(f, k)
-
+                    if k == 'run':
+                        if f.is_tool:
+                            yield SplitFunc(f, k)
+                    elif k == 'dev':
+                        if f.is_library:
+                            yield SplitFunc(f, k)
+                    else:
+                        yield SplitFunc(f, k)          
+            
         self.data = list(iter_objects())
 
         if self.flat:

@@ -16,7 +16,6 @@ if '{os}' == 'linux':
             """,
             'version': y.package_versions()['busybox'],
             'meta': {
-                'kind': ['tool'],
                 'provides': [
                     {'tool': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},
                 ],

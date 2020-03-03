@@ -10,7 +10,6 @@ def vim0():
              ($YUPX $IDIR/bin/*) || true
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['ncurses', 'zlib', 'make', 'c', 'upx'],
             'provides': [
                 {'tool': 'VIM', 'value': '"{pkgroot}/bin/vim"'},

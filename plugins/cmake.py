@@ -20,7 +20,6 @@ def cmake0():
              $YUPX $IDIR/bin/ctest
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': [
                 'c++',
                 'zlib',
@@ -37,5 +36,6 @@ def cmake0():
             'provides': [
                 {'tool': 'CMAKE', 'value': '{pkgroot}/bin/cmake'},
             ],
+            'repacks': {},
         }
     }

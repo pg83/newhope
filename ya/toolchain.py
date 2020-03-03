@@ -77,7 +77,7 @@ def score_tc(c, l, cpp):
 
 def join_tc_meta(tcs):
     return {
-        'kind': y.uniq_list_3(sum((x['meta']['kind'] for x in tcs), [])),
+        'kind': ['tool'],
         'provides': sum((x['meta']['provides'] for x in tcs), []),
     }
 

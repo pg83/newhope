@@ -27,7 +27,6 @@ def perl50():
             source perl5_env
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['iconv', 'zlib', 'coreutils-boot', 'make', 'c', 'bash'],
             'provides': [
                 {'tool': 'YPERL', 'value': '{pkgroot}/bin/perl'},

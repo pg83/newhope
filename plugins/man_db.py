@@ -8,7 +8,6 @@ def man_db0():
             $YMAKE install
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['libpipeline', 'gdbm', 'groff', 'make', 'c'],
         },
     }

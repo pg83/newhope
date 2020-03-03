@@ -6,7 +6,6 @@ def bzip20():
             $YMAKE -j $NTHRS CC=$CC AR=$AR RANLIB=$RANLIB LDFLAGS="$LDFLAGS $LIBS" CFLAGS="$CFLAGS" PREFIX="$IDIR" install
         """,
         'meta': {
-            'kind': ['library', 'tool'],
             'depends': ['make', 'c'],
             'provides': [
                 {'lib': 'bz2'},

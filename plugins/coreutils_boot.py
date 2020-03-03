@@ -14,7 +14,6 @@ def coreutils_boot0():
         """,
         'version': y.package_versions()['coreutils'],
         'meta': {
-            'kind': ['tool'],
             'depends': ['make', 'c'],
             'provides': [
                 {'tool': 'COREUTILS', 'value': '{pkgroot}/bin/coreutils'},

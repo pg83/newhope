@@ -13,7 +13,6 @@ def libapr_util0():
              (cd $IDIR/lib && rm *so* *.la)
         """,
         'meta': {
-            'kind': ['library'],
             'depends': ['slibtool', 'libapr', 'iconv', 'sqlite3', 'gdbm', 'make', 'expat', 'openssl', 'c'],
             'provides': [
                 {'lib': 'aprutil-1'},

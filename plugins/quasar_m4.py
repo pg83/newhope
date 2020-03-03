@@ -7,7 +7,6 @@ def quasar_m40():
                $YMAKE  PREFIX=/ DESTDIR="$IDIR" install
         """,
         'meta': {
-            'kind': ['box', 'tool'],
             'depends': ['coreutils-boot', 'make', 'c'],
             'provides': [
                 {'tool': 'M4', 'value': '{pkgroot}/bin/m4'},

@@ -14,7 +14,6 @@ def ninja0():
              $YUPX $IDIR/bin/ninja
         """,
         'meta': {
-            'kind': ['tool'],
             'depends': ['python', 'c++', 'make', 'c', 'upx'],
             'provides': [
                 {'tool': 'YNINJA', 'value': '{pkgroot}/bin/ninja'},

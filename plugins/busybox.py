@@ -36,7 +36,6 @@ def busybox0():
             unlink vi
         ''',
         'meta': {
-            'kind': ['tool'],
             'depends': ['make', 'kernel-h', 'make', 'c'],
             'provides': [
                 {'tool': 'BUSYBOX', 'value': '{pkgroot}/bin/busybox'},

@@ -10,7 +10,6 @@ def ptmalloc30():
             mv libptmalloc3.a $IDIR/lib/
         ''',
         'meta': {
-            'kind': ['library'],
             'depends': ['make', 'c'],
             'contains': ['mimalloc'],
             'provides': [

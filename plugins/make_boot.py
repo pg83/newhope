@@ -17,7 +17,6 @@ def make_boot0():
         'code': code,
         'version': y.package_versions()['make'],
         'meta': {
-            'kind': ['tool'],
             'depends': extra,
             'provides': [
                 {'tool': 'YMAKE', 'value': '{pkgroot}/bin/make'},

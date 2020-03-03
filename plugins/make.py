@@ -16,7 +16,6 @@ def make0():
     return {
         'code': code,
         'meta': {
-            'kind': ['box'],
             'depends': ['make-boot'] + extra,
             'contains': ['make-boot'],
             'provides': [
