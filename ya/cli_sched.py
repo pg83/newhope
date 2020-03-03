@@ -22,7 +22,7 @@ def wait_pid():
     while True:
         try:
             for i in range(0, 10):
-                y.info('got something', y.os.waitpid(0, y.os.WNOHANG))
+                y.debug('got something', y.os.waitpid(0, y.os.WNOHANG))
         except Exception as e:
             y.warning('in process catch: s', e)
 
