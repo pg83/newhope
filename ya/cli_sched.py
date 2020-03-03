@@ -57,11 +57,10 @@ ENTRY = [
 
 
 BUILD = [
-    ['((rm -rf /media/build/t || true) 2> /dev/null) && mkdir /media/build/t && cd /media/build/t && echo "start cycle" && git clone https://github.com/pg83/newhope.git && ./newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build && echo "done cycle" && sleep 60'],
+    ['((rm -rf /media/build/t || true) 2> /dev/null) && mkdir /media/build/t && cd /media/build/t && git clone https://github.com/pg83/newhope.git && ./newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build && sleep 120'],
     ['/media/build/upm pkg sync repo --fr /media/build/r --to /media/storage && sleep 20'],
     ['/usr/bin/timeout 10m /media/build/upm pkg serve repo --fr /media/storage --port 10000'],
     ['cd /media/build && ./upm makefile --os linux -v | ./upm make --keep-going --root /media/build --install-dir /pkg -j10 -f-'],
-    #['cd /media/storage && (find . | grep "\-tmp" | xargs rm) && sleep 1200'],
     wait_pid,
     watch_dog,
 ]
