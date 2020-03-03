@@ -82,7 +82,7 @@ def package_versions():
         'quasar-m4':  '2',
         'readline':  '8.0',
         'sed':  '4.7',
-        'slang':  'pre2.3.3-18',
+        'slang':  'pre2.3.3-19',
         'sqlite3':  '3300100',
         'tar':  '1.32',
         'termcap':  '1.3.1',
