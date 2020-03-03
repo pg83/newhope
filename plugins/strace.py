@@ -11,6 +11,8 @@ def strace0():
             chmod +x gcc
             chmod +x cpp
 
+            ln -s $AR ./ar
+
             export PATH="$(pwd):$PATH"
             source fetch "https://github.com/strace/strace/releases/download/v{version}/strace-{version}.tar.xz" 1
             $YSHELL ./configure  --prefix=$IDIR --disable-shared --enable-static --enable-mpers=no
