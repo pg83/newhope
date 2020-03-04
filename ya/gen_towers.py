@@ -12,7 +12,7 @@ def gen_func(func):
 
 @y.singleton
 def is_debug():
-    return 'debug' in y.config.get('tow', '')
+    return 'debug' in y.config.get('tower', '')
 
 
 def sum_sets(args):
