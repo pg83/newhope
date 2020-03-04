@@ -14,6 +14,6 @@ def wget0():
              ($YUPX $IDIR/bin/*) || true
         ''',
         'meta': {
-            'depends': ['openssl', 'libmetalink', 'iconv', 'intl', 'libunistring', 'pcre', 'zlib', 'make', 'c', 'upx'],
+            'depends': ['openssl', 'libmetalink', 'iconv', 'intl', 'libunistring', 'pcre', 'zlib', 'make', 'c', 'upx', 'sed'],
         }
     }
