@@ -4,6 +4,7 @@ def sqlite30():
         'code': """
             source fetch "https://www.sqlite.org/2019/sqlite-autoconf-{version}.tar.gz" 1
             export CFLAGS="-DSQLITE_OMIT_LOAD_EXTENSION=1 $CFLAGS"
+            export CC="$CC $CFLAGS"
             $YSHELL ./configure $COFLAGS --disable-shared --enable-static  --prefix=$IDIR || exit 1
             $YMAKE install || exit 1
         """,
