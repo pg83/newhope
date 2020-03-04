@@ -1,5 +1,3 @@
-import io
-
 sp = y.subprocess
 os = y.os
 
@@ -24,7 +22,7 @@ def build_index(where):
         if len(f) > 10:
             p = os.path.join(where, f)
 
-            if '-tmp' in f:
+            if '-tmp.' in f:
                 continue
 
             if f.startswith('.'):
@@ -48,9 +46,21 @@ class Fetcher(object):
         return self.do_fetch(name)
 
 
+def safe_symlink_0(fr, to):
+    tmp_to = y.tmp_name(to)
+
+    os.symlink(fr, tmp_to)
+    os.rename(tmp_to, to)
+
+
 def safe_symlink(fr, to):
-    os.symlink(fr, to + '-tmp')
-    os.rename(to + '-tmp', to)
+    try:
+        return safe_symlink_0(fr, to)
+    except Exception:
+        y.info('can not do symlink, will retry', str(e))
+        y.time.sleep(1)
+
+    return safe_symlink_0(fr, to)
 
 
 class HTTPFetcher(Fetcher):
@@ -188,7 +198,7 @@ class PkgMngr(object):
             if '-v5' not in x:
                 continue
 
-            if '-tmp' in x:
+            if '-tmp.' in x:
                 continue
 
             name = self.pkg_unv_name(x)
@@ -225,7 +235,7 @@ class PkgMngr(object):
             untar_from_memory(self.find_pkg_tar(), data, where)
         except Exception as e:
             y.info('fallback to python tarfile: ' + str(e))
-            stream = io.BytesIO(data)
+            stream = y.io.BytesIO(data)
             y.tarfile.open(fileobj=stream, mode='r').extractall(where)
    
     def subst_packs(self, p1, p2):
@@ -371,7 +381,7 @@ class PkgMngr(object):
 
     def install_one_pkg(self, p, join):
         ppath = self.pkg_dir() + '/' + p['path']
-        ppath_tmp = self.pkg_dir() + '/' + p['path'] + '-tmp'
+        ppath_tmp = y.tmp_name(self.pkg_dir() + '/' + p['path'])
         pkg_data, data = join()
 
         def func():
@@ -382,12 +392,7 @@ class PkgMngr(object):
             defer(t.join)
             t.start()
 
-            try:
-                os.makedirs(ppath_tmp)
-            except OSError:
-                y.shutil.rmtree(ppath_tmp)
-                os.makedirs(ppath_tmp)
-
+            os.makedirs(ppath_tmp)
             self.untar_from_memory(data, ppath_tmp)
             os.rename(ppath_tmp, ppath)
 

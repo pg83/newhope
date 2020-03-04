@@ -1,8 +1,3 @@
-import marshal
-import time
-import urllib.request as urllib2
-
-
 def fetch_url_data(fr):
     return y.decode_prof(y.fetch_data(fr))
 
@@ -91,8 +86,8 @@ def cli_pkg_sync_repo(args_):
 
     args = parser.parse_args(args_)
 
-    assert args.fr
-    assert args.to
+    assert args.fr, 'no from path'
+    assert args.to, 'no to path'
 
     try:
         y.os.makedirs(args.to)

@@ -18,3 +18,26 @@ def cli_cmd_subst(args):
         data = f.read()
 
     y.write_file(path, data.replace(a, b), mode='w')
+
+
+@y.verbose_entry_point
+def cli_cmd_rmtmp(args):
+    for d in args:
+        d = y.os.path.abspath(d)
+
+        for x in y.os.listdir(d):
+            p = y.os.path.join(d, x)
+
+            if y.is_tmp_name(p):
+                y.info('remove stale', p)
+
+                try:
+                    y.os.unlink(p)
+                except Exception as e:
+                    y.info('in remove stale', p, e)
+    
+                    try:
+                        y.shutil.rmtree(p)
+                    except Exception as e:
+                        y.info('in remove stale', p, e)
+    

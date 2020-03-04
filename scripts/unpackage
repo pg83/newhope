@@ -1,10 +1,10 @@
 source set_env
 
 unpack() {
-    source rmmkcd "$MD/$2_tmp"
+    source rmmkcd "$MD/$2-tmp"
     source untar_$1 "$RD/$2" 0
     source rmrf "$MD/$2"
-    mv "$MD/$2_tmp" "$MD/$2"
+    mv "$MD/$2-tmp" "$MD/$2"
 }
 
 ext=$(source file_ext "$1")
