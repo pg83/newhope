@@ -10,7 +10,7 @@ commit: clear
 	git add -A
 	git commit -m "A"
 	-git push
-	killall -9 ssh-agent
+	-killall -9 ssh-agent
 
 merge: clear
 	ssh-add ~/.ssh/id_rsa_1
