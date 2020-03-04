@@ -1,7 +1,7 @@
 LC_ALL=C
 
 clear:
-	cli cleanup
+	python3 cli cleanup
 
 commit: clear
 	ssh-add ~/.ssh/id_rsa_1
