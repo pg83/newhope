@@ -35,9 +35,9 @@ def cli_cmd_rmtmp(args):
                     y.os.unlink(p)
                 except Exception as e:
                     y.info('in remove stale', p, e)
-    
+
                     try:
                         y.shutil.rmtree(p)
                     except Exception as e:
                         y.info('in remove stale', p, e)
-    
+
