@@ -53,6 +53,18 @@ def cli_docker_run(arg):
 
    y.os.execv('/bin/bash', ['/bin/bash', path + '/run.sh'] + arg[1:] + [latest])
 
+   
+@y.main_entry_point
+def cli_docker_spawn(arg):
+   assert arg, 'empty arguments'
+
+   cont = arg[0]
+   data = data_for_container(cont)
+   path = data['path']
+   latest = data['data'][-1]
+
+   y.os.execv('/bin/bash', ['/bin/bash', path + '/run.sh'] + arg[1:] + ['-d', latest])
+
 
 @y.main_entry_point
 def cli_docker_push(arg):
