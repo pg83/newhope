@@ -3,7 +3,11 @@ def wget0():
     return {
         'code': '''
              source fetch "https://ftp.gnu.org/gnu/wget/wget-{version}.tar.gz" 1
+
              export CFLAGS="-Dhas_key=wget_has_key $OPENSSL_INCLUDES $METALINK_CFLAGS $PCRE2_CFLAGS $CFLAGS"
+             export OPENSSL_CFLAGS="$CFLAGS" 
+             export OPENSSL_LIBS="$LIBS"
+
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --enable-static --disable-shared --with-ssl=openssl || exit 1
              $YMAKE -j $NTHRS
              $YMAKE install
