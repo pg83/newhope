@@ -1,4 +1,4 @@
-def func(code_):
+def proc_func(code_):
     def do():
         code = code_
 
@@ -34,19 +34,6 @@ def watch_dog():
     y.shut_down(retcode=11, last_msg='watchdog happen')
 
 
-def gen_wd_func(f):
-    try:
-        f.__name__
-
-        y.info('will run', f.__name__)
-
-        return f
-    except AttributeError:
-        y.info('will run', f)
-
-        return func(f)
-
-
 def exec_build():
     y.os.execl('/usr/bin/unshare', 'unshare', '--fork', '--pid', '--kill-child', '/media/build/upm', 'cmd', 'scheduler', 'BUILD')
 
@@ -56,22 +43,28 @@ ENTRY = [
 ]
 
 
-BUILD = [
+BUILD_PROC = [
     ['((rm -rf /media/build/t || true) 2> /dev/null) && mkdir /media/build/t && cd /media/build/t && git clone https://github.com/pg83/newhope.git && ./newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build && sleep 120'],
-    ['/media/build/upm pkg sync repo --fr /media/build/r --to /media/storage && sleep 20'],
-    ['/usr/bin/timeout 10m /media/build/upm pkg serve repo --fr /media/storage --port 10000'],
-    ['cd /media/build && ./upm makefile --os linux -v | ./upm make --keep-going --root /media/build --install-dir /pkg -j10 -f-'],
+    ['/media/build/upm pkg sync repo --fr /media/build/r --to /media/storage && sleep 30'],
+    ['/usr/bin/timeout 30m /media/build/upm pkg serve repo --fr /media/storage --port 10000'],
+    ['cd /media/build && (./upm makefile --os linux -v | ./upm make --keep-going --root /media/build --install-dir /pkg -j10 -f- -v)'],
+]
+
+
+BUILD = [
     wait_pid,
     watch_dog,
-]
+] + [proc_func(x) for x in BUILD_PROC]
 
 
 @y.verbose_entry_point
 def cli_cmd_scheduler(args):
     y.os.nice(20)
+
     code = (len(args) > 0 and args[0]) or 'ENTRY'
     y.info('code', code)
-    thrs = [y.threading.Thread(target=gen_wd_func(c)) for c in y.find(code)]
+
+    thrs = [y.threading.Thread(target=c) for c in y.find(code)]
 
     for t in thrs:
         t.start()
