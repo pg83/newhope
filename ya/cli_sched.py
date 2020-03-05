@@ -1,32 +1,19 @@
-def proc_func(code_):
+def proc_func(code):
     def do():
-        code = code_
-
-        while True:
-            try:
-                y.info('will run', code)
-
-                p = y.subprocess.Popen(code, shell=True)
-                retcode = p.wait()
-
-                y.info('done, with code', retcode)
-            except Exception as e:
-                y.warning('in scheduler:', y.traceback.format_exc())
-
-            y.time.sleep(1)
+        y.info('will run', code)
+        p = y.subprocess.Popen(code, shell=True)
+        retcode = p.wait()
+        y.info('done, with code', retcode)
+        y.time.sleep(1)
 
     return do
 
 
 def wait_pid():
-    while True:
-        try:
-            for i in range(0, 10):
-                y.debug('got something', y.os.waitpid(0, y.os.WNOHANG))
-        except Exception as e:
-            y.warning('in process catch: s', e)
+    for i in range(0, 10):
+        y.debug('got something', y.os.waitpid(0, y.os.WNOHANG))
 
-        y.time.sleep(1)
+    y.time.sleep(1)
 
 
 def watch_dog():
@@ -59,14 +46,86 @@ BUILD = [
 ] + [proc_func(x) for x in BUILD_PROC]
 
 
-@y.verbose_entry_point
-def cli_cmd_scheduler(args):
-    y.os.nice(20)
+DOCKER = BUILD[2:]
 
+
+TEST_PROC = [
+    proc_func(['sleep 1']),
+    proc_func(['sleep 2']),
+    proc_func(['sleep 3']),
+]
+
+
+def run_subrule(code, num):
+    y.find(code)[num]()
+
+
+def run_runit(args):
+    tool = y.find_tool('runsvdir')[0]
+    path = y.os.path.abspath(y.os.getcwd())
+
+    def iter_it():
+        for t in args.targets:
+            for i, c in enumerate(y.find(t)):
+                folder = t.lower() + '_' + str(i)
+                cmd = y.sys.argv
+                cmd = cmd[:cmd.index('scheduler') + 1] + ['--num', str(i), t]
+        
+                yield folder, cmd
+
+    for folder, cmd in iter_it():
+        data = '#!/bin/sh\n' + ' '.join(cmd) + '\n'
+        p = y.os.path.join(path, folder)
+
+        try:
+            y.os.makedirs(p)
+        except OSError:
+            pass
+
+        f = y.os.path.join(p, 'run')
+
+        y.write_file(f, data, mode='w')
+        y.os.chmod(f, 0o744)
+
+    y.os.execl(tool, tool, path)
+
+
+@y.verbose_entry_point
+def cli_cmd_scheduler(arg):
+    p = y.argparse.ArgumentParser()
+
+    p.add_argument('-r', '--runit', default=False, action='store_const', const=True, help='use runit infra')
+    p.add_argument('-n', '--num', default=None, action='store', help='subrule number')
+    p.add_argument('targets', nargs=y.argparse.REMAINDER)
+
+    args = p.parse_args(arg)
+
+    if args.num is not None:
+        run_subrule(args.targets[0], int(args.num))
+    elif args.runit:
+        run_runit(args)
+    else:
+        run_threads(args.targets)
+
+
+def wrap_inf(func):
+    def wrapper():
+        while True:
+            try:
+                func()
+            except Exception as e:
+                y.warning('in scheduler ' + func.__name__ + ', ' + str(e))
+                y.time.sleep(1)
+
+    return wrapper
+
+
+def run_threads(args):
+    y.os.nice(20)
     code = (len(args) > 0 and args[0]) or 'ENTRY'
     y.info('code', code)
 
-    thrs = [y.threading.Thread(target=c) for c in y.find(code)]
+    thrs = [y.threading.Thread(target=wrap_inf(c)) for c in y.find(code)]
 
     for t in thrs:
         t.start()
