@@ -67,11 +67,18 @@ class HTTPFetcher(Fetcher):
     def __init__(self, root):
         self._root = root
 
+    def path(self, x):
+        return os.path.join(self._root, x)
+
     def do_fetch_index(self):
-        return y.decode_prof(self.do_fetch('index'))
+        p = self.path('index')
+
+        y.info('fetch index for{bb}', p, '{}')
+
+        return y.decode_prof(y.fetch_data(p))
 
     def do_fetch(self, path):
-        p = os.path.join(self._root, path)
+        p = self.path(path)
 
         y.info('add{by}', p, '{}')
 
@@ -234,8 +241,11 @@ class PkgMngr(object):
         try:
             untar_from_memory(self.find_pkg_tar(), data, where)
         except Exception as e:
-            y.info('fallback to python tarfile: ' + str(e))
-            stream = y.io.BytesIO(data)
+            y.debug('fallback to python tarfile: ' + str(e))
+
+            import io
+    
+            stream = io.BytesIO(data)
             y.tarfile.open(fileobj=stream, mode='r').extractall(where)
    
     def subst_packs(self, p1, p2):
@@ -398,8 +408,13 @@ class PkgMngr(object):
 
             outs = []
 
+            shell = os.path.join(ppath, '../../bin/sh')
+
+            if not os.path.exists(shell):
+                shell = '/bin/sh'
+        
             try:
-                out = sp.check_output(['../../bin/sh', '-c', '. ../profile; ../../bin/sh ./install ' + p['path']], cwd=ppath, shell=False)
+                out = sp.check_output([shell, '-c', '. ../profile; ' + shell + ' ./install ' + p['path']], cwd=ppath, shell=False)
                 out = out.decode('utf-8')
                 out = out.strip()
 
@@ -411,7 +426,7 @@ class PkgMngr(object):
             if outs:
                 y.info('from install script :\n' + '\n'.join(outs))
 
-            y.info('{bb}' + ppath + '{} done')
+            y.info('done {bb}' + ppath + '{}')
 
     def thr_fetch(self, p):
         res = []
@@ -445,7 +460,7 @@ class PkgMngr(object):
                 path = self.pkg_dir() + '/' + p['path']
 
                 if os.path.isdir(path):
-                    y.info('skip', path)
+                    y.debug('skip', path)
                 else:
                     yield p
 
@@ -459,6 +474,10 @@ class PkgMngr(object):
             for x in reversed(lst):
                 yield '/pkg/' + x['path'] + '/bin'
                 yield '/pkg/' + x['path'] + '/sbin'
+
+                if len(self.path) > 1:
+                    yield self.path + '/pkg/' + x['path'] + '/bin'
+                    yield self.path + '/pkg/' + x['path'] + '/sbin'
 
         def iter_profile():
             yield 'export PATH=' + ':'.join(iter_path())
@@ -502,11 +521,12 @@ class PkgMngr(object):
 
         y.shutil.rmtree(os.path.join(self.path, 'log'))
 
-        packs = self.install(['tar-run', 'dash-run'])
+        packs = self.install(['tar-run', 'busybox', 'dash-run'])
         safe_symlink('../pkg/' + packs['dash-run'] + '/bin/dash', self.path + '/bin/sh')
 
         packs = self.install(['upm-run'])
         safe_symlink('../pkg/' + packs['upm-run'] + '/bin/upm', self.path + '/bin/upm')
+        self.delete_x(['busybox'])
 
     def add_indexes(self, indexes):
         with self.open_db() as db:

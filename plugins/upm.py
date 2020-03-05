@@ -1,10 +1,12 @@
-install_upm = '''
+install_upm = '''#!/bin/sh
+
 ln -sf ../pkg/$1/bin/upm ../../bin/
 ln -sf ../../pkg/$1 ../../etc/runit/
 rm -rf ./log
 '''
 
 run_upm = '''#!/bin/sh
+
 exec /bin/upm cmd scheduler CRON
 '''
 
