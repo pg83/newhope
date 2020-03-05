@@ -1,0 +1,6 @@
+ln -s $CC ./gcc
+ln -s $STRIP ./strip
+ln -s $AR ./ar
+ln -s $NM ./nm
+
+export PATH="$(pwd):$PATH"

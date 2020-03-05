@@ -4,10 +4,7 @@ def busybox0():
         'code': '''
             source fetch "https://www.busybox.net/downloads/busybox-{version}.tar.bz2" 1
 
-            ln -s $CC ./gcc
-            ln -s $STRIP ./strip
-            ln -s $AR ./ar
-            export PATH="$(pwd):$PATH"
+            source fake_binutils
             export CFLAGS="-Iinclude $CFLAGS"
             export LIBS="$LIBS -Wl,--whole-archive"
 

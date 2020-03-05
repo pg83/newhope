@@ -5,9 +5,8 @@ def slibtool0():
              source fetch "https://github.com/midipix-project/slibtool/archive/v0.5.28.tar.gz" 0
              mv slibtool* xxx && cd xxx
 
-             export LDFLAGS="$LDFLAGS $CFLAGS" 
-             ln -s $AR ./ar
-             export PATH=$(pwd):$PATH
+             export LDFLAGS="$LDFLAGS $CFLAGS"
+             source fake_binutils 
 
              $YSHELL ./configure $COFLAGS --prefix=$IDIR --disable-shared --enable-static || exit 1
              $YMAKE -j $NTHRS
