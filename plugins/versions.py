@@ -4,6 +4,8 @@ def package_versions():
     upm_ver = 'ae74920f2bd83637ac9c16d19d1a61bf50e9f546'
 
     return {
+        'utf8proc': '2.4.0',
+        'libevent': '2.1.11-stable',
         'mc': '4.8.23',
         'meson': '0.53.1',
         'shadow': '4.8.1',

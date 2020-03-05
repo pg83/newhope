@@ -2,7 +2,7 @@
 def utf8proc0():
     return {
         'code': '''
-            source fetch "https://github.com/JuliaStrings/utf8proc/archive/v2.4.0.tar.gz" 0
+            source fetch "https://github.com/JuliaStrings/utf8proc/archive/v{version}.tar.gz" 0
             (mv utf8* xxx && mv xxx/* .)
             ($YMAKE CC="$CC" CFLAGS="$CFLAGS" -j $NTHRS) || true
             touch libutf8proc.so.2.3.1 libutf8proc.so.2 libutf8proc.so
