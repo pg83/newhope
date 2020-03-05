@@ -109,7 +109,7 @@ def clang_provides():
         {'tool': 'AR', 'value': '"{pkgroot}/bin/llvm-ar"'},
         {'tool': 'RANLIB', 'value': '"{pkgroot}/bin/llvm-ranlib"'},
         {'tool': 'STRIP', 'value': '"{pkgroot}/bin/llvm-strip"'},
-        {'tool': 'NM', 'value': '"{pkgroot}/llvm-nm"'},
+        {'tool': 'NM', 'value': '"{pkgroot}/bin/llvm-nm"'},
         {'tool': 'CXX', 'value': '"{pkgroot}/bin/clang++"'},
         {'tool': 'CXXFLAGS', 'value': '"-nostdinc++ $CXXFLAGS"'},
         {'tool': 'LD', 'value': '"{pkgroot}/bin/clang"'},

@@ -33,8 +33,8 @@ ENTRY = [
 BUILD_PROC = [
     ['((rm -rf /media/build/t || true) 2> /dev/null) && mkdir /media/build/t && cd /media/build/t && git clone https://github.com/pg83/newhope.git && ./newhope/cli release > upm && chmod +x upm && ./upm && mv ./upm /media/build && sleep 120'],
     ['/media/build/upm pkg sync repo --fr /media/build/r --to /media/storage && sleep 30'],
-    #['/media/build/upm cmd rmtmp /media/build/r && sleep 120'],
-    #['/media/build/upm cmd rmtmp /media/storage && sleep 120'],
+    ['/media/build/upm cmd rmtmp /media/build/r && sleep 600'],
+    ['/media/build/upm cmd rmtmp /media/storage && sleep 700'],
     ['/usr/bin/timeout 30m /media/build/upm pkg serve repo --fr /media/storage --port 10000'],
     ['cd /media/build && (./upm makefile --os linux -v | ./upm make --keep-going --root /media/build --install-dir /pkg -j10 -f- -v)'],
 ]
@@ -70,11 +70,11 @@ def run_runit(args):
                 folder = t.lower() + '_' + str(i)
                 cmd = y.sys.argv
                 cmd = cmd[:cmd.index('scheduler') + 1] + ['--num', str(i), t]
-        
+
                 yield folder, cmd
 
     for folder, cmd in iter_it():
-        data = '#!/bin/sh\n' + ' '.join(cmd) + '\n'
+        data = '#!/bin/sh\n\nexec ' + ' '.join(cmd) + '\n'
         p = y.os.path.join(path, folder)
 
         try:
