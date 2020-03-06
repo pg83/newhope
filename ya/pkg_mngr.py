@@ -244,7 +244,7 @@ class PkgMngr(object):
             y.debug('fallback to python tarfile: ' + str(e))
 
             import io
-    
+
             stream = io.BytesIO(data)
             y.tarfile.open(fileobj=stream, mode='r').extractall(where)
    
@@ -412,7 +412,7 @@ class PkgMngr(object):
 
             if not os.path.exists(shell):
                 shell = '/bin/sh'
-        
+
             try:
                 out = sp.check_output([shell, '-c', '. ../profile; ' + shell + ' ./install ' + p['path']], cwd=ppath, shell=False)
                 out = out.decode('utf-8')
