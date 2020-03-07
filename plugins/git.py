@@ -13,7 +13,7 @@ def git0():
 
              $YSHELL ./configure --prefix="$IDIR" --with-python=$PYTHON --with-perl=$YPERL --with-shell=$YSHELL --with-libpcre2
 
-             $YMAKE 
+             $YMAKE -j $NTHRS
              $YMAKE install
 
              ($YUPX $IDIR/bin/*) || true
