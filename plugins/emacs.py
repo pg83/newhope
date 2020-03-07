@@ -1,5 +1,5 @@
 editor_sh='''
-export EDITOR="emacsclient --socket-name /tmp/emacs`id -u`/server"
+export EDITOR="emacsclient --socket-name $TMPDIR/emacs`id -u`/server"
 '''
 
 
@@ -35,7 +35,7 @@ def emacs0():
         'extra': [
             {'kind': 'file', 'path': 'run', 'data': y.builtin_data('data/emacs_run.py')},
             {'kind': 'file', 'path': 'install', 'data': install_agent},
-            {'kind': 'file', 'path': '02-editor.sh', 'data': editor_sh},
+            {'kind': 'file', 'path': '05-editor.sh', 'data': editor_sh},
         ],
         'meta': {
             'depends': ['ncurses', 'zlib', 'make', 'c', 'autoconf', 'gnu-m4', 'perl5', 'lf-alloc'],
