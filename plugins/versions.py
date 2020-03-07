@@ -4,6 +4,8 @@ def package_versions():
     upm_ver = 'ae74920f2bd83637ac9c16d19d1a61bf50e9f546'
 
     return {
+        'curl': '7.67.0',
+        'mbedtls': '2.16.3-apache',
         'utf8proc': '2.4.0',
         'libevent': '2.1.11-stable',
         'mc': '4.8.23',
