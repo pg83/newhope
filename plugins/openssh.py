@@ -10,7 +10,7 @@ def openssh0():
             $YMAKE DESTDIR=$IDIR install
         ''',
         'meta': {
-            'depends': ['openssl', 'make', 'c', 'zlib', 'libedit', 'jemalloc'],
+            'depends': ['openssl', 'make', 'c', 'zlib', 'libedit', 'jemalloc', 'sed', 'gawk'],
             'provides': [
                 {'tool': 'SSHD', 'value': '"{pkgroot}/sbin/sshd"'},
             ],
