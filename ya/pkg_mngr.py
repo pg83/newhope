@@ -301,9 +301,9 @@ class PkgMngr(object):
                     ff = y.debug
                 else:
                     ff = y.warning
-        
+
                 ff('skip source', f)
-            
+    
         if not cnt:
             raise Exception('all sources dead')
 

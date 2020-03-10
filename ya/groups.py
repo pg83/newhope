@@ -1,6 +1,6 @@
 def tini_group():
     return [
-        'toybox-run',
+        'toybox',
         'busybox-run',
         'coreutils-run',
         'dash-run',
