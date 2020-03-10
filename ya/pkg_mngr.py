@@ -34,6 +34,7 @@ def build_index(where):
 
 
 class Fetcher(object):
+    @y.cached_method
     def fetch_index(self):
         for x in self.do_fetch_index():
             x['index'] = self
@@ -80,7 +81,7 @@ class HTTPFetcher(Fetcher):
     def do_fetch(self, path):
         p = self.path(path)
 
-        y.info('add{by}', p, '{}')
+        y.info('fetch{by}', p, '{}')
 
         return y.fetch_data(p)
 
@@ -95,17 +96,29 @@ class LocalFetcher(Fetcher):
     def do_fetch(self, path):
         p = os.path.join(self._root, path)
 
-        y.info('add{bm}', p, '{}')
+        y.info('fetch{bm}', p, '{}')
 
         with open(p, 'rb') as f:
             return f.read()
 
 
+@y.cached
 def get_fetcher(path):
     if path.startswith('http'):
         return HTTPFetcher(path)
 
     return LocalFetcher(path)
+
+
+class ProgressBar(object):
+    def __init__(self, m):
+        self._m = m
+        self._c = 0
+
+    def next_str(self):
+        self._c += 1
+
+        return '{bw}{' + str(self._c) + ' of ' + str(self._m) + '}{}'
 
 
 class InstPropertyDB(object):
@@ -119,7 +132,7 @@ class InstPropertyDB(object):
         self.add_index_file([])
 
     def restore_state(self):
-        y.warning('restore db state cause prev errors')
+        y.warning('{br}restore db state cause prev errors{}')
 
         old = y.marshal.loads(self.state)
 
@@ -284,11 +297,17 @@ class PkgMngr(object):
                 yield from get_fetcher(f).fetch_index()
                 cnt += 1
             except Exception as e:
-                y.warning('skip source', f)
-
+                if f[0] == '/':
+                    ff = y.debug
+                else:
+                    ff = y.warning
+        
+                ff('skip source', f)
+            
         if not cnt:
             raise Exception('all sources dead')
 
+    @y.cached_method
     def collect_indices(self):
         return list(self.collect_indices_0())
 
@@ -364,6 +383,8 @@ class PkgMngr(object):
         return self.all_packs_dict() 
 
     def delete_x(self, pkgs):
+        y.info('uninstall {br}' + ', '.join(pkgs) + '{}')
+
         pkgs = frozenset(pkgs)
 
         def do(inst):
@@ -389,7 +410,7 @@ class PkgMngr(object):
     def apply_db(self, db):
         self.actual_install(db.inst())
 
-    def install_one_pkg(self, p, join):
+    def install_one_pkg(self, p, join, pb):
         ppath = self.pkg_dir() + '/' + p['path']
         ppath_tmp = y.tmp_name(self.pkg_dir() + '/' + p['path'])
         pkg_data, data = join()
@@ -426,7 +447,7 @@ class PkgMngr(object):
             if outs:
                 y.info('from install script :\n' + '\n'.join(outs))
 
-            y.info('done {bb}' + ppath + '{}')
+            y.info(pb.next_str() + ' {bb}' + ppath + '{}')
 
     def thr_fetch(self, p):
         res = []
@@ -467,8 +488,10 @@ class PkgMngr(object):
         to_inst = list(to_install())
         to_wait = [(p, self.thr_fetch(p)) for p in to_inst]
 
+        pb = ProgressBar(len(to_inst))
+
         for p, j in to_wait:
-            self.install_one_pkg(p, j)
+            self.install_one_pkg(p, j, pb)
 
         def iter_path():
             for x in reversed(lst):
@@ -487,12 +510,14 @@ class PkgMngr(object):
         y.write_file(self.pkg_dir() + '/profile', profile, mode='w')
 
         in_use = frozenset([x['path'] for x in lst] + ['cache', 'profile'])
+        on_disk = list(os.listdir(self.pkg_dir()))
+        pb = ProgressBar(len(frozenset(on_disk) - in_use))
 
-        for x in os.listdir(self.pkg_dir()):
+        for x in on_disk:
             if x not in in_use:
                 p = os.path.join(self.pkg_dir(), x)
 
-                y.warning('remove stale{r}', p, '{}')
+                y.warning(pb.next_str() + ' {br}' + p + '{}')
 
                 try:
                     y.shutil.rmtree(p)

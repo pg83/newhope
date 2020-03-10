@@ -64,11 +64,7 @@ def preprocess(cmd, r):
 
 
 def build_makefile(nodes, kind):
-    def iter3(nodes):
-        for n in y.visit_nodes(nodes):
-            yield y.restore_node(n)
-
-    nn = list(iter3(nodes))
+    nn = [y.restore_node(n) for n in y.visit_nodes(nodes)]
 
     if kind == 'json':
         return y.json.dumps(nn, indent=4, sort_keys=True)
@@ -77,16 +73,13 @@ def build_makefile(nodes, kind):
         by_name = {}
 
         yield y.build_scripts_run()
-
-        for x in y.iter_workspace():
-            yield x
+        yield from y.iter_workspace()
 
         for i, r in enumerate(nn):
             res = y.print_one_node(r)
             do_apply_node(r, by_name)
 
-            for l in preprocess(res, r):
-                yield l
+            yield from preprocess(res, r)
 
         for name in sorted(by_name.keys()):
             yield {
@@ -133,15 +126,45 @@ def build_makefile(nodes, kind):
 
     def iter6():
         for cmd in iter5():
-            for l in print_v3_node_2(cmd):
-                yield l
+            yield from print_v3_node_2(cmd)
 
             if cmd['build']:
                 yield '\n\n'
 
-    res = ''
+    return sum_lst(list(iter6()))
 
-    for v in iter6():
-        res += v
 
-    return res
+def sum_1(l):
+    return l[0]
+
+
+def sum_2(l):
+    return l[0] + l[1]
+
+
+def sum_3(l):
+    return l[0] + l[1] + l[2]
+
+
+def sum_4(l):
+    return (l[0] + l[1]) + (l[2] + l[3])
+
+
+S = [
+    None,
+    sum_1,
+    sum_2,
+    sum_3,
+    sum_4,
+]
+
+
+def sum_lst(l):
+    ll = len(l)
+
+    if ll < len(S):
+        return S[ll](l)
+
+    m = ll // 2
+
+    return sum_lst(l[:m]) + sum_lst(l[m:])
