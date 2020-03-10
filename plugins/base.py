@@ -1,7 +1,7 @@
 etc_profile = '''
 . /pkg/profile
 
-for i in $(ls /etc/profile.d/); do
+for i in /etc/profile.d/*; do
     . "/etc/profile.d/$i"
 done
 '''
