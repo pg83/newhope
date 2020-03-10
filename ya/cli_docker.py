@@ -114,3 +114,14 @@ def cli_docker_shell(arg):
     cont_id = get_running()[cont_image]
 
     y.os.execvp('docker', ['docker', 'exec', '-ti', cont_id, '/bin/sh', '-l'])
+
+
+@y.main_entry_point
+def cli_docker_kill(args):
+    assert args, 'empty arguments'
+
+    for cont in args:
+        cont_image = data_for_container(cont)['data'][-1]
+        cont_id = get_running()[cont_image]
+
+        y.os.execvp('docker', ['docker', 'container', 'kill', str(cont_id)])

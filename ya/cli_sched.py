@@ -37,7 +37,7 @@ BUILD_PROC = [
     ['/media/build/upm cmd rmtmp /media/storage && sleep 700'],
     ['/usr/bin/timeout 30m /media/build/upm pkg serve repo --fr /media/storage --port 10000'],
     ['cd /media/build && ./upm makefile --os linux -v > ./Makefile.tmp && mv ./Makefile.tmp ./Makefile && sleep 30'],
-    ['cd /media/build && ./upm make --keep-going --root /media/build --install-dir /pkg -j10 -f ./Makefile -v'],
+    ['cd /media/build && ./upm make --keep-going --root /media/build --install-dir /pkg -j10 -f ./Makefile -v --naked'],
 ]
 
 
