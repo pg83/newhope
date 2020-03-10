@@ -9,7 +9,7 @@ def autoconf0():
             (cd $IDIR && mv $IDIR/$MDIR/* ./)
         ''',
         'meta': {
-            'depends': ['gnu-m4', 'make'],
+            'depends': ['gnu-m4', 'make', 'perl'],
             'provides': [
                 {'tool': 'AUTOCONF', 'value': '"{pkgroot}/bin/autoconf"'},
                 {'tool': 'PERL5LIB', 'value': '"$PERL5LIB:{pkgroot}/share/autoconf"'},
