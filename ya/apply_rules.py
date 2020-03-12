@@ -29,7 +29,7 @@ def apply_fetch(lines, v):
         else:
             yield l
 
-
+@y.cached
 def fix_v2(v):
     assert v is not None, 'empty node'
 
@@ -37,35 +37,26 @@ def fix_v2(v):
     n = v['node']
 
     m = y.ensure_value('meta', n, {})
-    f = y.ensure_value('flags', m, [])
-
-    m['flags'] = sorted(frozenset(f + n.pop('flags', [])))
-
-    kind = y.ensure_value('kind', m, []) + n.pop('kind', [])
-    m['kind'] = kind
-
-    if 'box' in kind:
-        kind.append('tool')
-
-    if 'provides' in m and any(('lib' in x) for x in m['provides']):
-        kind.append('library')
-
-    m['kind'] = sorted(frozenset(kind))
-    f = m['flags']
 
     if 'codec' not in n:
         n['codec'] = 'pg'
 
     def iter_subst():
-        for i, v in enumerate(n.get('extra', [])):
+        extra = n.get('extra', [])
+
+        if 'install' in n:
+            extra.append({'kind': 'file', 'path': 'install', 'data': n.pop('install')})
+            n['build'] = n.get('build', []) + ['cd $IDIR', '$(F_' + str(len(extra) - 1) + ')']
+
+        for i, v in enumerate(extra):
             if v['kind'] == 'file':
                 cmd = 'echo "' + y.base64.b64encode(v['data'].encode('utf-8')).decode('utf-8') + '" | source base64_decode > ' + v['path']
                 key = '$(F_' + str(i) + ')'
 
-                yield (key, cmd)
+                yield key, cmd
 
             if v['kind'] == 'subst':
-                yield (v['from'], v['to'])
+                yield v['from'], v['to']
 
     subst = list(iter_subst())
 

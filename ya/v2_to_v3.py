@@ -55,8 +55,7 @@ def print_one_node(root):
         data = data.replace('{pkgroot}', mn(target)) + '\n'
         data = base64.b64encode(data.encode('utf-8'))
 
-        for x in root_node.get('build', []):
-            yield x
+        yield from root_node.get('build', [])
 
         if naked:
             yield 'source write_build_file "' + data.decode('utf-8') + '"'

@@ -2,14 +2,6 @@ editor_sh='''
 export EDITOR="emacsclient --socket-name $TMPDIR/emacs`id -u`/server"
 '''
 
-
-install_agent = '''
-ln -sf ../../pkg/$1 ../../etc/runit/
-ln -sf ../../pkg/$1/02-editor.sh ../../etc/profile.d/
-rm -rf ./log
-'''
-
-
 @y.package
 def emacs0():
     return {
@@ -29,12 +21,15 @@ def emacs0():
              cd $IDIR
              $(F_0)
              $(F_1)
-             $(F_2)
              chmod +x run
+        ''',
+        'install': '''
+             ln -sf ../../pkg/$1 ../../etc/runit/
+             ln -sf ../../pkg/$1/02-editor.sh ../../etc/profile.d/
+             rm -rf ./log
         ''',
         'extra': [
             {'kind': 'file', 'path': 'run', 'data': y.builtin_data('data/emacs_run.py')},
-            {'kind': 'file', 'path': 'install', 'data': install_agent},
             {'kind': 'file', 'path': '05-editor.sh', 'data': editor_sh},
         ],
         'meta': {

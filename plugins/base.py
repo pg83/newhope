@@ -1,5 +1,4 @@
-etc_profile = '''
-. /pkg/profile
+etc_profile = '''. /pkg/profile
 
 for i in /etc/profile.d/*; do
     . "/etc/profile.d/$i"
@@ -7,8 +6,7 @@ done
 '''
 
 
-colors_sh = '''
-# Сброс
+colors_sh = '''# Сброс
 Color_Off='\e[0m'       # Text Reset
 
 # Обычные цвета
@@ -85,12 +83,11 @@ export PS1="$BIRed\\h$BIGreen@\\u$BIBlue:\\w$BIWhite# $Color_Off"
 '''
 
 
-tmpdir_sh = '''
-if test -z "$HOME"; then
-    export HOME=$(getent passwd `whoami` | cut -d: -f6)
+tmpdir_sh = '''if test -z "$HOME"; then
+    export HOME="$(getent passwd `whoami` | cut -d: -f6)"
 fi
 export TMPDIR="$HOME/.tmpdir"
-mkdir -p ""$TMPDIR"" || true
+mkdir -p "$TMPDIR" || true
 '''
 
 
